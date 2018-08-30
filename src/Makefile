@@ -1,6 +1,5 @@
 #
 # Makefile for xboot
-# Create by: Jianjun Jiang <8192542@qq.com>
 #
 
 #
@@ -61,9 +60,10 @@ ifeq ($(strip $(ARCH)), x64)
 DEFINES		+=	-D__X64__
 endif
 
-ASFLAGS		+= 	-ffreestanding -std=gnu99 $(DEFINES)
-CFLAGS		+=	-ffreestanding -std=gnu99 $(DEFINES)
-CXXFLAGS	+=	-ffreestanding -std=gnu99 $(DEFINES)
+ASFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
+CFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
+CXXFLAGS	+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
+LDFLAGS		+=	-Wl,-gc-sections
 
 #
 # Add necessary directory for INCDIRS and SRCDIRS.
@@ -119,12 +119,14 @@ SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				driver/clk									\
 				driver/clockevent							\
 				driver/clocksource							\
+				driver/compass								\
 				driver/console								\
 				driver/dac									\
 				driver/dma									\
 				driver/framebuffer							\
 				driver/gmeter								\
 				driver/gpio									\
+				driver/gyroscope							\
 				driver/hygrometer							\
 				driver/i2c									\
 				driver/input								\
@@ -135,6 +137,8 @@ SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				driver/light								\
 				driver/motor								\
 				driver/nvmem								\
+				driver/pressure								\
+				driver/proximity							\
 				driver/pwm									\
 				driver/regulator							\
 				driver/reset								\
@@ -165,6 +169,9 @@ SRCDIRS		+=	external/json-parser-1.1.0
 INCDIRS		+= 	external/libfdt-1.4.2
 SRCDIRS		+=	external/libfdt-1.4.2
 
+INCDIRS		+= 	external/lz4-1.8.2
+SRCDIRS		+=	external/lz4-1.8.2
+
 INCDIRS		+= 	external/zlib-1.2.11
 SRCDIRS		+=	external/zlib-1.2.11
 
@@ -185,43 +192,43 @@ SRCDIRS		+=	external/pixman-0.34.0 \
 INCDIRS		+= 	external/cairo-1.14.10
 SRCDIRS		+=	external/cairo-1.14.10
 
-INCDIRS		+= 	external/freetype-2.4.11/include \
-				external/freetype-2.4.11/src/base \
-				external/freetype-2.4.11/src/raster	\
-				external/freetype-2.4.11/src/smooth	\
-				external/freetype-2.4.11/src/cff \
-				external/freetype-2.4.11/src/cid \
-				external/freetype-2.4.11/src/pfr \
-				external/freetype-2.4.11/src/sfnt \
-				external/freetype-2.4.11/src/truetype \
-				external/freetype-2.4.11/src/type1 \
-				external/freetype-2.4.11/src/type42 \
-				external/freetype-2.4.11/src/winfonts \
-				external/freetype-2.4.11/src/autofit \
-				external/freetype-2.4.11/src/cache \
-				external/freetype-2.4.11/src/gxvalid \
-				external/freetype-2.4.11/src/otvalid \
-				external/freetype-2.4.11/src/psaux \
-				external/freetype-2.4.11/src/pshinter \
-				external/freetype-2.4.11/src/psnames
-SRCDIRS		+=	external/freetype-2.4.11/src/base \
-				external/freetype-2.4.11/src/raster \
-				external/freetype-2.4.11/src/smooth \
-				external/freetype-2.4.11/src/cff \
-				external/freetype-2.4.11/src/cid \
-				external/freetype-2.4.11/src/pfr \
-				external/freetype-2.4.11/src/sfnt \
-				external/freetype-2.4.11/src/truetype \
-				external/freetype-2.4.11/src/type1 \
-				external/freetype-2.4.11/src/type42 \
-				external/freetype-2.4.11/src/winfonts \
-				external/freetype-2.4.11/src/autofit \
-				external/freetype-2.4.11/src/cache \
-				external/freetype-2.4.11/src/gxvalid \
-				external/freetype-2.4.11/src/otvalid \
-				external/freetype-2.4.11/src/psaux \
-				external/freetype-2.4.11/src/pshinter \
-				external/freetype-2.4.11/src/psnames
+INCDIRS		+= 	external/freetype-2.8/include \
+				external/freetype-2.8/src/autofit \
+				external/freetype-2.8/src/base \
+				external/freetype-2.8/src/cache \
+				external/freetype-2.8/src/cff \
+				external/freetype-2.8/src/cid \
+				external/freetype-2.8/src/gxvalid \
+				external/freetype-2.8/src/otvalid \
+				external/freetype-2.8/src/pfr \
+				external/freetype-2.8/src/psaux \
+				external/freetype-2.8/src/pshinter \
+				external/freetype-2.8/src/psnames \
+				external/freetype-2.8/src/raster \
+				external/freetype-2.8/src/sfnt \
+				external/freetype-2.8/src/smooth \
+				external/freetype-2.8/src/truetype \
+				external/freetype-2.8/src/type1 \
+				external/freetype-2.8/src/type42 \
+				external/freetype-2.8/src/winfonts
+SRCDIRS		+=	external/freetype-2.8/src/autofit \
+				external/freetype-2.8/src/base \
+				external/freetype-2.8/src/cache \
+				external/freetype-2.8/src/cff \
+				external/freetype-2.8/src/cid \
+				external/freetype-2.8/src/gxvalid \
+				external/freetype-2.8/src/otvalid \
+				external/freetype-2.8/src/pfr \
+				external/freetype-2.8/src/psaux \
+				external/freetype-2.8/src/pshinter \
+				external/freetype-2.8/src/psnames \
+				external/freetype-2.8/src/raster \
+				external/freetype-2.8/src/sfnt \
+				external/freetype-2.8/src/smooth \
+				external/freetype-2.8/src/truetype \
+				external/freetype-2.8/src/type1 \
+				external/freetype-2.8/src/type42 \
+				external/freetype-2.8/src/winfonts
 
 INCDIRS		+=	external/chipmunk-7.0.2/include
 SRCDIRS		+=	external/chipmunk-7.0.2/src
@@ -264,47 +271,13 @@ X_SFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.S))
 X_CFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.c))
 X_CPPFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.cpp))
 
-X_SDEPS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o.d))
-X_CDEPS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o.d))
-X_CPPDEPS	:=	$(patsubst %, .obj/%, $(X_CPPFILES:.cpp=.o.d))
-X_DEPS		:=	$(X_SDEPS) $(X_CDEPS) $(X_CPPDEPS)
-
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
 X_COBJS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o))
 X_CPPOBJS	:=	$(patsubst %, .obj/%, $(X_CPPFILES:.cpp=.o))
 X_OBJS		:=	$(X_SOBJS) $(X_COBJS) $(X_CPPOBJS)
 
-#
-# Module variables
-#
-M_ASFLAGS	:=	$(DEFINES) $(MODULE_ASFLAGS)
-M_CFLAGS	:=	$(DEFINES) $(MODULE_CFLAGS)
-M_CXXFLAGS	:=	$(DEFINES) $(MODULE_CXXFLAGS)
-M_LDFLAGS	:=	$(MODULE_LDFLAGS) -shared -nostdlib -fPIC
-M_LIBS		:=	$(MODULE_LIB_LINKS) -lgcc
-
-M_NAME		:= 	$(patsubst %, $(M)/%, $(MODULE_NAME))
-M_INCDIRS	:=	$(X_INCDIRS) $(patsubst %, -I $(M)/%, $(MODULE_INCLUDE_DIRS))
-M_LIBDIRS	:=	$(X_LIBDIRS) $(patsubst %, -L $(M)/%, $(MODULE_LIB_SEARCH_DIRS))
-M_SRCDIRS	:=	$(patsubst %, $(M)/%, $(MODULE_SOURCE_DIRS))
-M_OBJDIRS	:=	$(patsubst %, %, $(M_SRCDIRS))
-
-M_SFILES	:=	$(foreach dir, $(M_SRCDIRS), $(wildcard $(dir)/*.S))
-M_CFILES	:=	$(foreach dir, $(M_SRCDIRS), $(wildcard $(dir)/*.c))
-M_CPPFILES	:=	$(foreach dir, $(M_SRCDIRS), $(wildcard $(dir)/*.cpp))
-
-M_SDEPS		:=	$(M_SFILES:.S=.o.d)
-M_CDEPS		:=	$(M_CFILES:.c=.o.d)
-M_CPPDEPS	:=	$(M_CPPFILES:.cpp=.o.d)
-M_DEPS		:=	$(M_SDEPS) $(M_CDEPS) $(M_CPPDEPS)
-
-M_SOBJS		:=	$(M_SFILES:.S=.o)
-M_COBJS		:=	$(M_CFILES:.c=.o)
-M_CPPOBJS	:=	$(M_CPPFILES:.cpp=.o)
-M_OBJS		:=	$(M_SOBJS) $(M_COBJS) $(M_CPPOBJS)
-
-VPATH		:=	$(X_OBJDIRS) $(M_OBJDIRS)
-.PHONY:	all clean xbegin xend xclean module mclean
+VPATH		:=	$(X_OBJDIRS)
+.PHONY:	all clean xbegin xend xclean
 
 #
 # Xboot rules
@@ -323,51 +296,17 @@ $(X_NAME) : $(X_OBJS)
 $(X_SOBJS) : .obj/%.o : %.S
 	@echo [AS] $<
 	@$(AS) $(X_ASFLAGS) $(X_INCDIRS) -c $< -o $@
-	@$(AS) $(X_ASFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 $(X_COBJS) : .obj/%.o : %.c
 	@echo [CC] $<
 	@$(CC) $(X_CFLAGS) $(X_INCDIRS) -c $< -o $@
-	@$(CC) $(X_CFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 $(X_CPPOBJS) : .obj/%.o : %.cpp
 	@echo [CXX] $<
 	@$(CXX) $(X_CXXFLAGS) $(X_INCDIRS) -c $< -o $@
-	@$(CXX) $(X_CXXFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
-clean: xclean
-	@$(RM) $(X_OBJDIRS) $(X_OUT)
-	@echo Clean xboot complete.
-
-#
-# Module rules
-#
-module : $(M_NAME)
-
-$(M_NAME) : $(M_OBJS)
-	@echo [M][AR] Archiving $@.a
-	@$(AR) -rcs $@.a $(M_OBJS)
-	@echo [M][LD] Linking $@.so
-	@$(CC) $(M_LDFLAGS) $(M_LIBDIRS) -Wl,--cref,-Map=$@.map $^ -o $@.so $(M_LIBS)
-
-$(M_SOBJS) : %.o : %.S
-	@echo [M][AS] $<
-	@$(AS) $(M_ASFLAGS) $(M_INCDIRS) -c $< -o $@
-	@$(AS) $(M_ASFLAGS) -MD -MP -MF $@.d $(M_INCDIRS) -c $< -o $@
-
-$(M_COBJS) : %.o : %.c
-	@echo [M][CC] $<
-	@$(CC) $(M_CFLAGS) $(M_INCDIRS) -c $< -o $@
-	@$(CC) $(M_CFLAGS) -MD -MP -MF $@.d $(M_INCDIRS) -c $< -o $@
-
-$(M_CPPOBJS) : %.o : %.cpp
-	@echo [M][CXX] $<
-	@$(CXX) $(M_CXXFLAGS) $(M_INCDIRS) -c $< -o $@
-	@$(CXX) $(M_CXXFLAGS) -MD -MP -MF $@.d $(M_INCDIRS) -c $< -o $@
-
-mclean:
-	@$(RM) $(M_DEPS) $(M_OBJS) $(M_NAME).a $(M_NAME).so $(M_NAME).map
-	@echo Clean module complete.
+clean : xclean
+	@$(RM) .obj $(X_OUT)
 
 #
 # Include the dependency files, should be place the last of makefile
@@ -381,5 +320,4 @@ sinclude $(shell $(MKDIR) $(X_OBJDIRS) $(X_OUT)						\
 			&& $(CP) arch/$(ARCH)/$(MACH)/romdisk .obj				\
 			&& $(CD) .obj/romdisk									\
 			&& $(FIND) . -not -name . | $(CPIO) > ../romdisk.cpio	\
-			&& $(CD) ../..)											\
-			$(X_DEPS) $(M_DEPS)
+			&& $(CD) ../..)

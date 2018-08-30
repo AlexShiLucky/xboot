@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -75,16 +79,21 @@ static void luaopen_prelibs(lua_State * L)
 		{ "hardware.adc",			luaopen_hardware_adc },
 		{ "hardware.battery",		luaopen_hardware_battery },
 		{ "hardware.buzzer",		luaopen_hardware_buzzer },
+		{ "hardware.compass",		luaopen_hardware_compass },
 		{ "hardware.dac",			luaopen_hardware_dac },
 		{ "hardware.gmeter",		luaopen_hardware_gmeter },
 		{ "hardware.gpio",			luaopen_hardware_gpio },
+		{ "hardware.gyroscope",		luaopen_hardware_gyroscope },
 		{ "hardware.hygrometer",	luaopen_hardware_hygrometer },
 		{ "hardware.i2c",			luaopen_hardware_i2c },
 		{ "hardware.led",			luaopen_hardware_led },
-		{ "hardware.ledtrig",		luaopen_hardware_ledtrig },
+		{ "hardware.ledstrip",		luaopen_hardware_ledstrip },
+		{ "hardware.ledtrigger",	luaopen_hardware_ledtrigger },
 		{ "hardware.light",			luaopen_hardware_light },
 		{ "hardware.motor",			luaopen_hardware_motor },
 		{ "hardware.nvmem",			luaopen_hardware_nvmem },
+		{ "hardware.pressure",		luaopen_hardware_pressure },
+		{ "hardware.proximity",		luaopen_hardware_proximity },
 		{ "hardware.pwm",			luaopen_hardware_pwm },
 		{ "hardware.servo",			luaopen_hardware_servo },
 		{ "hardware.spi",			luaopen_hardware_spi },

@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -28,10 +32,10 @@
 static int l_gmeter_new(lua_State * L)
 {
 	const char * name = luaL_optstring(L, 1, NULL);
-	struct gmeter_t * gmeter = name ? search_gmeter(name) : search_first_gmeter();
-	if(!gmeter)
+	struct gmeter_t * g = name ? search_gmeter(name) : search_first_gmeter();
+	if(!g)
 		return 0;
-	lua_pushlightuserdata(L, gmeter);
+	lua_pushlightuserdata(L, g);
 	luaL_setmetatable(L, MT_HARDWARE_GMETER);
 	return 1;
 }
@@ -39,15 +43,15 @@ static int l_gmeter_new(lua_State * L)
 static int l_gmeter_list(lua_State * L)
 {
 	struct device_t * pos, * n;
-	struct gmeter_t * gmeter;
+	struct gmeter_t * g;
 
 	lua_newtable(L);
 	list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_GMETER], head)
 	{
-		gmeter = (struct gmeter_t *)(pos->priv);
-		if(!gmeter)
+		g = (struct gmeter_t *)(pos->priv);
+		if(!g)
 			continue;
-		lua_pushlightuserdata(L, gmeter);
+		lua_pushlightuserdata(L, g);
 		luaL_setmetatable(L, MT_HARDWARE_GMETER);
 		lua_setfield(L, -2, pos->name);
 	}
@@ -62,16 +66,16 @@ static const luaL_Reg l_gmeter[] = {
 
 static int m_gmeter_tostring(lua_State * L)
 {
-	struct gmeter_t * gmeter = luaL_checkudata(L, 1, MT_HARDWARE_GMETER);
-	lua_pushstring(L, gmeter->name);
+	struct gmeter_t * g = luaL_checkudata(L, 1, MT_HARDWARE_GMETER);
+	lua_pushstring(L, g->name);
 	return 1;
 }
 
 static int m_gmeter_get_acceleration(lua_State * L)
 {
-	struct gmeter_t * gmeter = luaL_checkudata(L, 1, MT_HARDWARE_GMETER);
+	struct gmeter_t * g = luaL_checkudata(L, 1, MT_HARDWARE_GMETER);
 	int x, y, z;
-	if(gmeter_get_acceleration(gmeter, &x, &y, &z))
+	if(gmeter_get_acceleration(g, &x, &y, &z))
 	{
 		lua_pushnumber(L, (lua_Number)x / 1000000);
 		lua_pushnumber(L, (lua_Number)y / 1000000);

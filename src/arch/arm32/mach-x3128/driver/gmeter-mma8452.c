@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -115,9 +119,9 @@ static bool_t mma8452_write(struct i2c_device_t * dev, u8_t reg, u8_t val)
     return TRUE;
 }
 
-static bool_t gmeter_mma8452_get(struct gmeter_t * gmeter, int * x, int * y, int * z)
+static bool_t gmeter_mma8452_get(struct gmeter_t * g, int * x, int * y, int * z)
 {
-	struct gmeter_mma8452_pdata_t * pdat = (struct gmeter_mma8452_pdata_t *)gmeter->priv;
+	struct gmeter_mma8452_pdata_t * pdat = (struct gmeter_mma8452_pdata_t *)g->priv;
 	u8_t s, l = 0, h = 0;
 	s16_t tx, ty, tz;
 
@@ -146,7 +150,7 @@ static bool_t gmeter_mma8452_get(struct gmeter_t * gmeter, int * x, int * y, int
 static struct device_t * gmeter_mma8452_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct gmeter_mma8452_pdata_t * pdat;
-	struct gmeter_t * gmeter;
+	struct gmeter_t * g;
 	struct device_t * dev;
 	struct i2c_device_t * i2cdev;
 	u8_t val;
@@ -191,8 +195,8 @@ static struct device_t * gmeter_mma8452_probe(struct driver_t * drv, struct dtno
 		return NULL;
 	}
 
-	gmeter = malloc(sizeof(struct gmeter_t));
-	if(!gmeter)
+	g = malloc(sizeof(struct gmeter_t));
+	if(!g)
 	{
 		i2c_device_free(i2cdev);
 		free(pdat);
@@ -201,17 +205,17 @@ static struct device_t * gmeter_mma8452_probe(struct driver_t * drv, struct dtno
 
 	pdat->dev = i2cdev;
 
-	gmeter->name = alloc_device_name(dt_read_name(n), -1);
-	gmeter->get = gmeter_mma8452_get;
-	gmeter->priv = pdat;
+	g->name = alloc_device_name(dt_read_name(n), -1);
+	g->get = gmeter_mma8452_get;
+	g->priv = pdat;
 
-	if(!register_gmeter(&dev, gmeter))
+	if(!register_gmeter(&dev, g))
 	{
 		i2c_device_free(pdat->dev);
 
-		free_device_name(gmeter->name);
-		free(gmeter->priv);
-		free(gmeter);
+		free_device_name(g->name);
+		free(g->priv);
+		free(g);
 		return NULL;
 	}
 	dev->driver = drv;
@@ -221,16 +225,16 @@ static struct device_t * gmeter_mma8452_probe(struct driver_t * drv, struct dtno
 
 static void gmeter_mma8452_remove(struct device_t * dev)
 {
-	struct gmeter_t * gmeter = (struct gmeter_t *)dev->priv;
-	struct gmeter_mma8452_pdata_t * pdat = (struct gmeter_mma8452_pdata_t *)gmeter->priv;
+	struct gmeter_t * g = (struct gmeter_t *)dev->priv;
+	struct gmeter_mma8452_pdata_t * pdat = (struct gmeter_mma8452_pdata_t *)g->priv;
 
-	if(gmeter && unregister_gmeter(gmeter))
+	if(g && unregister_gmeter(g))
 	{
 		i2c_device_free(pdat->dev);
 
-		free_device_name(gmeter->name);
-		free(gmeter->priv);
-		free(gmeter);
+		free_device_name(g->name);
+		free(g->priv);
+		free(g);
 	}
 }
 

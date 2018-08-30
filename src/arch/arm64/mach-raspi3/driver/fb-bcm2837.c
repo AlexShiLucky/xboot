@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -32,8 +36,7 @@ struct fb_bcm2837_pdata_t {
 	int pwidth;
 	int pheight;
 	int bpp;
-	int index;
-	void * vram[2];
+	void * vram;
 	int brightness;
 };
 
@@ -94,9 +97,8 @@ void fb_present(struct framebuffer_t * fb, struct render_t * render)
 
 	if(render && render->pixels)
 	{
-		pdat->index = (pdat->index + 1) & 0x1;
-		memcpy(pdat->vram[pdat->index], render->pixels, render->pixlen);
-		bcm2837_mbox_fb_present(0, pdat->index ? pdat->height : 0);
+		memcpy(pdat->vram, render->pixels, render->pixlen);
+		bcm2837_mbox_fb_present(0, 0);
 	}
 }
 
@@ -122,9 +124,7 @@ static struct device_t * fb_bcm2837_probe(struct driver_t * drv, struct dtnode_t
 	pdat->pwidth = dt_read_int(n, "physical-width", 216);
 	pdat->pheight = dt_read_int(n, "physical-height", 135);
 	pdat->bpp = dt_read_int(n, "bits-per-pixel", 32);
-	pdat->index = 0;
-	pdat->vram[0] = bcm2837_mbox_fb_alloc(pdat->width, pdat->height, pdat->bpp, 2);
-	pdat->vram[1] = pdat->vram[0] + (pdat->width * pdat->height * (pdat->bpp / 8));
+	pdat->vram = bcm2837_mbox_fb_alloc(pdat->width, pdat->height, pdat->bpp, 1);
 	pdat->brightness = 0;
 
 	fb->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
@@ -190,5 +190,5 @@ static __exit void fb_bcm2837_driver_exit(void)
 	unregister_driver(&fb_bcm2837);
 }
 
-//driver_initcall(fb_bcm2837_driver_init);
-//driver_exitcall(fb_bcm2837_driver_exit);
+driver_initcall(fb_bcm2837_driver_init);
+driver_exitcall(fb_bcm2837_driver_exit);

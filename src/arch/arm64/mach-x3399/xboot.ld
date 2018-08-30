@@ -9,9 +9,9 @@ STACK_EL0_SIZE = 0x100000;
 
 MEMORY
 {
-	ram  : org = 0x00200000, len = 128M - 2M
-	dma  : org = 0x08000000, len = 128M
-	heap : org = 0x10000000, len = 256M
+	ram  : org = 0x09400000, len = 108M
+	dma  : org = 0x10000000, len = 256M
+	heap : org = 0x20000000, len = 512M
 }
 
 SECTIONS
@@ -20,8 +20,8 @@ SECTIONS
 	{
 		PROVIDE(__image_start = .);
 		PROVIDE(__text_start = .);
-		.obj/arch/arm64/mach-x3399/start.o (.text)
-		.obj/arch/arm64/mach-x3399/transition.o (.text)
+		.obj/arch/arm64/mach-x3399/start.o (.text*)
+		.obj/arch/arm64/mach-x3399/transition.o (.text*)
 		*(.text*)
 		*(.init.text)
 		*(.exit.text)

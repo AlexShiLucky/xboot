@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -28,31 +32,31 @@
 static ssize_t framebuffer_read_width(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", fb->width);
+	return sprintf(buf, "%u", framebuffer_get_width(fb));
 }
 
 static ssize_t framebuffer_read_height(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", fb->height);
+	return sprintf(buf, "%u", framebuffer_get_height(fb));
 }
 
 static ssize_t framebuffer_read_pwidth(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", fb->pwidth);
+	return sprintf(buf, "%u", framebuffer_get_pwidth(fb));
 }
 
 static ssize_t framebuffer_read_pheight(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", fb->pheight);
+	return sprintf(buf, "%u", framebuffer_get_pheight(fb));
 }
 
 static ssize_t framebuffer_read_bpp(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", fb->bpp);
+	return sprintf(buf, "%u", framebuffer_get_bpp(fb));
 }
 
 static ssize_t framebuffer_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
@@ -85,7 +89,6 @@ struct framebuffer_t * search_framebuffer(const char * name)
 	dev = search_device(name, DEVICE_TYPE_FRAMEBUFFER);
 	if(!dev)
 		return NULL;
-
 	return (struct framebuffer_t *)dev->priv;
 }
 
@@ -96,7 +99,6 @@ struct framebuffer_t * search_first_framebuffer(void)
 	dev = search_first_device(DEVICE_TYPE_FRAMEBUFFER);
 	if(!dev)
 		return NULL;
-
 	return (struct framebuffer_t *)dev->priv;
 }
 
@@ -125,10 +127,8 @@ bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb
 
 	if(fb->create)
 		fb->alone = (fb->create)(fb);
-
 	if(fb->present)
 		fb->present(fb, fb->alone);
-
 	if(fb->setbl)
 		fb->setbl(fb, 0);
 
@@ -165,6 +165,8 @@ bool_t unregister_framebuffer(struct framebuffer_t * fb)
 	{
 		if(driver->setbl)
 			driver->setbl(driver, 0);
+		if(fb->destroy)
+			fb->destroy(fb, fb->alone);
 	}
 
 	kobj_remove_self(dev->kobj);
@@ -172,6 +174,60 @@ bool_t unregister_framebuffer(struct framebuffer_t * fb)
 	free(dev);
 
 	return TRUE;
+}
+
+int framebuffer_get_width(struct framebuffer_t * fb)
+{
+	if(fb)
+		return fb->width;
+	return 0;
+}
+
+int framebuffer_get_height(struct framebuffer_t * fb)
+{
+	if(fb)
+		return fb->height;
+	return 0;
+}
+
+int framebuffer_get_pwidth(struct framebuffer_t * fb)
+{
+	if(fb)
+		return fb->pwidth;
+	return 0;
+}
+
+int framebuffer_get_pheight(struct framebuffer_t * fb)
+{
+	if(fb)
+		return fb->pheight;
+	return 0;
+}
+
+int framebuffer_get_bpp(struct framebuffer_t * fb)
+{
+	if(fb)
+		return fb->bpp;
+	return 0;
+}
+
+struct render_t * framebuffer_create_render(struct framebuffer_t * fb)
+{
+	if(fb && fb->create)
+		return fb->create(fb);
+	return NULL;
+}
+
+void framebuffer_destroy_render(struct framebuffer_t * fb, struct render_t * render)
+{
+	if(fb && fb->destroy)
+		fb->destroy(fb, render);
+}
+
+void framebuffer_present_render(struct framebuffer_t * fb, struct render_t * render)
+{
+	if(fb && fb->present)
+		fb->present(fb, render);
 }
 
 void framebuffer_set_backlight(struct framebuffer_t * fb, int brightness)

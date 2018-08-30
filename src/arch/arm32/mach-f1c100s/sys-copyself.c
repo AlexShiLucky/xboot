@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -35,10 +39,20 @@ extern void sys_spi_flash_init(void);
 extern void sys_spi_flash_exit(void);
 extern void sys_spi_flash_read(int addr, void * buf, int count);
 
+enum {
+	ZFLAG_COMPRESS_LZ4	= (1 << 0),
+	ZFLAG_VERIFY_WITHID	= (1 << 1),
+};
+
 struct zdesc_t {
 	uint8_t magic[4];
-	uint8_t crc[4];
-	uint8_t ssize[4];
+	uint8_t sha256[32];
+	uint8_t ecdsa256[64];
+	uint8_t majoy;
+	uint8_t minior;
+	uint8_t patch;
+	uint8_t flag;
+	uint8_t csize[4];
 	uint8_t dsize[4];
 };
 
@@ -60,7 +74,7 @@ static int get_boot_device(void)
 void sys_copyself(void)
 {
 	struct zdesc_t z;
-	uint32_t ssize, dsize;
+	uint32_t csize, dsize;
 	int d = get_boot_device();
 	void * mem, * tmp;
 	u32_t size;
@@ -97,14 +111,17 @@ void sys_copyself(void)
 		sys_spi_flash_init();
 		sys_spi_flash_read(16384, &z, sizeof(struct zdesc_t));
 		sys_spi_flash_exit();
-		if((z.magic[0] == 'L') && (z.magic[1] == 'Z') && (z.magic[2] == '4') && (z.magic[3] == ' '))
+		if((z.magic[0] == 'Z') && (z.magic[1] == 'B') && (z.magic[2] == 'L') && (z.magic[3] == '!'))
 		{
-			ssize = (z.ssize[0] << 24) | (z.ssize[1] << 16) | (z.ssize[2] << 8) | (z.ssize[3] << 0);
+			csize = (z.csize[0] << 24) | (z.csize[1] << 16) | (z.csize[2] << 8) | (z.csize[3] << 0);
 			dsize = (z.dsize[0] << 24) | (z.dsize[1] << 16) | (z.dsize[2] << 8) | (z.dsize[3] << 0);
 			sys_spi_flash_init();
-			sys_spi_flash_read(16384 + sizeof(struct zdesc_t), tmp, ssize);
+			sys_spi_flash_read(16384 + sizeof(struct zdesc_t), tmp, csize);
 			sys_spi_flash_exit();
-			sys_decompress(tmp, ssize, mem, dsize);
+			if(z.flag & ZFLAG_COMPRESS_LZ4)
+				sys_decompress(tmp, csize, mem, dsize);
+			else
+				memcpy(mem, tmp, dsize);
 		}
 		else
 		{

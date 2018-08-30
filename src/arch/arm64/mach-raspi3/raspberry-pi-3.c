@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -56,30 +60,46 @@ static void mach_cleanup(struct machine_t * mach)
 
 static void mach_logger(struct machine_t * mach, const char * buf, int count)
 {
-	virtual_addr_t virt = phys_to_virt(0x3f201000);
-	static int initial = 0;
-	int i;
+	virtual_addr_t uvirt = phys_to_virt(0x3f201000);
+	virtual_addr_t gvirt = phys_to_virt(0x3f200000);
+	static int init = 0;
+	int bank, field, i;
+	u64_t clk;
+	u32_t val, div, rem, frac;
 
-	if(!initial)
+	if(!init)
 	{
-		u64_t clk = bcm2837_mbox_clock_get_rate(MBOX_CLOCK_ID_UART);
-		u32_t div, rem, frac;
+		bank = 14 / 10;
+		field = (14 - 10 * bank) * 3;
+		val = read32(gvirt + (0x00 + bank * 4));
+		val &= ~(0x7 << field);
+		val |= 0x4 << field;
+		write32(gvirt + (0x00 + bank * 4), val);
 
+		bank = 15 / 10;
+		field = (15 - 10 * bank) * 3;
+		val = read32(gvirt + (0x00 + bank * 4));
+		val &= ~(0x7 << field);
+		val |= 0x4 << field;
+		write32(gvirt + (0x00 + bank * 4), val);
+
+		clk = bcm2837_mbox_clock_get_rate(MBOX_CLOCK_ID_UART);
 		div = clk / (16 * 115200);
 		rem = clk % (16 * 115200);
 		frac = (8 * rem / 115200) >> 1;
 		frac += (8 * rem / 115200) & 1;
+		write32(uvirt + 0x24, div);
+		write32(uvirt + 0x28, frac);
+		write32(uvirt + 0x2c, (0x3 << 5) | (0x0 << 3) | (0x0 << 1) | (0x1 << 4));
+		write32(uvirt + 0x30, (1 << 0) | (1 << 8) | (1 << 9));
 
-		write32(virt + 0x24, div);
-		write32(virt + 0x28, frac);
-		write32(virt + 0x2c, (0x3 << 5) | (0x0 << 3) | (0x0 << 1) | (0x1 << 4));
-		write32(virt + 0x30, (1 << 0) | (1 << 8) | (1 << 9));
+		init = 1;
 	}
 
 	for(i = 0; i < count; i++)
 	{
-		while((read8(virt + 0x18) & (0x1 << 5)));
-		write8(virt + 0x00, buf[i]);
+		while((read8(uvirt + 0x18) & (0x1 << 5)));
+		write8(uvirt + 0x00, buf[i]);
 	}
 }
 

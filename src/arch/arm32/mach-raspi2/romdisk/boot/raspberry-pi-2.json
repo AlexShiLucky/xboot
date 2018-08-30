@@ -96,7 +96,7 @@
 		"default-brightness": 0
 	},
 
-	"ledtrig-heartbeat@0": {
+	"ledtrigger-heartbeat@0": {
 		"led-name": "led-gpio.0",
 		"period-ms": 1260
 	},
@@ -114,7 +114,7 @@
 	"rng-bcm2836@0x3f104000": {
 	},
 	
-	"wdog-bcm2836@0x3f100000": {
+	"wdg-bcm2836@0x3f100000": {
 	},
 
 	"fb-bcm2836@0": {

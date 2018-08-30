@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -27,19 +31,19 @@
 
 static ssize_t watchdog_read_timeout(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct watchdog_t * watchdog = (struct watchdog_t *)kobj->priv;
+	struct watchdog_t * wdg = (struct watchdog_t *)kobj->priv;
 	int timeout;
 
-	timeout = watchdog_get_timeout(watchdog);
+	timeout = watchdog_get_timeout(wdg);
 	return sprintf(buf, "%d", timeout);
 }
 
 static ssize_t watchdog_write_timeout(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct watchdog_t * watchdog = (struct watchdog_t *)kobj->priv;
+	struct watchdog_t * wdg = (struct watchdog_t *)kobj->priv;
 	int timeout = strtol(buf, NULL, 0);
 
-	watchdog_set_timeout(watchdog, timeout);
+	watchdog_set_timeout(wdg, timeout);
 	return size;
 }
 
@@ -50,7 +54,6 @@ struct watchdog_t * search_watchdog(const char * name)
 	dev = search_device(name, DEVICE_TYPE_WATCHDOG);
 	if(!dev)
 		return NULL;
-
 	return (struct watchdog_t *)dev->priv;
 }
 
@@ -61,26 +64,25 @@ struct watchdog_t * search_first_watchdog(void)
 	dev = search_first_device(DEVICE_TYPE_WATCHDOG);
 	if(!dev)
 		return NULL;
-
 	return (struct watchdog_t *)dev->priv;
 }
 
-bool_t register_watchdog(struct device_t ** device,struct watchdog_t * watchdog)
+bool_t register_watchdog(struct device_t ** device,struct watchdog_t * wdg)
 {
 	struct device_t * dev;
 
-	if(!watchdog || !watchdog->name)
+	if(!wdg || !wdg->name)
 		return FALSE;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
 		return FALSE;
 
-	dev->name = strdup(watchdog->name);
+	dev->name = strdup(wdg->name);
 	dev->type = DEVICE_TYPE_WATCHDOG;
-	dev->priv = watchdog;
+	dev->priv = wdg;
 	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "timeout", watchdog_read_timeout, watchdog_write_timeout, watchdog);
+	kobj_add_regular(dev->kobj, "timeout", watchdog_read_timeout, watchdog_write_timeout, wdg);
 
 	if(!register_device(dev))
 	{
@@ -95,14 +97,14 @@ bool_t register_watchdog(struct device_t ** device,struct watchdog_t * watchdog)
 	return TRUE;
 }
 
-bool_t unregister_watchdog(struct watchdog_t * watchdog)
+bool_t unregister_watchdog(struct watchdog_t * wdg)
 {
 	struct device_t * dev;
 
-	if(!watchdog || !watchdog->name)
+	if(!wdg || !wdg->name)
 		return FALSE;
 
-	dev = search_device(watchdog->name, DEVICE_TYPE_WATCHDOG);
+	dev = search_device(wdg->name, DEVICE_TYPE_WATCHDOG);
 	if(!dev)
 		return FALSE;
 
@@ -115,19 +117,19 @@ bool_t unregister_watchdog(struct watchdog_t * watchdog)
 	return TRUE;
 }
 
-void watchdog_set_timeout(struct watchdog_t * watchdog, int timeout)
+void watchdog_set_timeout(struct watchdog_t * wdg, int timeout)
 {
-	if(watchdog && watchdog->set)
+	if(wdg && wdg->set)
 	{
 		if(timeout < 0)
 			timeout = 0;
-		watchdog->set(watchdog, timeout);
+		wdg->set(wdg, timeout);
 	}
 }
 
-int watchdog_get_timeout(struct watchdog_t * watchdog)
+int watchdog_get_timeout(struct watchdog_t * wdg)
 {
-	if(watchdog && watchdog->get)
-		return watchdog->get(watchdog);
+	if(wdg && wdg->get)
+		return wdg->get(wdg);
 	return 0;
 }

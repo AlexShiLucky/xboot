@@ -6,270 +6,685 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
 #include <xboot.h>
-#include <block/spi-flash.h>
+#include <spi/spi.h>
+#include <block/block.h>
 
-#define	OPCODE_RDSR		0x05	/* Read status register */
-#define	OPCODE_WRSR		0x01	/* Write status register 1 byte */
-#define	OPCODE_WREN		0x06	/* Write enable */
-#define	OPCODE_WRDI		0x04	/* Write disable */
-#define	OPCODE_NREAD	0x03	/* Normal read data bytes (low frequency) */
-#define	OPCODE_FREAD	0x0b	/* Fast read data bytes (high frequency) */
-#define OPCODE_SE		0xd8	/* Sector erase (usually 64KiB) */
-#define	OPCODE_BE_4K	0x20	/* Erase 4KiB block */
-#define	OPCODE_PP		0x02	/* Page program (up to 256 bytes) */
-#define OPCODE_RDID		0x9f	/* Read JEDEC ID */
+enum {
+	OPCODE_SFDP			= 0x5a,
+	OPCODE_RDID			= 0x9f,
+	OPCODE_WRSR			= 0x01,
+	OPCODE_RDSR			= 0x05,
+	OPCODE_WREN			= 0x06,
+	OPCODE_READ			= 0x03,
+	OPCODE_PROG			= 0x02,
+	OPCODE_E4K			= 0x20,
+	OPCODE_E32K			= 0x52,
+	OPCODE_E64K			= 0xd8,
+	OPCODE_ENTER_4B		= 0xb7,
+	OPCODE_EXIT_4B		= 0xe9,
+};
+#define SFDP_MAX_NPH	(6)
 
-#define	SECTOR_4K		(1<<0)	/* OPCODE_BE_4K works uniformly */
-#define	NO_FASTREAD		(1<<1)	/* Can't do fastread */
+struct sfdp_header_t {
+	uint8_t	sign[4];
+	uint8_t	minor;
+	uint8_t	major;
+	uint8_t	nph;
+	uint8_t	unused;
+};
 
-#define FLASH_INFO(n, jid, eid, sz, cnt, f)				\
-	{													\
-		.name = n,										\
-		.id = {											\
-			((jid) >> 16) & 0xff,						\
-			((jid) >> 8) & 0xff,						\
-			(jid) & 0xff,								\
-			((eid) >> 8) & 0xff,						\
-			(eid) & 0xff,								\
-			},											\
-		.id_len = (!(jid) ? 0 : (3 + ((eid) ? 2 : 0))),	\
-		.sector_size = (sz),							\
-		.sector_count = (cnt),							\
-		.flags = (f),									\
-	}
+struct sfdp_parameter_header_t {
+	uint8_t	idlsb;
+	uint8_t	minor;
+	uint8_t	major;
+	uint8_t	length;
+	uint8_t	ptp[3];
+	uint8_t	idmsb;
+};
 
-struct spi_flash_id_t {
+struct sfdp_basic_table_t {
+	uint8_t	minor;
+	uint8_t	major;
+	uint8_t	table[16 * 4];
+};
+
+struct sfdp_t {
+	struct sfdp_header_t h;
+	struct sfdp_parameter_header_t ph[SFDP_MAX_NPH];
+	struct sfdp_basic_table_t bt;
+};
+
+struct spi_flash_info_t {
 	char * name;
-	unsigned char id[6];
-	int id_len;
-	int sector_size;
-	int sector_count;
-	int flags;
+	uint32_t id;
+	uint32_t capacity;
+	uint32_t blksz;
+	uint32_t read_granularity;
+	uint32_t write_granularity;
+	uint8_t address_length;
+	uint8_t opcode_read;
+	uint8_t opcode_write;
+	uint8_t opcode_write_enable;
+	uint8_t opcode_erase_4k;
+	uint8_t opcode_erase_32k;
+	uint8_t opcode_erase_64k;
+	uint8_t opcode_erase_256k;
 };
 
 struct spi_flash_pdata_t {
 	struct spi_device_t * dev;
-	struct spi_flash_id_t * id;
+	struct spi_flash_info_t info;
 };
 
-static struct spi_flash_id_t spi_flash_ids[] = {
-	/* Atmel */
-	FLASH_INFO("at25fs010",   0x1f6601, 0, 32 * 1024,   4, SECTOR_4K),
-	FLASH_INFO("at25fs040",   0x1f6604, 0, 64 * 1024,   8, SECTOR_4K),
-	FLASH_INFO("at25df041a",  0x1f4401, 0, 64 * 1024,   8, SECTOR_4K),
-	FLASH_INFO("at25df321a",  0x1f4701, 0, 64 * 1024,  64, SECTOR_4K),
-	FLASH_INFO("at25df641",   0x1f4800, 0, 64 * 1024, 128, SECTOR_4K),
-	FLASH_INFO("at26f004",    0x1f0400, 0, 64 * 1024,   8, SECTOR_4K),
-	FLASH_INFO("at26df081a",  0x1f4501, 0, 64 * 1024,  16, SECTOR_4K),
-	FLASH_INFO("at26df161a",  0x1f4601, 0, 64 * 1024,  32, SECTOR_4K),
-	FLASH_INFO("at26df321",   0x1f4700, 0, 64 * 1024,  64, SECTOR_4K),
-	FLASH_INFO("at45db081d",  0x1f2500, 0, 64 * 1024,  16, SECTOR_4K),
-
-	/* Winbond */
-	FLASH_INFO("w25x05",  0xef3010, 0, 64 * 1024,   1, SECTOR_4K),
-	FLASH_INFO("w25x10",  0xef3011, 0, 64 * 1024,   2, SECTOR_4K),
-	FLASH_INFO("w25x20",  0xef3012, 0, 64 * 1024,   4, SECTOR_4K),
-	FLASH_INFO("w25x40",  0xef3013, 0, 64 * 1024,   8, SECTOR_4K),
-	FLASH_INFO("w25x80",  0xef3014, 0, 64 * 1024,  16, SECTOR_4K),
-	FLASH_INFO("w25x16",  0xef3015, 0, 64 * 1024,  32, SECTOR_4K),
-	FLASH_INFO("w25q16",  0xef4015, 0, 64 * 1024,  32, SECTOR_4K),
-	FLASH_INFO("w25x32",  0xef3016, 0, 64 * 1024,  64, SECTOR_4K),
-	FLASH_INFO("w25q32",  0xef4016, 0, 64 * 1024,  64, SECTOR_4K),
-	FLASH_INFO("w25x64",  0xef3017, 0, 64 * 1024, 128, SECTOR_4K),
-	FLASH_INFO("w25q64",  0xef4017, 0, 64 * 1024, 128, SECTOR_4K),
-	FLASH_INFO("w25q128", 0xef4018, 0, 64 * 1024, 256, SECTOR_4K),
-	FLASH_INFO("w25q256", 0xef4019, 0, 64 * 1024, 512, SECTOR_4K),
-};
-
-struct spi_flash_id_t * spi_flash_read_id(struct spi_device_t * dev)
+static bool_t spi_flash_read_sfdp(struct spi_device_t * dev, struct sfdp_t * sfdp)
 {
-	struct spi_flash_id_t * id;
-	u8_t tx[1];
-	u8_t rx[6];
-	int res, i;
+	uint32_t addr;
+	uint8_t tx[5];
+	int i, r;
 
+	memset(sfdp, 0, sizeof(struct sfdp_t));
+	tx[0] = OPCODE_SFDP;
+	tx[1] = 0x0;
+	tx[2] = 0x0;
+	tx[3] = 0x0;
+	tx[4] = 0x0;
 	spi_device_select(dev);
-	tx[0] = OPCODE_RDID;
-	res = spi_device_write_then_read(dev, tx, 1, rx, 6);
+	r = spi_device_write_then_read(dev, tx, 5, &sfdp->h, sizeof(struct sfdp_header_t));
 	spi_device_deselect(dev);
+	if(r < 0)
+		return FALSE;
+	if((sfdp->h.sign[0] != 'S') || (sfdp->h.sign[1] != 'F') || (sfdp->h.sign[2] != 'D') || (sfdp->h.sign[3] != 'P'))
+		return FALSE;
 
-	if(res < 0)
-		return NULL;
-
-	for(i = 0; i < ARRAY_SIZE(spi_flash_ids); i++)
+	sfdp->h.nph = sfdp->h.nph > SFDP_MAX_NPH ? sfdp->h.nph + 1 : SFDP_MAX_NPH;
+	for(i = 0; i < sfdp->h.nph; i++)
 	{
-		id = &spi_flash_ids[i];
-		if((id->id_len > 0) && (memcmp(id->id, rx, id->id_len) == 0))
-			return id;
+		addr = i * sizeof(struct sfdp_parameter_header_t) + sizeof(struct sfdp_header_t);
+		tx[0] = OPCODE_SFDP;
+		tx[1] = (addr >> 16) & 0xff;
+		tx[2] = (addr >>  8) & 0xff;
+		tx[3] = (addr >>  0) & 0xff;
+		tx[4] = 0x0;
+		spi_device_select(dev);
+		r = spi_device_write_then_read(dev, tx, 5, &sfdp->ph[i], sizeof(struct sfdp_parameter_header_t));
+		spi_device_deselect(dev);
+		if(r < 0)
+			return FALSE;
 	}
 
-	return NULL;
+	for(i = 0; i < sfdp->h.nph; i++)
+	{
+		if((sfdp->ph[i].idlsb == 0x00) && (sfdp->ph[i].idmsb == 0xff))
+		{
+			addr = (sfdp->ph[i].ptp[0] << 0) | (sfdp->ph[i].ptp[1] << 8) | (sfdp->ph[i].ptp[2] << 16);
+			tx[0] = OPCODE_SFDP;
+			tx[1] = (addr >> 16) & 0xff;
+			tx[2] = (addr >>  8) & 0xff;
+			tx[3] = (addr >>  0) & 0xff;
+			tx[4] = 0x0;
+			spi_device_select(dev);
+			r = spi_device_write_then_read(dev, tx, 5, &sfdp->bt.table[0], sfdp->ph[i].length * 4);
+			spi_device_deselect(dev);
+			if(r >= 0)
+			{
+				sfdp->bt.major = sfdp->ph[i].major;
+				sfdp->bt.minor = sfdp->ph[i].minor;
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
 }
 
-static u8_t spi_flash_read_status_register(struct spi_device_t * dev)
+static bool_t spi_flash_read_id(struct spi_device_t * dev, uint32_t * id)
 {
-	u8_t tx[1];
-	u8_t rx[1];
+	uint8_t tx[1];
+	uint8_t rx[3];
+	int r;
 
-	tx[0] = OPCODE_RDSR;
-	spi_device_write_then_read(dev, tx, 1, rx, 1);
-	return rx[0];
+	tx[0] = OPCODE_RDID;
+	spi_device_select(dev);
+	r = spi_device_write_then_read(dev, tx, 1, rx, 3);
+	spi_device_deselect(dev);
+	if(r < 0)
+		return FALSE;
+	*id = (rx[0] << 16) | (rx[1] << 8) | (rx[2] << 0);
+	return TRUE;
 }
 
-static void spi_flash_write_status_register(struct spi_device_t * dev, u8_t sr)
+static const struct spi_flash_info_t spi_flash_infos[] = {
+	{ "w25x40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, OPCODE_READ, OPCODE_PROG, OPCODE_WREN, OPCODE_E4K, 0, OPCODE_E64K, 0 },
+};
+
+static bool_t spi_flash_detect(struct spi_device_t * dev, struct spi_flash_info_t * info)
 {
-	u8_t tx[2];
+	const struct spi_flash_info_t * t;
+	struct sfdp_t sfdp;
+	uint32_t v, id;
+	int i;
+
+	if(spi_flash_read_sfdp(dev, &sfdp))
+	{
+		info->name = "";
+		info->id = 0;
+		/* Basic flash parameter table 2th dword */
+		v = (sfdp.bt.table[7] << 24) | (sfdp.bt.table[6] << 16) | (sfdp.bt.table[5] << 8) | (sfdp.bt.table[4] << 0);
+		if(v & (1 << 31))
+		{
+			v &= 0x7fffffff;
+			info->capacity = 1 << (v - 3);
+		}
+		else
+		{
+			info->capacity = (v + 1) >> 3;
+		}
+		/* Basic flash parameter table 1th dword */
+		v = (sfdp.bt.table[3] << 24) | (sfdp.bt.table[2] << 16) | (sfdp.bt.table[1] << 8) | (sfdp.bt.table[0] << 0);
+		if((info->capacity <= (16 * 1024 * 1024)) && (((v >> 17) & 0x3) != 0x2))
+			info->address_length = 3;
+		else
+			info->address_length = 4;
+		if(((v >> 0) & 0x3) == 0x1)
+			info->opcode_erase_4k = (v >> 8) & 0xff;
+		else
+			info->opcode_erase_4k = 0x00;
+		info->opcode_erase_32k = 0x00;
+		info->opcode_erase_64k = 0x00;
+		info->opcode_erase_256k = 0x00;
+		/* Basic flash parameter table 8th dword */
+		v = (sfdp.bt.table[31] << 24) | (sfdp.bt.table[30] << 16) | (sfdp.bt.table[29] << 8) | (sfdp.bt.table[28] << 0);
+		switch((v >> 0) & 0xff)
+		{
+		case 12:
+			info->opcode_erase_4k = (v >> 8) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 8) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 8) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 8) & 0xff;
+			break;
+		default:
+			break;
+		}
+		switch((v >> 16) & 0xff)
+		{
+		case 12:
+			info->opcode_erase_4k = (v >> 24) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 24) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 24) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 24) & 0xff;
+			break;
+		default:
+			break;
+		}
+		/* Basic flash parameter table 9th dword */
+		v = (sfdp.bt.table[35] << 24) | (sfdp.bt.table[34] << 16) | (sfdp.bt.table[33] << 8) | (sfdp.bt.table[32] << 0);
+		switch((v >> 0) & 0xff)
+		{
+		case 12:
+			info->opcode_erase_4k = (v >> 8) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 8) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 8) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 8) & 0xff;
+			break;
+		default:
+			break;
+		}
+		switch((v >> 16) & 0xff)
+		{
+		case 12:
+			info->opcode_erase_4k = (v >> 24) & 0xff;
+			break;
+		case 15:
+			info->opcode_erase_32k = (v >> 24) & 0xff;
+			break;
+		case 16:
+			info->opcode_erase_64k = (v >> 24) & 0xff;
+			break;
+		case 18:
+			info->opcode_erase_256k = (v >> 24) & 0xff;
+			break;
+		default:
+			break;
+		}
+		if(info->opcode_erase_4k != 0x00)
+			info->blksz = 4096;
+		else if(info->opcode_erase_32k != 0x00)
+			info->blksz = 32768;
+		else if(info->opcode_erase_64k != 0x00)
+			info->blksz = 65536;
+		else if(info->opcode_erase_256k != 0x00)
+			info->blksz = 262144;
+		info->opcode_write_enable = OPCODE_WREN;
+		info->read_granularity = 1;
+		info->opcode_read = OPCODE_READ;
+		if((sfdp.bt.major == 1) && (sfdp.bt.minor < 5))
+		{
+			/* Basic flash parameter table 1th dword */
+			v = (sfdp.bt.table[3] << 24) | (sfdp.bt.table[2] << 16) | (sfdp.bt.table[1] << 8) | (sfdp.bt.table[0] << 0);
+			if((v >> 2) & 0x1)
+				info->write_granularity = 64;
+			else
+				info->write_granularity = 1;
+		}
+		else if((sfdp.bt.major == 1) && (sfdp.bt.minor >= 5))
+		{
+			/* Basic flash parameter table 11th dword */
+			v = (sfdp.bt.table[43] << 24) | (sfdp.bt.table[42] << 16) | (sfdp.bt.table[41] << 8) | (sfdp.bt.table[40] << 0);
+			info->write_granularity = 1 << ((v >> 4) & 0xf);
+		}
+		info->opcode_write = OPCODE_PROG;
+		return TRUE;
+	}
+	else if(spi_flash_read_id(dev, &id))
+	{
+		for(i = 0; i < ARRAY_SIZE(spi_flash_infos); i++)
+		{
+			t = &spi_flash_infos[i];
+			if(id == t->id)
+			{
+				memcpy(info, t, sizeof(struct spi_flash_info_t));
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+static inline uint8_t spi_flash_read_status_register(struct spi_flash_pdata_t * pdat)
+{
+	uint8_t tx = OPCODE_RDSR;
+	uint8_t rx = 0;
+
+	spi_device_select(pdat->dev);
+	spi_device_write_then_read(pdat->dev, &tx, 1, &rx, 1);
+	spi_device_deselect(pdat->dev);
+	return rx;
+}
+
+static inline void spi_flash_write_status_register(struct spi_flash_pdata_t * pdat, uint8_t sr)
+{
+	uint8_t tx[2];
 
 	tx[0] = OPCODE_WRSR;
 	tx[1] = sr;
-	spi_device_write_then_read(dev, tx, 2, 0, 0);
+	spi_device_select(pdat->dev);
+	spi_device_write_then_read(pdat->dev, tx, 2, 0, 0);
+	spi_device_deselect(pdat->dev);
 }
 
-static void spi_flash_write_enable(struct spi_device_t * dev)
+static inline void spi_flash_write_enable(struct spi_flash_pdata_t * pdat)
 {
-	u8_t tx[1];
-
-	tx[0] = OPCODE_WREN;
-	spi_device_write_then_read(dev, tx, 1, 0, 0);
+	spi_device_select(pdat->dev);
+	spi_device_write_then_read(pdat->dev, &pdat->info.opcode_write_enable, 1, 0, 0);
+	spi_device_deselect(pdat->dev);
 }
 
-static void spi_flash_write_disable(struct spi_device_t * dev)
+static inline void spi_flash_address_mode_4byte(struct spi_flash_pdata_t * pdat, int enable)
 {
-	u8_t tx[1];
+	uint8_t tx;
 
-	tx[0] = OPCODE_WRDI;
-	spi_device_write_then_read(dev, tx, 1, 0, 0);
+	if(enable)
+		tx = OPCODE_ENTER_4B;
+	else
+		tx = OPCODE_EXIT_4B;
+	spi_device_select(pdat->dev);
+	spi_device_write_then_read(pdat->dev, &tx, 1, 0, 0);
+	spi_device_deselect(pdat->dev);
 }
 
-static void spi_flash_wait_for_busy(struct spi_device_t * dev)
+static inline void spi_flash_chip_reset(struct spi_flash_pdata_t * pdat)
 {
-	while((spi_flash_read_status_register(dev) & 0x01) == 0x01);
+	uint8_t tx[2];
+
+	tx[0] = 0x66;
+	tx[1] = 0x99;
+	spi_device_select(pdat->dev);
+	spi_device_write_then_read(pdat->dev, tx, 2, 0, 0);
+	spi_device_deselect(pdat->dev);
 }
 
-static void spi_flash_normal_read_bytes(struct spi_device_t * dev, u64_t addr, u8_t * buf, u32_t count)
+static inline void spi_flash_wait_for_busy(struct spi_flash_pdata_t * pdat)
 {
-	u8_t tx[4];
-
-	tx[0] = OPCODE_NREAD;
-	tx[1] = (u8_t)(addr >> 16);
-	tx[2] = (u8_t)(addr >> 8);
-	tx[3] = (u8_t)(addr >> 0);
-	spi_device_write_then_read(dev, tx, 4, buf, count);
+	while((spi_flash_read_status_register(pdat) & 0x1) == 0x1);
 }
 
-static void spi_flash_fast_read_bytes(struct spi_device_t * dev, u64_t addr, u8_t * buf, u32_t count)
+static void spi_flash_read_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u8_t * buf, u32_t count)
 {
 	u8_t tx[5];
 
-	tx[0] = OPCODE_FREAD;
-	tx[1] = (u8_t)(addr >> 16);
-	tx[2] = (u8_t)(addr >> 8);
-	tx[3] = (u8_t)(addr >> 0);
-	tx[4] = 0;
-	spi_device_write_then_read(dev, tx, 5, buf, count);
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_read;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, buf, count);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_read;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, buf, count);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
 }
 
-static void spi_flash_sector_erase(struct spi_device_t * dev, u64_t addr)
+static void spi_flash_write_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u8_t * buf, u32_t count)
 {
-	u8_t tx[4];
+	u8_t tx[5];
 
-	spi_flash_write_enable(dev);
-	spi_flash_wait_for_busy(dev);
-	tx[0] = OPCODE_SE;
-	tx[1] = (u8_t)(addr >> 16);
-	tx[2] = (u8_t)(addr >> 8);
-	tx[3] = (u8_t)(addr >> 0);
-	spi_device_write_then_read(dev, tx, 4, 0, 0);
-	spi_flash_wait_for_busy(dev);
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_write;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, 0, 0);
+		spi_device_write_then_read(pdat->dev, buf, count, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_write;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, 0, 0);
+		spi_device_write_then_read(pdat->dev, buf, count, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
 }
 
-static void spi_flash_sector_erase_4k(struct spi_device_t * dev, u64_t addr)
+static void spi_flash_sector_erase_4k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
-	u8_t tx[4];
+	u8_t tx[5];
 
-	spi_flash_write_enable(dev);
-	spi_flash_wait_for_busy(dev);
-	tx[0] = OPCODE_BE_4K;
-	tx[1] = (u8_t)(addr >> 16);
-	tx[2] = (u8_t)(addr >> 8);
-	tx[3] = (u8_t)(addr >> 0);
-	spi_device_write_then_read(dev, tx, 4, 0, 0);
-	spi_flash_wait_for_busy(dev);
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_erase_4k;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_erase_4k;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
 }
 
-static void spi_flash_write_one_page(struct spi_device_t * dev, u64_t addr, u8_t * buf)
+static void spi_flash_sector_erase_32k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
-	u8_t tx[4];
+	u8_t tx[5];
 
-	spi_flash_write_enable(dev);
-	tx[0] = OPCODE_PP;
-	tx[1] = (u8_t)(addr >> 16);
-	tx[2] = (u8_t)(addr >> 8);
-	tx[3] = (u8_t)(addr >> 0);
-	spi_device_write_then_read(dev, tx, 4, 0, 0);
-	spi_device_write_then_read(dev, buf, 256, 0, 0);
-	spi_flash_wait_for_busy(dev);
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_erase_32k;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_erase_32k;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
+}
+
+static void spi_flash_sector_erase_64k(struct spi_flash_pdata_t * pdat, u32_t addr)
+{
+	u8_t tx[5];
+
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_erase_64k;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_erase_64k;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
+}
+
+static void spi_flash_sector_erase_256k(struct spi_flash_pdata_t * pdat, u32_t addr)
+{
+	u8_t tx[5];
+
+	switch(pdat->info.address_length)
+	{
+	case 3:
+		tx[0] = pdat->info.opcode_erase_256k;
+		tx[1] = (u8_t)(addr >> 16);
+		tx[2] = (u8_t)(addr >> 8);
+		tx[3] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 4, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	case 4:
+		tx[0] = pdat->info.opcode_erase_256k;
+		tx[1] = (u8_t)(addr >> 24);
+		tx[2] = (u8_t)(addr >> 16);
+		tx[3] = (u8_t)(addr >> 8);
+		tx[4] = (u8_t)(addr >> 0);
+		spi_device_select(pdat->dev);
+		spi_device_write_then_read(pdat->dev, tx, 5, 0, 0);
+		spi_device_deselect(pdat->dev);
+		break;
+
+	default:
+		break;
+	}
+}
+
+static void spi_flash_init(struct spi_flash_pdata_t * pdat)
+{
+	spi_flash_chip_reset(pdat);
+	spi_flash_wait_for_busy(pdat);
+	spi_flash_write_enable(pdat);
+	spi_flash_write_status_register(pdat, 0);
+	spi_flash_wait_for_busy(pdat);
+	if(pdat->info.address_length == 4)
+	{
+		spi_flash_write_enable(pdat);
+		spi_flash_address_mode_4byte(pdat, 1);
+		spi_flash_wait_for_busy(pdat);
+	}
 }
 
 static u64_t spi_flash_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct spi_flash_pdata_t * pdat = (struct spi_flash_pdata_t *)blk->priv;
 	u64_t addr = blkno * blk->blksz;
-	u64_t count = blkcnt * blk->blksz;
+	s64_t cnt = blkcnt * blk->blksz;
+	u8_t * pbuf = buf;
+	u32_t len;
 
-	spi_device_select(pdat->dev);
-	if(!(pdat->id->flags & NO_FASTREAD))
-		spi_flash_fast_read_bytes(pdat->dev, addr, buf, count);
+	if(pdat->info.read_granularity == 1)
+		len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
 	else
-		spi_flash_normal_read_bytes(pdat->dev, addr, buf, count);
-	spi_device_deselect(pdat->dev);
+		len = pdat->info.read_granularity;
+	while(cnt > 0)
+	{
+		spi_flash_wait_for_busy(pdat);
+		spi_flash_read_bytes(pdat, addr, pbuf, len);
+		addr += len;
+		pbuf += len;
+		cnt -= len;
+	}
+
 	return blkcnt;
 }
 
 static u64_t spi_flash_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct spi_flash_pdata_t * pdat = (struct spi_flash_pdata_t *)blk->priv;
-	u64_t addr = blkno * blk->blksz;
-	s64_t count = blkcnt * blk->blksz;
-	u8_t * pbuf = buf;
-	u64_t i;
+	u64_t addr, baddr = blkno * blk->blksz;
+	s64_t cnt, count = blkcnt * blk->blksz;
+	u32_t len;
+	u8_t * pbuf;
 
-	spi_device_select(pdat->dev);
-	if(pdat->id->flags & SECTOR_4K)
+	addr = baddr;
+	cnt = count;
+	spi_flash_wait_for_busy(pdat);
+	while(cnt > 0)
 	{
-		for(i = 0; i < blkcnt; i++)
-			spi_flash_sector_erase_4k(pdat->dev, addr + i * blk->blksz);
+		if((pdat->info.opcode_erase_256k != 0) && ((addr & 0x3ffff) == 0) && (cnt >= 262144))
+		{
+			len = 262144;
+			spi_flash_write_enable(pdat);
+			spi_flash_sector_erase_256k(pdat, addr);
+			spi_flash_wait_for_busy(pdat);
+		}
+		else if((pdat->info.opcode_erase_64k != 0) && ((addr & 0xffff) == 0) && (cnt >= 65536))
+		{
+			len = 65536;
+			spi_flash_write_enable(pdat);
+			spi_flash_sector_erase_64k(pdat, addr);
+			spi_flash_wait_for_busy(pdat);
+		}
+		else if((pdat->info.opcode_erase_32k != 0) && ((addr & 0x7fff) == 0) && (cnt >= 32768))
+		{
+			len = 32768;
+			spi_flash_write_enable(pdat);
+			spi_flash_sector_erase_32k(pdat, addr);
+			spi_flash_wait_for_busy(pdat);
+		}
+		else if((pdat->info.opcode_erase_4k != 0) && ((addr & 0xfff) == 0) && (cnt >= 4096))
+		{
+			len = 4096;
+			spi_flash_write_enable(pdat);
+			spi_flash_sector_erase_4k(pdat, addr);
+			spi_flash_wait_for_busy(pdat);
+		}
+		else
+		{
+			return 0;
+		}
+		addr += len;
+		cnt -= len;
 	}
+
+	addr = baddr;
+	cnt = count;
+	pbuf = buf;
+	if(pdat->info.write_granularity == 1)
+		len = (cnt < 0x7fffffff) ? cnt : 0x7fffffff;
 	else
+		len = pdat->info.write_granularity;
+	spi_flash_wait_for_busy(pdat);
+	while(cnt > 0)
 	{
-		for(i = 0; i < blkcnt; i++)
-			spi_flash_sector_erase(pdat->dev, addr + i * blk->blksz);
+		spi_flash_write_enable(pdat);
+		spi_flash_write_bytes(pdat, addr, pbuf, len);
+		spi_flash_wait_for_busy(pdat);
+		addr += len;
+		pbuf += len;
+		cnt -= len;
 	}
-	while(count > 0)
-	{
-		spi_flash_write_one_page(pdat->dev, addr, pbuf);
-		addr += 256;
-		pbuf += 256;
-		count -= 256;
-	}
-	spi_device_deselect(pdat->dev);
 
 	return blkcnt;
 }
@@ -284,14 +699,13 @@ static struct device_t * spi_flash_probe(struct driver_t * drv, struct dtnode_t 
 	struct block_t * blk;
 	struct device_t * dev;
 	struct spi_device_t * spidev;
-	struct spi_flash_id_t * id;
+	struct spi_flash_info_t info;
 
 	spidev = spi_device_alloc(dt_read_string(n, "spi-bus", NULL), dt_read_int(n, "chip-select", 0), dt_read_int(n, "mode", 0), 8, dt_read_int(n, "speed", 0));
 	if(!spidev)
 		return NULL;
 
-	id = spi_flash_read_id(spidev);
-	if(!id)
+	if(!spi_flash_detect(spidev, &info))
 	{
 		spi_device_free(spidev);
 		return NULL;
@@ -313,29 +727,16 @@ static struct device_t * spi_flash_probe(struct driver_t * drv, struct dtnode_t 
 	}
 
 	pdat->dev = spidev;
-	pdat->id = id;
+	memcpy(&pdat->info, &info, sizeof(struct spi_flash_info_t));
 
 	blk->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	if(id->flags & SECTOR_4K)
-	{
-		blk->blksz = 4096;
-		blk->blkcnt = id->sector_size * id->sector_count / 4096;
-	}
-	else
-	{
-		blk->blksz = id->sector_size;
-		blk->blkcnt = id->sector_count;
-	}
+	blk->blksz = pdat->info.blksz;
+	blk->blkcnt = pdat->info.capacity / pdat->info.blksz;
 	blk->read = spi_flash_read;
 	blk->write = spi_flash_write;
 	blk->sync = spi_flash_sync;
 	blk->priv = pdat;
-
-	spi_device_select(pdat->dev);
-	spi_flash_write_disable(pdat->dev);
-	spi_flash_write_enable(pdat->dev);
-	spi_flash_write_status_register(pdat->dev, 0);
-	spi_device_deselect(pdat->dev);
+	spi_flash_init(pdat);
 
 	if(!register_block(&dev, blk))
 	{

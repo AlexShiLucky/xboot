@@ -314,7 +314,7 @@
 		"speed": 50000000
 	},
 
-	"wdog-f1c100s@0x01c20ca0": {
+	"wdg-f1c100s@0x01c20ca0": {
 		"clock-name": "link-wdt"
 	},
 
@@ -336,7 +336,7 @@
 		"default-brightness": 0
 	},
 
-	"ledtrig-heartbeat@0": {
+	"ledtrigger-heartbeat@0": {
 		"led-name": "led-gpio.0",
 		"period-ms": 1260
 	},

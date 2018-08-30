@@ -1,5 +1,5 @@
 #
-# Makefile for module.
+# Makefile for libsandbox
 #
 
 AS			:= $(CROSS_COMPILE)gcc -x assembler-with-cpp
@@ -14,51 +14,37 @@ RM			:= rm -fr
 ASFLAGS		+= -g -ggdb -Wall -O3
 CFLAGS		+= -g -ggdb -Wall -O3
 CXXFLAGS	+= -g -ggdb -Wall -O3
-MCFLAGS		+=
-INCDIRS		+= -I .
-SRCDIRS		+= .
+INCDIRS		:= -I .
+SRCDIRS		:= .
 
 SFILES		:= $(foreach dir, $(SRCDIRS), $(wildcard $(dir)/*.S))
 CFILES		:= $(foreach dir, $(SRCDIRS), $(wildcard $(dir)/*.c))
 CPPFILES	:= $(foreach dir, $(SRCDIRS), $(wildcard $(dir)/*.cpp))
-
-SDEPS		:= $(patsubst %, %, $(SFILES:.S=.o.d))
-CDEPS		:= $(patsubst %, %, $(CFILES:.c=.o.d))
-CPPDEPS		:= $(patsubst %, %, $(CPPFILES:.cpp=.o.d))
-DEPS		:= $(SDEPS) $(CDEPS) $(CPPDEPS)
-
 SOBJS		:= $(patsubst %, %, $(SFILES:.S=.o))
 COBJS		:= $(patsubst %, %, $(CFILES:.c=.o))
 CPPOBJS		:= $(patsubst %, %, $(CPPFILES:.cpp=.o)) 
 OBJS		:= $(SOBJS) $(COBJS) $(CPPOBJS)
-
-OBJDIRS		:= $(patsubst %, %, $(SRCDIRS))
 NAME		:= libsandbox
-VPATH		:= $(OBJDIRS)
 
-.PHONY:		all clean
+.PHONY: all clean
 
 all : $(NAME)
 
 $(NAME) : $(OBJS)
 	@echo [AR] Archiving $@.a
 	@$(AR) -rcs $@.a $(OBJS)
-	
+
 $(SOBJS) : %.o : %.S
 	@echo [AS] $<
-	@$(AS) $(ASFLAGS) $(MCFLAGS) $(INCDIRS) -c $< -o $@
-	@$(AS) $(ASFLAGS) $(MCFLAGS) -MD -MP -MF $@.d $(INCDIRS) -c $< -o $@
+	@$(AS) $(ASFLAGS) $(INCDIRS) -c $< -o $@
 
 $(COBJS) : %.o : %.c
 	@echo [CC] $<
-	@$(CC) $(CFLAGS) $(MCFLAGS) $(INCDIRS) -c $< -o $@
-	@$(CC) $(CFLAGS) $(MCFLAGS) -MD -MP -MF $@.d $(INCDIRS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCDIRS) -c $< -o $@
 
 $(CPPOBJS) : %.o : %.cpp
 	@echo [CXX] $<
-	@$(CXX) $(CXXFLAGS) $(MCFLAGS) $(INCDIRS) -c $< -o $@
-	@$(CXX) $(CXXFLAGS) $(MCFLAGS) -MD -MP -MF $@.d $(INCDIRS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) $(INCDIRS) -c $< -o $@
 
 clean:
-	@$(RM) $(DEPS) $(OBJS) $(NAME).a *~
-	@echo Clean complete.
+	@$(RM) $(OBJS) $(NAME).a

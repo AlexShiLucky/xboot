@@ -795,7 +795,7 @@
 		"default-brightness": 0
 	},
 
-	"ledtrig-heartbeat@0": {
+	"ledtrigger-heartbeat@0": {
 		"led-name": "led-gpio.0",
 		"period-ms": 1260
 	},
@@ -820,7 +820,7 @@
 		"slave-address": 50
 	},
 
-	"wdog-rk3288@0xff800000": {
+	"wdg-rk3288@0xff800000": {
 		"clock-name": "pclk-pd-alive"
 	},
 

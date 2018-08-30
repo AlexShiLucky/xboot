@@ -21,20 +21,37 @@ SECTIONS
 	{
 		PROVIDE(__image_start = .);
 		PROVIDE(__text_start = .);
-		.obj/arch/arm32/mach-h3/start.o (.text)
-		.obj/arch/arm32/lib/memcpy.o (.text)
-		.obj/arch/arm32/lib/memset.o (.text)
-		.obj/arch/arm32/mach-h3/sys-uart.o (.text)
-		.obj/arch/arm32/mach-h3/sys-clock.o (.text)
-		.obj/arch/arm32/mach-h3/sys-dram.o (.text)
-		.obj/arch/arm32/mach-h3/sys-spi-flash.o (.text)
-		.obj/arch/arm32/mach-h3/sys-copyself.o (.text)
+		PROVIDE(__spl_start = .);
+		.obj/arch/arm32/mach-h3/start.o (.text*)
+		.obj/arch/arm32/lib/memcpy.o (.text*)
+		.obj/arch/arm32/lib/memset.o (.text*)
+		.obj/arch/arm32/mach-h3/sys-uart.o (.text*)
+		.obj/arch/arm32/mach-h3/sys-clock.o (.text*)
+		.obj/arch/arm32/mach-h3/sys-dram.o (.text*)
+		.obj/arch/arm32/mach-h3/sys-spi-flash.o (.text*)
+		.obj/arch/arm32/mach-h3/sys-copyself.o (.text*)
+		PROVIDE(__spl_end = .);
 		*(.text*)
 		*(.init.text)
 		*(.exit.text)
 		*(.glue*)
 		*(.note.gnu.build-id)
 		PROVIDE(__text_end = .);
+	} > ram
+	PROVIDE(__spl_size = __spl_end - __spl_start);
+
+	.ARM.exidx ALIGN(8) :
+	{
+		PROVIDE (__exidx_start = .);
+		*(.ARM.exidx*)
+		PROVIDE (__exidx_end = .);
+	} > ram
+
+	.ARM.extab ALIGN(8) :
+	{
+		PROVIDE (__extab_start = .);
+		*(.ARM.extab*)
+		PROVIDE (__extab_end = .);
 	} > ram
 
 	.initcall ALIGN(8) :
@@ -90,33 +107,12 @@ SECTIONS
 		PROVIDE(__rodata_end = .);
 	} > ram
 
-	.data_shadow ALIGN(8) :
-	{
-		PROVIDE(__data_shadow_start = .);
-		PROVIDE(__data_shadow_end = (. + SIZEOF(.data)));
-		PROVIDE(__image_end = __data_shadow_end);
-	} > ram
-
-	.data : AT(ADDR(.data_shadow))
+	.data ALIGN(8) :
 	{
 		PROVIDE(__data_start = .);	
 		*(.data*)
-		. = ALIGN(8);
   		PROVIDE(__data_end = .);
-	} > ram
-
-	.ARM.exidx ALIGN(8) :
-	{
-		PROVIDE (__exidx_start = .);
-		*(.ARM.exidx*)
-		PROVIDE (__exidx_end = .);
-	} > ram
-
-	.ARM.extab ALIGN(8) :
-	{
-		PROVIDE (__extab_start = .);
-		*(.ARM.extab*)
-		PROVIDE (__extab_end = .);
+		PROVIDE(__image_end = .);
 	} > ram
 
 	.bss ALIGN(8) (NOLOAD) :

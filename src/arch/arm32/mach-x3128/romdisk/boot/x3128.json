@@ -420,7 +420,7 @@
 		"slave-address": 26
 	},
 
-	"wdog-rk3128@0x2004c000": {
+	"wdg-rk3128@0x2004c000": {
 		"clock-name": "link-wdt"
 	},
 
@@ -509,7 +509,7 @@
 		"default-brightness": 0
 	},
 
-	"ledtrig-heartbeat@0": {
+	"ledtrigger-heartbeat@0": {
 		"led-name": "led-gpio.0",
 		"period-ms": 1260
 	},

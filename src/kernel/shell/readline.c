@@ -627,6 +627,7 @@ static bool_t readline_handle(struct rl_buf_t * rl, u32_t code)
 	return FALSE;
 }
 
+/* 输出提示符,并读取一行内容 */
 char * readline(const char * prompt)
 {
 	struct rl_buf_t * rl;

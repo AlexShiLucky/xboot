@@ -74,14 +74,16 @@ void do_showlogo(void)
 
 static void __do_autoboot(void)
 {
+    /* 自启动倒计时ms数 */
 	int delay = CONFIG_AUTO_BOOT_DELAY * 1000;
 
 	do {
-		if(getchar() != EOF)
-		{
+        /* 检测是否有按键按下 */
+		if(getchar() != EOF) {
 			printf("\r\n");
-			return;
+			return;     // 返回,进入Shell
 		}
+        /* 10ms延时 */
 		mdelay(10);
 		delay -= 10;
 		if(delay < 0)
@@ -89,6 +91,7 @@ static void __do_autoboot(void)
 		printf("\rPress any key to stop autoboot:%3d.%03d%s", delay / 1000, delay % 1000, (delay == 0) ? "\r\n" : "");
 	} while(delay > 0);
 
+    /* 执行路径"/application/examples"下程序 */
 	system(CONFIG_AUTO_BOOT_COMMAND);
 }
 extern __typeof(__do_autoboot) do_autoboot __attribute__((weak, alias("__do_autoboot")));

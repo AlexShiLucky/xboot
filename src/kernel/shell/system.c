@@ -32,6 +32,7 @@
 #include <framework/vm.h>
 #include <command/command.h>
 
+/* 解析并执行命令行 */
 int system(const char * cmdline)
 {
 	struct command_t * cmd;
@@ -57,10 +58,10 @@ int system(const char * cmdline)
 		{
 			if(n > 0)
 			{
-				if((cmd = search_command(args[0])))
-					ret = cmd->exec(n, args);
+				if((cmd = search_command(args[0])))     // if中(())消除警告
+					ret = cmd->exec(n, args);           // 找到命令执行命令
 				else
-					ret = vmexec(n, args);
+					ret = vmexec(n, args);              // 未找到命令执行虚拟机
 				if((ret < 0) && pos)
 				{
 			    	printf(" when exec \'%s\' return an error code (%ld).\r\n", args[0], ret);

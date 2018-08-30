@@ -8,8 +8,8 @@ extern "C" {
 #include <xboot.h>
 
 enum kobj_type_t {
-	KOBJ_TYPE_DIR,
-	KOBJ_TYPE_REG,
+	KOBJ_TYPE_DIR,  /* 路径类型 */
+	KOBJ_TYPE_REG,  /* 文件类型 */
 };
 
 struct kobj_t

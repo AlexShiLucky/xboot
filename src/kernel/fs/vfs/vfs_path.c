@@ -246,6 +246,7 @@ struct file_t * vfs_getcwdfp(void)
 	return cwdfp;
 }
 
+/* 初始化文件描述符表,并设置当前路径为/ */
 void vfs_fd_init(void)
 {
 	int i;

@@ -1005,10 +1005,13 @@ s32_t sys_fchdir(struct file_t * fp, char * cwd)
 	return 0;
 }
 
+/* 初始化vfs */
 void do_init_vfs(void)
 {
 	extern void vfs_vnode_init(void);
 	extern void vfs_fd_init(void);
+    /* 初始化vnode哈希链表 */
 	vfs_vnode_init();
+    /* 初始化文件描述符表 */
 	vfs_fd_init();
 }

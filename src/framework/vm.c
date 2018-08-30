@@ -115,6 +115,7 @@ static void luaopen_prelibs(lua_State * L)
 
 static int luaopen_boot(lua_State * L)
 {
+    /* 加载/framework/xboot/boot.lua文件,并运行 */
 	if(luaL_loadfile(L, "/framework/xboot/boot.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
@@ -237,14 +238,21 @@ static int pmain(lua_State * L)
 	char ** argv = (char **)lua_touserdata(L, 2);
 	int i;
 
+    /* 加载内部基本库 */
 	luaL_openlibs(L);
+    /* 加载全局库 */
 	luaopen_glblibs(L);
+    /* 预加载库 */
 	luaopen_prelibs(L);
 
+    /* 设置包搜索器 */
 	luahelper_package_searcher(L, l_search_package_lua, 2);
+    /* 设置path */
 	luahelper_package_path(L, "./?/init.lua;./?.lua");
+    /* 设置cpath      */
 	luahelper_package_cpath(L, "./?.so");
 
+    /* 获取全局变量xboot */
 	lua_getglobal(L, "xboot");
 	if(!lua_istable(L, -1))
 	{
@@ -253,12 +261,16 @@ static int pmain(lua_State * L)
 		lua_pushvalue(L, -1);
 		lua_setglobal(L, "xboot");
 	}
+    /* 设置表xboot域version调用函数               */
 	lua_pushcfunction(L, l_xboot_version);
 	lua_setfield(L, -2, "version");
+    /* 设置表xboot域uniqueid调用函数               */
 	lua_pushcfunction(L, l_xboot_uniqueid);
 	lua_setfield(L, -2, "uniqueid");
+    /* 设置表xboot域readline调用函数               */
 	lua_pushcfunction(L, l_xboot_readline);
 	lua_setfield(L, -2, "readline");
+    /* 设置表xboot域arg */
 	lua_createtable(L, argc, 0);
 	for(i = 0; i < argc; i++)
 	{
@@ -268,6 +280,7 @@ static int pmain(lua_State * L)
 	lua_setfield(L, -2, "arg");
 	lua_pop(L, 1);
 
+    /* 调用boot.lua文件,启动xboot */
 	luaopen_boot(L);
 	return 1;
 }
@@ -301,17 +314,26 @@ static lua_State * l_newstate(void * ud)
 
 int vmexec(int argc, char ** argv)
 {
-	struct runtime_t rt, *r;
+    /* 当前运行环境 */
+	struct runtime_t rt;
+    /* 备份先前运行环境 */
+    struct runtime_t *rtbak;
 	lua_State * L;
 	int status = LUA_ERRRUN, result;
 
-	runtime_create_save(&rt, argv[0], &r);
+    /* 创建新运行环境,并保存先前运行环境 */
+	runtime_create_save(&rt, argv[0], &rtbak);
+    /* 创建lua状态机 */
 	L = l_newstate(&rt);
 	if(L)
 	{
+	    /* 传入C函数pmain */
 		lua_pushcfunction(L, &pmain);
+        /* 传入参数个数 */
 		lua_pushinteger(L, argc);
+        /* 传入用户数据 */
 		lua_pushlightuserdata(L, argv);
+        /* 调用传入C函数 */
 		status = luahelper_pcall(L, 2, 1);
 		result = lua_toboolean(L, -1);
 		if(status != LUA_OK)
@@ -321,8 +343,10 @@ int vmexec(int argc, char ** argv)
 			lua_writestringerror("%s\r\n", msg);
 			lua_pop(L, 1);
 		}
+        /* 关闭lua状态机 */
 		lua_close(L);
 	}
-	runtime_destroy_restore(&rt, r);
+    /* 销毁当前运行环境,并恢复先前运行环境 */
+	runtime_destroy_restore(&rt, rtbak);
 	return (result && (status == LUA_OK)) ? 0 : -1;
 }

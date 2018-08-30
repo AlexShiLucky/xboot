@@ -844,10 +844,13 @@ EXPORT_SYMBOL(free);
 
 static struct kobj_t * search_class_memory_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* 在class下搜索(创建)memory */
 	return kobj_search_directory_with_create(kclass, "memory");
 }
 
+/* 内存信息读取 */
 static ssize_t memory_read_meminfo(struct kobj_t * kobj, void * buf, size_t size)
 {
 	void * mm = (void *)kobj->priv;
@@ -861,6 +864,7 @@ static ssize_t memory_read_meminfo(struct kobj_t * kobj, void * buf, size_t size
 	return len;
 }
 
+/* 内存池初始化 */
 void do_init_mem_pool(void)
 {
 #ifndef __SANDBOX__
@@ -871,5 +875,6 @@ void do_init_mem_pool(void)
 	static char __heap_buf[SZ_16M];
 	__heap_pool = tlsf_create_with_pool((void *)__heap_buf, (size_t)(sizeof(__heap_buf)));
 #endif
+    /* 在kobj/class/memory下创建meminfo文件 */
 	kobj_add_regular(search_class_memory_kobj(), "meminfo", memory_read_meminfo, NULL, mm_get(__heap_pool));
 }

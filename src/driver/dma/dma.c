@@ -58,10 +58,13 @@ extern __typeof(__dma_cache_sync) dma_cache_sync __attribute__((weak, alias("__d
 
 static struct kobj_t * search_class_memory_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* 在class下搜索(创建)memory */
 	return kobj_search_directory_with_create(kclass, "memory");
 }
 
+/* dma内存信息读取 */
 static ssize_t memory_read_dmainfo(struct kobj_t * kobj, void * buf, size_t size)
 {
 	void * mm = (void *)kobj->priv;
@@ -85,5 +88,6 @@ void do_init_dma_pool(void)
 	static char __dma_buf[SZ_8M];
 	__dma_pool = mm_create((void *)__dma_buf, (size_t)(sizeof(__dma_buf)));
 #endif
+    /* 在kobj/class/memory下创建dmainfo文件 */
 	kobj_add_regular(search_class_memory_kobj(), "dmainfo", memory_read_dmainfo, NULL, mm_get(__dma_pool));
 }

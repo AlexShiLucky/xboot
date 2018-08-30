@@ -37,6 +37,7 @@ struct command_list_t __command_list = {
 };
 static spinlock_t __command_list_lock = SPIN_LOCK_INIT();
 
+/* 根据名称搜索命令 */
 struct command_t * search_command(const char * name)
 {
 	struct command_list_t * pos, * n;
@@ -53,6 +54,7 @@ struct command_t * search_command(const char * name)
 	return NULL;
 }
 
+/* 注册命令 */
 bool_t register_command(struct command_t * cmd)
 {
 	struct command_list_t * cl;
@@ -80,6 +82,7 @@ bool_t register_command(struct command_t * cmd)
 	return TRUE;
 }
 
+/* 撤销命令 */
 bool_t unregister_command(struct command_t * cmd)
 {
 	struct command_list_t * pos, * n;
@@ -104,6 +107,7 @@ bool_t unregister_command(struct command_t * cmd)
 	return FALSE;
 }
 
+/* 统计命令数 */
 int total_command_number(void)
 {
 	struct list_head * pos = (&__command_list.entry)->next;

@@ -307,6 +307,7 @@ s32_t vn_access(struct vnode_t * vp, u32_t mode)
 	return 0;
 }
 
+/* 初始化vnode哈希链表 */
 void vfs_vnode_init(void)
 {
 	int i;

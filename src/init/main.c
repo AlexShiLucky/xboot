@@ -31,43 +31,44 @@
 #include <dma/dma.h>
 #include <shell/shell.h>
 
+/* xboot入口函数,从start.S跳转过来 */
 int xboot_main(int argc, char * argv[])
 {
 	struct runtime_t rt;
+    struct runtime_t *prt;
 
-	/* Do initial mem pool */
+	/* Do initial mem pool - 初始化内存池 */
 	do_init_mem_pool();
 
-	/* Do initial dma pool */
+	/* Do initial dma pool - 初始化DMA池 */
 	do_init_dma_pool();
 
-	/* Do initial vfs */
+	/* Do initial vfs - 初始化虚拟文件系统 */
 	do_init_vfs();
 
-	/* Create runtime */
-	runtime_create_save(&rt, 0, 0);
+	/* Create runtime - 创建运行环境 */
+	runtime_create_save(&rt, 0, &prt);
 
-	/* Do all initial calls */
+	/* Do all initial calls - 初始化表调用 */
 	do_initcalls();
 
-	/* Do show logo */
+	/* Do show logo - 显示logo */
 	do_showlogo();
 
-	/* Do auto boot */
+	/* Do auto boot - 调用init.c中的__do_autoboot */
 	do_autoboot();
 
 	/* Run loop */
-	while(1)
-	{
-		/* Run shell */
+	while(1) {
+		/* Run shell - 运行Shell */
 		run_shell();
 	}
 
-	/* Do all exit calls */
+	/* Do all exit calls - 退出表调用 */
 	do_exitcalls();
 
-	/* Destroy runtime */
-	runtime_destroy_restore(&rt, 0);
+	/* Destroy runtime - 销毁当前运行环境并恢复先前运行环境 */
+	runtime_destroy_restore(&rt, prt);
 
 	/* Xboot return */
 	return 0;

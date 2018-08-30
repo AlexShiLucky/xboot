@@ -29,20 +29,24 @@
 #include <xfs/xfs.h>
 #include <runtime.h>
 
+/* 当前运行环境指针 */
 static struct runtime_t * __current_runtime = NULL;
 
+/* 获取当前运行环境 */
 struct runtime_t * runtime_get(void)
 {
 	return __current_runtime;
 }
 
+/* 创建新运行环境并保存先前运行环境 */
 void runtime_create_save(struct runtime_t * rt, const char * path, struct runtime_t ** r)
 {
 	if(!rt)
 		return;
-
+    /* 返回先前运行环境 */
 	if(r)
 		*r = __current_runtime;
+    /* 设置当前运行环境 */
 	__current_runtime = rt;
 
 	rt->__errno = 0;
@@ -51,18 +55,23 @@ void runtime_create_save(struct runtime_t * rt, const char * path, struct runtim
 	rt->__seed[1] = 1;
 	rt->__seed[2] = 1;
 
+    /* 初始化当前运行环境的环境变量链表 */
 	rt->__environ.content = "";
 	rt->__environ.next = &(rt->__environ);
 	rt->__environ.prev = &(rt->__environ);
 
+    /* 读取运行环境分配stdin */
 	rt->__stdin = __file_alloc(0);
+    /* 读取运行环境分配stdout */
 	rt->__stdout = __file_alloc(1);
+    /* 读取运行环境分配stderr */
 	rt->__stderr = __file_alloc(2);
 
 	rt->__event_base = __event_base_alloc();
 	rt->__xfs_ctx = __xfs_alloc(path);
 }
 
+/* 销毁当前运行环境并恢复先前运行环境 */
 void runtime_destroy_restore(struct runtime_t * rt, struct runtime_t * r)
 {
 	if(!rt)

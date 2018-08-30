@@ -6,8 +6,8 @@
 #
 # You must pass CROSS_COMPILE and PLATFORM variable.
 #
-CROSS_COMPILE	?=
-PLATFORM		?=
+CROSS_COMPILE	?= arm-linux-gnueabihf-
+PLATFORM		?= arm32-realview
 
 #
 # Get platform information about ARCH and MACH from PLATFORM variable.
@@ -236,6 +236,7 @@ LD			:=	$(CROSS_COMPILE)ld
 AR			:=	$(CROSS_COMPILE)ar
 OC			:=	$(CROSS_COMPILE)objcopy
 OD			:=	$(CROSS_COMPILE)objdump
+SZ			:=	$(CROSS_COMPILE)size
 MKDIR		:=	mkdir -p
 CP			:=	cp -af
 RM			:=	rm -fr
@@ -270,7 +271,7 @@ X_DEPS		:=	$(X_SDEPS) $(X_CDEPS) $(X_CPPDEPS)
 
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
 X_COBJS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o))
-X_CPPOBJS	:=	$(patsubst %, .obj/%, $(X_CPPFILES:.cpp=.o)) 
+X_CPPOBJS	:=	$(patsubst %, .obj/%, $(X_CPPFILES:.cpp=.o))
 X_OBJS		:=	$(X_SOBJS) $(X_COBJS) $(X_CPPOBJS)
 
 #
@@ -315,6 +316,9 @@ $(X_NAME) : $(X_OBJS)
 	@$(CC) $(X_LDFLAGS) $(X_LIBDIRS) -Wl,--cref,-Map=$@.map $^ -o $@ $(X_LIBS)
 	@echo [OC] Objcopying $@.bin
 	@$(OC) -v -O binary $@ $@.bin
+	@echo    | tee -a $@.map
+	@$(SZ) $@ | tee -a $@.map
+	@echo    | tee -a $@.map
 
 $(X_SOBJS) : .obj/%.o : %.S
 	@echo [AS] $<
@@ -328,7 +332,7 @@ $(X_COBJS) : .obj/%.o : %.c
 
 $(X_CPPOBJS) : .obj/%.o : %.cpp
 	@echo [CXX] $<
-	@$(CXX) $(X_CXXFLAGS) $(X_INCDIRS) -c $< -o $@	
+	@$(CXX) $(X_CXXFLAGS) $(X_INCDIRS) -c $< -o $@
 	@$(CXX) $(X_CXXFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 clean: xclean
@@ -358,7 +362,7 @@ $(M_COBJS) : %.o : %.c
 
 $(M_CPPOBJS) : %.o : %.cpp
 	@echo [M][CXX] $<
-	@$(CXX) $(M_CXXFLAGS) $(M_INCDIRS) -c $< -o $@	
+	@$(CXX) $(M_CXXFLAGS) $(M_INCDIRS) -c $< -o $@
 	@$(CXX) $(M_CXXFLAGS) -MD -MP -MF $@.d $(M_INCDIRS) -c $< -o $@
 
 mclean:

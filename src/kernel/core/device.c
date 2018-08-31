@@ -306,19 +306,20 @@ bool_t register_device(struct device_t * dev)
 	kobj_add(search_device_kobj(dev), dev->kobj);
 
 	spin_lock_irqsave(&__device_lock, flags);
-    /* 设备节点初始化 */
+    /* 设备链表节点初始化 */
 	init_list_head(&dev->list);
-    /* 将设备节点挂接到全局设备链表中 */
+    /* 将设备链表节点挂接到全局设备链表中 */
 	list_add_tail(&dev->list, &__device_list);
-    /* 设备节点初始化 */
+    /* 设备链表节点初始化 */
 	init_list_head(&dev->head);
-    /* 将设备节点挂接到按设备类型划分的全局设备链表中 */
+    /* 将设备链表节点挂接到按设备类型划分的全局设备链表中 */
 	list_add_tail(&dev->head, &__device_head[dev->type]);
-    /* 设备节点初始化 */
+    /* 设备链表节点初始化 */
 	init_hlist_node(&dev->node);
-    /* 将设备节点挂接到全局设备哈希表中 */
+    /* 将设备链表节点挂接到全局设备哈希表中 */
 	hlist_add_head(&dev->node, device_hash(dev->name));
 	spin_unlock_irqrestore(&__device_lock, flags);
+    /* 通知设备加入 */
 	notifier_chain_call(&__device_nc, NOTIFIER_DEVICE_ADD, dev);
 
 	return TRUE;
@@ -340,10 +341,14 @@ bool_t unregister_device(struct device_t * dev)
 	if(hlist_unhashed(&dev->node))
 		return FALSE;
 
+    /* 通知设备移除 */
 	notifier_chain_call(&__device_nc, NOTIFIER_DEVICE_REMOVE, dev);
 	spin_lock_irqsave(&__device_lock, flags);
+    /* 移除设备链表节点 */
 	list_del(&dev->list);
+    /* 移除设备链表节点 */
 	list_del(&dev->head);
+    /* 移除设备链表节点 */
 	hlist_del(&dev->node);
 	spin_unlock_irqrestore(&__device_lock, flags);
     /* 在kobj/device/devicetype下移除devicename */

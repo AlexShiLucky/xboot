@@ -129,9 +129,9 @@ bool_t register_driver(struct driver_t * drv)
 	kobj_add(search_class_driver_kobj(), drv->kobj);
 
 	spin_lock_irqsave(&__driver_lock, flags);
-    /* 驱动节点初始化 */
+    /* 驱动链表节点初始化 */
 	init_hlist_node(&drv->node);
-    /* 将驱动节点挂接到全局驱动哈希表中 */
+    /* 将驱动链表节点挂接到全局驱动哈希表中 */
 	hlist_add_head(&drv->node, driver_hash(drv->name));
 	spin_unlock_irqrestore(&__driver_lock, flags);
 
@@ -150,7 +150,7 @@ bool_t unregister_driver(struct driver_t * drv)
 		return FALSE;
 
 	spin_lock_irqsave(&__driver_lock, flags);
-    /* 移除驱动节点 */
+    /* 移除驱动链表节点 */
 	hlist_del(&drv->node);
 	spin_unlock_irqrestore(&__driver_lock, flags);
     /*  在kobj/class/driver下移除drivername路径kobj */

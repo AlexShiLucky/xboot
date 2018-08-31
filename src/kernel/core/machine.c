@@ -31,11 +31,13 @@
 #include <watchdog/watchdog.h>
 #include <xboot/machine.h>
 
+/* 全局机器链表 */
 static struct list_head __machine_list = {
 	.next = &__machine_list,
 	.prev = &__machine_list,
 };
 static spinlock_t __machine_lock = SPIN_LOCK_INIT();
+/* 当前机器指针 */
 static struct machine_t * __machine = NULL;
 
 static const char * __machine_uniqueid(struct machine_t * mach)
@@ -47,9 +49,12 @@ static const char * __machine_uniqueid(struct machine_t * mach)
 	return id ? id : "0123456789";
 }
 
+/* 搜索机器kobj */
 static struct kobj_t * search_class_machine_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* 在kobj/class下创建machine路径 */
 	return kobj_search_directory_with_create(kclass, "machine");
 }
 
@@ -80,6 +85,7 @@ static ssize_t machine_read_uniqueid(struct kobj_t * kobj, void * buf, size_t si
 	return sprintf(buf, "%s", __machine_uniqueid(mach));
 }
 
+/* 根据名称搜索机器 */
 static struct machine_t * search_machine(const char * name)
 {
 	struct machine_t * pos, * n;
@@ -95,6 +101,7 @@ static struct machine_t * search_machine(const char * name)
 	return NULL;
 }
 
+/* 注册机器 */
 bool_t register_machine(struct machine_t * mach)
 {
 	irq_flags_t flags;
@@ -103,17 +110,25 @@ bool_t register_machine(struct machine_t * mach)
 	if(!mach || !mach->name || !mach->detect)
 		return FALSE;
 
+    /* 如果机器名称已存在,则注册失败 */
 	if(search_machine(mach->name))
 		return FALSE;
 
+    /* 根据机器名称申请一个machname路径kobj */
 	mach->kobj = kobj_alloc_directory(mach->name);
+    /* 在machname路径kobj下添加一个description文件kobj */
 	kobj_add_regular(mach->kobj, "description", machine_read_description, NULL, mach);
+    /* 在machname路径kobj下添加一个map文件kobj */
 	kobj_add_regular(mach->kobj, "map", machine_read_map, NULL, mach);
+    /* 在machname路径kobj下添加一个uniqueid文件kobj */
 	kobj_add_regular(mach->kobj, "uniqueid", machine_read_uniqueid, NULL, mach);
+    /* 在kobj/class/machine路径下挂载machname路径 */
 	kobj_add(search_class_machine_kobj(), mach->kobj);
 
 	spin_lock_irqsave(&__machine_lock, flags);
+    /* 机器链表节点初始化 */
 	init_list_head(&mach->list);
+    /* 将机器链表节点挂接到全局机器链表中 */
 	list_add_tail(&mach->list, &__machine_list);
 	spin_unlock_irqrestore(&__machine_lock, flags);
 
@@ -142,6 +157,7 @@ bool_t register_machine(struct machine_t * mach)
 	return TRUE;
 }
 
+/* 注销机器 */
 bool_t unregister_machine(struct machine_t * mach)
 {
 	irq_flags_t flags;
@@ -150,19 +166,24 @@ bool_t unregister_machine(struct machine_t * mach)
 		return FALSE;
 
 	spin_lock_irqsave(&__machine_lock, flags);
+    /* 移除机器链表节点 */
 	list_del(&mach->list);
 	spin_unlock_irqrestore(&__machine_lock, flags);
+    /* 在kobj/class/machine下移除machname */
 	kobj_remove(search_class_machine_kobj(), mach->kobj);
+    /* 移除machname路径下所有文件kobj和自身 */
 	kobj_remove_self(mach->kobj);
 
 	return TRUE;
 }
 
+/* 获取当前机器 */
 inline __attribute__((always_inline)) struct machine_t * get_machine(void)
 {
 	return __machine;
 }
 
+/* 机器关机 */
 void machine_shutdown(void)
 {
 	struct machine_t * mach = get_machine();
@@ -172,6 +193,7 @@ void machine_shutdown(void)
 		mach->shutdown(mach);
 }
 
+/* 机器重启 */
 void machine_reboot(void)
 {
 	struct machine_t * mach = get_machine();
@@ -182,6 +204,7 @@ void machine_reboot(void)
 	watchdog_set_timeout(search_first_watchdog(), 1);
 }
 
+/* 机器睡眠 */
 void machine_sleep(void)
 {
 	struct machine_t * mach = get_machine();

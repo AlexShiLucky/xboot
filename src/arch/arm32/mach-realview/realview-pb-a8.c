@@ -30,14 +30,16 @@
 #include <mmu.h>
 #include <realview/reg-sysctl.h>
 
+/* 机器内存映射表 */
 static const struct mmap_t mach_map[] = {
-	{"rom",  0x70000000, 0x70000000, SZ_32M, MAP_TYPE_CB},
-	{"ram",  0x72000000, 0x72000000, SZ_32M, MAP_TYPE_CB},
-	{"dma",  0x74000000, 0x74000000, SZ_64M, MAP_TYPE_NCNB},
-	{"heap", 0x78000000, 0x78000000, SZ_128M, MAP_TYPE_CB},
+	{"rom",  0x70000000, 0x70000000, SZ_32M, MAP_TYPE_CB},      /* rom段 */
+	{"ram",  0x72000000, 0x72000000, SZ_32M, MAP_TYPE_CB},      /* ram段 */
+	{"dma",  0x74000000, 0x74000000, SZ_64M, MAP_TYPE_NCNB},    /* dma段 */
+	{"heap", 0x78000000, 0x78000000, SZ_128M, MAP_TYPE_CB},   /* heap段*/
 	{ 0 },
 };
 
+/* 机器检测 */
 static int mach_detect(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -52,10 +54,12 @@ static void mach_memmap(struct machine_t * mach)
 	mmu_setup(mach->map);
 }
 
+/* 机器关机具体实现 */
 static void mach_shutdown(struct machine_t * mach)
 {
 }
 
+/* 机器重启具体实现 */
 static void mach_reboot(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -64,6 +68,7 @@ static void mach_reboot(struct machine_t * mach)
 	write32(virt + SYSCTL_RESET, read32(virt + SYSCTL_RESET) | (1 << 2));
 }
 
+/* 机器睡眠具体实现 */
 static void mach_sleep(struct machine_t * mach)
 {
 }

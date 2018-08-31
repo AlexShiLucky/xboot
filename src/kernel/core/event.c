@@ -38,6 +38,7 @@ static struct event_base_t __event_base = {
 };
 static spinlock_t __event_base_lock = SPIN_LOCK_INIT();
 
+/* 申请一个事件块 */
 struct event_base_t * __event_base_alloc(void)
 {
 	struct event_base_t * eb;
@@ -47,6 +48,7 @@ struct event_base_t * __event_base_alloc(void)
 	if(!eb)
 		return NULL;
 
+    /* 申请一个事件块中的FIFO */
 	eb->fifo = fifo_alloc(sizeof(struct event_t) * CONFIG_EVENT_FIFO_LENGTH);
 	if(!eb->fifo)
 	{
@@ -61,6 +63,7 @@ struct event_base_t * __event_base_alloc(void)
 	return eb;
 }
 
+/* 释放一个事件快 */
 void __event_base_free(struct event_base_t * eb)
 {
 	struct event_base_t * ebpos, * ebn;
@@ -84,6 +87,7 @@ void __event_base_free(struct event_base_t * eb)
 	}
 }
 
+/* 放入一个事件 */
 void push_event(struct event_t * event)
 {
 	struct event_base_t * pos, * n;

@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <xboot/profiler.h>
 
+/* 全局分析器哈希表 */
 static struct hlist_head __profiler_hash[CONFIG_PROFILER_HASH_SIZE];
 static spinlock_t __profiler_lock = SPIN_LOCK_INIT();
 
@@ -172,6 +173,7 @@ void profiler_reset(void)
 	cpu_profiler_reset();
 }
 
+/* 初始化全局分析器哈希表 */
 static __init void profiler_pure_init(void)
 {
 	int i;

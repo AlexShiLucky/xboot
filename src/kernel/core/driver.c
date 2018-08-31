@@ -28,9 +28,11 @@
 
 #include <xboot/driver.h>
 
+/* 驱动哈希链表 */
 static struct hlist_head __driver_hash[CONFIG_DRIVER_HASH_SIZE];
 static spinlock_t __driver_lock = SPIN_LOCK_INIT();
 
+/* 根据驱动名称获取device哈希表 */
 static struct hlist_head * driver_hash(const char * name)
 {
 	unsigned char * p = (unsigned char *)name;
@@ -44,12 +46,16 @@ static struct hlist_head * driver_hash(const char * name)
 	return &__driver_hash[hash % ARRAY_SIZE(__driver_hash)];
 }
 
+/* 搜索驱动kobj */
 static struct kobj_t * search_class_driver_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* 在kobj/class下创建driver路径 */
 	return kobj_search_directory_with_create(kclass, "driver");
 }
 
+/* 驱动写探针 */
 static ssize_t driver_write_probe(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct driver_t * drv = (struct driver_t *)kobj->priv;
@@ -79,6 +85,7 @@ static ssize_t driver_write_probe(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索驱动 */
 struct driver_t * search_driver(const char * name)
 {
 	struct driver_t * pos;
@@ -95,10 +102,12 @@ struct driver_t * search_driver(const char * name)
 	return NULL;
 }
 
+/* 注册一个驱动 */
 bool_t register_driver(struct driver_t * drv)
 {
 	irq_flags_t flags;
 
+    /* 如果驱动空或无名驱动,则注册失败 */
 	if(!drv || !drv->name)
 		return FALSE;
 
@@ -108,21 +117,28 @@ bool_t register_driver(struct driver_t * drv)
 	if(!drv->suspend || !drv->resume)
 		return FALSE;
 
+    /* 如果驱动名称已存在,则注册失败 */
 	if(search_driver(drv->name))
 		return FALSE;
 
+    /* 根据驱动名称申请一个drivername路径kobj */
 	drv->kobj = kobj_alloc_directory(drv->name);
+    /* 在drivername路径kobj下添加一个probe文件kobj */
 	kobj_add_regular(drv->kobj, "probe", NULL, driver_write_probe, drv);
+    /* 在kobj/class/driver路径下挂载drivername路径 */
 	kobj_add(search_class_driver_kobj(), drv->kobj);
 
 	spin_lock_irqsave(&__driver_lock, flags);
+    /* 驱动节点初始化 */
 	init_hlist_node(&drv->node);
+    /* 将驱动节点挂接到全局驱动哈希表中 */
 	hlist_add_head(&drv->node, driver_hash(drv->name));
 	spin_unlock_irqrestore(&__driver_lock, flags);
 
 	return TRUE;
 }
 
+/* 注销驱动 */
 bool_t unregister_driver(struct driver_t * drv)
 {
 	irq_flags_t flags;
@@ -134,13 +150,16 @@ bool_t unregister_driver(struct driver_t * drv)
 		return FALSE;
 
 	spin_lock_irqsave(&__driver_lock, flags);
+    /* 移除驱动节点 */
 	hlist_del(&drv->node);
 	spin_unlock_irqrestore(&__driver_lock, flags);
+    /*  在kobj/class/driver下移除drivername路径kobj */
 	kobj_remove_self(drv->kobj);
 
 	return TRUE;
 }
 
+/* 探测设备 */
 void probe_device(const char * json, int length)
 {
 	struct driver_t * drv;
@@ -173,6 +192,7 @@ void probe_device(const char * json, int length)
 	}
 }
 
+/* 初始化全局驱动哈希表 */
 static __init void driver_pure_init(void)
 {
 	int i;

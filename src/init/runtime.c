@@ -67,7 +67,9 @@ void runtime_create_save(struct runtime_t * rt, const char * path, struct runtim
     /* 读取运行环境分配stderr */
 	rt->__stderr = __file_alloc(2);
 
+    /* 给当前运行环境申请一个事件块 */
 	rt->__event_base = __event_base_alloc();
+    /* 给当前运行环境申请一个xfs上下文 */
 	rt->__xfs_ctx = __xfs_alloc(path);
 }
 

@@ -126,13 +126,17 @@ static struct machine_t realview_pb_a8 = {
 	.keygen		= mach_keygen,
 };
 
+/* 机器初始化 */
 static __init void realview_pb_a8_machine_init(void)
 {
+    /* 注册机器配置 */
 	register_machine(&realview_pb_a8);
 }
 
+/* 机器退出 */
 static __exit void realview_pb_a8_machine_exit(void)
 {
+    /* 注销机器配置 */
 	unregister_machine(&realview_pb_a8);
 }
 

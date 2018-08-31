@@ -68,6 +68,7 @@ static char * normal_path(const char * path)
 	return buf;
 }
 
+/* mount一个路径 */
 bool_t xfs_mount(struct xfs_context_t * ctx, const char * path, int writable)
 {
 	struct xfs_path_t * pos, * n;
@@ -359,16 +360,21 @@ struct xfs_context_t * __xfs_alloc(const char * path)
 	char userdata[256];
 	uint8_t digest[20];
 
+    /* 申请xfs上下文 */
 	ctx = malloc(sizeof(struct xfs_context_t));
 	if(!ctx)
 		return NULL;
 	memset(ctx, 0, sizeof(struct xfs_context_t));
+    /* 初始化xfs mount链表 */
 	init_list_head(&ctx->mounts.list);
 	spin_lock_init(&ctx->lock);
 
+    /* 将path转化为绝对路径 */
 	if(path && vfs_path_conv(path, fpath) >= 0)
 	{
+	    /* 挂载/framework */
 		xfs_mount(ctx, "/framework", 0);
+        /* 挂载path */
 		xfs_mount(ctx, fpath, 0);
 		sha1_hash(fpath, strlen(fpath), digest);
 		sprintf(userdata, "/private/userdata/%s-%02x%02x%02x%02x%02x%02x%02x%02x", basename(fpath),

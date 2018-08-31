@@ -34,6 +34,7 @@ extern initcall_t __initcall_end[];
 extern exitcall_t __exitcall_start[];
 extern exitcall_t __exitcall_end[];
 
+/* 初始化表调用 */
 void do_initcalls(void)
 {
 	initcall_t * call;
@@ -46,6 +47,7 @@ void do_initcalls(void)
 	}
 }
 
+/* 退出表调用 */
 void do_exitcalls(void)
 {
 	exitcall_t * call;

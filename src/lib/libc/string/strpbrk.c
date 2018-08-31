@@ -9,6 +9,7 @@
 /*
  * Finds in a string the first occurrence of a byte/wchar_t in a set
  */
+/* 比较字符串s1和s2中是否有相同的字符，如果有,则返回该字符在s1中的位置的指针 */
 char * strpbrk(const char * s1, const char * s2)
 {
 	const char * sc1, * sc2;

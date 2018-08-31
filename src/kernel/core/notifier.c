@@ -28,6 +28,7 @@
 
 #include <xboot/notifier.h>
 
+/* 注册一个通知 */
 static bool_t __notifier_register(struct notifier_t ** nl, struct notifier_t * n)
 {
 	while((*nl) != NULL)
@@ -44,6 +45,7 @@ static bool_t __notifier_register(struct notifier_t ** nl, struct notifier_t * n
 	return TRUE;
 }
 
+/* 注销一个通知 */
 static bool_t __notifier_unregister(struct notifier_t ** nl, struct notifier_t * n)
 {
 	while((*nl) != NULL)
@@ -59,6 +61,7 @@ static bool_t __notifier_unregister(struct notifier_t ** nl, struct notifier_t *
 	return FALSE;
 }
 
+/* 调用通知链上所有通知 */
 static bool_t __notifier_call(struct notifier_t ** nl, int cmd, void * arg)
 {
 	struct notifier_t * n, * nn;
@@ -77,12 +80,14 @@ static bool_t __notifier_call(struct notifier_t ** nl, int cmd, void * arg)
 	return (ret == 0) ? TRUE : FALSE;
 }
 
+/* 通知链初始化 */
 void notifier_chain_init(struct notifier_chain_t * nc)
 {
 	spin_lock_init(&nc->lock);
 	nc->head = NULL;
 }
 
+/* 注册一个通知 */
 bool_t notifier_chain_register(struct notifier_chain_t * nc, struct notifier_t * n)
 {
 	irq_flags_t flags;
@@ -95,6 +100,7 @@ bool_t notifier_chain_register(struct notifier_chain_t * nc, struct notifier_t *
 	return ret;
 }
 
+/* 注销一个通知 */
 bool_t notifier_chain_unregister(struct notifier_chain_t * nc, struct notifier_t * n)
 {
 	irq_flags_t flags;
@@ -107,6 +113,7 @@ bool_t notifier_chain_unregister(struct notifier_chain_t * nc, struct notifier_t
 	return ret;
 }
 
+/* 调用通知链上所有通知 */
 bool_t notifier_chain_call(struct notifier_chain_t * nc, int cmd, void * arg)
 {
 	irq_flags_t flags;

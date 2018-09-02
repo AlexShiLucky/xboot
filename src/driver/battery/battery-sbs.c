@@ -171,6 +171,7 @@ static bool_t battery_sbs_update(struct battery_t * bat, struct battery_info_t *
 	return TRUE;
 }
 
+/* battery驱动探针 */
 static struct device_t * battery_sbs_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct battery_sbs_pdata_t * pdat;
@@ -256,6 +257,7 @@ static void battery_sbs_resume(struct device_t * dev)
 {
 }
 
+/* 全局battery驱动控制块 */
 static struct driver_t battery_sbs = {
 	.name		= "battery-sbs",
 	.probe		= battery_sbs_probe,
@@ -264,11 +266,13 @@ static struct driver_t battery_sbs = {
 	.resume		= battery_sbs_resume,
 };
 
+/* battery驱动初始化 */
 static __init void battery_sbs_driver_init(void)
 {
 	register_driver(&battery_sbs);
 }
 
+/* battery驱动退出 */
 static __exit void battery_sbs_driver_exit(void)
 {
 	unregister_driver(&battery_sbs);

@@ -152,6 +152,7 @@ static void i2c_versatile_resume(struct device_t * dev)
 {
 }
 
+/* 全局i2c驱动控制块 */
 static struct driver_t i2c_versatile = {
 	.name		= "i2c-versatile",
 	.probe		= i2c_versatile_probe,

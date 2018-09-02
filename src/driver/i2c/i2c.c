@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <i2c/i2c.h>
 
+/* 检测 */
 static bool_t detect(struct i2c_device_t * dev, u8_t reg, u8_t * val)
 {
 	struct i2c_msg_t msgs[2];
@@ -51,6 +52,7 @@ static bool_t detect(struct i2c_device_t * dev, u8_t reg, u8_t * val)
 	return TRUE;
 }
 
+/* 读检测 */
 static ssize_t i2c_read_detect(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct i2c_t * i2c = (struct i2c_t *)kobj->priv;
@@ -84,6 +86,7 @@ static ssize_t i2c_read_detect(struct kobj_t * kobj, void * buf, size_t size)
 	return len;
 }
 
+/* 根据名称查找一个i2c设备 */
 struct i2c_t * search_i2c(const char * name)
 {
 	struct device_t * dev;
@@ -94,10 +97,12 @@ struct i2c_t * search_i2c(const char * name)
 	return (struct i2c_t *)dev->priv;
 }
 
+/* 注册一个i2c设备 */
 bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 {
 	struct device_t * dev;
 
+    /* 如若注册的i2c不存在或无名,则注册失败 */
 	if(!i2c || !i2c->name)
 		return FALSE;
 
@@ -108,11 +113,13 @@ bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 	dev->name = strdup(i2c->name);
 	dev->type = DEVICE_TYPE_I2C;
 	dev->priv = i2c;
+    /* 申请一个i2c名称的路径kobj */
 	dev->kobj = kobj_alloc_directory(dev->name);
+    /* 将一个detect文件挂接到i2cname路径kobj下 */
 	kobj_add_regular(dev->kobj, "detect", i2c_read_detect, NULL, i2c);
 
 	if(!register_device(dev))
-	{
+	{   /* 如果注册失败,释放相应资源 */
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
@@ -124,20 +131,25 @@ bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 	return TRUE;
 }
 
+/* 注销i2c设备 */
 bool_t unregister_i2c(struct i2c_t * i2c)
 {
 	struct device_t * dev;
 
+    /* 如若注销的i2c设备不存在或无名,则注销设备 */
 	if(!i2c || !i2c->name)
 		return FALSE;
 
+    /* 根据i2c名称和i2c类型,查找一个i2c设备 */
 	dev = search_device(i2c->name, DEVICE_TYPE_I2C);
 	if(!dev)
 		return FALSE;
 
+    /* 注销设备 */
 	if(!unregister_device(dev))
 		return FALSE;
 
+    /* 释放kobj资源 */
 	kobj_remove_self(dev->kobj);
 	free(dev->name);
 	free(dev);

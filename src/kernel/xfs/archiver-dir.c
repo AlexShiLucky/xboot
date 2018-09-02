@@ -261,11 +261,13 @@ static struct xfs_archiver_t archiver_dir = {
 	.close		= dir_close,
 };
 
+/* 文档路径初始化 */
 static __init void archiver_dir_init(void)
 {
 	register_archiver(&archiver_dir);
 }
 
+/* 文档路径退出 */
 static __exit void archiver_dir_exit(void)
 {
 	unregister_archiver(&archiver_dir);

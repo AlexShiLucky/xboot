@@ -156,11 +156,13 @@ bool_t unregister_i2c(struct i2c_t * i2c)
 	return TRUE;
 }
 
+/* 根据i2c相关参数申请一个i2c设备 */
 struct i2c_device_t * i2c_device_alloc(const char * i2cbus, int addr, int flags)
 {
 	struct i2c_device_t * dev;
 	struct i2c_t * i2c;
 
+    /* 根据名称搜索i2c */
 	i2c = search_i2c(i2cbus);
 	if(!i2c)
 		return NULL;
@@ -189,10 +191,12 @@ struct i2c_device_t * i2c_device_alloc(const char * i2cbus, int addr, int flags)
 			return NULL;
 	}
 
+    /* 申请一个i2c设备块 */
 	dev = malloc(sizeof(struct i2c_device_t));
 	if(!dev)
 		return NULL;
 
+    /* 配置i2c设备块 */
 	dev->i2c = i2c;
 	dev->addr = addr;
 	dev->flags = flags;
@@ -200,12 +204,14 @@ struct i2c_device_t * i2c_device_alloc(const char * i2cbus, int addr, int flags)
 	return dev;
 }
 
+/* 释放一个i2c设备 */
 void i2c_device_free(struct i2c_device_t * dev)
 {
 	if(dev)
 		free(dev);
 }
 
+/* i2c传输消息 */
 int i2c_transfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 {
 	int try, ret = 0;
@@ -223,6 +229,7 @@ int i2c_transfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 	return ret;
 }
 
+/* i2c主发送 */
 int i2c_master_send(const struct i2c_device_t * dev, void * buf, int count)
 {
 	struct i2c_msg_t msg;
@@ -237,6 +244,7 @@ int i2c_master_send(const struct i2c_device_t * dev, void * buf, int count)
 	return (ret == 1) ? count : ret;
 }
 
+/* i2c主接收 */
 int i2c_master_recv(const struct i2c_device_t * dev, void * buf, int count)
 {
 	struct i2c_msg_t msg;

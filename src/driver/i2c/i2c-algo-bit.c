@@ -29,24 +29,28 @@
 #include <xboot.h>
 #include <i2c/i2c-algo-bit.h>
 
+/* SDA线置低 */
 static inline void sdalo(struct i2c_algo_bit_data_t * bdat)
 {
 	bdat->setsda(bdat, 0);
 	udelay((bdat->udelay + 1) / 2);
 }
 
+/* SDA线置高 */
 static inline void sdahi(struct i2c_algo_bit_data_t * bdat)
 {
 	bdat->setsda(bdat, 1);
 	udelay((bdat->udelay + 1) / 2);
 }
 
+/* SCL置低 */
 static inline void scllo(struct i2c_algo_bit_data_t * bdat)
 {
 	bdat->setscl(bdat, 0);
 	udelay(bdat->udelay / 2);
 }
 
+/* SCL置高 */
 static int sclhi(struct i2c_algo_bit_data_t * bdat)
 {
 	bdat->setscl(bdat, 1);
@@ -72,6 +76,7 @@ static int sclhi(struct i2c_algo_bit_data_t * bdat)
 	return 0;
 }
 
+/* i2c启动 */
 static void i2c_start(struct i2c_algo_bit_data_t * bdat)
 {
 	bdat->setsda(bdat, 0);
@@ -88,6 +93,7 @@ static void i2c_repstart(struct i2c_algo_bit_data_t * bdat)
 	scllo(bdat);
 }
 
+/* i2c停止 */
 static void i2c_stop(struct i2c_algo_bit_data_t * bdat)
 {
 	sdalo(bdat);
@@ -96,6 +102,7 @@ static void i2c_stop(struct i2c_algo_bit_data_t * bdat)
 	udelay(bdat->udelay);
 }
 
+/* i2c输出一个byte */
 static int i2c_outb(struct i2c_algo_bit_data_t * bdat, unsigned char c)
 {
 	int i;
@@ -124,6 +131,7 @@ static int i2c_outb(struct i2c_algo_bit_data_t * bdat, unsigned char c)
 	return ack;
 }
 
+/* i2c输入一个byte */
 static int i2c_inb(struct i2c_algo_bit_data_t * bdat)
 {
 	int i;
@@ -163,6 +171,7 @@ static int try_address(struct i2c_algo_bit_data_t * bdat, unsigned char addr, in
 	return ret;
 }
 
+/* 按字节发送消息 */
 static int sendbytes(struct i2c_algo_bit_data_t * bdat, struct i2c_msg_t * msg)
 {
 	const unsigned char * temp = msg->buf;
@@ -194,6 +203,7 @@ static int sendbytes(struct i2c_algo_bit_data_t * bdat, struct i2c_msg_t * msg)
 	return wrcount;
 }
 
+/* ACK & NOACK */
 static int acknak(struct i2c_algo_bit_data_t * bdat, int is_ack)
 {
 	if(is_ack)
@@ -207,6 +217,7 @@ static int acknak(struct i2c_algo_bit_data_t * bdat, int is_ack)
 	return 0;
 }
 
+/* 按字节读取消息 */
 static int readbytes(struct i2c_algo_bit_data_t * bdat, struct i2c_msg_t * msg)
 {
 	int inval;

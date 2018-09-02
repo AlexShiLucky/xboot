@@ -107,6 +107,7 @@ struct uart_t * search_uart(const char * name)
 	return (struct uart_t *)dev->priv;
 }
 
+/* 注册一个uart设备 */
 bool_t register_uart(struct device_t ** device, struct uart_t * uart)
 {
 	struct device_t * dev;
@@ -140,6 +141,7 @@ bool_t register_uart(struct device_t ** device, struct uart_t * uart)
 	return TRUE;
 }
 
+/* 注销一个uart设备 */
 bool_t unregister_uart(struct uart_t * uart)
 {
 	struct device_t * dev;

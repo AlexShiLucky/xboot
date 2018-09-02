@@ -18,6 +18,7 @@ enum {
 	I2C_M_RECV_LEN		= 0x0400,
 };
 
+/* i2c消息结构 */
 struct i2c_msg_t {
 	int addr;
 	int flags;
@@ -25,6 +26,7 @@ struct i2c_msg_t {
 	void * buf;
 };
 
+/* i2c总线结构 */
 struct i2c_t
 {
 	/* The i2c bus name */
@@ -37,6 +39,7 @@ struct i2c_t
 	void * priv;
 };
 
+/* i2c设备结构 */
 struct i2c_device_t {
 	struct i2c_t * i2c;
 	int addr;

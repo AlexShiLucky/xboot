@@ -7,6 +7,7 @@ extern "C" {
 
 #include <xboot.h>
 
+/* spi消息结构 */
 struct spi_msg_t {
 	void * txbuf;
 	void * rxbuf;
@@ -16,6 +17,7 @@ struct spi_msg_t {
 	int speed;
 };
 
+/* spi总线结构 */
 struct spi_t
 {
 	/* The spi bus name */
@@ -34,6 +36,7 @@ struct spi_t
 	void * priv;
 };
 
+/* spi设备结构 */
 struct spi_device_t {
 	struct spi_t * spi;
 	int cs;

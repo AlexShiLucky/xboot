@@ -28,24 +28,28 @@
 
 #include <block/block.h>
 
+/* 读取块设备块尺寸信息 */
 static ssize_t block_read_size(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct block_t * blk = (struct block_t *)kobj->priv;
 	return sprintf(buf, "%lld", block_size(blk));
 }
 
+/* 读取块设备块数信息 */
 static ssize_t block_read_count(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct block_t * blk = (struct block_t *)kobj->priv;
 	return sprintf(buf, "%lld", block_count(blk));
 }
 
+/* 读取块设备容量信息 */
 static ssize_t block_read_capacity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct block_t * blk = (struct block_t *)kobj->priv;
 	return sprintf(buf, "%lld", block_capacity(blk));
 }
 
+/* 根据名称搜索一个块设备 */
 struct block_t * search_block(const char * name)
 {
 	struct device_t * dev;
@@ -56,6 +60,7 @@ struct block_t * search_block(const char * name)
 	return (struct block_t *)dev->priv;
 }
 
+/* 注册一个块设备 */
 bool_t register_block(struct device_t ** device, struct block_t * blk)
 {
 	struct device_t * dev;
@@ -88,6 +93,7 @@ bool_t register_block(struct device_t ** device, struct block_t * blk)
 	return TRUE;
 }
 
+/* 注销一个块设备 */
 bool_t unregister_block(struct block_t * blk)
 {
 	struct device_t * dev;
@@ -108,6 +114,7 @@ bool_t unregister_block(struct block_t * blk)
 	return TRUE;
 }
 
+/* 块设备读 */
 u64_t block_read(struct block_t * blk, u8_t * buf, u64_t offset, u64_t count)
 {
 	u64_t blkno, blksz, blkcnt, capacity;
@@ -191,6 +198,7 @@ u64_t block_read(struct block_t * blk, u8_t * buf, u64_t offset, u64_t count)
 	return ret;
 }
 
+/* 块设备写 */
 u64_t block_write(struct block_t * blk, u8_t * buf, u64_t offset, u64_t count)
 {
 	u64_t blkno, blksz, blkcnt, capacity;
@@ -288,6 +296,7 @@ u64_t block_write(struct block_t * blk, u8_t * buf, u64_t offset, u64_t count)
 	return ret;
 }
 
+/* 块设备同步 */
 void block_sync(struct block_t * blk)
 {
 	if(blk && blk->sync)

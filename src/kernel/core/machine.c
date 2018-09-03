@@ -225,6 +225,7 @@ void machine_sleep(void)
 	}
 }
 
+/* 机器清理 */
 void machine_cleanup(void)
 {
 	struct machine_t * mach = get_machine();
@@ -234,6 +235,7 @@ void machine_cleanup(void)
 		mach->cleanup(mach);
 }
 
+/* 机器log输出 */
 int machine_logger(const char * fmt, ...)
 {
 	struct machine_t * mach = get_machine();
@@ -254,12 +256,14 @@ int machine_logger(const char * fmt, ...)
 	return len;
 }
 
+/* 获取机器唯一标识符 */
 const char * machine_uniqueid(void)
 {
 	struct machine_t * mach = get_machine();
 	return __machine_uniqueid(mach);
 }
 
+/* 机器keygen */
 int machine_keygen(const char * msg, void * key)
 {
 	struct machine_t * mach = get_machine();
@@ -271,6 +275,7 @@ int machine_keygen(const char * msg, void * key)
 	return 32;
 }
 
+/* 机器物理地址转虚拟地址 */
 static virtual_addr_t __phys_to_virt(physical_addr_t phys)
 {
 	struct machine_t * mach = get_machine();
@@ -289,6 +294,7 @@ static virtual_addr_t __phys_to_virt(physical_addr_t phys)
 }
 extern __typeof(__phys_to_virt) phys_to_virt __attribute__((weak, alias("__phys_to_virt")));
 
+/* 机器虚拟地址转物理地址 */
 static physical_addr_t __virt_to_phys(virtual_addr_t virt)
 {
 	struct machine_t * mach = get_machine();

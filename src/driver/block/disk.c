@@ -36,6 +36,7 @@ struct disk_block_t
 	struct disk_t * disk;
 };
 
+/* disk块设备读取 */
 static u64_t disk_block_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct disk_block_t * dblk = (struct disk_block_t *)(blk->priv);
@@ -43,6 +44,7 @@ static u64_t disk_block_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_
 	return (disk->read(disk, buf, blkno + dblk->offset, blkcnt));
 }
 
+/* disk块设备写入 */
 static u64_t disk_block_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct disk_block_t * dblk = (struct disk_block_t *)(blk->priv);
@@ -50,6 +52,7 @@ static u64_t disk_block_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64
 	return (disk->write(disk, buf, blkno + dblk->offset, blkcnt));
 }
 
+/* disk块设备同步 */
 static void disk_block_sync(struct block_t * blk)
 {
 }
@@ -78,6 +81,7 @@ static ssize_t partition_read_capacity(struct kobj_t * kobj, void * buf, size_t 
 	return sprintf(buf, "%lld", (part->to - part->from + 1) * part->size);
 }
 
+/* 根据名称搜索一个disk设备 */
 struct disk_t * search_disk(const char * name)
 {
 	struct device_t * dev;
@@ -89,6 +93,7 @@ struct disk_t * search_disk(const char * name)
 	return (struct disk_t *)dev->priv;
 }
 
+/* 注册一个disk设备 */
 bool_t register_disk(struct device_t ** device, struct disk_t * disk)
 {
 	struct device_t * dev;
@@ -176,6 +181,7 @@ bool_t register_disk(struct device_t ** device, struct disk_t * disk)
 	return TRUE;
 }
 
+/* 注销一个disk设备 */
 bool_t unregister_disk(struct disk_t * disk)
 {
 	struct device_t * dev;
@@ -210,6 +216,7 @@ bool_t unregister_disk(struct disk_t * disk)
 	return TRUE;
 }
 
+/* disk读 */
 u64_t disk_read(struct disk_t * disk, u8_t * buf, u64_t offset, u64_t count)
 {
 	u64_t no, sz, cnt, capacity;
@@ -293,6 +300,7 @@ u64_t disk_read(struct disk_t * disk, u8_t * buf, u64_t offset, u64_t count)
 	return ret;
 }
 
+/* disk写 */
 u64_t disk_write(struct disk_t * disk, u8_t * buf, u64_t offset, u64_t count)
 {
 	u64_t no, sz, cnt, capacity;
@@ -390,6 +398,7 @@ u64_t disk_write(struct disk_t * disk, u8_t * buf, u64_t offset, u64_t count)
 	return ret;
 }
 
+/* disk同步 */
 void disk_sync(struct disk_t * disk)
 {
 	if(disk && disk->sync)

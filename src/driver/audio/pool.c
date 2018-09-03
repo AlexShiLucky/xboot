@@ -28,6 +28,7 @@
 
 #include <audio/pool.h>
 
+/* 全局声音链表 */
 struct sound_list_t __sound_pool = {
 	.entry = {
 		.next	= &(__sound_pool.entry),
@@ -36,6 +37,7 @@ struct sound_list_t __sound_pool = {
 };
 static spinlock_t __sound_pool_lock = SPIN_LOCK_INIT();
 
+/* 搜索一个声音 */
 static inline int sound_pool_search(struct sound_t * snd)
 {
 	struct sound_list_t * pos, * n;
@@ -51,6 +53,7 @@ static inline int sound_pool_search(struct sound_t * snd)
 	return 0;
 }
 
+/* 往声音链表中添加一个声音 */
 void sound_pool_add(struct sound_t * snd)
 {
 	struct sound_list_t * sl;
@@ -72,6 +75,7 @@ void sound_pool_add(struct sound_t * snd)
 	spin_unlock_irqrestore(&__sound_pool_lock, flags);
 }
 
+/* 从声音链表中删除一个声音 */
 void sound_pool_del(struct sound_t * snd)
 {
 	struct sound_list_t * pos, * n;

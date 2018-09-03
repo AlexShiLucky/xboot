@@ -298,11 +298,11 @@ bool_t register_device(struct device_t * dev)
 	if(device_exist(dev->name))
 		return FALSE;
 
-    /* 在父kobj(devicename)下挂载suspend文件kobj */
+    /* 在父kobj(xxxname)下挂载suspend文件kobj */
 	kobj_add_regular(dev->kobj, "suspend", NULL, device_write_suspend, dev);
-    /* 在父kobj(devicename)下挂载resume文件kobj */
+    /* 在父kobj(xxxname)下挂载resume文件kobj */
 	kobj_add_regular(dev->kobj, "resume", NULL, device_write_resume, dev);
-    /* 在kobj/device/devicetype下挂载devicename */
+    /* 在kobj/device/devicetype下挂载xxxname */
 	kobj_add(search_device_kobj(dev), dev->kobj);
 
 	spin_lock_irqsave(&__device_lock, flags);

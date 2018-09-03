@@ -35,6 +35,7 @@ struct romdisk_pdata_t
 	virtual_size_t size;
 };
 
+/* romdisk读取 */
 static u64_t romdisk_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct romdisk_pdata_t * pdat = (struct romdisk_pdata_t *)(blk->priv);
@@ -46,15 +47,18 @@ static u64_t romdisk_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t b
 	return count;
 }
 
+/* romdisk写入 */
 static u64_t romdisk_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	return 0;
 }
 
+/* romdisk同步 */
 static void romdisk_sync(struct block_t * blk)
 {
 }
 
+/* romdisk探针 */
 static struct device_t * romdisk_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct romdisk_pdata_t * pdat;
@@ -89,6 +93,7 @@ static struct device_t * romdisk_probe(struct driver_t * drv, struct dtnode_t * 
 	blk->sync = romdisk_sync;
 	blk->priv = pdat;
 
+    /* 注册romdisk块设备 */
 	if(!register_block(&dev, blk))
 	{
 		free_device_name(blk->name);
@@ -101,6 +106,7 @@ static struct device_t * romdisk_probe(struct driver_t * drv, struct dtnode_t * 
 	return dev;
 }
 
+/* romdisk移除 */
 static void romdisk_remove(struct device_t * dev)
 {
 	struct block_t * blk = (struct block_t *)dev->priv;
@@ -113,14 +119,17 @@ static void romdisk_remove(struct device_t * dev)
 	}
 }
 
+/* romdisk挂起 */
 static void romdisk_suspend(struct device_t * dev)
 {
 }
 
+/* romdisk释放 */
 static void romdisk_resume(struct device_t * dev)
 {
 }
 
+/* 全局romdisk驱动块 */
 static struct driver_t romdisk = {
 	.name		= "romdisk",
 	.probe		= romdisk_probe,
@@ -129,11 +138,13 @@ static struct driver_t romdisk = {
 	.resume		= romdisk_resume,
 };
 
+/* romdisk驱动初始化 */
 static __init void romdisk_driver_init(void)
 {
 	register_driver(&romdisk);
 }
 
+/* romdisk驱动退出 */
 static __exit void romdisk_driver_exit(void)
 {
 	unregister_driver(&romdisk);

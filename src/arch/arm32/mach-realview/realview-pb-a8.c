@@ -73,10 +73,12 @@ static void mach_sleep(struct machine_t * mach)
 {
 }
 
+/* 机器清理具体实现 */
 static void mach_cleanup(struct machine_t * mach)
 {
 }
 
+/* 机器log输出具体实现 */
 static void mach_logger(struct machine_t * mach, const char * buf, int count)
 {
 	virtual_addr_t virt = phys_to_virt(0x10009000);
@@ -106,11 +108,13 @@ static void mach_logger(struct machine_t * mach, const char * buf, int count)
 	}
 }
 
+/* 获取机器唯一标识符具体实现 */
 static const char * mach_uniqueid(struct machine_t * mach)
 {
 	return NULL;
 }
 
+/* 机器keygen具体实现 */
 static int mach_keygen(struct machine_t * mach, const char * msg, void * key)
 {
 	return 0;

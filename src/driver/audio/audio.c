@@ -30,6 +30,7 @@
 #include <audio/pool.h>
 #include <audio/audio.h>
 
+/* 根据名称搜索一个audio设备 */
 struct audio_t * search_audio(const char * name)
 {
 	struct device_t * dev;
@@ -40,6 +41,7 @@ struct audio_t * search_audio(const char * name)
 	return (struct audio_t *)dev->priv;
 }
 
+/* 搜索第一个audio设备 */
 struct audio_t * search_first_audio(void)
 {
 	struct device_t * dev;
@@ -50,6 +52,7 @@ struct audio_t * search_first_audio(void)
 	return (struct audio_t *)dev->priv;
 }
 
+/* 注册一个audio设备 */
 bool_t register_audio(struct device_t ** device, struct audio_t * audio)
 {
 	struct device_t * dev;
@@ -79,6 +82,7 @@ bool_t register_audio(struct device_t ** device, struct audio_t * audio)
 	return TRUE;
 }
 
+/* 注销一个audio设备 */
 bool_t unregister_audio(struct audio_t * audio)
 {
 	struct device_t * dev;
@@ -99,6 +103,7 @@ bool_t unregister_audio(struct audio_t * audio)
 	return TRUE;
 }
 
+/* 声音读取 */
 static int sound_read(struct sound_t * snd, void * buf, int count)
 {
 	int i, len = 0;

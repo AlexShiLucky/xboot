@@ -29,24 +29,28 @@
 #include <xboot.h>
 #include <adc/adc.h>
 
+/* 读取adc参考电压 */
 static ssize_t adc_read_vreference(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct adc_t * adc = (struct adc_t *)kobj->priv;
 	return sprintf(buf, "%Ld.%06LdV", adc->vreference / (u64_t)(1000 * 1000), adc->vreference % (u64_t)(1000 * 1000));
 }
 
+/* 读取adc分辨率 */
 static ssize_t adc_read_resolution(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct adc_t * adc = (struct adc_t *)kobj->priv;
 	return sprintf(buf, "%d", adc->resolution);
 }
 
+/* 读取adc通道数 */
 static ssize_t adc_read_nchannel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct adc_t * adc = (struct adc_t *)kobj->priv;
 	return sprintf(buf, "%d", adc->nchannel);
 }
 
+/* 读取adc通道原始数据 */
 static ssize_t adc_read_raw_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct adc_t * adc = (struct adc_t *)kobj->priv;
@@ -54,6 +58,7 @@ static ssize_t adc_read_raw_channel(struct kobj_t * kobj, void * buf, size_t siz
 	return sprintf(buf, "%d", adc_read_raw(adc, channel));
 }
 
+/* 读取adc通道电压 */
 static ssize_t adc_read_voltage_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct adc_t * adc = (struct adc_t *)kobj->priv;
@@ -62,6 +67,7 @@ static ssize_t adc_read_voltage_channel(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "%Ld.%06LdV", voltage / (u64_t)(1000 * 1000), voltage % (u64_t)(1000 * 1000));
 }
 
+/* 根据名称搜索一个adc设备 */
 struct adc_t * search_adc(const char * name)
 {
 	struct device_t * dev;
@@ -72,6 +78,7 @@ struct adc_t * search_adc(const char * name)
 	return (struct adc_t *)dev->priv;
 }
 
+/* 注册一个adc设备 */
 bool_t register_adc(struct device_t ** device, struct adc_t * adc)
 {
 	struct device_t * dev;
@@ -87,6 +94,7 @@ bool_t register_adc(struct device_t ** device, struct adc_t * adc)
 
 	dev->name = strdup(adc->name);
 	dev->type = DEVICE_TYPE_ADC;
+    /* 将注册的adc设备控制块挂到设备priv域下 */
 	dev->priv = adc;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "vreference", adc_read_vreference, NULL, adc);
@@ -116,6 +124,7 @@ bool_t register_adc(struct device_t ** device, struct adc_t * adc)
 	return TRUE;
 }
 
+/* 注销一个adc设备 */
 bool_t unregister_adc(struct adc_t * adc)
 {
 	struct device_t * dev;
@@ -136,6 +145,7 @@ bool_t unregister_adc(struct adc_t * adc)
 	return TRUE;
 }
 
+/* 读取某通道原始数据 */
 u32_t adc_read_raw(struct adc_t * adc, int channel)
 {
 	if(adc && adc->read)
@@ -149,6 +159,7 @@ u32_t adc_read_raw(struct adc_t * adc, int channel)
 	return 0;
 }
 
+/* 读取某通道电压数据 */
 int adc_read_voltage(struct adc_t * adc, int channel)
 {
 	if(adc && adc->read)

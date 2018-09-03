@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <battery/battery.h>
 
+/* 电池设备supply信息读取 */
 static ssize_t battery_read_supply(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -39,6 +40,7 @@ static ssize_t battery_read_supply(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "unknown");
 }
 
+/* 电池设备status信息读取 */
 static ssize_t battery_read_status(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -49,6 +51,7 @@ static ssize_t battery_read_status(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "unknown");
 }
 
+/* 电池设备helth信息读取 */
 static ssize_t battery_read_health(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -59,6 +62,7 @@ static ssize_t battery_read_health(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "unknown");
 }
 
+/* 电池设备设计容量信息读取 */
 static ssize_t battery_read_design_capacity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -69,6 +73,7 @@ static ssize_t battery_read_design_capacity(struct kobj_t * kobj, void * buf, si
 	return sprintf(buf, "%dmAh", 0);
 }
 
+/* 电池设备设计电压信息读取 */
 static ssize_t battery_read_design_voltage(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -79,6 +84,7 @@ static ssize_t battery_read_design_voltage(struct kobj_t * kobj, void * buf, siz
 	return sprintf(buf, "%dmV", 0);
 }
 
+/* 电池设备电压信息读取 */
 static ssize_t battery_read_voltage(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -89,6 +95,7 @@ static ssize_t battery_read_voltage(struct kobj_t * kobj, void * buf, size_t siz
 	return sprintf(buf, "%dmV", 0);
 }
 
+/* 电池设备电流信息读取 */
 static ssize_t battery_read_current(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -99,6 +106,7 @@ static ssize_t battery_read_current(struct kobj_t * kobj, void * buf, size_t siz
 	return sprintf(buf, "%dmA", 0);
 }
 
+/* 电池设备温度信息读取 */
 static ssize_t battery_read_temperature(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -109,6 +117,7 @@ static ssize_t battery_read_temperature(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "%d.%03dC", 0, 0);
 }
 
+/* 电池设备循环充电次数信息读取 */
 static ssize_t battery_read_cycle(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -119,6 +128,7 @@ static ssize_t battery_read_cycle(struct kobj_t * kobj, void * buf, size_t size)
 	return sprintf(buf, "%d", 0);
 }
 
+/* 电池设备电量百分比信息读取 */
 static ssize_t battery_read_level(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct battery_t * bat = (struct battery_t *)kobj->priv;
@@ -129,6 +139,7 @@ static ssize_t battery_read_level(struct kobj_t * kobj, void * buf, size_t size)
 	return sprintf(buf, "%d%%", 0);
 }
 
+/* 根据名称搜索一个电池设备 */
 struct battery_t * search_battery(const char * name)
 {
 	struct device_t * dev;
@@ -139,6 +150,7 @@ struct battery_t * search_battery(const char * name)
 	return (struct battery_t *)dev->priv;
 }
 
+/* 搜索第一个电池设备 */
 struct battery_t * search_first_battery(void)
 {
 	struct device_t * dev;
@@ -149,6 +161,7 @@ struct battery_t * search_first_battery(void)
 	return (struct battery_t *)dev->priv;
 }
 
+/* 注册一个电池设备 */
 bool_t register_battery(struct device_t ** device, struct battery_t * bat)
 {
 	struct device_t * dev;
@@ -188,6 +201,7 @@ bool_t register_battery(struct device_t ** device, struct battery_t * bat)
 	return TRUE;
 }
 
+/* 注销一个电池设备 */
 bool_t unregister_battery(struct battery_t * bat)
 {
 	struct device_t * dev;
@@ -208,6 +222,7 @@ bool_t unregister_battery(struct battery_t * bat)
 	return TRUE;
 }
 
+/* 供电类型转字符串类型 */
 char * power_supply_string(enum power_supply_t supply)
 {
 	switch(supply)
@@ -226,6 +241,7 @@ char * power_supply_string(enum power_supply_t supply)
 	return "unknown";
 }
 
+/* 电池状态类型转字符串类型 */
 char * battery_status_string(enum battery_status_t status)
 {
 	switch(status)
@@ -244,6 +260,7 @@ char * battery_status_string(enum battery_status_t status)
 	return "unknown";
 }
 
+/* 电池健康状态类型转字符串类型 */
 char * battery_health_string(enum battery_health_t health)
 {
 	switch(health)
@@ -262,6 +279,7 @@ char * battery_health_string(enum battery_health_t health)
 	return "unknown";
 }
 
+/* 电池信息更新接口 */
 bool_t battery_update(struct battery_t * bat, struct battery_info_t * info)
 {
 	if(bat && bat->update)

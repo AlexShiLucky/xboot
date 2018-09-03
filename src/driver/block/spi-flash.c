@@ -157,6 +157,7 @@ static bool_t spi_flash_read_sfdp(struct spi_device_t * dev, struct sfdp_t * sfd
 	return FALSE;
 }
 
+/* 读取spiflash id */
 static bool_t spi_flash_read_id(struct spi_device_t * dev, uint32_t * id)
 {
 	uint8_t tx[1];
@@ -173,10 +174,12 @@ static bool_t spi_flash_read_id(struct spi_device_t * dev, uint32_t * id)
 	return TRUE;
 }
 
+/* spiflash设备信息表 */
 static const struct spi_flash_info_t spi_flash_infos[] = {
 	{ "w25x40", 0xef3013, 512 * 1024, 4096, 1, 256, 3, OPCODE_READ, OPCODE_PROG, OPCODE_WREN, OPCODE_E4K, 0, OPCODE_E64K, 0 },
 };
 
+/* spiflash设备检测 */
 static bool_t spi_flash_detect(struct spi_device_t * dev, struct spi_flash_info_t * info)
 {
 	const struct spi_flash_info_t * t;
@@ -328,6 +331,7 @@ static bool_t spi_flash_detect(struct spi_device_t * dev, struct spi_flash_info_
 	return FALSE;
 }
 
+/* spiflash状态寄存器读取 */
 static inline uint8_t spi_flash_read_status_register(struct spi_flash_pdata_t * pdat)
 {
 	uint8_t tx = OPCODE_RDSR;
@@ -339,6 +343,7 @@ static inline uint8_t spi_flash_read_status_register(struct spi_flash_pdata_t * 
 	return rx;
 }
 
+/* spiflash状态寄存器写入 */
 static inline void spi_flash_write_status_register(struct spi_flash_pdata_t * pdat, uint8_t sr)
 {
 	uint8_t tx[2];
@@ -350,6 +355,7 @@ static inline void spi_flash_write_status_register(struct spi_flash_pdata_t * pd
 	spi_device_deselect(pdat->dev);
 }
 
+/* spiflash写使能 */
 static inline void spi_flash_write_enable(struct spi_flash_pdata_t * pdat)
 {
 	spi_device_select(pdat->dev);
@@ -357,6 +363,7 @@ static inline void spi_flash_write_enable(struct spi_flash_pdata_t * pdat)
 	spi_device_deselect(pdat->dev);
 }
 
+/* spiflash 4字节模式*/
 static inline void spi_flash_address_mode_4byte(struct spi_flash_pdata_t * pdat, int enable)
 {
 	uint8_t tx;
@@ -370,6 +377,7 @@ static inline void spi_flash_address_mode_4byte(struct spi_flash_pdata_t * pdat,
 	spi_device_deselect(pdat->dev);
 }
 
+/* spiflash芯片复位 */
 static inline void spi_flash_chip_reset(struct spi_flash_pdata_t * pdat)
 {
 	uint8_t tx[2];
@@ -381,11 +389,13 @@ static inline void spi_flash_chip_reset(struct spi_flash_pdata_t * pdat)
 	spi_device_deselect(pdat->dev);
 }
 
+/* spiflash忙等待 */
 static inline void spi_flash_wait_for_busy(struct spi_flash_pdata_t * pdat)
 {
 	while((spi_flash_read_status_register(pdat) & 0x1) == 0x1);
 }
 
+/* spiflash字节序列读取 */
 static void spi_flash_read_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u8_t * buf, u32_t count)
 {
 	u8_t tx[5];
@@ -418,6 +428,7 @@ static void spi_flash_read_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u8
 	}
 }
 
+/* spiflash字节序列写入 */
 static void spi_flash_write_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u8_t * buf, u32_t count)
 {
 	u8_t tx[5];
@@ -452,6 +463,7 @@ static void spi_flash_write_bytes(struct spi_flash_pdata_t * pdat, u32_t addr, u
 	}
 }
 
+/* spiflash段4K擦除*/
 static void spi_flash_sector_erase_4k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
 	u8_t tx[5];
@@ -484,6 +496,7 @@ static void spi_flash_sector_erase_4k(struct spi_flash_pdata_t * pdat, u32_t add
 	}
 }
 
+/* spiflash段32K擦除 */
 static void spi_flash_sector_erase_32k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
 	u8_t tx[5];
@@ -516,6 +529,7 @@ static void spi_flash_sector_erase_32k(struct spi_flash_pdata_t * pdat, u32_t ad
 	}
 }
 
+/* spiflash段64K擦除 */
 static void spi_flash_sector_erase_64k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
 	u8_t tx[5];
@@ -548,6 +562,7 @@ static void spi_flash_sector_erase_64k(struct spi_flash_pdata_t * pdat, u32_t ad
 	}
 }
 
+/* spiflash段256K擦除 */
 static void spi_flash_sector_erase_256k(struct spi_flash_pdata_t * pdat, u32_t addr)
 {
 	u8_t tx[5];
@@ -580,6 +595,7 @@ static void spi_flash_sector_erase_256k(struct spi_flash_pdata_t * pdat, u32_t a
 	}
 }
 
+/* spiflash初始化 */
 static void spi_flash_init(struct spi_flash_pdata_t * pdat)
 {
 	spi_flash_chip_reset(pdat);
@@ -595,6 +611,7 @@ static void spi_flash_init(struct spi_flash_pdata_t * pdat)
 	}
 }
 
+/* spiflash读取 */
 static u64_t spi_flash_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct spi_flash_pdata_t * pdat = (struct spi_flash_pdata_t *)blk->priv;
@@ -619,6 +636,7 @@ static u64_t spi_flash_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t
 	return blkcnt;
 }
 
+/* spiflash写入 */
 static u64_t spi_flash_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
 	struct spi_flash_pdata_t * pdat = (struct spi_flash_pdata_t *)blk->priv;
@@ -689,10 +707,12 @@ static u64_t spi_flash_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_
 	return blkcnt;
 }
 
+/* spiflash同步 */
 static void spi_flash_sync(struct block_t * blk)
 {
 }
 
+/* spiflash探针 */
 static struct device_t * spi_flash_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct spi_flash_pdata_t * pdat;
@@ -752,6 +772,7 @@ static struct device_t * spi_flash_probe(struct driver_t * drv, struct dtnode_t 
 	return dev;
 }
 
+/* spiflash移除 */
 static void spi_flash_remove(struct device_t * dev)
 {
 	struct block_t * blk = (struct block_t *)dev->priv;
@@ -767,14 +788,17 @@ static void spi_flash_remove(struct device_t * dev)
 	}
 }
 
+/* spiflash挂起 */
 static void spi_flash_suspend(struct device_t * dev)
 {
 }
 
+/* spiflash释放 */
 static void spi_flash_resume(struct device_t * dev)
 {
 }
 
+/* 全局spiflash驱动块 */
 static struct driver_t spi_flash = {
 	.name		= "spi-flash",
 	.probe		= spi_flash_probe,
@@ -783,11 +807,13 @@ static struct driver_t spi_flash = {
 	.resume		= spi_flash_resume,
 };
 
+/* spiflash驱动初始化 */
 static __init void spi_flash_driver_init(void)
 {
 	register_driver(&spi_flash);
 }
 
+/* spiflash驱动退出 */
 static __exit void spi_flash_driver_exit(void)
 {
 	unregister_driver(&spi_flash);

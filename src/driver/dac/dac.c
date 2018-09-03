@@ -29,24 +29,28 @@
 #include <xboot.h>
 #include <dac/dac.h>
 
+/* 读取dac参考电压 */
 static ssize_t dac_read_vreference(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct dac_t * dac = (struct dac_t *)kobj->priv;
 	return sprintf(buf, "%Ld.%06LdV", dac->vreference / (u64_t)(1000 * 1000), dac->vreference % (u64_t)(1000 * 1000));
 }
 
+/* 读取dac分辨率 */
 static ssize_t dac_read_resolution(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct dac_t * dac = (struct dac_t *)kobj->priv;
 	return sprintf(buf, "%d", dac->resolution);
 }
 
+/* 读取dac通道数 */
 static ssize_t dac_read_nchannel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct dac_t * dac = (struct dac_t *)kobj->priv;
 	return sprintf(buf, "%d", dac->nchannel);
 }
 
+/* 写入dac通道原始数据 */
 static ssize_t dac_write_raw_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct dac_t * dac = (struct dac_t *)kobj->priv;
@@ -56,6 +60,7 @@ static ssize_t dac_write_raw_channel(struct kobj_t * kobj, void * buf, size_t si
 	return size;
 }
 
+/* 写入dac通道电压 */
 static ssize_t dac_write_voltage_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct dac_t * dac = (struct dac_t *)kobj->priv;
@@ -65,6 +70,7 @@ static ssize_t dac_write_voltage_channel(struct kobj_t * kobj, void * buf, size_
 	return size;
 }
 
+/* 根据名称搜索一个dac设备 */
 struct dac_t * search_dac(const char * name)
 {
 	struct device_t * dev;
@@ -75,6 +81,7 @@ struct dac_t * search_dac(const char * name)
 	return (struct dac_t *)dev->priv;
 }
 
+/* 注册一个dac设备 */
 bool_t register_dac(struct device_t ** device, struct dac_t * dac)
 {
 	struct device_t * dev;
@@ -119,6 +126,7 @@ bool_t register_dac(struct device_t ** device, struct dac_t * dac)
 	return TRUE;
 }
 
+/* 注销一个dac设备 */
 bool_t unregister_dac(struct dac_t * dac)
 {
 	struct device_t * dev;
@@ -139,6 +147,7 @@ bool_t unregister_dac(struct dac_t * dac)
 	return TRUE;
 }
 
+/* 写入dac某通道原始数据*/
 void dac_write_raw(struct dac_t * dac, int channel, u32_t value)
 {
 	if(dac && dac->write)
@@ -151,6 +160,7 @@ void dac_write_raw(struct dac_t * dac, int channel, u32_t value)
 	}
 }
 
+/* 写入dac某通道电压数据 */
 void dac_write_voltage(struct dac_t * dac, int channel, int voltage)
 {
 	if(dac && dac->write)

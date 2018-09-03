@@ -145,7 +145,7 @@ bool_t unregister_adc(struct adc_t * adc)
 	return TRUE;
 }
 
-/* 读取某通道原始数据 */
+/* 读取adc某通道原始数据 */
 u32_t adc_read_raw(struct adc_t * adc, int channel)
 {
 	if(adc && adc->read)
@@ -159,7 +159,7 @@ u32_t adc_read_raw(struct adc_t * adc, int channel)
 	return 0;
 }
 
-/* 读取某通道电压数据 */
+/* 读取adc某通道电压数据 */
 int adc_read_voltage(struct adc_t * adc, int channel)
 {
 	if(adc && adc->read)

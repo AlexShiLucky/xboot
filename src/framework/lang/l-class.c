@@ -28,6 +28,7 @@
 
 #include <framework/lang/l-class.h>
 
+/* C字符串形式定义lua代码块:Class.lua */
 static const char class_lua[] =
 "local function rethack(t, bbak, mbak, ...)"									"\n"
 "	t.base = bbak"																"\n"
@@ -73,6 +74,7 @@ static const char class_lua[] =
 "end"																			"\n"
 ;
 
+/* Class代码块调用入口 */
 int luaopen_class(lua_State * L)
 {
 	if(luaL_loadbuffer(L, class_lua, sizeof(class_lua)-1, "Class.lua") == LUA_OK)

@@ -31,6 +31,7 @@
 
 /*
  * the list of filesystem
+ * 全局文件系统链表
  */
 static struct fs_list __fs_list = {
 	.entry = {
@@ -42,6 +43,7 @@ struct fs_list * fs_list = &__fs_list;
 
 /*
  * search filesystem by name
+ * 根据名称搜索一个文件系统
  */
 struct filesystem_t * filesystem_search(const char * name)
 {
@@ -63,6 +65,7 @@ struct filesystem_t * filesystem_search(const char * name)
 
 /*
  * register a filesystem into fs_list
+ * 注册一个文件系统到文件系统链表
  */
 bool_t filesystem_register(struct filesystem_t * fs)
 {
@@ -89,6 +92,7 @@ bool_t filesystem_register(struct filesystem_t * fs)
 
 /*
  * unregister a filesystem from fs_list
+ * 注销一个文件系统从文件系统链表
  */
 bool_t filesystem_unregister(struct filesystem_t * fs)
 {

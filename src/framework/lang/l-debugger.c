@@ -28,6 +28,7 @@
 
 #include <framework/lang/l-class.h>
 
+/* C字符串形式定义lua代码块:Debugger.lua */
 static const char debugger_lua[] =
 "local local_stack_level = 6"																							"\n"
 "local stack_top = 0"																									"\n"
@@ -293,6 +294,7 @@ static const char debugger_lua[] =
 "return debugger"																										"\n"
 ;
 
+/* Debugger代码块调用入口 */
 int luaopen_debugger(lua_State * L)
 {
 	if(luaL_loadbuffer(L, debugger_lua, sizeof(debugger_lua)-1, "Debugger.lua") == LUA_OK)

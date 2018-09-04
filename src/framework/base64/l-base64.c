@@ -28,8 +28,10 @@
 
 #include <framework/base64/l-base64.h>
 
+/* 翻译表 */
 static const char * mtrans = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+/* bin -> base64 */
 static int base64_encode(lua_State * L)
 {
 	const u8_t *data;
@@ -101,6 +103,7 @@ static int base64_encode(lua_State * L)
 	return 1;
 }
 
+/* base64 -> bin */
 static int base64_decode(lua_State * L)
 {
 	const char * data;
@@ -148,6 +151,7 @@ static const luaL_Reg l_base64[] = {
 	{ NULL, NULL }
 };
 
+/* 创建builtin.base64 */
 int luaopen_base64(lua_State * L)
 {
 	luaL_newlib (L, l_base64);

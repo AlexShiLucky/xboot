@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <stepper/stepper.h>
 
+/* 步进电机enable */
 static ssize_t stepper_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct stepper_t * m = (struct stepper_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t stepper_write_enable(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
+/* 步进电机disable */
 static ssize_t stepper_write_disable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct stepper_t * m = (struct stepper_t *)kobj->priv;
@@ -43,6 +45,7 @@ static ssize_t stepper_write_disable(struct kobj_t * kobj, void * buf, size_t si
 	return size;
 }
 
+/* 步进电机move */
 static ssize_t stepper_write_move(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct stepper_t * m = (struct stepper_t *)kobj->priv;
@@ -50,12 +53,14 @@ static ssize_t stepper_write_move(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 步进电机busying读取 */
 static ssize_t stepper_read_busying(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct stepper_t * m = (struct stepper_t *)kobj->priv;
 	return sprintf(buf, "%d", stepper_busying(m) ? 1 : 0);
 }
 
+/* 根据名称搜索一个步进电机设备 */
 struct stepper_t * search_stepper(const char * name)
 {
 	struct device_t * dev;
@@ -66,6 +71,7 @@ struct stepper_t * search_stepper(const char * name)
 	return (struct stepper_t *)dev->priv;
 }
 
+/* 注册一个步进电机设备 */
 bool_t register_stepper(struct device_t ** device, struct stepper_t * m)
 {
 	struct device_t * dev;
@@ -99,6 +105,7 @@ bool_t register_stepper(struct device_t ** device, struct stepper_t * m)
 	return TRUE;
 }
 
+/* 注销一个步进电机设备 */
 bool_t unregister_stepper(struct stepper_t * m)
 {
 	struct device_t * dev;
@@ -119,24 +126,28 @@ bool_t unregister_stepper(struct stepper_t * m)
 	return TRUE;
 }
 
+/* 步进电机enable */
 void stepper_enable(struct stepper_t * m)
 {
 	if(m && m->enable)
 		m->enable(m);
 }
 
+/* 步进电机disable */
 void stepper_disable(struct stepper_t * m)
 {
 	if(m && m->disable)
 		m->disable(m);
 }
 
+/* 步进电机move */
 void stepper_move(struct stepper_t * m, int step, int speed)
 {
 	if(m && m->move && (step != 0))
 		m->move(m, step, speed);
 }
 
+/* 步进电机busying读取 */
 int stepper_busying(struct stepper_t * m)
 {
 	if(m && m->busying)

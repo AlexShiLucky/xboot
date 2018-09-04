@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <watchdog/watchdog.h>
 
+/* 读取看门狗超时时间 */
 static ssize_t watchdog_read_timeout(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct watchdog_t * wdg = (struct watchdog_t *)kobj->priv;
@@ -38,6 +39,7 @@ static ssize_t watchdog_read_timeout(struct kobj_t * kobj, void * buf, size_t si
 	return sprintf(buf, "%d", timeout);
 }
 
+/* 写入看门狗超时时间 */
 static ssize_t watchdog_write_timeout(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct watchdog_t * wdg = (struct watchdog_t *)kobj->priv;
@@ -47,6 +49,7 @@ static ssize_t watchdog_write_timeout(struct kobj_t * kobj, void * buf, size_t s
 	return size;
 }
 
+/* 根据名称搜索一个看门狗设备 */
 struct watchdog_t * search_watchdog(const char * name)
 {
 	struct device_t * dev;
@@ -57,6 +60,7 @@ struct watchdog_t * search_watchdog(const char * name)
 	return (struct watchdog_t *)dev->priv;
 }
 
+/* 搜索第一个看门狗设备 */
 struct watchdog_t * search_first_watchdog(void)
 {
 	struct device_t * dev;
@@ -67,6 +71,7 @@ struct watchdog_t * search_first_watchdog(void)
 	return (struct watchdog_t *)dev->priv;
 }
 
+/* 注册一个看门狗设备 */
 bool_t register_watchdog(struct device_t ** device,struct watchdog_t * wdg)
 {
 	struct device_t * dev;
@@ -97,6 +102,7 @@ bool_t register_watchdog(struct device_t ** device,struct watchdog_t * wdg)
 	return TRUE;
 }
 
+/* 注销一个看门狗设备 */
 bool_t unregister_watchdog(struct watchdog_t * wdg)
 {
 	struct device_t * dev;
@@ -117,6 +123,7 @@ bool_t unregister_watchdog(struct watchdog_t * wdg)
 	return TRUE;
 }
 
+/* 设置看门狗设备超时时间 */
 void watchdog_set_timeout(struct watchdog_t * wdg, int timeout)
 {
 	if(wdg && wdg->set)
@@ -127,6 +134,7 @@ void watchdog_set_timeout(struct watchdog_t * wdg, int timeout)
 	}
 }
 
+/* 获取看门狗设备超时时间 */
 int watchdog_get_timeout(struct watchdog_t * wdg)
 {
 	if(wdg && wdg->get)

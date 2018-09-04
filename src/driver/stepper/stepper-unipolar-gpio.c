@@ -36,6 +36,7 @@ enum stepper_mode_t {
 	STEPPER_MODE_HALFSTEP	= 2,
 };
 
+/* 单极性gpio控制步进电机 */
 struct stepper_unipolar_gpio_pdata_t {
 	struct timer_t timer;
 	enum stepper_mode_t mode;
@@ -56,6 +57,7 @@ struct stepper_unipolar_gpio_pdata_t {
 	int busying;
 };
 
+/* 单极性stepper-gpio波形控制模式 */
 static void stepper_wave(struct stepper_unipolar_gpio_pdata_t * pdat)
 {
 	switch(pdat->index)
@@ -93,6 +95,7 @@ static void stepper_wave(struct stepper_unipolar_gpio_pdata_t * pdat)
 	}
 }
 
+/* 单极性stepper-gpio整步控制模式 */
 static void stepper_fullstep(struct stepper_unipolar_gpio_pdata_t * pdat)
 {
 	switch(pdat->index)
@@ -130,6 +133,7 @@ static void stepper_fullstep(struct stepper_unipolar_gpio_pdata_t * pdat)
 	}
 }
 
+/* 单极性stepper-gpio半步控制模式 */
 static void stepper_halfstep(struct stepper_unipolar_gpio_pdata_t * pdat)
 {
 	switch(pdat->index)
@@ -195,6 +199,7 @@ static void stepper_halfstep(struct stepper_unipolar_gpio_pdata_t * pdat)
 	}
 }
 
+/* 单极性stepper-gpio enable */
 static void stepper_unipolar_gpio_enable(struct stepper_t * m)
 {
 	struct stepper_unipolar_gpio_pdata_t * pdat = (struct stepper_unipolar_gpio_pdata_t *)m->priv;
@@ -215,6 +220,7 @@ static void stepper_unipolar_gpio_enable(struct stepper_t * m)
 	pdat->enable = 1;
 }
 
+/* 单极性stepper-gpio disable */
 static void stepper_unipolar_gpio_disable(struct stepper_t * m)
 {
 	struct stepper_unipolar_gpio_pdata_t * pdat = (struct stepper_unipolar_gpio_pdata_t *)m->priv;
@@ -225,6 +231,7 @@ static void stepper_unipolar_gpio_disable(struct stepper_t * m)
 	pdat->enable = 0;
 }
 
+/* 单极性stepper-gpio move */
 static void stepper_unipolar_gpio_move(struct stepper_t * m, int step, int speed)
 {
 	struct stepper_unipolar_gpio_pdata_t * pdat = (struct stepper_unipolar_gpio_pdata_t *)m->priv;
@@ -241,12 +248,14 @@ static void stepper_unipolar_gpio_move(struct stepper_t * m, int step, int speed
 	}
 }
 
+/* 单极性stepper-gpio busying读取 */
 static int stepper_unipolar_gpio_busying(struct stepper_t * m)
 {
 	struct stepper_unipolar_gpio_pdata_t * pdat = (struct stepper_unipolar_gpio_pdata_t *)m->priv;
 	return pdat->busying;
 }
 
+/* 单极性stepper-gpio 定时器回调函数 */
 static int stepper_unipolar_gpio_timer_function(struct timer_t * timer, void * data)
 {
 	struct stepper_t * m = (struct stepper_t *)(data);
@@ -283,6 +292,7 @@ static int stepper_unipolar_gpio_timer_function(struct timer_t * timer, void * d
 	return 0;
 }
 
+/* 单极性stepper-gpio 探针 */
 static struct device_t * stepper_unipolar_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct stepper_unipolar_gpio_pdata_t * pdat;
@@ -387,6 +397,7 @@ static struct device_t * stepper_unipolar_gpio_probe(struct driver_t * drv, stru
 	return dev;
 }
 
+/* 单极性stepper-gpio 移除 */
 static void stepper_unipolar_gpio_remove(struct device_t * dev)
 {
 	struct stepper_t * m = (struct stepper_t *)dev->priv;
@@ -402,10 +413,12 @@ static void stepper_unipolar_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* 单极性stepper-gpio 挂起 */
 static void stepper_unipolar_gpio_suspend(struct device_t * dev)
 {
 }
 
+/* 单极性stepper-gpio 释放 */
 static void stepper_unipolar_gpio_resume(struct device_t * dev)
 {
 }
@@ -418,11 +431,13 @@ static struct driver_t stepper_unipolar_gpio = {
 	.resume		= stepper_unipolar_gpio_resume,
 };
 
+/* 单极性stepper-gpio 驱动初始化 */
 static __init void stepper_unipolar_gpio_driver_init(void)
 {
 	register_driver(&stepper_unipolar_gpio);
 }
 
+/* 单极性stepper-gpio 驱动退出 */
 static __exit void stepper_unipolar_gpio_driver_exit(void)
 {
 	unregister_driver(&stepper_unipolar_gpio);

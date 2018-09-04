@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <time/delay.h>
 
+/* 纳秒延时 */
 void ndelay(u32_t ns)
 {
 	ktime_t timeout = ktime_add_ns(ktime_get(), ns);
@@ -36,6 +37,7 @@ void ndelay(u32_t ns)
 }
 EXPORT_SYMBOL(ndelay);
 
+/* 微秒延时 */
 void udelay(u32_t us)
 {
 	ktime_t timeout = ktime_add_us(ktime_get(), us);
@@ -43,6 +45,7 @@ void udelay(u32_t us)
 }
 EXPORT_SYMBOL(udelay);
 
+/* 毫秒延时 */
 void mdelay(u32_t ms)
 {
 	ktime_t timeout = ktime_add_ms(ktime_get(), ms);

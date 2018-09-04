@@ -30,27 +30,31 @@
 #include <gpio/gpio.h>
 #include <spi/spi.h>
 
+/* gpio模拟spi */
 struct spi_gpio_pdata_t {
-	int sclk;
+	int sclk;   /* SCLK引脚 */
 	int sclkcfg;
-	int mosi;
+	int mosi;   /* MOSI引脚 */
 	int mosicfg;
-	int miso;
+	int miso;   /* MISO引脚 */
 	int misocfg;
-	int cs;
+	int cs;     /* CS引脚 */
 	int cscfg;
 };
 
+/* 设置SCLK引脚 */
 static inline void spi_gpio_setsclk(struct spi_gpio_pdata_t * pdat, int state)
 {
 	gpio_set_value(pdat->sclk, state);
 }
 
+/* 设置MOSI引脚 */
 static inline void spi_gpio_setmosi(struct spi_gpio_pdata_t * pdat, int state)
 {
 	gpio_set_value(pdat->mosi, state);
 }
 
+/* 读取MISO引脚 */
 static inline int spi_gpio_getmiso(struct spi_gpio_pdata_t * pdat)
 {
 	return gpio_get_value(pdat->miso);
@@ -152,6 +156,7 @@ static u32_t spi_gpio_bitbang_txrx_mode3(struct spi_gpio_pdata_t * pdat, u32_t v
 	return val;
 }
 
+/* spi-gpio 8位传输 */
 static int spi_gpio_bitbang_xfer_8(struct spi_gpio_pdata_t * pdat,
 	u32_t (*txrx)(struct spi_gpio_pdata_t * pdat, u32_t val, int bits, int ns),
 	int ns, struct spi_msg_t * msg)
@@ -175,6 +180,7 @@ static int spi_gpio_bitbang_xfer_8(struct spi_gpio_pdata_t * pdat,
 	return msg->len - count;
 }
 
+/* spi-gpio 16位传输 */
 static int spi_gpio_bitbang_xfer_16(struct spi_gpio_pdata_t * pdat,
 	u32_t (*txrx)(struct spi_gpio_pdata_t * pdat, u32_t val, int bits, int ns),
 	int ns, struct spi_msg_t * msg)
@@ -198,6 +204,7 @@ static int spi_gpio_bitbang_xfer_16(struct spi_gpio_pdata_t * pdat,
 	return msg->len - count;
 }
 
+/* spi-gpio 32位传输 */
 static int spi_gpio_bitbang_xfer_32(struct spi_gpio_pdata_t * pdat,
 	u32_t (*txrx)(struct spi_gpio_pdata_t * pdat, u32_t val, int bits, int ns),
 	int ns, struct spi_msg_t * msg)
@@ -221,6 +228,7 @@ static int spi_gpio_bitbang_xfer_32(struct spi_gpio_pdata_t * pdat,
 	return msg->len - count;
 }
 
+/* spi-gpio传输一条消息 */
 static int spi_gpio_transfer(struct spi_t * spi, struct spi_msg_t * msg)
 {
 	struct spi_gpio_pdata_t * pdat = (struct spi_gpio_pdata_t *)spi->priv;
@@ -259,6 +267,7 @@ static int spi_gpio_transfer(struct spi_t * spi, struct spi_msg_t * msg)
 	return 0;
 }
 
+/* spi-gpio片选有效 */
 static void spi_gpio_select(struct spi_t * spi, int cs)
 {
 	struct spi_gpio_pdata_t * pdat = (struct spi_gpio_pdata_t *)spi->priv;
@@ -266,6 +275,7 @@ static void spi_gpio_select(struct spi_t * spi, int cs)
 		gpio_set_value(pdat->cs, 0);
 }
 
+/* spi-gpio片选无效 */
 static void spi_gpio_deselect(struct spi_t * spi, int cs)
 {
 	struct spi_gpio_pdata_t * pdat = (struct spi_gpio_pdata_t *)spi->priv;
@@ -273,6 +283,7 @@ static void spi_gpio_deselect(struct spi_t * spi, int cs)
 		gpio_set_value(pdat->cs, 1);
 }
 
+/* spi-gpio探针 */
 static struct device_t * spi_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct spi_gpio_pdata_t * pdat;
@@ -352,6 +363,7 @@ static struct device_t * spi_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	return dev;
 }
 
+/* spi-gpio移除 */
 static void spi_gpio_remove(struct device_t * dev)
 {
 	struct spi_t * spi = (struct spi_t *)dev->priv;
@@ -380,11 +392,13 @@ static struct driver_t spi_gpio = {
 	.resume		= spi_gpio_resume,
 };
 
+/* spi-gpio初始化 */
 static __init void spi_gpio_driver_init(void)
 {
 	register_driver(&spi_gpio);
 }
 
+/* spi-gpio退出 */
 static __exit void spi_gpio_driver_exit(void)
 {
 	unregister_driver(&spi_gpio);

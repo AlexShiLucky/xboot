@@ -121,11 +121,11 @@ bool_t register_driver(struct driver_t * drv)
 	if(search_driver(drv->name))
 		return FALSE;
 
-    /* 根据驱动名称申请一个drivername路径kobj */
+    /* 根据驱动名称申请一个xxxname路径kobj */
 	drv->kobj = kobj_alloc_directory(drv->name);
     /* 在drivername路径kobj下添加一个probe文件kobj */
 	kobj_add_regular(drv->kobj, "probe", NULL, driver_write_probe, drv);
-    /* 在kobj/class/driver路径下挂载drivername路径 */
+    /* 在kobj/class/driver路径下挂载xxxname路径 */
 	kobj_add(search_class_driver_kobj(), drv->kobj);
 
 	spin_lock_irqsave(&__driver_lock, flags);

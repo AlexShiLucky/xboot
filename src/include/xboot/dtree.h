@@ -11,9 +11,9 @@ extern "C" {
 #include <json.h>
 
 struct dtnode_t {
-	const char * name;
-	physical_addr_t addr;
-	json_value * value;
+    const char * name;
+    physical_addr_t addr;
+    json_value * value;
 };
 
 const char * dt_read_name(struct dtnode_t * n);

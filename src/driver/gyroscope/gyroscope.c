@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <gyroscope/gyroscope.h>
 
+/* 读取陀螺仪设备信息角速度 */
 static ssize_t gyroscope_read_palstance(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct gyroscope_t * g = (struct gyroscope_t *)kobj->priv;
@@ -37,6 +38,7 @@ static ssize_t gyroscope_read_palstance(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] rad/s", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
 }
 
+/* 根据名称搜索一个陀螺仪设备 */
 struct gyroscope_t * search_gyroscope(const char * name)
 {
 	struct device_t * dev;
@@ -47,6 +49,7 @@ struct gyroscope_t * search_gyroscope(const char * name)
 	return (struct gyroscope_t *)dev->priv;
 }
 
+/* 搜索第一个陀螺仪设备 */
 struct gyroscope_t * search_first_gyroscope(void)
 {
 	struct device_t * dev;
@@ -57,6 +60,7 @@ struct gyroscope_t * search_first_gyroscope(void)
 	return (struct gyroscope_t *)dev->priv;
 }
 
+/* 注册一个陀螺仪设备 */
 bool_t register_gyroscope(struct device_t ** device,struct gyroscope_t * g)
 {
 	struct device_t * dev;
@@ -87,6 +91,7 @@ bool_t register_gyroscope(struct device_t ** device,struct gyroscope_t * g)
 	return TRUE;
 }
 
+/* 注销一个陀螺仪设备 */
 bool_t unregister_gyroscope(struct gyroscope_t * g)
 {
 	struct device_t * dev;
@@ -107,6 +112,7 @@ bool_t unregister_gyroscope(struct gyroscope_t * g)
 	return TRUE;
 }
 
+/* 读取陀螺仪设备角速度 */
 bool_t gyroscope_get_palstance(struct gyroscope_t * g, int * x, int * y, int * z)
 {
 	if(g && g->get)

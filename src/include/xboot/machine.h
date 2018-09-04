@@ -8,30 +8,30 @@ extern "C" {
 #include <xboot.h>
 
 struct mmap_t {
-	const char * name;
-	virtual_addr_t virt;
-	physical_addr_t phys;
-	physical_size_t size;
-	int type;
+    const char * name;
+    virtual_addr_t virt;
+    physical_addr_t phys;
+    physical_size_t size;
+    int type;
 };
 
 struct machine_t {
-	struct kobj_t * kobj;
-	struct list_head list;
+    struct kobj_t * kobj;
+    struct list_head list;
 
-	const char * name;
-	const char * desc;
-	const struct mmap_t * map;
+    const char * name;
+    const char * desc;
+    const struct mmap_t * map;
 
-	int (*detect)(struct machine_t * mach);
-	void (*memmap)(struct machine_t * mach);
-	void (*shutdown)(struct machine_t * mach);
-	void (*reboot)(struct machine_t * mach);
-	void (*sleep)(struct machine_t * mach);
-	void (*cleanup)(struct machine_t * mach);
-	void (*logger)(struct machine_t * mach, const char * buf, int count);
-	const char * (*uniqueid)(struct machine_t * mach);
-	int (*keygen)(struct machine_t * mach, const char * msg, void * key);
+    int (*detect)(struct machine_t * mach);
+    void (*memmap)(struct machine_t * mach);
+    void (*shutdown)(struct machine_t * mach);
+    void (*reboot)(struct machine_t * mach);
+    void (*sleep)(struct machine_t * mach);
+    void (*cleanup)(struct machine_t * mach);
+    void (*logger)(struct machine_t * mach, const char * buf, int count);
+    const char * (*uniqueid)(struct machine_t * mach);
+    int (*keygen)(struct machine_t * mach, const char * msg, void * key);
 };
 
 bool_t register_machine(struct machine_t * mach);
@@ -45,10 +45,10 @@ int machine_logger(const char * fmt, ...);
 const char * machine_uniqueid(void);
 int machine_keygen(const char * msg, void * key);
 
-#if	defined(CONFIG_NO_LOG) && (CONFIG_NO_LOG > 0)
-#define LOG(fmt, arg...)	do { } while(0)
+#if defined(CONFIG_NO_LOG) && (CONFIG_NO_LOG > 0)
+#define LOG(fmt, arg...)    do { } while(0)
 #else
-#define LOG(fmt, arg...)	do { machine_logger(" " fmt "\r\n", ##arg); } while(0)
+#define LOG(fmt, arg...)    do { machine_logger(" " fmt "\r\n", ##arg); } while(0)
 #endif
 
 #ifdef __cplusplus

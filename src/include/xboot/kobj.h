@@ -8,38 +8,38 @@ extern "C" {
 #include <xboot.h>
 
 enum kobj_type_t {
-	KOBJ_TYPE_DIR,  /* 路径类型 */
-	KOBJ_TYPE_REG,  /* 文件类型 */
+    KOBJ_TYPE_DIR,  /* 路径类型 */
+    KOBJ_TYPE_REG,  /* 文件类型 */
 };
 
 struct kobj_t
 {
-	/* kobj name */
-	char * name;
+    /* kobj name */
+    char * name;
 
-	/* kobj type DIR or REG */
-	enum kobj_type_t type;
+    /* kobj type DIR or REG */
+    enum kobj_type_t type;
 
-	/* kobj's parent */
-	struct kobj_t * parent;
+    /* kobj's parent */
+    struct kobj_t * parent;
 
-	/* kobj's entry */
-	struct list_head entry;
+    /* kobj's entry */
+    struct list_head entry;
 
-	/* kobj's children */
-	struct list_head children;
+    /* kobj's children */
+    struct list_head children;
 
-	/* kobj lock */
-	spinlock_t lock;
+    /* kobj lock */
+    spinlock_t lock;
 
-	/* kobj read */
-	ssize_t (*read)(struct kobj_t * kobj, void * buf, size_t size);
+    /* kobj read */
+    ssize_t (*read)(struct kobj_t * kobj, void * buf, size_t size);
 
-	/* kobj write */
-	ssize_t (*write)(struct kobj_t * kobj, void * buf, size_t size);
+    /* kobj write */
+    ssize_t (*write)(struct kobj_t * kobj, void * buf, size_t size);
 
-	/* private data */
-	void * priv;
+    /* private data */
+    void * priv;
 };
 
 typedef ssize_t (*kobj_read_t)(struct kobj_t * kobj, void * buf, size_t size);

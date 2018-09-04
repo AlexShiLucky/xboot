@@ -28,18 +28,21 @@
 
 #include <gpio/gpio.h>
 
+/* 读取gpio基地址 */
 static ssize_t gpiochip_read_base(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct gpiochip_t * chip = (struct gpiochip_t *)kobj->priv;
 	return sprintf(buf, "%d", chip->base);
 }
 
+/* 读取gpio数 */
 static ssize_t gpiochip_read_ngpio(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct gpiochip_t * chip = (struct gpiochip_t *)kobj->priv;
 	return sprintf(buf, "%d", chip->ngpio);
 }
 
+/* 搜索一个gpio设备 */
 struct gpiochip_t * search_gpiochip(int gpio)
 {
 	struct device_t * pos, * n;
@@ -54,6 +57,7 @@ struct gpiochip_t * search_gpiochip(int gpio)
 	return NULL;
 }
 
+/* 注册一个gpio设备 */
 bool_t register_gpiochip(struct device_t ** device, struct gpiochip_t * chip)
 {
 	struct device_t * dev;
@@ -88,6 +92,7 @@ bool_t register_gpiochip(struct device_t ** device, struct gpiochip_t * chip)
 	return TRUE;
 }
 
+/* 注销一个gpio设备 */
 bool_t unregister_gpiochip(struct gpiochip_t * chip)
 {
 	struct device_t * dev;
@@ -111,11 +116,13 @@ bool_t unregister_gpiochip(struct gpiochip_t * chip)
 	return TRUE;
 }
 
+/* 判断gpio是否有效 */
 int gpio_is_valid(int gpio)
 {
 	return search_gpiochip(gpio) ? 1 : 0;
 }
 
+/* 设置gpio配置 */
 void gpio_set_cfg(int gpio, int cfg)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -124,6 +131,7 @@ void gpio_set_cfg(int gpio, int cfg)
 		chip->set_cfg(chip, gpio - chip->base, cfg);
 }
 
+/* 读取gpio配置 */
 int gpio_get_cfg(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -133,6 +141,7 @@ int gpio_get_cfg(int gpio)
 	return 0;
 }
 
+/* 设置gpio pull值*/
 void gpio_set_pull(int gpio, enum gpio_pull_t pull)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -141,6 +150,7 @@ void gpio_set_pull(int gpio, enum gpio_pull_t pull)
 		chip->set_pull(chip, gpio - chip->base, pull);
 }
 
+/* 读取gpio pull值 */
 enum gpio_pull_t gpio_get_pull(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -150,6 +160,7 @@ enum gpio_pull_t gpio_get_pull(int gpio)
 	return GPIO_PULL_NONE;
 }
 
+/* 设置gpio驱动能力 */
 void gpio_set_drv(int gpio, enum gpio_drv_t drv)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -158,6 +169,7 @@ void gpio_set_drv(int gpio, enum gpio_drv_t drv)
 		chip->set_drv(chip, gpio - chip->base, drv);
 }
 
+/* 读取gpio驱动能力 */
 enum gpio_drv_t gpio_get_drv(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -167,6 +179,7 @@ enum gpio_drv_t gpio_get_drv(int gpio)
 	return GPIO_DRV_WEAK;
 }
 
+/* 设置gpio速率 */
 void gpio_set_rate(int gpio, enum gpio_rate_t rate)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -175,6 +188,7 @@ void gpio_set_rate(int gpio, enum gpio_rate_t rate)
 		chip->set_rate(chip, gpio - chip->base, rate);
 }
 
+/* 读取gpio速率 */
 enum gpio_rate_t gpio_get_rate(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -184,6 +198,7 @@ enum gpio_rate_t gpio_get_rate(int gpio)
 	return GPIO_RATE_SLOW;
 }
 
+/* 设置gpio方向 */
 void gpio_set_direction(int gpio, enum gpio_direction_t dir)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -192,6 +207,7 @@ void gpio_set_direction(int gpio, enum gpio_direction_t dir)
 		chip->set_dir(chip, gpio - chip->base, dir);
 }
 
+/* 读取gpio方向 */
 enum gpio_direction_t gpio_get_direction(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -201,6 +217,7 @@ enum gpio_direction_t gpio_get_direction(int gpio)
 	return GPIO_DIRECTION_INPUT;
 }
 
+/* 设置gpio输出值 */
 void gpio_set_value(int gpio, int value)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -209,6 +226,7 @@ void gpio_set_value(int gpio, int value)
 		chip->set_value(chip, gpio - chip->base, value);
 }
 
+/* 读取gpio输入值 */
 int gpio_get_value(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -218,6 +236,7 @@ int gpio_get_value(int gpio)
 	return 0;
 }
 
+/* 设置gpio输出数据 */
 void gpio_direction_output(int gpio, int value)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -231,6 +250,7 @@ void gpio_direction_output(int gpio, int value)
 		chip->set_value(chip, gpio - chip->base, value);
 }
 
+/* 读取gpio输入数据 */
 int gpio_direction_input(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);
@@ -245,6 +265,7 @@ int gpio_direction_input(int gpio)
 	return 0;
 }
 
+/* gpio中断调用 */
 int gpio_to_irq(int gpio)
 {
 	struct gpiochip_t * chip = search_gpiochip(gpio);

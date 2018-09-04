@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <thermometer/thermometer.h>
 
+/* 读取温度计设备稳定 */
 static ssize_t thermometer_read_temperature(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct thermometer_t * thermometer = (struct thermometer_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t thermometer_read_temperature(struct kobj_t * kobj, void * buf, si
 	return sprintf(buf, "%d.%03dC", temperature / 1000, abs(temperature % 1000));
 }
 
+/* 根据名称搜索一个温度计设备 */
 struct thermometer_t * search_thermometer(const char * name)
 {
 	struct device_t * dev;
@@ -46,6 +48,7 @@ struct thermometer_t * search_thermometer(const char * name)
 	return (struct thermometer_t *)dev->priv;
 }
 
+/* 搜索第一个温度计设备 */
 struct thermometer_t * search_first_thermometer(void)
 {
 	struct device_t * dev;
@@ -56,6 +59,7 @@ struct thermometer_t * search_first_thermometer(void)
 	return (struct thermometer_t *)dev->priv;
 }
 
+/* 注册一个温度计设备 */
 bool_t register_thermometer(struct device_t ** device,struct thermometer_t * thermometer)
 {
 	struct device_t * dev;
@@ -86,6 +90,7 @@ bool_t register_thermometer(struct device_t ** device,struct thermometer_t * the
 	return TRUE;
 }
 
+/* 注销一个温度计设备 */
 bool_t unregister_thermometer(struct thermometer_t * thermometer)
 {
 	struct device_t * dev;
@@ -106,6 +111,7 @@ bool_t unregister_thermometer(struct thermometer_t * thermometer)
 	return TRUE;
 }
 
+/* 获取温度计设备温度 */
 int thermometer_get_temperature(struct thermometer_t * thermometer)
 {
 	if(thermometer && thermometer->get)

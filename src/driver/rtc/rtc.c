@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <rtc/rtc.h>
 
+/* 读取rtc设备时间 */
 static ssize_t rtc_time_read(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
@@ -40,6 +41,7 @@ static ssize_t rtc_time_read(struct kobj_t * kobj, void * buf, size_t size)
 	return sprintf(buf, "%04u-%02u-%02u %01u %02u:%02u:%02u", (u32_t)time.year, (u32_t)time.month, (u32_t)time.day, (u32_t)time.week, (u32_t)time.hour, (u32_t)time.minute, (u32_t)time.second);
 }
 
+/* 写入rtc设备时间 */
 static ssize_t rtc_time_write(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
@@ -54,6 +56,7 @@ static ssize_t rtc_time_write(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个rtc设备 */
 struct rtc_t * search_rtc(const char * name)
 {
 	struct device_t * dev;
@@ -64,6 +67,7 @@ struct rtc_t * search_rtc(const char * name)
 	return (struct rtc_t *)dev->priv;
 }
 
+/* 搜索第一个rtc设备 */
 struct rtc_t * search_first_rtc(void)
 {
 	struct device_t * dev;
@@ -74,6 +78,7 @@ struct rtc_t * search_first_rtc(void)
 	return (struct rtc_t *)dev->priv;
 }
 
+/* 注册一个rtc设备 */
 bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
 {
 	struct device_t * dev;
@@ -104,6 +109,7 @@ bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
 	return TRUE;
 }
 
+/* 注销一个rtc设备 */
 bool_t unregister_rtc(struct rtc_t * rtc)
 {
 	struct device_t * dev;

@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <gmeter/gmeter.h>
 
+/* 读取加速度计设备信息加速度 */
 static ssize_t gmeter_read_acceleration(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct gmeter_t * g = (struct gmeter_t *)kobj->priv;
@@ -37,6 +38,7 @@ static ssize_t gmeter_read_acceleration(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] m/s^2", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
 }
 
+/* 根据名称搜索一个加速度计设备 */
 struct gmeter_t * search_gmeter(const char * name)
 {
 	struct device_t * dev;
@@ -47,6 +49,7 @@ struct gmeter_t * search_gmeter(const char * name)
 	return (struct gmeter_t *)dev->priv;
 }
 
+/* 搜索第一个加速度计设备 */
 struct gmeter_t * search_first_gmeter(void)
 {
 	struct device_t * dev;
@@ -57,6 +60,7 @@ struct gmeter_t * search_first_gmeter(void)
 	return (struct gmeter_t *)dev->priv;
 }
 
+/* 注册一个加速度计设备 */
 bool_t register_gmeter(struct device_t ** device,struct gmeter_t * g)
 {
 	struct device_t * dev;
@@ -87,6 +91,7 @@ bool_t register_gmeter(struct device_t ** device,struct gmeter_t * g)
 	return TRUE;
 }
 
+/* 注销一个加速度计设备 */
 bool_t unregister_gmeter(struct gmeter_t * g)
 {
 	struct device_t * dev;
@@ -107,6 +112,7 @@ bool_t unregister_gmeter(struct gmeter_t * g)
 	return TRUE;
 }
 
+/* 读取加速度计设备加速度 */
 bool_t gmeter_get_acceleration(struct gmeter_t * g, int * x, int * y, int * z)
 {
 	if(g && g->get)

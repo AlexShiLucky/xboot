@@ -29,12 +29,14 @@
 #include <xboot.h>
 #include <vibrator/vibrator.h>
 
+/* 振动器设备状态读取 */
 static ssize_t vibrator_read_state(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct vibrator_t * vib = (struct vibrator_t *)kobj->priv;
 	return sprintf(buf, "%d", vibrator_get_state(vib));
 }
 
+/* 振动器设备状态写入 */
 static ssize_t vibrator_write_state(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct vibrator_t * vib = (struct vibrator_t *)kobj->priv;
@@ -49,6 +51,7 @@ static ssize_t vibrator_write_play(struct kobj_t * kobj, void * buf, size_t size
 	return size;
 }
 
+/* 根据名称搜索一个振动器设备 */
 struct vibrator_t * search_vibrator(const char * name)
 {
 	struct device_t * dev;
@@ -59,6 +62,7 @@ struct vibrator_t * search_vibrator(const char * name)
 	return (struct vibrator_t *)dev->priv;
 }
 
+/* 搜索第一个振动器设备 */
 struct vibrator_t * search_first_vibrator(void)
 {
 	struct device_t * dev;
@@ -69,6 +73,7 @@ struct vibrator_t * search_first_vibrator(void)
 	return (struct vibrator_t *)dev->priv;
 }
 
+/* 注册一个振动器设备 */
 bool_t register_vibrator(struct device_t ** device, struct vibrator_t * vib)
 {
 	struct device_t * dev;
@@ -100,6 +105,7 @@ bool_t register_vibrator(struct device_t ** device, struct vibrator_t * vib)
 	return TRUE;
 }
 
+/* 注销以一个振动器设备 */
 bool_t unregister_vibrator(struct vibrator_t * vib)
 {
 	struct device_t * dev;
@@ -120,12 +126,14 @@ bool_t unregister_vibrator(struct vibrator_t * vib)
 	return TRUE;
 }
 
+/* 设置振动器状态 */
 void vibrator_set_state(struct vibrator_t * vib, int state)
 {
 	if(vib && vib->set)
 		vib->set(vib, (state > 0) ? 1 : 0);
 }
 
+/* 获取振动器状态 */
 int vibrator_get_state(struct vibrator_t * vib)
 {
 	if(vib && vib->get)
@@ -133,12 +141,14 @@ int vibrator_get_state(struct vibrator_t * vib)
 	return 0;
 }
 
+/* 设置振动器震动时间 */
 void vibrator_vibrate(struct vibrator_t * vib, int state, int millisecond)
 {
 	if(vib && vib->vibrate)
 		vib->vibrate(vib, (state > 0) ? 1 : 0, (millisecond > 0) ? millisecond : 0);
 }
 
+/* 将一个字符转为摩尔斯电码 */
 static const char * morse_code(char c)
 {
 	switch(c)
@@ -286,6 +296,7 @@ static const char * morse_code(char c)
 	return "";
 }
 
+/* 振动器play */
 void vibrator_play(struct vibrator_t * vib, const char * morse)
 {
 	char * p = (char *)morse;
@@ -299,7 +310,7 @@ void vibrator_play(struct vibrator_t * vib, const char * morse)
 	{
 		if(isspace(*p))
 		{
-			vibrator_vibrate(vib, 0, 100 * 7);
+			vibrator_vibrate(vib, 0, 100 * 7);       /* OFF 700ms */
 			continue;
 		}
 
@@ -307,15 +318,15 @@ void vibrator_play(struct vibrator_t * vib, const char * morse)
 		while(*q)
 		{
 			if(*q == '.')
-				vibrator_vibrate(vib, 1, 100 * 1);
+				vibrator_vibrate(vib, 1, 100 * 1);  /* .表示ON 100ms */
 			else if(*q == '-')
-				vibrator_vibrate(vib, 1, 100 * 3);
+				vibrator_vibrate(vib, 1, 100 * 3);  /* -表示ON 300ms */
 
-			vibrator_vibrate(vib, 0, 100);
+			vibrator_vibrate(vib, 0, 100);          /* OFF 100ms */
 			q++;
 		}
 
-		vibrator_vibrate(vib, 0, 100 * 3);
+		vibrator_vibrate(vib, 0, 100 * 3);          /* OFF 300ms */
 		p++;
 	}
 }

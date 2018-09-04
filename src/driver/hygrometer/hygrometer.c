@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <hygrometer/hygrometer.h>
 
+/* 读取湿度计设备湿度 */
 static ssize_t hygrometer_read_humidity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct hygrometer_t * hygrometer = (struct hygrometer_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t hygrometer_read_humidity(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "%d%%", humidity);
 }
 
+/* 根据名称搜索一个湿度计设备 */
 struct hygrometer_t * search_hygrometer(const char * name)
 {
 	struct device_t * dev;
@@ -46,6 +48,7 @@ struct hygrometer_t * search_hygrometer(const char * name)
 	return (struct hygrometer_t *)dev->priv;
 }
 
+/* 搜索第一个湿度计设备 */
 struct hygrometer_t * search_first_hygrometer(void)
 {
 	struct device_t * dev;
@@ -56,6 +59,7 @@ struct hygrometer_t * search_first_hygrometer(void)
 	return (struct hygrometer_t *)dev->priv;
 }
 
+/* 注册一个湿度计设备 */
 bool_t register_hygrometer(struct device_t ** device,struct hygrometer_t * hygrometer)
 {
 	struct device_t * dev;
@@ -86,6 +90,7 @@ bool_t register_hygrometer(struct device_t ** device,struct hygrometer_t * hygro
 	return TRUE;
 }
 
+/* 注销一个湿度计设备 */
 bool_t unregister_hygrometer(struct hygrometer_t * hygrometer)
 {
 	struct device_t * dev;
@@ -106,6 +111,7 @@ bool_t unregister_hygrometer(struct hygrometer_t * hygrometer)
 	return TRUE;
 }
 
+/* 读取湿度计设备信息湿度 */
 int hygrometer_get_humidity(struct hygrometer_t * hygrometer)
 {
 	if(hygrometer && hygrometer->get)

@@ -29,36 +29,42 @@
 #include <xboot.h>
 #include <framebuffer/framebuffer.h>
 
+/* 帧缓存宽度(像素)信息读取 */
 static ssize_t framebuffer_read_width(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
 	return sprintf(buf, "%u", framebuffer_get_width(fb));
 }
 
+/* 帧缓存高度(像素)信息读取 */
 static ssize_t framebuffer_read_height(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
 	return sprintf(buf, "%u", framebuffer_get_height(fb));
 }
 
+/* 帧缓存宽度(毫米数)信息读取 */
 static ssize_t framebuffer_read_pwidth(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
 	return sprintf(buf, "%u", framebuffer_get_pwidth(fb));
 }
 
+/* 帧缓存高度(毫米数)信息读取 */
 static ssize_t framebuffer_read_pheight(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
 	return sprintf(buf, "%u", framebuffer_get_pheight(fb));
 }
 
+/* 帧缓存每像素的bit数信息读取 */
 static ssize_t framebuffer_read_bpp(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
 	return sprintf(buf, "%u", framebuffer_get_bpp(fb));
 }
 
+/* 帧缓存亮度信息读取 */
 static ssize_t framebuffer_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
@@ -68,6 +74,7 @@ static ssize_t framebuffer_read_brightness(struct kobj_t * kobj, void * buf, siz
 	return sprintf(buf, "%d", brightness);
 }
 
+/* 帧缓存亮度信息写入 */
 static ssize_t framebuffer_write_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
@@ -77,11 +84,13 @@ static ssize_t framebuffer_write_brightness(struct kobj_t * kobj, void * buf, si
 	return size;
 }
 
+/* 帧缓存最大亮度信息读取 */
 static ssize_t framebuffer_read_max_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
 }
 
+/* 根据名称搜索一个帧缓存设备 */
 struct framebuffer_t * search_framebuffer(const char * name)
 {
 	struct device_t * dev;
@@ -92,6 +101,7 @@ struct framebuffer_t * search_framebuffer(const char * name)
 	return (struct framebuffer_t *)dev->priv;
 }
 
+/* 搜索第一个帧缓存设备 */
 struct framebuffer_t * search_first_framebuffer(void)
 {
 	struct device_t * dev;
@@ -102,6 +112,7 @@ struct framebuffer_t * search_first_framebuffer(void)
 	return (struct framebuffer_t *)dev->priv;
 }
 
+/* 注册一个帧缓存设备 */
 bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb)
 {
 	struct device_t * dev;
@@ -145,6 +156,7 @@ bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb
 	return TRUE;
 }
 
+/* 注销一个帧缓存设备 */
 bool_t unregister_framebuffer(struct framebuffer_t * fb)
 {
 	struct device_t * dev;
@@ -176,6 +188,7 @@ bool_t unregister_framebuffer(struct framebuffer_t * fb)
 	return TRUE;
 }
 
+/* 帧缓存宽度(像素)信息读取 */
 int framebuffer_get_width(struct framebuffer_t * fb)
 {
 	if(fb)
@@ -183,6 +196,7 @@ int framebuffer_get_width(struct framebuffer_t * fb)
 	return 0;
 }
 
+/* 帧缓存高度(像素)信息读取 */
 int framebuffer_get_height(struct framebuffer_t * fb)
 {
 	if(fb)
@@ -190,6 +204,7 @@ int framebuffer_get_height(struct framebuffer_t * fb)
 	return 0;
 }
 
+/* 帧缓存宽度(毫米数)信息读取 */
 int framebuffer_get_pwidth(struct framebuffer_t * fb)
 {
 	if(fb)
@@ -197,6 +212,7 @@ int framebuffer_get_pwidth(struct framebuffer_t * fb)
 	return 0;
 }
 
+/* 帧缓存高度(毫米数)信息读取 */
 int framebuffer_get_pheight(struct framebuffer_t * fb)
 {
 	if(fb)
@@ -204,6 +220,7 @@ int framebuffer_get_pheight(struct framebuffer_t * fb)
 	return 0;
 }
 
+/* 帧缓存每像素的bit数信息读取 */
 int framebuffer_get_bpp(struct framebuffer_t * fb)
 {
 	if(fb)
@@ -211,6 +228,7 @@ int framebuffer_get_bpp(struct framebuffer_t * fb)
 	return 0;
 }
 
+/* 创建一个帧缓存着色 */
 struct render_t * framebuffer_create_render(struct framebuffer_t * fb)
 {
 	if(fb && fb->create)
@@ -218,18 +236,21 @@ struct render_t * framebuffer_create_render(struct framebuffer_t * fb)
 	return NULL;
 }
 
+/* 销毁一个帧缓存着色 */
 void framebuffer_destroy_render(struct framebuffer_t * fb, struct render_t * render)
 {
 	if(fb && fb->destroy)
 		fb->destroy(fb, render);
 }
 
+/* 读取当前帧缓存着色 */
 void framebuffer_present_render(struct framebuffer_t * fb, struct render_t * render)
 {
 	if(fb && fb->present)
 		fb->present(fb, render);
 }
 
+/* 设置背光亮度 */
 void framebuffer_set_backlight(struct framebuffer_t * fb, int brightness)
 {
 	if(fb && fb->setbl)
@@ -242,6 +263,7 @@ void framebuffer_set_backlight(struct framebuffer_t * fb, int brightness)
 	}
 }
 
+/* 读取背光亮度 */
 int framebuffer_get_backlight(struct framebuffer_t * fb)
 {
 	if(fb && fb->getbl)

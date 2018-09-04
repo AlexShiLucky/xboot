@@ -49,6 +49,7 @@ struct stepper_pluse_dir_pdata_t {
 	int busying;
 };
 
+/* 脉冲stepper enable */
 static void stepper_pluse_dir_enable(struct stepper_t * m)
 {
 	struct stepper_pluse_dir_pdata_t * pdat = (struct stepper_pluse_dir_pdata_t *)m->priv;
@@ -57,6 +58,7 @@ static void stepper_pluse_dir_enable(struct stepper_t * m)
 	pdat->enable = 1;
 }
 
+/* 脉冲stepper disable */
 static void stepper_pluse_dir_disable(struct stepper_t * m)
 {
 	struct stepper_pluse_dir_pdata_t * pdat = (struct stepper_pluse_dir_pdata_t *)m->priv;
@@ -65,6 +67,7 @@ static void stepper_pluse_dir_disable(struct stepper_t * m)
 	pdat->enable = 0;
 }
 
+/* 脉冲stepper move */
 static void stepper_pluse_dir_move(struct stepper_t * m, int step, int speed)
 {
 	struct stepper_pluse_dir_pdata_t * pdat = (struct stepper_pluse_dir_pdata_t *)m->priv;
@@ -84,12 +87,14 @@ static void stepper_pluse_dir_move(struct stepper_t * m, int step, int speed)
 	}
 }
 
+/* 脉冲stepper busying */
 static int stepper_pluse_dir_busying(struct stepper_t * m)
 {
 	struct stepper_pluse_dir_pdata_t * pdat = (struct stepper_pluse_dir_pdata_t *)m->priv;
 	return pdat->busying;
 }
 
+/* 脉冲stepper 定时器回调函数 */
 static int stepper_pluse_dir_timer_function(struct timer_t * timer, void * data)
 {
 	struct stepper_t * m = (struct stepper_t *)(data);
@@ -121,6 +126,7 @@ static int stepper_pluse_dir_timer_function(struct timer_t * timer, void * data)
 	return 0;
 }
 
+/* 脉冲stepper 探针 */
 static struct device_t * stepper_pluse_dir_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct stepper_pluse_dir_pdata_t * pdat;
@@ -207,6 +213,7 @@ static struct device_t * stepper_pluse_dir_probe(struct driver_t * drv, struct d
 	return dev;
 }
 
+/* 脉冲stepper 移除 */
 static void stepper_pluse_dir_remove(struct device_t * dev)
 {
 	struct stepper_t * m = (struct stepper_t *)dev->priv;
@@ -222,14 +229,17 @@ static void stepper_pluse_dir_remove(struct device_t * dev)
 	}
 }
 
+/* 脉冲stepper 挂起 */
 static void stepper_pluse_dir_suspend(struct device_t * dev)
 {
 }
 
+/* 脉冲stepper 释放 */
 static void stepper_pluse_dir_resume(struct device_t * dev)
 {
 }
 
+/* 脉冲stepper 驱动控制块 */
 static struct driver_t stepper_pluse_dir = {
 	.name		= "stepper-pluse-dir",
 	.probe		= stepper_pluse_dir_probe,
@@ -238,11 +248,13 @@ static struct driver_t stepper_pluse_dir = {
 	.resume		= stepper_pluse_dir_resume,
 };
 
+/* 脉冲stepper 驱动初始化 */
 static __init void stepper_pluse_dir_driver_init(void)
 {
 	register_driver(&stepper_pluse_dir);
 }
 
+/* 脉冲stepper 驱动退出 */
 static __exit void stepper_pluse_dir_driver_exit(void)
 {
 	unregister_driver(&stepper_pluse_dir);

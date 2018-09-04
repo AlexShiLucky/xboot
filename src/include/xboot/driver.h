@@ -11,14 +11,14 @@ struct device_t;
 
 struct driver_t
 {
-	struct kobj_t * kobj;
-	struct hlist_node node;
+    struct kobj_t * kobj;
+    struct hlist_node node;
 
-	char * name;
-	struct device_t * (*probe)(struct driver_t * drv, struct dtnode_t * dt);
-	void (*remove)(struct device_t * dev);
-	void (*suspend)(struct device_t * dev);
-	void (*resume)(struct device_t * dev);
+    char * name;
+    struct device_t * (*probe)(struct driver_t * drv, struct dtnode_t * dt);
+    void (*remove)(struct device_t * dev);
+    void (*suspend)(struct device_t * dev);
+    void (*resume)(struct device_t * dev);
 };
 
 struct driver_t * search_driver(const char * name);

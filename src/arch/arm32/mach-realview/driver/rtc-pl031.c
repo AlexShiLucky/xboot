@@ -114,6 +114,7 @@ static u32_t from_rtc_time(struct rtc_time_t * rt)
 	return ((((u32_t)(year/4 - year/100 + year/400 + 367*month/12 + rt->day) + year*365 - 719499)*24 + rt->hour)*60 + rt->minute)*60 + rt->second;
 }
 
+/* rtc设备pl031设置时间具体实现 */
 static bool_t rtc_pl031_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	struct rtc_pl031_pdata_t * pdat = (struct rtc_pl031_pdata_t *)rtc->priv;
@@ -122,6 +123,7 @@ static bool_t rtc_pl031_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 	return TRUE;
 }
 
+/* rtc设备pl031获取时间具体实现 */
 static bool_t rtc_pl031_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	struct rtc_pl031_pdata_t * pdat = (struct rtc_pl031_pdata_t *)rtc->priv;
@@ -130,6 +132,7 @@ static bool_t rtc_pl031_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 	return TRUE;
 }
 
+/* rtc设备pl031探针具体实现 */
 static struct device_t * rtc_pl031_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct rtc_pl031_pdata_t * pdat;
@@ -158,8 +161,8 @@ static struct device_t * rtc_pl031_probe(struct driver_t * drv, struct dtnode_t 
 	pdat->virt = virt;
 
 	rtc->name = alloc_device_name(dt_read_name(n), -1);
-	rtc->settime = rtc_pl031_settime;
-	rtc->gettime = rtc_pl031_gettime;
+	rtc->settime = rtc_pl031_settime;   /* rtc设备pl031设置时间具体实现 */
+	rtc->gettime = rtc_pl031_gettime;   /* rtc设备pl031获取时间具体实现 */
 	rtc->priv = pdat;
 
 	write32(pdat->virt + RTC_IMSC, 1);
@@ -178,6 +181,7 @@ static struct device_t * rtc_pl031_probe(struct driver_t * drv, struct dtnode_t 
 	return dev;
 }
 
+/* rtc设备pl031移除具体实现 */
 static void rtc_pl031_remove(struct device_t * dev)
 {
 	struct rtc_t * rtc = (struct rtc_t *)dev->priv;
@@ -194,14 +198,17 @@ static void rtc_pl031_remove(struct device_t * dev)
 	}
 }
 
+/* rtc设备pl031挂起具体实现 */
 static void rtc_pl031_suspend(struct device_t * dev)
 {
 }
 
+/* rtc设备pl031释放具体实现 */
 static void rtc_pl031_resume(struct device_t * dev)
 {
 }
 
+/* rtc设备pl031驱动控制块 */
 static struct driver_t rtc_pl031 = {
 	.name		= "rtc-pl031",
 	.probe		= rtc_pl031_probe,
@@ -210,11 +217,13 @@ static struct driver_t rtc_pl031 = {
 	.resume		= rtc_pl031_resume,
 };
 
+/* rtc设备pl031驱动初始化 */
 static __init void rtc_pl031_driver_init(void)
 {
 	register_driver(&rtc_pl031);
 }
 
+/* rtc设备pl031驱动退出 */
 static __exit void rtc_pl031_driver_exit(void)
 {
 	unregister_driver(&rtc_pl031);

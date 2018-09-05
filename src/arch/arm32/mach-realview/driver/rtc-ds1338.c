@@ -69,6 +69,7 @@ struct rtc_ds1338_pdata_t {
 	struct i2c_device_t * dev;
 };
 
+/* ds1338读 */
 static bool_t ds1338_read(struct i2c_device_t * dev, u8_t reg, u8_t * buf, int len)
 {
 	struct i2c_msg_t msgs[2];
@@ -88,6 +89,7 @@ static bool_t ds1338_read(struct i2c_device_t * dev, u8_t reg, u8_t * buf, int l
 	return TRUE;
 }
 
+/* ds1338写 */
 static bool_t ds1338_write(struct i2c_device_t * dev, u8_t reg, u8_t * buf, int len)
 {
 	struct i2c_msg_t msg;
@@ -108,6 +110,7 @@ static bool_t ds1338_write(struct i2c_device_t * dev, u8_t reg, u8_t * buf, int 
 	return TRUE;
 }
 
+/* rtc设备ds1338设置时间具体实现 */
 static bool_t rtc_ds1338_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	struct rtc_ds1338_pdata_t * pdat = (struct rtc_ds1338_pdata_t *)rtc->priv;
@@ -126,6 +129,7 @@ static bool_t rtc_ds1338_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 	return FALSE;
 }
 
+/* rtc设备ds1338获取时间具体实现 */
 static bool_t rtc_ds1338_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	struct rtc_ds1338_pdata_t * pdat = (struct rtc_ds1338_pdata_t *)rtc->priv;
@@ -144,6 +148,7 @@ static bool_t rtc_ds1338_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 	return TRUE;
 }
 
+/* rtc设备ds1338探针具体实现 */
 static struct device_t * rtc_ds1338_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct rtc_ds1338_pdata_t * pdat;
@@ -152,6 +157,7 @@ static struct device_t * rtc_ds1338_probe(struct driver_t * drv, struct dtnode_t
 	struct i2c_device_t * i2cdev;
 	u8_t buf[8], ctrl;
 
+    /* 分配一个i2c设备用于rtc ds1338通信 */
 	i2cdev = i2c_device_alloc(dt_read_string(n, "i2c-bus", NULL), 0x68, 0);
 	if(!i2cdev)
 		return NULL;
@@ -219,8 +225,8 @@ static struct device_t * rtc_ds1338_probe(struct driver_t * drv, struct dtnode_t
 	pdat->dev = i2cdev;
 
 	rtc->name = alloc_device_name(dt_read_name(n), -1);
-	rtc->settime = rtc_ds1338_settime;
-	rtc->gettime = rtc_ds1338_gettime;
+	rtc->settime = rtc_ds1338_settime;  /* rtc设备ds1338设置时间具体实现 */
+	rtc->gettime = rtc_ds1338_gettime;  /* rtc设备ds1338获取时间具体实现 */
 	rtc->priv = pdat;
 
 	if(!register_rtc(&dev, rtc))
@@ -237,6 +243,7 @@ static struct device_t * rtc_ds1338_probe(struct driver_t * drv, struct dtnode_t
 	return dev;
 }
 
+/* rtc设备ds1338移除具体实现 */
 static void rtc_ds1338_remove(struct device_t * dev)
 {
 	struct rtc_t * rtc = (struct rtc_t *)dev->priv;
@@ -252,14 +259,17 @@ static void rtc_ds1338_remove(struct device_t * dev)
 	}
 }
 
+/* rtc设备ds1338挂起具体实现 */
 static void rtc_ds1338_suspend(struct device_t * dev)
 {
 }
 
+/* rtc设备ds1338释放具体实现 */
 static void rtc_ds1338_resume(struct device_t * dev)
 {
 }
 
+/* rtc设备ds1338驱动控制块 */
 static struct driver_t rtc_ds1338 = {
 	.name		= "rtc-ds1338",
 	.probe		= rtc_ds1338_probe,
@@ -268,11 +278,13 @@ static struct driver_t rtc_ds1338 = {
 	.resume		= rtc_ds1338_resume,
 };
 
+/* rtc设备ds1338驱动初始化 */
 static __init void rtc_ds1338_driver_init(void)
 {
 	register_driver(&rtc_ds1338);
 }
 
+/* rtc设备ds1338驱动退出 */
 static __exit void rtc_ds1338_driver_exit(void)
 {
 	unregister_driver(&rtc_ds1338);

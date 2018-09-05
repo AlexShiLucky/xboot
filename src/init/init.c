@@ -33,6 +33,7 @@
 #include <framebuffer/framebuffer.h>
 #include <init.h>
 
+/* 显示logo */
 void do_showlogo(void)
 {
 	struct device_t * pos, * n;

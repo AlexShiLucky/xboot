@@ -91,6 +91,7 @@ struct uart_pl011_pdata_t {
 	int stop;
 };
 
+/* uart设备pl011配置设置具体实现 */
 static bool_t uart_pl011_set(struct uart_t * uart, int baud, int data, int parity, int stop)
 {
 	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
@@ -178,6 +179,7 @@ static bool_t uart_pl011_set(struct uart_t * uart, int baud, int data, int parit
 	return TRUE;
 }
 
+/* uart设备pl011配置读取具体实现 */
 static bool_t uart_pl011_get(struct uart_t * uart, int * baud, int * data, int * parity, int * stop)
 {
 	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
@@ -193,6 +195,7 @@ static bool_t uart_pl011_get(struct uart_t * uart, int * baud, int * data, int *
 	return TRUE;
 }
 
+/* uart设备pl011数据读取具体实现 */
 static ssize_t uart_pl011_read(struct uart_t * uart, u8_t * buf, size_t count)
 {
 	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
@@ -208,6 +211,7 @@ static ssize_t uart_pl011_read(struct uart_t * uart, u8_t * buf, size_t count)
 	return i;
 }
 
+/* uart设备pl011数据写入具体实现 */
 static ssize_t uart_pl011_write(struct uart_t * uart, const u8_t * buf, size_t count)
 {
 	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
@@ -221,6 +225,7 @@ static ssize_t uart_pl011_write(struct uart_t * uart, const u8_t * buf, size_t c
 	return i;
 }
 
+/* uart设备pl011探针具体实现 */
 static struct device_t * uart_pl011_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct uart_pl011_pdata_t * pdat;
@@ -262,10 +267,10 @@ static struct device_t * uart_pl011_probe(struct driver_t * drv, struct dtnode_t
 	pdat->stop = dt_read_int(n, "stop-bits", 1);
 
 	uart->name = alloc_device_name(dt_read_name(n), -1);
-	uart->set = uart_pl011_set;
-	uart->get = uart_pl011_get;
-	uart->read = uart_pl011_read;
-	uart->write = uart_pl011_write;
+	uart->set = uart_pl011_set;     /* uart设备pl011配置设置具体实现 */
+	uart->get = uart_pl011_get;     /* uart设备pl011配置读取具体实现 */
+	uart->read = uart_pl011_read;   /* uart设备pl011数据读取具体实现 */
+	uart->write = uart_pl011_write; /* uart设备pl011数据写入具体实现 */
 	uart->priv = pdat;
 
 	clk_enable(pdat->clk);
@@ -301,6 +306,7 @@ static struct device_t * uart_pl011_probe(struct driver_t * drv, struct dtnode_t
 	return dev;
 }
 
+/* uart设备pl011移除具体实现 */
 static void uart_pl011_remove(struct device_t * dev)
 {
 	struct uart_t * uart = (struct uart_t *)dev->priv;
@@ -318,14 +324,17 @@ static void uart_pl011_remove(struct device_t * dev)
 	}
 }
 
+/* uart设备pl011挂起具体实现 */
 static void uart_pl011_suspend(struct device_t * dev)
 {
 }
 
+/* uart设备pl011释放具体实现 */
 static void uart_pl011_resume(struct device_t * dev)
 {
 }
 
+/* uart设备pl011驱动控制块 */
 static struct driver_t uart_pl011 = {
 	.name		= "uart-pl011",
 	.probe		= uart_pl011_probe,
@@ -334,11 +343,13 @@ static struct driver_t uart_pl011 = {
 	.resume		= uart_pl011_resume,
 };
 
+/* uart设备pl001驱动初始化 */
 static __init void uart_pl011_driver_init(void)
 {
 	register_driver(&uart_pl011);
 }
 
+/* uart设备pl001驱动退出 */
 static __exit void uart_pl011_driver_exit(void)
 {
 	unregister_driver(&uart_pl011);

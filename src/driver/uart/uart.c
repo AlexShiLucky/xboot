@@ -162,6 +162,7 @@ bool_t unregister_uart(struct uart_t * uart)
 	return TRUE;
 }
 
+/* uart配置设置 */
 bool_t uart_set(struct uart_t * uart, int baud, int data, int parity, int stop)
 {
 	if(uart && uart->set)
@@ -169,6 +170,7 @@ bool_t uart_set(struct uart_t * uart, int baud, int data, int parity, int stop)
 	return FALSE;
 }
 
+/* uart配置获取 */
 bool_t uart_get(struct uart_t * uart, int * baud, int * data, int * parity, int * stop)
 {
 	if(uart && uart->get)
@@ -176,6 +178,7 @@ bool_t uart_get(struct uart_t * uart, int * baud, int * data, int * parity, int 
 	return FALSE;
 }
 
+/* uart数据读取 */
 ssize_t uart_read(struct uart_t * uart, u8_t * buf, size_t count)
 {
 	if(uart && uart->read)
@@ -183,6 +186,7 @@ ssize_t uart_read(struct uart_t * uart, u8_t * buf, size_t count)
 	return 0;
 }
 
+/* uart数据写入*/
 ssize_t uart_write(struct uart_t * uart, const u8_t * buf, size_t count)
 {
 	if(uart && uart->write)

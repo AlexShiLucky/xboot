@@ -79,21 +79,27 @@ void runtime_destroy_restore(struct runtime_t * rt, struct runtime_t * r)
 	if(!rt)
 		return;
 
+    /* 释放前运行环境申请一个xfs上下文 */
 	if(rt->__xfs_ctx)
 		__xfs_free(rt->__xfs_ctx);
 
+    /* 释放当前运行环境申请一个事件块 */
 	if(rt->__event_base)
 		__event_base_free(rt->__event_base);
 
+    /* 关闭当前运行环境stderr */
 	if(rt->__stderr)
 		fclose(rt->__stderr);
 
+    /* 关闭当前运行环境stdout */
 	if(rt->__stdout)
 		fclose(rt->__stdout);
 
+    /* 关闭当前运行环境stdin */
 	if(rt->__stdin)
 		fclose(rt->__stdin);
 
+    /* 恢复先前运行环境 */
 	if(r)
 		__current_runtime = r;
 }

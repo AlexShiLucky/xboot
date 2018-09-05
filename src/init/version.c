@@ -29,8 +29,8 @@
 #include <xconfigs.h>
 #include <version.h>
 
-#define	XBOOT_MAJOY		3
-#define	XBOOT_MINIOR	0
+#define	XBOOT_MAJOR		3
+#define	XBOOT_MINOR	    0
 #define	XBOOT_PATCH		0
 
 #define VERSION_TO_STRING(major, minor, patch) \
@@ -41,17 +41,17 @@
 
 int xboot_version(void)
 {
-	return (XBOOT_MAJOY * 100) + (XBOOT_MINIOR * 10) + (XBOOT_PATCH * 1);
+	return (XBOOT_MAJOR * 100) + (XBOOT_MINOR * 10) + (XBOOT_PATCH * 1);
 }
 
 const char * xboot_version_string(void)
 {
-	return XBOOT_VERSION_STRING(XBOOT_MAJOY, XBOOT_MINIOR, XBOOT_PATCH);
+	return XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH);
 }
 
 const char * xboot_banner_string(void)
 {
-	return ("V"XBOOT_VERSION_STRING(XBOOT_MAJOY, XBOOT_MINIOR, XBOOT_PATCH)" ("__DATE__" - "__TIME__")");
+	return ("V"XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH)" ("__DATE__" - "__TIME__")");
 }
 
 /*

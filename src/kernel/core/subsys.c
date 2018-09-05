@@ -31,7 +31,7 @@
 extern unsigned char __romdisk_start;
 extern unsigned char __romdisk_end;
 
-/* ×ÓÏµÍ³romdisk³õÊ¼»¯ */
+/* å­ç³»ç»Ÿromdiskåˆå§‹åŒ– */
 static void subsys_init_romdisk(void)
 {
 	char json[256];
@@ -42,16 +42,16 @@ static void subsys_init_romdisk(void)
 		"{\"romdisk@0\":{\"address\":\"%lld\",\"size\":\"%lld\"}}",
 		(unsigned long long)(&__romdisk_start),
 		(unsigned long long)(&__romdisk_end - &__romdisk_start));
-    /* Ì½²âromdiskÉè±¸ */
+    /* æ¢æµ‹romdiskè®¾å¤‡ */
 	probe_device(json, length);
 }
 
-/* ×ÓÏµÍ³¸ùÎÄ¼şÏµÍ³³õÊ¼»¯ */
+/* å­ç³»ç»Ÿæ ¹æ–‡ä»¶ç³»ç»Ÿåˆå§‹åŒ– */
 static void subsys_init_rootfs(void)
 {
-    /* mount¿éÉè±¸romdisk.0µ½¸ùÄ¿Â¼ÏÂµÄÎÄ¼şÏµÍ³cpiofs */
+    /* mountå—è®¾å¤‡romdisk.0åˆ°æ ¹ç›®å½•ä¸‹çš„æ–‡ä»¶ç³»ç»Ÿcpiofs */
 	mount("romdisk.0", "/", "cpiofs", 0); chdir("/");
-    /* mount /sysÎÄ¼şÏµÍ³sysfs*/
+    /* mount /sysæ–‡ä»¶ç³»ç»Ÿsysfs*/
 	mount(NULL, "/sys", "sysfs", 0);
 	mount(NULL, "/storage" , "ramfs", 0);
 	mount(NULL, "/private" , "ramfs", 0);
@@ -59,7 +59,7 @@ static void subsys_init_rootfs(void)
 	mkdir("/private/userdata", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
 }
 
-/* ×ÓÏµÍ³Éè±¸Ê÷³õÊ¼»¯ */
+/* å­ç³»ç»Ÿè®¾å¤‡æ ‘åˆå§‹åŒ– */
 static void subsys_init_dt(void)
 {
 	char path[64];
@@ -70,7 +70,7 @@ static void subsys_init_dt(void)
 	if(!json)
 		return;
 
-    /* »ñÈ¡»úÆ÷ÅäÖÃÎÄ¼şÂ·¾¶ */
+    /* è·å–æœºå™¨é…ç½®æ–‡ä»¶è·¯å¾„ */
 	sprintf(path, "/boot/%s.json", get_machine()->name);
 	if((fd = open(path, O_RDONLY, (S_IRUSR | S_IRGRP | S_IROTH))) > 0)
 	{
@@ -82,20 +82,20 @@ static void subsys_init_dt(void)
 			len += n;
 	    }
 	    close(fd);
-        /* Ì½²âjsonÅäÖÃÎÄ¼şÖĞµÄÉè±¸ */
+        /* æ¢æµ‹jsoné…ç½®æ–‡ä»¶ä¸­çš„è®¾å¤‡ */
 	    probe_device(json, len);
 	}
 	free(json);
 }
 
-/* ×ÓÏµÍ³³õÊ¼»¯ */
+/* å­ç³»ç»Ÿåˆå§‹åŒ– */
 static __init void subsys_init(void)
 {
-    /* ³õÊ¼»¯romdisk */
+    /* åˆå§‹åŒ–romdisk */
 	subsys_init_romdisk();
-    /* ³õÊ¼»¯¸ùÎÄ¼şÏµÍ³ */
+    /* åˆå§‹åŒ–æ ¹æ–‡ä»¶ç³»ç»Ÿ */
 	subsys_init_rootfs();
-    /* ³õÊ¼»¯Éè±¸Ê÷ */
+    /* åˆå§‹åŒ–è®¾å¤‡æ ‘ */
 	subsys_init_dt();
 }
 subsys_initcall(subsys_init);

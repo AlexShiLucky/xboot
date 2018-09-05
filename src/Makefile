@@ -11,11 +11,11 @@ PLATFORM		?= arm32-realview
 #
 # Get platform information about ARCH and MACH from PLATFORM variable.
 #
-# å°†PLATFORMä¸­-æ›¿æ¢ä¸ºç©ºæ ¼,ç„¶ååˆ¤æ–­å•è¯æ•°æ˜¯å¦ä¸º2
+# ½«PLATFORMÖĞ-Ìæ»»Îª¿Õ¸ñ,È»ºóÅĞ¶Ïµ¥´ÊÊıÊÇ·ñÎª2
 ifeq ($(words $(subst -, , $(PLATFORM))), 2)
-# ARCHä¸ºPLATFORMçš„-å‰ä¸€ä¸ªå•è¯ï¼Œå³arm32,æ‰€ä»¥ARCH=arm32
+# ARCHÎªPLATFORMµÄ-Ç°Ò»¸öµ¥´Ê£¬¼´arm32,ËùÒÔARCH=arm32
 ARCH		:= $(word 1, $(subst -, , $(PLATFORM)))
-# MACHä¸ºPLATFORMçš„-åä¸€ä¸ªå•è¯ä¸ºåç¼€,å³realview,æ‰€ä»¥MACH=mach-realview
+# MACHÎªPLATFORMµÄ-ºóÒ»¸öµ¥´ÊÎªºó×º,¼´realview,ËùÒÔMACH=mach-realview
 MACH		:= mach-$(word 2, $(subst -, , $(PLATFORM)))
 else
 ARCH		:= x64
@@ -25,7 +25,7 @@ endif
 #
 # System environment variable.
 #
-# æœç´¢ç³»ç»Ÿåç§°æ˜¯å¦ä¸ºlinux
+# ËÑË÷ÏµÍ³Ãû³ÆÊÇ·ñÎªlinux
 ifneq (,$(findstring Linux, $(shell uname -s)))
 HOSTOS		:= linux
 else
@@ -48,13 +48,13 @@ SRCDIRS		:=
 #
 # Override default variables.
 #
-# å¯¼å…¥xbooté…ç½®å‚æ•°è¦†ç›–é»˜è®¤å€¼
+# µ¼ÈëxbootÅäÖÃ²ÎÊı¸²¸ÇÄ¬ÈÏÖµ
 sinclude arch/$(ARCH)/$(MACH)/xboot.mk
 
 #
 # Modify default variables.
 #
-# è¿½åŠ å®å®šä¹‰
+# ×·¼Óºê¶¨Òå
 ifeq ($(strip $(ARCH)), arm32)
 DEFINES		+=	-D__ARM32__
 endif
@@ -65,22 +65,22 @@ ifeq ($(strip $(ARCH)), x64)
 DEFINES		+=	-D__X64__
 endif
 
-# è¿½åŠ ASFLAGSå‚æ•°
+# ×·¼ÓASFLAGS²ÎÊı
 ASFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
-# è¿½åŠ CFLAGSå‚æ•°
+# ×·¼ÓCFLAGS²ÎÊı
 CFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
-# è¿½åŠ LDFLAGSå‚æ•°
+# ×·¼ÓLDFLAGS²ÎÊı
 LDFLAGS		+=	-Wl,-gc-sections
 
 #
 # Add necessary directory for INCDIRS and SRCDIRS.
 #
-# å¤´æ–‡ä»¶è·¯å¾„
+# Í·ÎÄ¼şÂ·¾¶
 INCDIRS		+=	include										\
 				arch/$(ARCH)/include						\
 				arch/$(ARCH)/$(MACH)/include
 
-# æºæ–‡ä»¶è·¯å¾„
+# Ô´ÎÄ¼şÂ·¾¶
 SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				arch/$(ARCH)/lib							\
 				arch/$(ARCH)/$(MACH)						\
@@ -172,10 +172,6 @@ SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 #
 # Add external library
 #
-# è¿½åŠ å¤–éƒ¨åº“çš„å¤´æ–‡ä»¶è·¯å¾„å’Œæºæ–‡ä»¶è·¯å¾„
-INCDIRS		+= 	external/json-parser-1.1.0
-SRCDIRS		+=	external/json-parser-1.1.0
-
 INCDIRS		+= 	external/libfdt-1.4.2
 SRCDIRS		+=	external/libfdt-1.4.2
 
@@ -246,7 +242,7 @@ SRCDIRS		+=	external/chipmunk-7.0.2/src
 #
 # You shouldn't need to change anything below this point.
 #
-# å‘½ä»¤å·¥å…·å®šä¹‰
+# ÃüÁî¹¤¾ß¶¨Òå
 AS			:=	$(CROSS_COMPILE)gcc -x assembler-with-cpp
 CC			:=	$(CROSS_COMPILE)gcc
 CXX			:=	$(CROSS_COMPILE)g++
@@ -265,34 +261,34 @@ CPIO		:=	cpio -o -H newc --quiet
 #
 # Xboot variables
 #
-# XBoot å‘½ä»¤å‚æ•°å®šä¹‰
+# XBoot ÃüÁî²ÎÊı¶¨Òå
 X_ASFLAGS	:=	$(MCFLAGS) $(ASFLAGS)
 X_CFLAGS	:=	$(MCFLAGS) $(CFLAGS)
 X_LDFLAGS	:=	$(LDFLAGS)
 X_LIBS		:=	$(LIBS) -lgcc
 
-# XBoot è¾“å‡ºè·¯å¾„å®šä¹‰
+# XBoot Êä³öÂ·¾¶¶¨Òå
 X_OUT		:=	../output
-# XBoot è¾“å‡ºæ–‡ä»¶åå®šä¹‰
+# XBoot Êä³öÎÄ¼şÃû¶¨Òå
 X_NAME		:=	$(patsubst %, $(X_OUT)/%, xboot)
-# å¤´æ–‡ä»¶è·¯å¾„æ·»åŠ å‰ç¼€ -I
+# Í·ÎÄ¼şÂ·¾¶Ìí¼ÓÇ°×º -I
 X_INCDIRS	:=	$(patsubst %, -I %, $(INCDIRS))
-# åº“è·¯å¾„æ·»å‰ç¼€ -L
+# ¿âÂ·¾¶ÌíÇ°×º -L
 X_LIBDIRS	:=	$(patsubst %, -L %, $(LIBDIRS))
 X_SRCDIRS	:=	$(patsubst %, %, $(SRCDIRS))
-# ç›®æ ‡æ–‡ä»¶è·¯å¾„
+# Ä¿±êÎÄ¼şÂ·¾¶
 X_OBJDIRS	:=	$(patsubst %, .obj/%, $(X_SRCDIRS))
 
-# æœç´¢æºæ–‡ä»¶è·¯å¾„ä¸‹çš„.Sæ–‡ä»¶
+# ËÑË÷Ô´ÎÄ¼şÂ·¾¶ÏÂµÄ.SÎÄ¼ş
 X_SFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.S))
-# æœç´¢æºæ–‡ä»¶è·¯å¾„ä¸‹çš„.cæ–‡ä»¶
+# ËÑË÷Ô´ÎÄ¼şÂ·¾¶ÏÂµÄ.cÎÄ¼ş
 X_CFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.c))
 
-# .Sç”Ÿæˆçš„ç›®æ ‡æ–‡ä»¶
+# .SÉú³ÉµÄÄ¿±êÎÄ¼ş
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
-# .cç”Ÿæˆçš„ç›®æ ‡æ–‡ä»¶
+# .cÉú³ÉµÄÄ¿±êÎÄ¼ş
 X_COBJS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o))
-# å…¨éƒ¨ç›®æ ‡æ–‡ä»¶
+# È«²¿Ä¿±êÎÄ¼ş
 X_OBJS		:=	$(X_SOBJS) $(X_COBJS)
 
 VPATH		:=	$(X_OBJDIRS)

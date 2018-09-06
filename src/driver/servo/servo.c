@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <servo/servo.h>
 
+/* 伺服电机设备enable */
 static ssize_t servo_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct servo_t * m = (struct servo_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t servo_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 伺服电机设备disable */
 static ssize_t servo_write_disable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct servo_t * m = (struct servo_t *)kobj->priv;
@@ -43,6 +45,7 @@ static ssize_t servo_write_disable(struct kobj_t * kobj, void * buf, size_t size
 	return size;
 }
 
+/* 伺服电机设备角度写入 */
 static ssize_t servo_write_angle(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct servo_t * m = (struct servo_t *)kobj->priv;
@@ -50,6 +53,7 @@ static ssize_t servo_write_angle(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个伺服电机设备 */
 struct servo_t * search_servo(const char * name)
 {
 	struct device_t * dev;
@@ -60,6 +64,7 @@ struct servo_t * search_servo(const char * name)
 	return (struct servo_t *)dev->priv;
 }
 
+/* 注册一个伺服电机设备 */
 bool_t register_servo(struct device_t ** device, struct servo_t * m)
 {
 	struct device_t * dev;
@@ -92,6 +97,7 @@ bool_t register_servo(struct device_t ** device, struct servo_t * m)
 	return TRUE;
 }
 
+/* 注销一个伺服电机设备 */
 bool_t unregister_servo(struct servo_t * m)
 {
 	struct device_t * dev;
@@ -112,18 +118,21 @@ bool_t unregister_servo(struct servo_t * m)
 	return TRUE;
 }
 
+/* 伺服电机enable */
 void servo_enable(struct servo_t * m)
 {
 	if(m && m->enable)
 		m->enable(m);
 }
 
+/* 伺服电机disable */
 void servo_disable(struct servo_t * m)
 {
 	if(m && m->disable)
 		m->disable(m);
 }
 
+/* 伺服电机角度设置 */
 void servo_set_angle(struct servo_t * m, int angle)
 {
 	if(m && m->set)

@@ -42,6 +42,7 @@ struct pwm_gpio_pdata_t
 	int polarity;
 };
 
+/* pwm-gpio设备配置设置具体实现 */
 static void pwm_gpio_config(struct pwm_t * pwm, int duty, int period, int polarity)
 {
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
@@ -50,6 +51,7 @@ static void pwm_gpio_config(struct pwm_t * pwm, int duty, int period, int polari
 	pdat->polarity = polarity;
 }
 
+/* pwm-gpio设备enable具体实现 */
 static void pwm_gpio_enable(struct pwm_t * pwm)
 {
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
@@ -60,12 +62,14 @@ static void pwm_gpio_enable(struct pwm_t * pwm)
 	}
 }
 
+/* pwm-gpio设备disable具体实现 */
 static void pwm_gpio_disable(struct pwm_t * pwm)
 {
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
 	pdat->enable = 0;
 }
 
+/* pwm-gpio设备定时器回调函数 */
 static int pwm_timer_function(struct timer_t * timer, void * data)
 {
 	struct pwm_t * pwm = (struct pwm_t *)(data);
@@ -92,6 +96,7 @@ static int pwm_timer_function(struct timer_t * timer, void * data)
 	return 0;
 }
 
+/* pwm-gpio设备探针 */
 static struct device_t * pwm_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct pwm_gpio_pdata_t * pdat;
@@ -123,9 +128,9 @@ static struct device_t * pwm_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	pdat->polarity = 0;
 
 	pwm->name = alloc_device_name(dt_read_name(n), -1);
-	pwm->config = pwm_gpio_config;
-	pwm->enable = pwm_gpio_enable;
-	pwm->disable = pwm_gpio_disable;
+	pwm->config = pwm_gpio_config;  /* pwm-gpio设备配置设置具体实现 */
+	pwm->enable = pwm_gpio_enable;  /* pwm-gpio设备enable具体实现 */
+	pwm->disable = pwm_gpio_disable;/* pwm-gpio设备disable具体实现 */
 	pwm->priv = pdat;
 
 	if(pdat->gpiocfg >= 0)
@@ -148,6 +153,7 @@ static struct device_t * pwm_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	return dev;
 }
 
+/* pwm-gpio设备移除 */
 static void pwm_gpio_remove(struct device_t * dev)
 {
 	struct pwm_t * pwm = (struct pwm_t *)dev->priv;
@@ -163,14 +169,17 @@ static void pwm_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* pwm-gpio设备挂起 */
 static void pwm_gpio_suspend(struct device_t * dev)
 {
 }
 
+/* pwm-gpio设备释放 */
 static void pwm_gpio_resume(struct device_t * dev)
 {
 }
 
+/* pwm-gpio设备驱动控制块 */
 static struct driver_t pwm_gpio = {
 	.name		= "pwm-gpio",
 	.probe		= pwm_gpio_probe,
@@ -179,11 +188,13 @@ static struct driver_t pwm_gpio = {
 	.resume		= pwm_gpio_resume,
 };
 
+/* pwm-gpio设备驱动初始化 */
 static __init void pwm_gpio_driver_init(void)
 {
 	register_driver(&pwm_gpio);
 }
 
+/* pwm-gpio设备驱动退出 */
 static __exit void pwm_gpio_driver_exit(void)
 {
 	unregister_driver(&pwm_gpio);

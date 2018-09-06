@@ -29,12 +29,14 @@
 #include <xboot.h>
 #include <pwm/pwm.h>
 
+/* pwm读使能状态 */
 static ssize_t pwm_read_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
 	return sprintf(buf, "%d", pwm->__enable ? 1 : 0);
 }
 
+/* pwm写使能控制 */
 static ssize_t pwm_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
@@ -46,12 +48,14 @@ static ssize_t pwm_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* pwm占空比读取 */
 static ssize_t pwm_read_duty(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
 	return sprintf(buf, "%u", pwm->__duty);
 }
 
+/* pwm占空比写入 */
 static ssize_t pwm_write_duty(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
@@ -60,12 +64,14 @@ static ssize_t pwm_write_duty(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* pwm周期读取 */
 static ssize_t pwm_read_period(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
 	return sprintf(buf, "%u", pwm->__period);
 }
 
+/* pwm周期写入 */
 static ssize_t pwm_write_period(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
@@ -74,12 +80,14 @@ static ssize_t pwm_write_period(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* pwm极性读取 */
 static ssize_t pwm_read_polarity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
 	return sprintf(buf, "%d", pwm->__polarity ? 1 : 0);
 }
 
+/* pwm极性写入 */
 static ssize_t pwm_write_polarity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
@@ -88,6 +96,7 @@ static ssize_t pwm_write_polarity(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个pwm设备 */
 struct pwm_t * search_pwm(const char * name)
 {
 	struct device_t * dev;
@@ -98,6 +107,7 @@ struct pwm_t * search_pwm(const char * name)
 	return (struct pwm_t *)dev->priv;
 }
 
+/* 注册一个pwm设备 */
 bool_t register_pwm(struct device_t ** device, struct pwm_t * pwm)
 {
 	struct device_t * dev;
@@ -136,6 +146,7 @@ bool_t register_pwm(struct device_t ** device, struct pwm_t * pwm)
 	return TRUE;
 }
 
+/* 注销一个pwm设备 */
 bool_t unregister_pwm(struct pwm_t * pwm)
 {
 	struct device_t * dev;
@@ -156,6 +167,7 @@ bool_t unregister_pwm(struct pwm_t * pwm)
 	return TRUE;
 }
 
+/* pwm配置参数设置 */
 void pwm_config(struct pwm_t * pwm, int duty, int period, int polarity)
 {
 	if(pwm && pwm->config)
@@ -175,6 +187,7 @@ void pwm_config(struct pwm_t * pwm, int duty, int period, int polarity)
 	}
 }
 
+/* pwm enable接口 */
 void pwm_enable(struct pwm_t * pwm)
 {
 	if(pwm && pwm->enable && (pwm->__enable != 1))
@@ -184,6 +197,7 @@ void pwm_enable(struct pwm_t * pwm)
 	}
 }
 
+/* pwm disable接口 */
 void pwm_disable(struct pwm_t * pwm)
 {
 	if(pwm && pwm->disable && (pwm->__enable != 0))

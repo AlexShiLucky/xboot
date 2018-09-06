@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/led.h>
 
+/* led亮度读取 */
 static ssize_t led_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct led_t * led = (struct led_t *)kobj->priv;
@@ -38,6 +39,7 @@ static ssize_t led_read_brightness(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "%d", brightness);
 }
 
+/* led亮度写入 */
 static ssize_t led_write_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct led_t * led = (struct led_t *)kobj->priv;
@@ -47,11 +49,13 @@ static ssize_t led_write_brightness(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
+/* led最大亮度读取 */
 static ssize_t led_read_max_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
 	return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
 }
 
+/* 根据名称搜索一个led设备 */
 struct led_t * search_led(const char * name)
 {
 	struct device_t * dev;
@@ -62,6 +66,7 @@ struct led_t * search_led(const char * name)
 	return (struct led_t *)dev->priv;
 }
 
+/* 注册一个led设备 */
 bool_t register_led(struct device_t ** device, struct led_t * led)
 {
 	struct device_t * dev;
@@ -93,6 +98,7 @@ bool_t register_led(struct device_t ** device, struct led_t * led)
 	return TRUE;
 }
 
+/* 注销一个led设备 */
 bool_t unregister_led(struct led_t * led)
 {
 	struct device_t * dev;
@@ -113,6 +119,7 @@ bool_t unregister_led(struct led_t * led)
 	return TRUE;
 }
 
+/* 设置led亮度 */
 void led_set_brightness(struct led_t * led, int brightness)
 {
 	if(led && led->set)
@@ -125,6 +132,7 @@ void led_set_brightness(struct led_t * led, int brightness)
 	}
 }
 
+/* 获取led亮度 */
 int led_get_brightness(struct led_t * led)
 {
 	int brightness = 0;

@@ -56,6 +56,7 @@ struct led_gpio_pdata_t {
 	int brightness;
 };
 
+/* led-gpio设备亮度设置 */
 static void led_gpio_set_brightness(struct led_gpio_pdata_t * pdat, int brightness)
 {
 	if(brightness > 0)
@@ -64,6 +65,7 @@ static void led_gpio_set_brightness(struct led_gpio_pdata_t * pdat, int brightne
 		gpio_set_value(pdat->gpio, pdat->active_low ? 1 : 0);
 }
 
+/* led-gpio设备亮度设置具体实现 */
 static void led_gpio_set(struct led_t * led, int brightness)
 {
 	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
@@ -75,12 +77,14 @@ static void led_gpio_set(struct led_t * led, int brightness)
 	}
 }
 
+/* led-gpio设备亮度获取具体实现 */
 static int led_gpio_get(struct led_t * led)
 {
 	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
 	return pdat->brightness;
 }
 
+/* led-gpio设备探针具体实现 */
 static struct device_t * led_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct led_gpio_pdata_t * pdat;
@@ -107,8 +111,8 @@ static struct device_t * led_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	pdat->brightness = -1;
 
 	led->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	led->set = led_gpio_set;
-	led->get = led_gpio_get;
+	led->set = led_gpio_set;    /* led-gpio设备亮度设置具体实现 */
+	led->get = led_gpio_get;    /* led-gpio设备亮度获取具体实现 */
 	led->priv = pdat;
 
 	if(pdat->gpiocfg >= 0)
@@ -129,6 +133,7 @@ static struct device_t * led_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	return dev;
 }
 
+/* led-gpio设备移除具体实现 */
 static void led_gpio_remove(struct device_t * dev)
 {
 	struct led_t * led = (struct led_t *)dev->priv;
@@ -141,6 +146,7 @@ static void led_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* led-gpio设备挂起具体实现 */
 static void led_gpio_suspend(struct device_t * dev)
 {
 	struct led_t * led = (struct led_t *)dev->priv;
@@ -148,6 +154,7 @@ static void led_gpio_suspend(struct device_t * dev)
 	led_gpio_set_brightness(pdat, 0);
 }
 
+/* led-gpio设备释放具体实现 */
 static void led_gpio_resume(struct device_t * dev)
 {
 	struct led_t * led = (struct led_t *)dev->priv;
@@ -155,6 +162,7 @@ static void led_gpio_resume(struct device_t * dev)
 	led_gpio_set_brightness(pdat, pdat->brightness);
 }
 
+/* led-gpio设备驱动控制块 */
 static struct driver_t led_gpio = {
 	.name		= "led-gpio",
 	.probe		= led_gpio_probe,
@@ -163,11 +171,13 @@ static struct driver_t led_gpio = {
 	.resume		= led_gpio_resume,
 };
 
+/* led-gpio设备驱动初始化 */
 static __init void led_gpio_driver_init(void)
 {
 	register_driver(&led_gpio);
 }
 
+/* led-gpio设备驱动退出 */
 static __exit void led_gpio_driver_exit(void)
 {
 	unregister_driver(&led_gpio);

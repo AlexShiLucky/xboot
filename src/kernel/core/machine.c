@@ -31,284 +31,317 @@
 #include <watchdog/watchdog.h>
 #include <xboot/machine.h>
 
-/* å…¨å±€æœºå™¨é“¾è¡¨ */
+/* È«¾Ö»úÆ÷Á´±í */
 static struct list_head __machine_list = {
-	.next = &__machine_list,
-	.prev = &__machine_list,
+    .next = &__machine_list,
+    .prev = &__machine_list,
 };
 static spinlock_t __machine_lock = SPIN_LOCK_INIT();
-/* å½“å‰æœºå™¨æŒ‡é’ˆ */
+/* µ±Ç°»úÆ÷Ö¸Õë */
 static struct machine_t * __machine = NULL;
 
 static const char * __machine_uniqueid(struct machine_t * mach)
 {
-	const char * id = NULL;
+    const char * id = NULL;
 
-	if(mach && mach->uniqueid)
-		id = mach->uniqueid(mach);
-	return id ? id : "0123456789";
+    if(mach && mach->uniqueid)
+        id = mach->uniqueid(mach);
+    return id ? id : "0123456789";
 }
 
-/* æœç´¢æœºå™¨kobj */
+/* ËÑË÷»úÆ÷kobj */
 static struct kobj_t * search_class_machine_kobj(void)
 {
-    /* åœ¨kobjä¸‹æœç´¢(åˆ›å»º)class */
-	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
-    /* åœ¨kobj/classä¸‹åˆ›å»ºmachineè·¯å¾„ */
-	return kobj_search_directory_with_create(kclass, "machine");
+    /* ÔÚkobjÏÂËÑË÷(´´½¨)class */
+    struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* ÔÚkobj/classÏÂ´´½¨machineÂ·¾¶ */
+    return kobj_search_directory_with_create(kclass, "machine");
 }
 
 static ssize_t machine_read_description(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct machine_t * mach = (struct machine_t *)kobj->priv;
-	return sprintf(buf, "%s", mach->desc);
+    struct machine_t * mach = (struct machine_t *)kobj->priv;
+    return sprintf(buf, "%s", mach->desc);
 }
 
-static ssize_t machine_read_map(struct kobj_t * kobj, void * buf, size_t size)
+static ssize_t machine_read_mmap(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct machine_t * mach = (struct machine_t *)kobj->priv;
-	struct mmap_t * m = (struct mmap_t *)mach->map;
-	char * p = buf;
-	int len = 0;
+    struct machine_t * mach = (struct machine_t *)kobj->priv;
+    struct mmap_t * pos, * n;
+    char * p = buf;
+    int len = 0;
 
-	while(m->size != 0)
-	{
-		len += sprintf((char *)(p + len), " %s: %p - %p\r\n", m->name, m->virt, m->phys);
-		m++;
-	}
-	return len;
+    list_for_each_entry_safe(pos, n, &mach->mmap, list)
+    {
+        len += sprintf((char *)(p + len), " %s: %p:%p - %p:%p\r\n", pos->name, pos->virt, pos->size, pos->phys, pos->size);
+    }
+    return len;
 }
 
 static ssize_t machine_read_uniqueid(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct machine_t * mach = (struct machine_t *)kobj->priv;
-	return sprintf(buf, "%s", __machine_uniqueid(mach));
+    struct machine_t * mach = (struct machine_t *)kobj->priv;
+    return sprintf(buf, "%s", __machine_uniqueid(mach));
 }
 
-/* æ ¹æ®åç§°æœç´¢æœºå™¨ */
+/* ¸ù¾ÝÃû³ÆËÑË÷»úÆ÷ */
 static struct machine_t * search_machine(const char * name)
 {
-	struct machine_t * pos, * n;
+    struct machine_t * pos, * n;
 
-	if(!name)
-		return NULL;
+    if(!name)
+        return NULL;
 
-	list_for_each_entry_safe(pos, n, &__machine_list, list)
-	{
-		if(strcmp(pos->name, name) == 0)
-			return pos;
-	}
-	return NULL;
+    list_for_each_entry_safe(pos, n, &__machine_list, list)
+    {
+        if(strcmp(pos->name, name) == 0)
+            return pos;
+    }
+    return NULL;
 }
 
-/* æ³¨å†Œæœºå™¨ */
+/* ×¢²á»úÆ÷ */
 bool_t register_machine(struct machine_t * mach)
 {
-	irq_flags_t flags;
-	int i;
+    irq_flags_t flags;
+    int i;
 
-	if(!mach || !mach->name || !mach->detect)
-		return FALSE;
+    if(!mach || !mach->name || !mach->detect)
+        return FALSE;
 
-    /* å¦‚æžœæœºå™¨åç§°å·²å­˜åœ¨,åˆ™æ³¨å†Œå¤±è´¥ */
-	if(search_machine(mach->name))
-		return FALSE;
+    /* Èç¹û»úÆ÷Ãû³ÆÒÑ´æÔÚ,Ôò×¢²áÊ§°Ü */
+    if(search_machine(mach->name))
+        return FALSE;
 
-    /* æ ¹æ®æœºå™¨åç§°ç”³è¯·ä¸€ä¸ªmachnameè·¯å¾„kobj */
-	mach->kobj = kobj_alloc_directory(mach->name);
-    /* åœ¨machnameè·¯å¾„kobjä¸‹æ·»åŠ ä¸€ä¸ªdescriptionæ–‡ä»¶kobj */
-	kobj_add_regular(mach->kobj, "description", machine_read_description, NULL, mach);
-    /* åœ¨machnameè·¯å¾„kobjä¸‹æ·»åŠ ä¸€ä¸ªmapæ–‡ä»¶kobj */
-	kobj_add_regular(mach->kobj, "map", machine_read_map, NULL, mach);
-    /* åœ¨machnameè·¯å¾„kobjä¸‹æ·»åŠ ä¸€ä¸ªuniqueidæ–‡ä»¶kobj */
-	kobj_add_regular(mach->kobj, "uniqueid", machine_read_uniqueid, NULL, mach);
-    /* åœ¨kobj/class/machineè·¯å¾„ä¸‹æŒ‚è½½machnameè·¯å¾„ */
-	kobj_add(search_class_machine_kobj(), mach->kobj);
+    /* ¸ù¾Ý»úÆ÷Ãû³ÆÉêÇëÒ»¸ömachnameÂ·¾¶kobj */
+    mach->kobj = kobj_alloc_directory(mach->name);
+    /* ÔÚmachnameÂ·¾¶kobjÏÂÌí¼ÓÒ»¸ödescriptionÎÄ¼þkobj */
+    kobj_add_regular(mach->kobj, "description", machine_read_description, NULL, mach);
+    /* ÔÚmachnameÂ·¾¶kobjÏÂÌí¼ÓÒ»¸ömmapÎÄ¼þkobj */
+    kobj_add_regular(mach->kobj, "mmap", machine_read_mmap, NULL, mach);
+    /* ÔÚmachnameÂ·¾¶kobjÏÂÌí¼ÓÒ»¸öuniqueidÎÄ¼þkobj */
+    kobj_add_regular(mach->kobj, "uniqueid", machine_read_uniqueid, NULL, mach);
+    /* ÔÚkobj/class/machineÂ·¾¶ÏÂ¹ÒÔØmachnameÂ·¾¶ */
+    kobj_add(search_class_machine_kobj(), mach->kobj);
 
-	spin_lock_irqsave(&__machine_lock, flags);
-    /* æœºå™¨é“¾è¡¨èŠ‚ç‚¹åˆå§‹åŒ– */
-	init_list_head(&mach->list);
-    /* å°†æœºå™¨é“¾è¡¨èŠ‚ç‚¹æŒ‚æŽ¥åˆ°å…¨å±€æœºå™¨é“¾è¡¨ä¸­ */
-	list_add_tail(&mach->list, &__machine_list);
-	spin_unlock_irqrestore(&__machine_lock, flags);
+    spin_lock_irqsave(&__machine_lock, flags);
+    /* »úÆ÷Á´±í½Úµã³õÊ¼»¯ */
+    init_list_head(&mach->list);
+    /* ÄÚ´æÓ³ÉäÁ´±í³õÊ¼»¯ */
+    init_list_head(&mach->mmap);
+    /* ½«»úÆ÷Á´±í½Úµã¹Ò½Óµ½È«¾Ö»úÆ÷Á´±íÖÐ */
+    list_add_tail(&mach->list, &__machine_list);
+    spin_unlock_irqrestore(&__machine_lock, flags);
 
-	if(!__machine && (mach->detect(mach) > 0))
-	{
-		if(mach->memmap)
-		{
-			mach->memmap(mach);
-		}
-		if(mach->logger)
-		{
-			for(i = 0; i < 5; i++)
-			{
-				mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
-				mach->logger(mach, "\r\n", 2);
-			}
-			mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
-			mach->logger(mach, " - [", 4);
-			mach->logger(mach, mach->name, strlen(mach->name));
-			mach->logger(mach, "][", 2);
-			mach->logger(mach, mach->desc, strlen(mach->desc));
-			mach->logger(mach, "]\r\n", 3);
-		}
-		__machine = mach;
-	}
-	return TRUE;
+    if(!__machine && (mach->detect(mach) > 0))
+    {
+        __machine = mach;
+        if(mach->memmap)
+        {
+            mach->memmap(mach);
+        }
+        if(mach->logger)
+        {
+            for(i = 0; i < 5; i++)
+            {
+                mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
+                mach->logger(mach, "\r\n", 2);
+            }
+            mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
+            mach->logger(mach, " - [", 4);
+            mach->logger(mach, mach->name, strlen(mach->name));
+            mach->logger(mach, "][", 2);
+            mach->logger(mach, mach->desc, strlen(mach->desc));
+            mach->logger(mach, "]\r\n", 3);
+        }
+    }
+    return TRUE;
 }
 
-/* æ³¨é”€æœºå™¨ */
+/* ×¢Ïú»úÆ÷ */
 bool_t unregister_machine(struct machine_t * mach)
 {
-	irq_flags_t flags;
+    struct mmap_t * pos, * n;
+    irq_flags_t flags;
 
-	if(!mach || !mach->name)
-		return FALSE;
+    if(!mach || !mach->name)
+        return FALSE;
 
-	spin_lock_irqsave(&__machine_lock, flags);
-    /* ç§»é™¤æœºå™¨é“¾è¡¨èŠ‚ç‚¹ */
-	list_del(&mach->list);
-	spin_unlock_irqrestore(&__machine_lock, flags);
-    /* åœ¨kobj/class/machineä¸‹ç§»é™¤machname */
-	kobj_remove(search_class_machine_kobj(), mach->kobj);
-    /* ç§»é™¤machnameè·¯å¾„ä¸‹æ‰€æœ‰æ–‡ä»¶kobjå’Œè‡ªèº« */
-	kobj_remove_self(mach->kobj);
+    spin_lock_irqsave(&__machine_lock, flags);
+    list_for_each_entry_safe(pos, n, &mach->mmap, list)
+    {
+        list_del(&pos->list);
+    }
+    spin_unlock_irqrestore(&__machine_lock, flags);
 
-	return TRUE;
+    spin_lock_irqsave(&__machine_lock, flags);
+    /* ÒÆ³ý»úÆ÷Á´±í½Úµã */
+    list_del(&mach->list);
+    spin_unlock_irqrestore(&__machine_lock, flags);
+    /* ÔÚkobj/class/machineÏÂÒÆ³ýmachname */
+    kobj_remove(search_class_machine_kobj(), mach->kobj);
+    /* ÒÆ³ýmachnameÂ·¾¶ÏÂËùÓÐÎÄ¼þkobjºÍ×ÔÉí */
+    kobj_remove_self(mach->kobj);
+
+    return TRUE;
 }
 
-/* èŽ·å–å½“å‰æœºå™¨ */
+bool_t machine_mmap(struct machine_t * mach, const char * name, virtual_addr_t virt, physical_addr_t phys, physical_size_t size, int type)
+{
+    struct mmap_t * m;
+    irq_flags_t flags;
+
+    if(!mach || !name || (size == 0))
+        return FALSE;
+
+    m = malloc(sizeof(struct mmap_t));
+    if(!m)
+        return FALSE;
+
+    m->name = name;
+    m->virt = virt;
+    m->phys = phys;
+    m->size = size;
+    m->type = type;
+
+    spin_lock_irqsave(&__machine_lock, flags);
+    init_list_head(&m->list);
+    list_add_tail(&m->list, &mach->mmap);
+    spin_unlock_irqrestore(&__machine_lock, flags);
+
+    return TRUE;
+}
+
+/* »ñÈ¡µ±Ç°»úÆ÷ */
 inline __attribute__((always_inline)) struct machine_t * get_machine(void)
 {
-	return __machine;
+    return __machine;
 }
 
-/* æœºå™¨å…³æœº */
+/* »úÆ÷¹Ø»ú */
 void machine_shutdown(void)
 {
-	struct machine_t * mach = get_machine();
+    struct machine_t * mach = get_machine();
 
-	sync();
-	if(mach && mach->shutdown)
-		mach->shutdown(mach);
+    sync();
+    if(mach && mach->shutdown)
+        mach->shutdown(mach);
 }
 
-/* æœºå™¨é‡å¯ */
+/* »úÆ÷ÖØÆô */
 void machine_reboot(void)
 {
-	struct machine_t * mach = get_machine();
+    struct machine_t * mach = get_machine();
 
-	sync();
-	if(mach && mach->reboot)
-		mach->reboot(mach);
-	watchdog_set_timeout(search_first_watchdog(), 1);
+    sync();
+    if(mach && mach->reboot)
+        mach->reboot(mach);
+    watchdog_set_timeout(search_first_watchdog(), 1);
 }
 
-/* æœºå™¨ç¡çœ  */
+/* »úÆ÷Ë¯Ãß */
 void machine_sleep(void)
 {
-	struct machine_t * mach = get_machine();
-	struct device_t * pos, * n;
+    struct machine_t * mach = get_machine();
+    struct device_t * pos, * n;
 
-	sync();
-	list_for_each_entry_safe_reverse(pos, n, &__device_list, list)
-	{
-		suspend_device(pos);
-	}
-	if(mach && mach->sleep)
-	{
-		mach->sleep(mach);
-	}
-	list_for_each_entry_safe(pos, n, &__device_list, list)
-	{
-		resume_device(pos);
-	}
+    sync();
+    list_for_each_entry_safe_reverse(pos, n, &__device_list, list)
+    {
+        suspend_device(pos);
+    }
+    if(mach && mach->sleep)
+    {
+        mach->sleep(mach);
+    }
+    list_for_each_entry_safe(pos, n, &__device_list, list)
+    {
+        resume_device(pos);
+    }
 }
 
-/* æœºå™¨æ¸…ç† */
+/* »úÆ÷ÇåÀí */
 void machine_cleanup(void)
 {
-	struct machine_t * mach = get_machine();
+    struct machine_t * mach = get_machine();
 
-	sync();
-	if(mach && mach->cleanup)
-		mach->cleanup(mach);
+    sync();
+    if(mach && mach->cleanup)
+        mach->cleanup(mach);
 }
 
-/* æœºå™¨logè¾“å‡º */
+/* »úÆ÷logÊä³ö */
 int machine_logger(const char * fmt, ...)
 {
-	struct machine_t * mach = get_machine();
-	struct timeval tv;
-	char buf[SZ_4K];
-	int len = 0;
-	va_list ap;
+    struct machine_t * mach = get_machine();
+    struct timeval tv;
+    char buf[SZ_4K];
+    int len = 0;
+    va_list ap;
 
-	if(mach && mach->logger)
-	{
-		va_start(ap, fmt);
-		gettimeofday(&tv, 0);
-		len += sprintf((char *)(buf + len), "[%5u.%06u]", tv.tv_sec, tv.tv_usec);
-		len += vsnprintf((char *)(buf + len), (SZ_4K - len), fmt, ap);
-		va_end(ap);
-		mach->logger(mach, (const char *)buf, len);
-	}
-	return len;
+    if(mach && mach->logger)
+    {
+        va_start(ap, fmt);
+        gettimeofday(&tv, 0);
+        len += sprintf((char *)(buf + len), "[%5u.%06u]", tv.tv_sec, tv.tv_usec);
+        len += vsnprintf((char *)(buf + len), (SZ_4K - len), fmt, ap);
+        va_end(ap);
+        mach->logger(mach, (const char *)buf, len);
+    }
+    return len;
 }
 
-/* èŽ·å–æœºå™¨å”¯ä¸€æ ‡è¯†ç¬¦ */
+/* »ñÈ¡»úÆ÷Î¨Ò»±êÊ¶·û */
 const char * machine_uniqueid(void)
 {
-	struct machine_t * mach = get_machine();
-	return __machine_uniqueid(mach);
+    struct machine_t * mach = get_machine();
+    return __machine_uniqueid(mach);
 }
 
-/* æœºå™¨keygen */
+/* »úÆ÷keygen */
 int machine_keygen(const char * msg, void * key)
 {
-	struct machine_t * mach = get_machine();
-	int len;
+    struct machine_t * mach = get_machine();
+    int len;
 
-	if(mach && mach->keygen && ((len = mach->keygen(mach, msg, key)) > 0))
-		return len;
-	sha256_hash(msg, strlen(msg), key);
-	return 32;
+    if(mach && mach->keygen && ((len = mach->keygen(mach, msg, key)) > 0))
+        return len;
+    sha256_hash(msg, strlen(msg), key);
+    return 32;
 }
 
-/* æœºå™¨ç‰©ç†åœ°å€è½¬è™šæ‹Ÿåœ°å€ */
+/* »úÆ÷ÎïÀíµØÖ·×ªÐéÄâµØÖ· */
 static virtual_addr_t __phys_to_virt(physical_addr_t phys)
 {
-	struct machine_t * mach = get_machine();
-	struct mmap_t * m;
+    struct machine_t * mach = get_machine();
+    struct mmap_t * pos;
 
-	if(mach && (m = (struct mmap_t *)mach->map))
-	{
-		while(m->size > 0)
-		{
-			if((phys >= m->phys) && (phys <= m->phys + m->size - 1))
-				return (virtual_addr_t)(m->virt + (phys - m->phys));
-			m++;
-		}
-	}
-	return (virtual_addr_t)phys;
+    if(mach)
+    {
+        list_for_each_entry(pos, &mach->mmap, list)
+        {
+            if((phys >= pos->phys) && (phys < pos->phys + pos->size))
+                return (virtual_addr_t)(pos->virt + (phys - pos->phys));
+        }
+    }
+    return (virtual_addr_t)phys;
 }
 extern __typeof(__phys_to_virt) phys_to_virt __attribute__((weak, alias("__phys_to_virt")));
 
-/* æœºå™¨è™šæ‹Ÿåœ°å€è½¬ç‰©ç†åœ°å€ */
+/* »úÆ÷ÐéÄâµØÖ·×ªÎïÀíµØÖ· */
 static physical_addr_t __virt_to_phys(virtual_addr_t virt)
 {
-	struct machine_t * mach = get_machine();
-	struct mmap_t * m;
+    struct machine_t * mach = get_machine();
+    struct mmap_t * pos;
 
-	if(mach && (m = (struct mmap_t *)mach->map))
-	{
-		while(m->size > 0)
-		{
-			if((virt >= m->virt) && (virt <= m->virt + m->size - 1))
-				return (physical_addr_t)(m->phys + (virt - m->virt));
-			m++;
-		}
-	}
-	return (physical_addr_t)virt;
+    if(mach)
+    {
+        list_for_each_entry(pos, &mach->mmap, list)
+        {
+            if((virt >= pos->virt) && (virt < pos->virt + pos->size))
+                return (physical_addr_t)(pos->phys + (virt - pos->virt));
+        }
+    }
+    return (physical_addr_t)virt;
 }
 extern __typeof(__virt_to_phys) virt_to_phys __attribute__((weak, alias("__virt_to_phys")));

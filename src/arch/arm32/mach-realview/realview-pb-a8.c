@@ -30,16 +30,7 @@
 #include <mmu.h>
 #include <realview/reg-sysctl.h>
 
-/* æœºå™¨å†…å­˜æ˜ å°„è¡¨ */
-static const struct mmap_t mach_map[] = {
-	{"rom",  0x70000000, 0x70000000, SZ_32M, MAP_TYPE_CB},      /* romæ®µ */
-	{"ram",  0x72000000, 0x72000000, SZ_32M, MAP_TYPE_CB},      /* ramæ®µ */
-	{"dma",  0x74000000, 0x74000000, SZ_64M, MAP_TYPE_NCNB},    /* dmaæ®µ */
-	{"heap", 0x78000000, 0x78000000, SZ_128M, MAP_TYPE_CB},   /* heapæ®µ*/
-	{ 0 },
-};
-
-/* æœºå™¨æ£€æµ‹ */
+/* »úÆ÷¼ì²â */
 static int mach_detect(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -51,15 +42,19 @@ static int mach_detect(struct machine_t * mach)
 
 static void mach_memmap(struct machine_t * mach)
 {
-	mmu_setup(mach->map);
+	machine_mmap(mach, "rom", 0x70000000, 0x70000000, SZ_32M, MAP_TYPE_CB);
+	machine_mmap(mach, "ram", 0x72000000, 0x72000000, SZ_32M, MAP_TYPE_CB);
+	machine_mmap(mach, "dma", 0x74000000, 0x74000000, SZ_64M, MAP_TYPE_NCNB);
+	machine_mmap(mach, "heap", 0x78000000, 0x78000000, SZ_128M, MAP_TYPE_CB);
+	mmu_setup(mach);
 }
 
-/* æœºå™¨å…³æœºå…·ä½“å®ç° */
+/* »úÆ÷¹Ø»ú¾ßÌåÊµÏÖ */
 static void mach_shutdown(struct machine_t * mach)
 {
 }
 
-/* æœºå™¨é‡å¯å…·ä½“å®ç° */
+/* »úÆ÷ÖØÆô¾ßÌåÊµÏÖ */
 static void mach_reboot(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -68,17 +63,17 @@ static void mach_reboot(struct machine_t * mach)
 	write32(virt + SYSCTL_RESET, read32(virt + SYSCTL_RESET) | (1 << 2));
 }
 
-/* æœºå™¨ç¡çœ å…·ä½“å®ç° */
+/* »úÆ÷Ë¯Ãß¾ßÌåÊµÏÖ */
 static void mach_sleep(struct machine_t * mach)
 {
 }
 
-/* æœºå™¨æ¸…ç†å…·ä½“å®ç° */
+/* »úÆ÷ÇåÀí¾ßÌåÊµÏÖ */
 static void mach_cleanup(struct machine_t * mach)
 {
 }
 
-/* æœºå™¨logè¾“å‡ºå…·ä½“å®ç° */
+/* »úÆ÷logÊä³ö¾ßÌåÊµÏÖ */
 static void mach_logger(struct machine_t * mach, const char * buf, int count)
 {
 	virtual_addr_t virt = phys_to_virt(0x10009000);
@@ -108,13 +103,13 @@ static void mach_logger(struct machine_t * mach, const char * buf, int count)
 	}
 }
 
-/* è·å–æœºå™¨å”¯ä¸€æ ‡è¯†ç¬¦å…·ä½“å®ç° */
+/* »ñÈ¡»úÆ÷Î¨Ò»±êÊ¶·û¾ßÌåÊµÏÖ */
 static const char * mach_uniqueid(struct machine_t * mach)
 {
 	return NULL;
 }
 
-/* æœºå™¨keygenå…·ä½“å®ç° */
+/* »úÆ÷keygen¾ßÌåÊµÏÖ */
 static int mach_keygen(struct machine_t * mach, const char * msg, void * key)
 {
 	return 0;
@@ -123,7 +118,6 @@ static int mach_keygen(struct machine_t * mach, const char * msg, void * key)
 static struct machine_t realview_pb_a8 = {
 	.name 		= "realview-pb-a8",
 	.desc 		= "ARM RealView Platform Baseboard For Cortex-A8",
-	.map		= mach_map,
 	.detect 	= mach_detect,
 	.memmap		= mach_memmap,
 	.shutdown	= mach_shutdown,
@@ -135,17 +129,17 @@ static struct machine_t realview_pb_a8 = {
 	.keygen		= mach_keygen,
 };
 
-/* æœºå™¨åˆå§‹åŒ– */
+/* »úÆ÷³õÊ¼»¯ */
 static __init void realview_pb_a8_machine_init(void)
 {
-    /* æ³¨å†Œæœºå™¨é…ç½® */
+    /* ×¢²á»úÆ÷ÅäÖÃ */
 	register_machine(&realview_pb_a8);
 }
 
-/* æœºå™¨é€€å‡º */
+/* »úÆ÷ÍË³ö */
 static __exit void realview_pb_a8_machine_exit(void)
 {
-    /* æ³¨é”€æœºå™¨é…ç½® */
+    /* ×¢Ïú»úÆ÷ÅäÖÃ */
 	unregister_machine(&realview_pb_a8);
 }
 

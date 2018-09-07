@@ -27,10 +27,7 @@
  */
 
 #include <xboot.h>
-
-static const struct mmap_t mach_map[] = {
-	{ 0 },
-};
+#include <rk3399/reg-cru.h>
 
 static int mach_detect(struct machine_t * mach)
 {
@@ -47,6 +44,7 @@ static void mach_shutdown(struct machine_t * mach)
 
 static void mach_reboot(struct machine_t * mach)
 {
+	write32(phys_to_virt(RK3399_CRU_BASE) + CRU_GLB_SRST_FST_VALUE, 0xfdb9);
 }
 
 static void mach_sleep(struct machine_t * mach)
@@ -82,7 +80,6 @@ static int mach_keygen(struct machine_t * mach, const char * msg, void * key)
 static struct machine_t x3399 = {
 	.name 		= "x3399",
 	.desc 		= "X3399 Based On RK3399 SOC",
-	.map		= mach_map,
 	.detect 	= mach_detect,
 	.memmap		= mach_memmap,
 	.shutdown	= mach_shutdown,

@@ -9,20 +9,20 @@ extern "C" {
 
 struct vibrator_t
 {
-	/* The vibrator name */
-	char * name;
+    /* The vibrator name */
+    char * name;
 
-	/* Set vibrator's state */
-	void (*set)(struct vibrator_t * vib, int state);
+    /* Set vibrator's state */
+    void (*set)(struct vibrator_t * vib, int state);
 
-	/* Get vibrator's state */
-	int (*get)(struct vibrator_t * vib);
+    /* Get vibrator's state */
+    int (*get)(struct vibrator_t * vib);
 
-	/* Vibrator vibrate with queue, all zero means clear and stop */
-	void (*vibrate)(struct vibrator_t * vib, int state, int millisecond);
+    /* Vibrator vibrate with queue, all zero means clear and stop */
+    void (*vibrate)(struct vibrator_t * vib, int state, int millisecond);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct vibrator_t * search_vibrator(const char * name);

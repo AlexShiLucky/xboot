@@ -9,17 +9,17 @@ extern "C" {
 
 struct clk_t
 {
-	char * name;
-	int count;
+    char * name;
+    int count;
 
-	void (*set_parent)(struct clk_t * clk, const char * pname);
-	const char * (*get_parent)(struct clk_t * clk);
-	void (*set_enable)(struct clk_t * clk, bool_t enable);
-	bool_t (*get_enable)(struct clk_t * clk);
-	void (*set_rate)(struct clk_t * clk, u64_t prate, u64_t rate);
-	u64_t (*get_rate)(struct clk_t * clk, u64_t prate);
+    void (*set_parent)(struct clk_t * clk, const char * pname);
+    const char * (*get_parent)(struct clk_t * clk);
+    void (*set_enable)(struct clk_t * clk, bool_t enable);
+    bool_t (*get_enable)(struct clk_t * clk);
+    void (*set_rate)(struct clk_t * clk, u64_t prate, u64_t rate);
+    u64_t (*get_rate)(struct clk_t * clk, u64_t prate);
 
-	void * priv;
+    void * priv;
 };
 
 struct clk_t * search_clk(const char * name);

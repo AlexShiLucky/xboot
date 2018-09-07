@@ -31,8 +31,8 @@
  * The Initial Developer of the Original Code is Carl Worth
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 /* Provide definitions for standalone compilation */
@@ -122,21 +122,21 @@ typedef struct _cairo_bo_sweep_line {
 
 static cairo_fixed_t
 _line_compute_intersection_x_for_y (const cairo_line_t *line,
-				    cairo_fixed_t y)
+                    cairo_fixed_t y)
 {
     cairo_fixed_t x, dy;
 
     if (y == line->p1.y)
-	return line->p1.x;
+    return line->p1.x;
     if (y == line->p2.y)
-	return line->p2.x;
+    return line->p2.x;
 
     x = line->p1.x;
     dy = line->p2.y - line->p1.y;
     if (dy != 0) {
-	x += _cairo_fixed_mul_div_floor (y - line->p1.y,
-					 line->p2.x - line->p1.x,
-					 dy);
+    x += _cairo_fixed_mul_div_floor (y - line->p1.y,
+                     line->p2.x - line->p1.x,
+                     dy);
     }
 
     return x;
@@ -144,13 +144,13 @@ _line_compute_intersection_x_for_y (const cairo_line_t *line,
 
 static inline int
 _cairo_bo_point32_compare (cairo_bo_point32_t const *a,
-			   cairo_bo_point32_t const *b)
+               cairo_bo_point32_t const *b)
 {
     int cmp;
 
     cmp = a->y - b->y;
     if (cmp)
-	return cmp;
+    return cmp;
 
     return a->x - b->x;
 }
@@ -161,11 +161,11 @@ _cairo_bo_point32_compare (cairo_bo_point32_t const *a,
  *
  * For each edge, consider the direction vector formed from:
  *
- *	top -> bottom
+ *  top -> bottom
  *
  * which is:
  *
- *	(dx, dy) = (line.p2.x - line.p1.x, line.p2.y - line.p1.y)
+ *  (dx, dy) = (line.p2.x - line.p1.x, line.p2.y - line.p1.y)
  *
  * We then define the slope of each edge as dx/dy, (which is the
  * inverse of the slope typically used in math instruction). We never
@@ -173,9 +173,9 @@ _cairo_bo_point32_compare (cairo_bo_point32_t const *a,
  * can derive a slope comparison without division as follows, (where
  * the ? represents our compare operator).
  *
- * 1.	   slope(a) ? slope(b)
- * 2.	    adx/ady ? bdx/bdy
- * 3.	(adx * bdy) ? (bdx * ady)
+ * 1.      slope(a) ? slope(b)
+ * 2.       adx/ady ? bdx/bdy
+ * 3.   (adx * bdy) ? (bdx * ady)
  *
  * Note that from step 2 to step 3 there is no change needed in the
  * sign of the result since both ady and bdy are guaranteed to be
@@ -191,7 +191,7 @@ _cairo_bo_point32_compare (cairo_bo_point32_t const *a,
  */
 static inline int
 _slope_compare (const cairo_bo_edge_t *a,
-		const cairo_bo_edge_t *b)
+        const cairo_bo_edge_t *b)
 {
     /* XXX: We're assuming here that dx and dy will still fit in 32
      * bits. That's not true in general as there could be overflow. We
@@ -207,22 +207,22 @@ _slope_compare (const cairo_bo_edge_t *a,
 
     /* First check for vertical lines. */
     if (adx == 0)
-	return -bdx;
+    return -bdx;
     if (bdx == 0)
-	return adx;
+    return adx;
 
     /* Then where the two edges point in different directions wrt x. */
     if ((adx ^ bdx) < 0)
-	return adx;
+    return adx;
 
     /* Finally we actually need to do the general comparison. */
     {
-	int32_t ady = a->edge.line.p2.y - a->edge.line.p1.y;
-	int32_t bdy = b->edge.line.p2.y - b->edge.line.p1.y;
-	cairo_int64_t adx_bdy = _cairo_int32x32_64_mul (adx, bdy);
-	cairo_int64_t bdx_ady = _cairo_int32x32_64_mul (bdx, ady);
+    int32_t ady = a->edge.line.p2.y - a->edge.line.p1.y;
+    int32_t bdy = b->edge.line.p2.y - b->edge.line.p1.y;
+    cairo_int64_t adx_bdy = _cairo_int32x32_64_mul (adx, bdy);
+    cairo_int64_t bdx_ady = _cairo_int32x32_64_mul (bdx, ady);
 
-	return _cairo_int64_cmp (adx_bdy, bdx_ady);
+    return _cairo_int64_cmp (adx_bdy, bdx_ady);
     }
 }
 
@@ -254,8 +254,8 @@ _slope_compare (const cairo_bo_edge_t *a,
  */
 static int
 edges_compare_x_for_y_general (const cairo_bo_edge_t *a,
-			       const cairo_bo_edge_t *b,
-			       int32_t y)
+                   const cairo_bo_edge_t *b,
+                   int32_t y)
 {
     /* XXX: We're assuming here that dx and dy will still fit in 32
      * bits. That's not true in general as there could be overflow. We
@@ -302,16 +302,16 @@ edges_compare_x_for_y_general (const cairo_bo_edge_t *a,
     ady = a->edge.line.p2.y - a->edge.line.p1.y;
     adx = a->edge.line.p2.x - a->edge.line.p1.x;
     if (adx == 0)
-	have_dx_adx_bdx &= ~HAVE_ADX;
+    have_dx_adx_bdx &= ~HAVE_ADX;
 
     bdy = b->edge.line.p2.y - b->edge.line.p1.y;
     bdx = b->edge.line.p2.x - b->edge.line.p1.x;
     if (bdx == 0)
-	have_dx_adx_bdx &= ~HAVE_BDX;
+    have_dx_adx_bdx &= ~HAVE_BDX;
 
     dx = a->edge.line.p1.x - b->edge.line.p1.x;
     if (dx == 0)
-	have_dx_adx_bdx &= ~HAVE_DX;
+    have_dx_adx_bdx &= ~HAVE_DX;
 
 #define L _cairo_int64x32_128_mul (_cairo_int32x32_64_mul (ady, bdy), dx)
 #define A _cairo_int64x32_128_mul (_cairo_int32x32_64_mul (adx, bdy), y - a->edge.line.p1.y)
@@ -319,58 +319,58 @@ edges_compare_x_for_y_general (const cairo_bo_edge_t *a,
     switch (have_dx_adx_bdx) {
     default:
     case HAVE_NONE:
-	return 0;
+    return 0;
     case HAVE_DX:
-	/* A_dy * B_dy * (A_x - B_x) ∘ 0 */
-	return dx; /* ady * bdy is positive definite */
+    /* A_dy * B_dy * (A_x - B_x) ∘ 0 */
+    return dx; /* ady * bdy is positive definite */
     case HAVE_ADX:
-	/* 0 ∘  - (Y - A_y) * A_dx * B_dy */
-	return adx; /* bdy * (y - a->top.y) is positive definite */
+    /* 0 ∘  - (Y - A_y) * A_dx * B_dy */
+    return adx; /* bdy * (y - a->top.y) is positive definite */
     case HAVE_BDX:
-	/* 0 ∘ (Y - B_y) * B_dx * A_dy */
-	return -bdx; /* ady * (y - b->top.y) is positive definite */
+    /* 0 ∘ (Y - B_y) * B_dx * A_dy */
+    return -bdx; /* ady * (y - b->top.y) is positive definite */
     case HAVE_ADX_BDX:
-	/*  0 ∘ (Y - B_y) * B_dx * A_dy - (Y - A_y) * A_dx * B_dy */
-	if ((adx ^ bdx) < 0) {
-	    return adx;
-	} else if (a->edge.line.p1.y == b->edge.line.p1.y) { /* common origin */
-	    cairo_int64_t adx_bdy, bdx_ady;
+    /*  0 ∘ (Y - B_y) * B_dx * A_dy - (Y - A_y) * A_dx * B_dy */
+    if ((adx ^ bdx) < 0) {
+        return adx;
+    } else if (a->edge.line.p1.y == b->edge.line.p1.y) { /* common origin */
+        cairo_int64_t adx_bdy, bdx_ady;
 
-	    /* ∴ A_dx * B_dy ∘ B_dx * A_dy */
+        /* ∴ A_dx * B_dy ∘ B_dx * A_dy */
 
-	    adx_bdy = _cairo_int32x32_64_mul (adx, bdy);
-	    bdx_ady = _cairo_int32x32_64_mul (bdx, ady);
+        adx_bdy = _cairo_int32x32_64_mul (adx, bdy);
+        bdx_ady = _cairo_int32x32_64_mul (bdx, ady);
 
-	    return _cairo_int64_cmp (adx_bdy, bdx_ady);
-	} else
-	    return _cairo_int128_cmp (A, B);
+        return _cairo_int64_cmp (adx_bdy, bdx_ady);
+    } else
+        return _cairo_int128_cmp (A, B);
     case HAVE_DX_ADX:
-	/* A_dy * (A_x - B_x) ∘ - (Y - A_y) * A_dx */
-	if ((-adx ^ dx) < 0) {
-	    return dx;
-	} else {
-	    cairo_int64_t ady_dx, dy_adx;
+    /* A_dy * (A_x - B_x) ∘ - (Y - A_y) * A_dx */
+    if ((-adx ^ dx) < 0) {
+        return dx;
+    } else {
+        cairo_int64_t ady_dx, dy_adx;
 
-	    ady_dx = _cairo_int32x32_64_mul (ady, dx);
-	    dy_adx = _cairo_int32x32_64_mul (a->edge.line.p1.y - y, adx);
+        ady_dx = _cairo_int32x32_64_mul (ady, dx);
+        dy_adx = _cairo_int32x32_64_mul (a->edge.line.p1.y - y, adx);
 
-	    return _cairo_int64_cmp (ady_dx, dy_adx);
-	}
+        return _cairo_int64_cmp (ady_dx, dy_adx);
+    }
     case HAVE_DX_BDX:
-	/* B_dy * (A_x - B_x) ∘ (Y - B_y) * B_dx */
-	if ((bdx ^ dx) < 0) {
-	    return dx;
-	} else {
-	    cairo_int64_t bdy_dx, dy_bdx;
+    /* B_dy * (A_x - B_x) ∘ (Y - B_y) * B_dx */
+    if ((bdx ^ dx) < 0) {
+        return dx;
+    } else {
+        cairo_int64_t bdy_dx, dy_bdx;
 
-	    bdy_dx = _cairo_int32x32_64_mul (bdy, dx);
-	    dy_bdx = _cairo_int32x32_64_mul (y - b->edge.line.p1.y, bdx);
+        bdy_dx = _cairo_int32x32_64_mul (bdy, dx);
+        dy_bdx = _cairo_int32x32_64_mul (y - b->edge.line.p1.y, bdx);
 
-	    return _cairo_int64_cmp (bdy_dx, dy_bdx);
-	}
+        return _cairo_int64_cmp (bdy_dx, dy_bdx);
+    }
     case HAVE_ALL:
-	/* XXX try comparing (a->edge.line.p2.x - b->edge.line.p2.x) et al */
-	return _cairo_int128_cmp (L, _cairo_int128_sub (B, A));
+    /* XXX try comparing (a->edge.line.p2.x - b->edge.line.p2.x) et al */
+    return _cairo_int128_cmp (L, _cairo_int128_sub (B, A));
     }
 #undef B
 #undef A
@@ -400,25 +400,25 @@ edges_compare_x_for_y_general (const cairo_bo_edge_t *a,
  */
 static int
 edge_compare_for_y_against_x (const cairo_bo_edge_t *a,
-			      int32_t y,
-			      int32_t x)
+                  int32_t y,
+                  int32_t x)
 {
     int32_t adx, ady;
     int32_t dx, dy;
     cairo_int64_t L, R;
 
     if (x < a->edge.line.p1.x && x < a->edge.line.p2.x)
-	return 1;
+    return 1;
     if (x > a->edge.line.p1.x && x > a->edge.line.p2.x)
-	return -1;
+    return -1;
 
     adx = a->edge.line.p2.x - a->edge.line.p1.x;
     dx = x - a->edge.line.p1.x;
 
     if (adx == 0)
-	return -dx;
+    return -dx;
     if (dx == 0 || (adx ^ dx) < 0)
-	return adx;
+    return adx;
 
     dy = y - a->edge.line.p1.y;
     ady = a->edge.line.p2.y - a->edge.line.p1.y;
@@ -431,8 +431,8 @@ edge_compare_for_y_against_x (const cairo_bo_edge_t *a,
 
 static int
 edges_compare_x_for_y (const cairo_bo_edge_t *a,
-		       const cairo_bo_edge_t *b,
-		       int32_t y)
+               const cairo_bo_edge_t *b,
+               int32_t y)
 {
     /* If the sweep-line is currently on an end-point of a line,
      * then we know its precise x value (and considering that we often need to
@@ -448,29 +448,29 @@ edges_compare_x_for_y (const cairo_bo_edge_t *a,
     int32_t ax, bx;
 
     if (y == a->edge.line.p1.y)
-	ax = a->edge.line.p1.x;
+    ax = a->edge.line.p1.x;
     else if (y == a->edge.line.p2.y)
-	ax = a->edge.line.p2.x;
+    ax = a->edge.line.p2.x;
     else
-	have_ax_bx &= ~HAVE_AX;
+    have_ax_bx &= ~HAVE_AX;
 
     if (y == b->edge.line.p1.y)
-	bx = b->edge.line.p1.x;
+    bx = b->edge.line.p1.x;
     else if (y == b->edge.line.p2.y)
-	bx = b->edge.line.p2.x;
+    bx = b->edge.line.p2.x;
     else
-	have_ax_bx &= ~HAVE_BX;
+    have_ax_bx &= ~HAVE_BX;
 
     switch (have_ax_bx) {
     default:
     case HAVE_NEITHER:
-	return edges_compare_x_for_y_general (a, b, y);
+    return edges_compare_x_for_y_general (a, b, y);
     case HAVE_AX:
-	return -edge_compare_for_y_against_x (b, y, ax);
+    return -edge_compare_for_y_against_x (b, y, ax);
     case HAVE_BX:
-	return edge_compare_for_y_against_x (a, y, bx);
+    return edge_compare_for_y_against_x (a, y, bx);
     case HAVE_BOTH:
-	return ax - bx;
+    return ax - bx;
     }
 }
 
@@ -478,30 +478,30 @@ static inline int
 _line_equal (const cairo_line_t *a, const cairo_line_t *b)
 {
     return (a->p1.x == b->p1.x && a->p1.y == b->p1.y &&
-	    a->p2.x == b->p2.x && a->p2.y == b->p2.y);
+        a->p2.x == b->p2.x && a->p2.y == b->p2.y);
 }
 
 static int
-_cairo_bo_sweep_line_compare_edges (cairo_bo_sweep_line_t	*sweep_line,
-				    const cairo_bo_edge_t	*a,
-				    const cairo_bo_edge_t	*b)
+_cairo_bo_sweep_line_compare_edges (cairo_bo_sweep_line_t   *sweep_line,
+                    const cairo_bo_edge_t   *a,
+                    const cairo_bo_edge_t   *b)
 {
     int cmp;
 
     /* compare the edges if not identical */
     if (! _line_equal (&a->edge.line, &b->edge.line)) {
-	cmp = edges_compare_x_for_y (a, b, sweep_line->current_y);
-	if (cmp)
-	    return cmp;
+    cmp = edges_compare_x_for_y (a, b, sweep_line->current_y);
+    if (cmp)
+        return cmp;
 
-	/* The two edges intersect exactly at y, so fall back on slope
-	 * comparison. We know that this compare_edges function will be
-	 * called only when starting a new edge, (not when stopping an
-	 * edge), so we don't have to worry about conditionally inverting
-	 * the sense of _slope_compare. */
-	cmp = _slope_compare (a, b);
-	if (cmp)
-	    return cmp;
+    /* The two edges intersect exactly at y, so fall back on slope
+     * comparison. We know that this compare_edges function will be
+     * called only when starting a new edge, (not when stopping an
+     * edge), so we don't have to worry about conditionally inverting
+     * the sense of _slope_compare. */
+    cmp = _slope_compare (a, b);
+    if (cmp)
+        return cmp;
     }
 
     /* We've got two collinear edges now. */
@@ -510,20 +510,20 @@ _cairo_bo_sweep_line_compare_edges (cairo_bo_sweep_line_t	*sweep_line,
 
 static inline cairo_int64_t
 det32_64 (int32_t a, int32_t b,
-	  int32_t c, int32_t d)
+      int32_t c, int32_t d)
 {
     /* det = a * d - b * c */
     return _cairo_int64_sub (_cairo_int32x32_64_mul (a, d),
-			     _cairo_int32x32_64_mul (b, c));
+                 _cairo_int32x32_64_mul (b, c));
 }
 
 static inline cairo_int128_t
 det64x32_128 (cairo_int64_t a, int32_t       b,
-	      cairo_int64_t c, int32_t       d)
+          cairo_int64_t c, int32_t       d)
 {
     /* det = a * d - b * c */
     return _cairo_int128_sub (_cairo_int64x32_128_mul (a, d),
-			      _cairo_int64x32_128_mul (c, b));
+                  _cairo_int64x32_128_mul (c, b));
 }
 
 /* Compute the intersection of two lines as defined by two edges. The
@@ -533,9 +533,9 @@ det64x32_128 (cairo_int64_t a, int32_t       b,
  * %CAIRO_BO_STATUS_PARALLEL if the two lines are exactly parallel.
  */
 static cairo_bool_t
-intersect_lines (cairo_bo_edge_t		*a,
-		 cairo_bo_edge_t		*b,
-		 cairo_bo_intersect_point_t	*intersection)
+intersect_lines (cairo_bo_edge_t        *a,
+         cairo_bo_edge_t        *b,
+         cairo_bo_intersect_point_t *intersection)
 {
     cairo_int64_t a_det, b_det;
 
@@ -577,76 +577,76 @@ intersect_lines (cairo_bo_edge_t		*a,
       *   s * (ady*bdx - bdy*adx) = ady * (ax - bx) - adx * (ay - by)
       */
     R = det32_64 (dx2, dy2,
-		  b->edge.line.p1.x - a->edge.line.p1.x,
-		  b->edge.line.p1.y - a->edge.line.p1.y);
+          b->edge.line.p1.x - a->edge.line.p1.x,
+          b->edge.line.p1.y - a->edge.line.p1.y);
     if (_cairo_int64_negative (den_det)) {
-	if (_cairo_int64_ge (den_det, R))
-	    return FALSE;
+    if (_cairo_int64_ge (den_det, R))
+        return FALSE;
     } else {
-	if (_cairo_int64_le (den_det, R))
-	    return FALSE;
+    if (_cairo_int64_le (den_det, R))
+        return FALSE;
     }
 
     R = det32_64 (dy1, dx1,
-		  a->edge.line.p1.y - b->edge.line.p1.y,
-		  a->edge.line.p1.x - b->edge.line.p1.x);
+          a->edge.line.p1.y - b->edge.line.p1.y,
+          a->edge.line.p1.x - b->edge.line.p1.x);
     if (_cairo_int64_negative (den_det)) {
-	if (_cairo_int64_ge (den_det, R))
-	    return FALSE;
+    if (_cairo_int64_ge (den_det, R))
+        return FALSE;
     } else {
-	if (_cairo_int64_le (den_det, R))
-	    return FALSE;
+    if (_cairo_int64_le (den_det, R))
+        return FALSE;
     }
 
     /* We now know that the two lines should intersect within range. */
 
     a_det = det32_64 (a->edge.line.p1.x, a->edge.line.p1.y,
-		      a->edge.line.p2.x, a->edge.line.p2.y);
+              a->edge.line.p2.x, a->edge.line.p2.y);
     b_det = det32_64 (b->edge.line.p1.x, b->edge.line.p1.y,
-		      b->edge.line.p2.x, b->edge.line.p2.y);
+              b->edge.line.p2.x, b->edge.line.p2.y);
 
     /* x = det (a_det, dx1, b_det, dx2) / den_det */
     qr = _cairo_int_96by64_32x64_divrem (det64x32_128 (a_det, dx1,
-						       b_det, dx2),
-					 den_det);
+                               b_det, dx2),
+                     den_det);
     if (_cairo_int64_eq (qr.rem, den_det))
-	return FALSE;
+    return FALSE;
 #if 0
     intersection->x.exactness = _cairo_int64_is_zero (qr.rem) ? EXACT : INEXACT;
 #else
     intersection->x.exactness = EXACT;
     if (! _cairo_int64_is_zero (qr.rem)) {
-	if (_cairo_int64_negative (den_det) ^ _cairo_int64_negative (qr.rem))
-	    qr.rem = _cairo_int64_negate (qr.rem);
-	qr.rem = _cairo_int64_mul (qr.rem, _cairo_int32_to_int64 (2));
-	if (_cairo_int64_ge (qr.rem, den_det)) {
-	    qr.quo = _cairo_int64_add (qr.quo,
-				       _cairo_int32_to_int64 (_cairo_int64_negative (qr.quo) ? -1 : 1));
-	} else
-	    intersection->x.exactness = INEXACT;
+    if (_cairo_int64_negative (den_det) ^ _cairo_int64_negative (qr.rem))
+        qr.rem = _cairo_int64_negate (qr.rem);
+    qr.rem = _cairo_int64_mul (qr.rem, _cairo_int32_to_int64 (2));
+    if (_cairo_int64_ge (qr.rem, den_det)) {
+        qr.quo = _cairo_int64_add (qr.quo,
+                       _cairo_int32_to_int64 (_cairo_int64_negative (qr.quo) ? -1 : 1));
+    } else
+        intersection->x.exactness = INEXACT;
     }
 #endif
     intersection->x.ordinate = _cairo_int64_to_int32 (qr.quo);
 
     /* y = det (a_det, dy1, b_det, dy2) / den_det */
     qr = _cairo_int_96by64_32x64_divrem (det64x32_128 (a_det, dy1,
-						       b_det, dy2),
-					 den_det);
+                               b_det, dy2),
+                     den_det);
     if (_cairo_int64_eq (qr.rem, den_det))
-	return FALSE;
+    return FALSE;
 #if 0
     intersection->y.exactness = _cairo_int64_is_zero (qr.rem) ? EXACT : INEXACT;
 #else
     intersection->y.exactness = EXACT;
     if (! _cairo_int64_is_zero (qr.rem)) {
-	if (_cairo_int64_negative (den_det) ^ _cairo_int64_negative (qr.rem))
-	    qr.rem = _cairo_int64_negate (qr.rem);
-	qr.rem = _cairo_int64_mul (qr.rem, _cairo_int32_to_int64 (2));
-	if (_cairo_int64_ge (qr.rem, den_det)) {
-	    qr.quo = _cairo_int64_add (qr.quo,
-				       _cairo_int32_to_int64 (_cairo_int64_negative (qr.quo) ? -1 : 1));
-	} else
-	    intersection->y.exactness = INEXACT;
+    if (_cairo_int64_negative (den_det) ^ _cairo_int64_negative (qr.rem))
+        qr.rem = _cairo_int64_negate (qr.rem);
+    qr.rem = _cairo_int64_mul (qr.rem, _cairo_int32_to_int64 (2));
+    if (_cairo_int64_ge (qr.rem, den_det)) {
+        qr.quo = _cairo_int64_add (qr.quo,
+                       _cairo_int32_to_int64 (_cairo_int64_negative (qr.quo) ? -1 : 1));
+    } else
+        intersection->y.exactness = INEXACT;
     }
 #endif
     intersection->y.ordinate = _cairo_int64_to_int32 (qr.quo);
@@ -655,14 +655,14 @@ intersect_lines (cairo_bo_edge_t		*a,
 }
 
 static int
-_cairo_bo_intersect_ordinate_32_compare (cairo_bo_intersect_ordinate_t	a,
-					 int32_t			b)
+_cairo_bo_intersect_ordinate_32_compare (cairo_bo_intersect_ordinate_t  a,
+                     int32_t            b)
 {
     /* First compare the quotient */
     if (a.ordinate > b)
-	return +1;
+    return +1;
     if (a.ordinate < b)
-	return -1;
+    return -1;
     /* With quotient identical, if remainder is 0 then compare equal */
     /* Otherwise, the non-zero remainder makes a > b */
     return INEXACT == a.exactness;
@@ -686,8 +686,8 @@ _cairo_bo_intersect_ordinate_32_compare (cairo_bo_intersect_ordinate_t	a,
  * in the implementation for more details.
  */
 static cairo_bool_t
-_cairo_bo_edge_contains_intersect_point (cairo_bo_edge_t		*edge,
-					 cairo_bo_intersect_point_t	*point)
+_cairo_bo_edge_contains_intersect_point (cairo_bo_edge_t        *edge,
+                     cairo_bo_intersect_point_t *point)
 {
     int cmp_top, cmp_bottom;
 
@@ -699,18 +699,18 @@ _cairo_bo_edge_contains_intersect_point (cairo_bo_edge_t		*edge,
      */
 
     cmp_top = _cairo_bo_intersect_ordinate_32_compare (point->y,
-						       edge->edge.top);
+                               edge->edge.top);
     cmp_bottom = _cairo_bo_intersect_ordinate_32_compare (point->y,
-							  edge->edge.bottom);
+                              edge->edge.bottom);
 
     if (cmp_top < 0 || cmp_bottom > 0)
     {
-	return FALSE;
+    return FALSE;
     }
 
     if (cmp_top > 0 && cmp_bottom < 0)
     {
-	return TRUE;
+    return TRUE;
     }
 
     /* At this stage, the point lies on the same y value as either
@@ -725,17 +725,17 @@ _cairo_bo_edge_contains_intersect_point (cairo_bo_edge_t		*edge,
      * considered as inside. */
 
     if (cmp_top == 0) {
-	cairo_fixed_t top_x;
+    cairo_fixed_t top_x;
 
-	top_x = _line_compute_intersection_x_for_y (&edge->edge.line,
-						    edge->edge.top);
-	return _cairo_bo_intersect_ordinate_32_compare (point->x, top_x) > 0;
+    top_x = _line_compute_intersection_x_for_y (&edge->edge.line,
+                            edge->edge.top);
+    return _cairo_bo_intersect_ordinate_32_compare (point->x, top_x) > 0;
     } else { /* cmp_bottom == 0 */
-	cairo_fixed_t bot_x;
+    cairo_fixed_t bot_x;
 
-	bot_x = _line_compute_intersection_x_for_y (&edge->edge.line,
-						    edge->edge.bottom);
-	return _cairo_bo_intersect_ordinate_32_compare (point->x, bot_x) < 0;
+    bot_x = _line_compute_intersection_x_for_y (&edge->edge.line,
+                            edge->edge.bottom);
+    return _cairo_bo_intersect_ordinate_32_compare (point->x, bot_x) < 0;
     }
 }
 
@@ -756,20 +756,20 @@ _cairo_bo_edge_contains_intersect_point (cairo_bo_edge_t		*edge,
  * intersection point has the same
  */
 static cairo_bool_t
-_cairo_bo_edge_intersect (cairo_bo_edge_t	*a,
-			  cairo_bo_edge_t	*b,
-			  cairo_bo_point32_t	*intersection)
+_cairo_bo_edge_intersect (cairo_bo_edge_t   *a,
+              cairo_bo_edge_t   *b,
+              cairo_bo_point32_t    *intersection)
 {
     cairo_bo_intersect_point_t quorem;
 
     if (! intersect_lines (a, b, &quorem))
-	return FALSE;
+    return FALSE;
 
     if (! _cairo_bo_edge_contains_intersect_point (a, &quorem))
-	return FALSE;
+    return FALSE;
 
     if (! _cairo_bo_edge_contains_intersect_point (b, &quorem))
-	return FALSE;
+    return FALSE;
 
     /* Now that we've correctly compared the intersection point and
      * determined that it lies within the edge, then we know that we
@@ -784,17 +784,17 @@ _cairo_bo_edge_intersect (cairo_bo_edge_t	*a,
 
 static inline int
 cairo_bo_event_compare (const cairo_bo_event_t *a,
-			const cairo_bo_event_t *b)
+            const cairo_bo_event_t *b)
 {
     int cmp;
 
     cmp = _cairo_bo_point32_compare (&a->point, &b->point);
     if (cmp)
-	return cmp;
+    return cmp;
 
     cmp = a->type - b->type;
     if (cmp)
-	return cmp;
+    return cmp;
 
     return a - b;
 }
@@ -812,7 +812,7 @@ static inline void
 _pqueue_fini (pqueue_t *pq)
 {
     if (pq->elements != pq->elements_embedded)
-	free (pq->elements);
+    free (pq->elements);
 }
 
 static cairo_status_t
@@ -822,19 +822,19 @@ _pqueue_grow (pqueue_t *pq)
     pq->max_size *= 2;
 
     if (pq->elements == pq->elements_embedded) {
-	new_elements = _cairo_malloc_ab (pq->max_size,
-					 sizeof (cairo_bo_event_t *));
-	if (unlikely (new_elements == NULL))
-	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    new_elements = _cairo_malloc_ab (pq->max_size,
+                     sizeof (cairo_bo_event_t *));
+    if (unlikely (new_elements == NULL))
+        return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
-	memcpy (new_elements, pq->elements_embedded,
-		sizeof (pq->elements_embedded));
+    memcpy (new_elements, pq->elements_embedded,
+        sizeof (pq->elements_embedded));
     } else {
-	new_elements = _cairo_realloc_ab (pq->elements,
-					  pq->max_size,
-					  sizeof (cairo_bo_event_t *));
-	if (unlikely (new_elements == NULL))
-	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    new_elements = _cairo_realloc_ab (pq->elements,
+                      pq->max_size,
+                      sizeof (cairo_bo_event_t *));
+    if (unlikely (new_elements == NULL))
+        return _cairo_error (CAIRO_STATUS_NO_MEMORY);
     }
 
     pq->elements = new_elements;
@@ -848,22 +848,22 @@ _pqueue_push (pqueue_t *pq, cairo_bo_event_t *event)
     int i, parent;
 
     if (unlikely (pq->size + 1 == pq->max_size)) {
-	cairo_status_t status;
+    cairo_status_t status;
 
-	status = _pqueue_grow (pq);
-	if (unlikely (status))
-	    return status;
+    status = _pqueue_grow (pq);
+    if (unlikely (status))
+        return status;
     }
 
     elements = pq->elements;
 
     for (i = ++pq->size;
-	 i != PQ_FIRST_ENTRY &&
-	 cairo_bo_event_compare (event,
-				 elements[parent = PQ_PARENT_INDEX (i)]) < 0;
-	 i = parent)
+     i != PQ_FIRST_ENTRY &&
+     cairo_bo_event_compare (event,
+                 elements[parent = PQ_PARENT_INDEX (i)]) < 0;
+     i = parent)
     {
-	elements[i] = elements[parent];
+    elements[i] = elements[parent];
     }
 
     elements[i] = event;
@@ -880,41 +880,41 @@ _pqueue_pop (pqueue_t *pq)
 
     tail = elements[pq->size--];
     if (pq->size == 0) {
-	elements[PQ_FIRST_ENTRY] = NULL;
-	return;
+    elements[PQ_FIRST_ENTRY] = NULL;
+    return;
     }
 
     for (i = PQ_FIRST_ENTRY;
-	 (child = PQ_LEFT_CHILD_INDEX (i)) <= pq->size;
-	 i = child)
+     (child = PQ_LEFT_CHILD_INDEX (i)) <= pq->size;
+     i = child)
     {
-	if (child != pq->size &&
-	    cairo_bo_event_compare (elements[child+1],
-				    elements[child]) < 0)
-	{
-	    child++;
-	}
+    if (child != pq->size &&
+        cairo_bo_event_compare (elements[child+1],
+                    elements[child]) < 0)
+    {
+        child++;
+    }
 
-	if (cairo_bo_event_compare (elements[child], tail) >= 0)
-	    break;
+    if (cairo_bo_event_compare (elements[child], tail) >= 0)
+        break;
 
-	elements[i] = elements[child];
+    elements[i] = elements[child];
     }
     elements[i] = tail;
 }
 
 static inline cairo_status_t
-_cairo_bo_event_queue_insert (cairo_bo_event_queue_t	*queue,
-			      cairo_bo_event_type_t	 type,
-			      cairo_bo_edge_t		*e1,
-			      cairo_bo_edge_t		*e2,
-			      const cairo_point_t	 *point)
+_cairo_bo_event_queue_insert (cairo_bo_event_queue_t    *queue,
+                  cairo_bo_event_type_t  type,
+                  cairo_bo_edge_t       *e1,
+                  cairo_bo_edge_t       *e2,
+                  const cairo_point_t    *point)
 {
     cairo_bo_queue_event_t *event;
 
     event = _cairo_freepool_alloc (&queue->pool);
     if (unlikely (event == NULL))
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     event->type = type;
     event->e1 = e1;
@@ -926,7 +926,7 @@ _cairo_bo_event_queue_insert (cairo_bo_event_queue_t	*queue,
 
 static void
 _cairo_bo_event_queue_delete (cairo_bo_event_queue_t *queue,
-			      cairo_bo_event_t	     *event)
+                  cairo_bo_event_t       *event)
 {
     _cairo_freepool_free (&queue->pool, event);
 }
@@ -939,27 +939,27 @@ _cairo_bo_event_dequeue (cairo_bo_event_queue_t *event_queue)
     event = event_queue->pqueue.elements[PQ_FIRST_ENTRY];
     cmp = *event_queue->start_events;
     if (event == NULL ||
-	(cmp != NULL && cairo_bo_event_compare (cmp, event) < 0))
+    (cmp != NULL && cairo_bo_event_compare (cmp, event) < 0))
     {
-	event = cmp;
-	event_queue->start_events++;
+    event = cmp;
+    event_queue->start_events++;
     }
     else
     {
-	_pqueue_pop (&event_queue->pqueue);
+    _pqueue_pop (&event_queue->pqueue);
     }
 
     return event;
 }
 
 CAIRO_COMBSORT_DECLARE (_cairo_bo_event_queue_sort,
-			cairo_bo_event_t *,
-			cairo_bo_event_compare)
+            cairo_bo_event_t *,
+            cairo_bo_event_compare)
 
 static void
-_cairo_bo_event_queue_init (cairo_bo_event_queue_t	 *event_queue,
-			    cairo_bo_event_t		**start_events,
-			    int				  num_events)
+_cairo_bo_event_queue_init (cairo_bo_event_queue_t   *event_queue,
+                cairo_bo_event_t        **start_events,
+                int               num_events)
 {
     _cairo_bo_event_queue_sort (start_events, num_events);
     start_events[num_events] = NULL;
@@ -967,24 +967,24 @@ _cairo_bo_event_queue_init (cairo_bo_event_queue_t	 *event_queue,
     event_queue->start_events = start_events;
 
     _cairo_freepool_init (&event_queue->pool,
-			  sizeof (cairo_bo_queue_event_t));
+              sizeof (cairo_bo_queue_event_t));
     _pqueue_init (&event_queue->pqueue);
     event_queue->pqueue.elements[PQ_FIRST_ENTRY] = NULL;
 }
 
 static cairo_status_t
-_cairo_bo_event_queue_insert_stop (cairo_bo_event_queue_t	*event_queue,
-				   cairo_bo_edge_t		*edge)
+_cairo_bo_event_queue_insert_stop (cairo_bo_event_queue_t   *event_queue,
+                   cairo_bo_edge_t      *edge)
 {
     cairo_bo_point32_t point;
 
     point.y = edge->edge.bottom;
     point.x = _line_compute_intersection_x_for_y (&edge->edge.line,
-						  point.y);
+                          point.y);
     return _cairo_bo_event_queue_insert (event_queue,
-					 CAIRO_BO_EVENT_TYPE_STOP,
-					 edge, NULL,
-					 &point);
+                     CAIRO_BO_EVENT_TYPE_STOP,
+                     edge, NULL,
+                     &point);
 }
 
 static void
@@ -995,14 +995,14 @@ _cairo_bo_event_queue_fini (cairo_bo_event_queue_t *event_queue)
 }
 
 static inline cairo_status_t
-_cairo_bo_event_queue_insert_if_intersect_below_current_y (cairo_bo_event_queue_t	*event_queue,
-							   cairo_bo_edge_t	*left,
-							   cairo_bo_edge_t *right)
+_cairo_bo_event_queue_insert_if_intersect_below_current_y (cairo_bo_event_queue_t   *event_queue,
+                               cairo_bo_edge_t  *left,
+                               cairo_bo_edge_t *right)
 {
     cairo_bo_point32_t intersection;
 
     if (_line_equal (&left->edge.line, &right->edge.line))
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     /* The names "left" and "right" here are correct descriptions of
      * the order of the two edges within the active edge list. So if a
@@ -1010,15 +1010,15 @@ _cairo_bo_event_queue_insert_if_intersect_below_current_y (cairo_bo_event_queue_
      * that the intersection of these two segments has already
      * occurred before the current sweep line position. */
     if (_slope_compare (left, right) <= 0)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (! _cairo_bo_edge_intersect (left, right, &intersection))
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     return _cairo_bo_event_queue_insert (event_queue,
-					 CAIRO_BO_EVENT_TYPE_INTERSECTION,
-					 left, right,
-					 &intersection);
+                     CAIRO_BO_EVENT_TYPE_INTERSECTION,
+                     left, right,
+                     &intersection);
 }
 
 static void
@@ -1030,58 +1030,58 @@ _cairo_bo_sweep_line_init (cairo_bo_sweep_line_t *sweep_line)
 }
 
 static cairo_status_t
-_cairo_bo_sweep_line_insert (cairo_bo_sweep_line_t	*sweep_line,
-			     cairo_bo_edge_t		*edge)
+_cairo_bo_sweep_line_insert (cairo_bo_sweep_line_t  *sweep_line,
+                 cairo_bo_edge_t        *edge)
 {
     if (sweep_line->current_edge != NULL) {
-	cairo_bo_edge_t *prev, *next;
-	int cmp;
+    cairo_bo_edge_t *prev, *next;
+    int cmp;
 
-	cmp = _cairo_bo_sweep_line_compare_edges (sweep_line,
-						  sweep_line->current_edge,
-						  edge);
-	if (cmp < 0) {
-	    prev = sweep_line->current_edge;
-	    next = prev->next;
-	    while (next != NULL &&
-		   _cairo_bo_sweep_line_compare_edges (sweep_line,
-						       next, edge) < 0)
-	    {
-		prev = next, next = prev->next;
-	    }
+    cmp = _cairo_bo_sweep_line_compare_edges (sweep_line,
+                          sweep_line->current_edge,
+                          edge);
+    if (cmp < 0) {
+        prev = sweep_line->current_edge;
+        next = prev->next;
+        while (next != NULL &&
+           _cairo_bo_sweep_line_compare_edges (sweep_line,
+                               next, edge) < 0)
+        {
+        prev = next, next = prev->next;
+        }
 
-	    prev->next = edge;
-	    edge->prev = prev;
-	    edge->next = next;
-	    if (next != NULL)
-		next->prev = edge;
-	} else if (cmp > 0) {
-	    next = sweep_line->current_edge;
-	    prev = next->prev;
-	    while (prev != NULL &&
-		   _cairo_bo_sweep_line_compare_edges (sweep_line,
-						       prev, edge) > 0)
-	    {
-		next = prev, prev = next->prev;
-	    }
+        prev->next = edge;
+        edge->prev = prev;
+        edge->next = next;
+        if (next != NULL)
+        next->prev = edge;
+    } else if (cmp > 0) {
+        next = sweep_line->current_edge;
+        prev = next->prev;
+        while (prev != NULL &&
+           _cairo_bo_sweep_line_compare_edges (sweep_line,
+                               prev, edge) > 0)
+        {
+        next = prev, prev = next->prev;
+        }
 
-	    next->prev = edge;
-	    edge->next = next;
-	    edge->prev = prev;
-	    if (prev != NULL)
-		prev->next = edge;
-	    else
-		sweep_line->head = edge;
-	} else {
-	    prev = sweep_line->current_edge;
-	    edge->prev = prev;
-	    edge->next = prev->next;
-	    if (prev->next != NULL)
-		prev->next->prev = edge;
-	    prev->next = edge;
-	}
+        next->prev = edge;
+        edge->next = next;
+        edge->prev = prev;
+        if (prev != NULL)
+        prev->next = edge;
+        else
+        sweep_line->head = edge;
     } else {
-	sweep_line->head = edge;
+        prev = sweep_line->current_edge;
+        edge->prev = prev;
+        edge->next = prev->next;
+        if (prev->next != NULL)
+        prev->next->prev = edge;
+        prev->next = edge;
+    }
+    } else {
+    sweep_line->head = edge;
     }
 
     sweep_line->current_edge = edge;
@@ -1090,33 +1090,33 @@ _cairo_bo_sweep_line_insert (cairo_bo_sweep_line_t	*sweep_line,
 }
 
 static void
-_cairo_bo_sweep_line_delete (cairo_bo_sweep_line_t	*sweep_line,
-			     cairo_bo_edge_t	*edge)
+_cairo_bo_sweep_line_delete (cairo_bo_sweep_line_t  *sweep_line,
+                 cairo_bo_edge_t    *edge)
 {
     if (edge->prev != NULL)
-	edge->prev->next = edge->next;
+    edge->prev->next = edge->next;
     else
-	sweep_line->head = edge->next;
+    sweep_line->head = edge->next;
 
     if (edge->next != NULL)
-	edge->next->prev = edge->prev;
+    edge->next->prev = edge->prev;
 
     if (sweep_line->current_edge == edge)
-	sweep_line->current_edge = edge->prev ? edge->prev : edge->next;
+    sweep_line->current_edge = edge->prev ? edge->prev : edge->next;
 }
 
 static void
-_cairo_bo_sweep_line_swap (cairo_bo_sweep_line_t	*sweep_line,
-			   cairo_bo_edge_t		*left,
-			   cairo_bo_edge_t		*right)
+_cairo_bo_sweep_line_swap (cairo_bo_sweep_line_t    *sweep_line,
+               cairo_bo_edge_t      *left,
+               cairo_bo_edge_t      *right)
 {
     if (left->prev != NULL)
-	left->prev->next = right;
+    left->prev->next = right;
     else
-	sweep_line->head = right;
+    sweep_line->head = right;
 
     if (right->next != NULL)
-	right->next->prev = left;
+    right->next->prev = left;
 
     left->next = right->next;
     right->next = left;
@@ -1129,45 +1129,45 @@ static inline cairo_bool_t
 edges_colinear (const cairo_bo_edge_t *a, const cairo_bo_edge_t *b)
 {
     if (_line_equal (&a->edge.line, &b->edge.line))
-	return TRUE;
+    return TRUE;
 
     if (_slope_compare (a, b))
-	return FALSE;
+    return FALSE;
 
     /* The choice of y is not truly arbitrary since we must guarantee that it
      * is greater than the start of either line.
      */
     if (a->edge.line.p1.y == b->edge.line.p1.y) {
-	return a->edge.line.p1.x == b->edge.line.p1.x;
+    return a->edge.line.p1.x == b->edge.line.p1.x;
     } else if (a->edge.line.p2.y == b->edge.line.p2.y) {
-	return a->edge.line.p2.x == b->edge.line.p2.x;
+    return a->edge.line.p2.x == b->edge.line.p2.x;
     } else if (a->edge.line.p1.y < b->edge.line.p1.y) {
-	return edge_compare_for_y_against_x (b,
-					     a->edge.line.p1.y,
-					     a->edge.line.p1.x) == 0;
+    return edge_compare_for_y_against_x (b,
+                         a->edge.line.p1.y,
+                         a->edge.line.p1.x) == 0;
     } else {
-	return edge_compare_for_y_against_x (a,
-					     b->edge.line.p1.y,
-					     b->edge.line.p1.x) == 0;
+    return edge_compare_for_y_against_x (a,
+                         b->edge.line.p1.y,
+                         b->edge.line.p1.x) == 0;
     }
 }
 
 static void
-_cairo_bo_edge_end (cairo_bo_edge_t	*left,
-		    int32_t		 bot,
-		    cairo_polygon_t	*polygon)
+_cairo_bo_edge_end (cairo_bo_edge_t *left,
+            int32_t      bot,
+            cairo_polygon_t *polygon)
 {
     cairo_bo_deferred_t *d = &left->deferred;
 
     if (likely (d->top < bot)) {
-	_cairo_polygon_add_line (polygon,
-				 &left->edge.line,
-				 d->top, bot,
-				 1);
-	_cairo_polygon_add_line (polygon,
-				 &d->right->edge.line,
-				 d->top, bot,
-				 -1);
+    _cairo_polygon_add_line (polygon,
+                 &left->edge.line,
+                 d->top, bot,
+                 1);
+    _cairo_polygon_add_line (polygon,
+                 &d->right->edge.line,
+                 d->top, bot,
+                 -1);
     }
 
     d->right = NULL;
@@ -1175,89 +1175,89 @@ _cairo_bo_edge_end (cairo_bo_edge_t	*left,
 
 
 static inline void
-_cairo_bo_edge_start_or_continue (cairo_bo_edge_t	*left,
-				  cairo_bo_edge_t	*right,
-				  int			 top,
-				  cairo_polygon_t	*polygon)
+_cairo_bo_edge_start_or_continue (cairo_bo_edge_t   *left,
+                  cairo_bo_edge_t   *right,
+                  int            top,
+                  cairo_polygon_t   *polygon)
 {
     if (left->deferred.right == right)
-	return;
+    return;
 
     if (left->deferred.right != NULL) {
-	if (right != NULL && edges_colinear (left->deferred.right, right))
-	{
-	    /* continuation on right, so just swap edges */
-	    left->deferred.right = right;
-	    return;
-	}
+    if (right != NULL && edges_colinear (left->deferred.right, right))
+    {
+        /* continuation on right, so just swap edges */
+        left->deferred.right = right;
+        return;
+    }
 
-	_cairo_bo_edge_end (left, top, polygon);
+    _cairo_bo_edge_end (left, top, polygon);
     }
 
     if (right != NULL && ! edges_colinear (left, right)) {
-	left->deferred.top = top;
-	left->deferred.right = right;
+    left->deferred.top = top;
+    left->deferred.right = right;
     }
 }
 
 static inline void
-_active_edges_to_polygon (cairo_bo_edge_t		*left,
-			  int32_t			 top,
-			  cairo_fill_rule_t		 fill_rule,
-			  cairo_polygon_t	        *polygon)
+_active_edges_to_polygon (cairo_bo_edge_t       *left,
+              int32_t            top,
+              cairo_fill_rule_t      fill_rule,
+              cairo_polygon_t           *polygon)
 {
     cairo_bo_edge_t *right;
     unsigned int mask;
 
     if (fill_rule == CAIRO_FILL_RULE_WINDING)
-	mask = ~0;
+    mask = ~0;
     else
-	mask = 1;
+    mask = 1;
 
     while (left != NULL) {
-	int in_out = left->edge.dir;
+    int in_out = left->edge.dir;
 
-	right = left->next;
-	if (left->deferred.right == NULL) {
-	    while (right != NULL && right->deferred.right == NULL)
-		right = right->next;
+    right = left->next;
+    if (left->deferred.right == NULL) {
+        while (right != NULL && right->deferred.right == NULL)
+        right = right->next;
 
-	    if (right != NULL && edges_colinear (left, right)) {
-		/* continuation on left */
-		left->deferred = right->deferred;
-		right->deferred.right = NULL;
-	    }
-	}
+        if (right != NULL && edges_colinear (left, right)) {
+        /* continuation on left */
+        left->deferred = right->deferred;
+        right->deferred.right = NULL;
+        }
+    }
 
-	right = left->next;
-	while (right != NULL) {
-	    if (right->deferred.right != NULL)
-		_cairo_bo_edge_end (right, top, polygon);
+    right = left->next;
+    while (right != NULL) {
+        if (right->deferred.right != NULL)
+        _cairo_bo_edge_end (right, top, polygon);
 
-	    in_out += right->edge.dir;
-	    if ((in_out & mask) == 0) {
-		/* skip co-linear edges */
-		if (right->next == NULL || !edges_colinear (right, right->next))
-		    break;
-	    }
+        in_out += right->edge.dir;
+        if ((in_out & mask) == 0) {
+        /* skip co-linear edges */
+        if (right->next == NULL || !edges_colinear (right, right->next))
+            break;
+        }
 
-	    right = right->next;
-	}
+        right = right->next;
+    }
 
-	_cairo_bo_edge_start_or_continue (left, right, top, polygon);
+    _cairo_bo_edge_start_or_continue (left, right, top, polygon);
 
-	left = right;
-	if (left != NULL)
-	    left = left->next;
+    left = right;
+    if (left != NULL)
+        left = left->next;
     }
 }
 
 
 static cairo_status_t
 _cairo_bentley_ottmann_tessellate_bo_edges (cairo_bo_event_t   **start_events,
-					    int			 num_events,
-					    cairo_fill_rule_t	 fill_rule,
-					    cairo_polygon_t	*polygon)
+                        int          num_events,
+                        cairo_fill_rule_t    fill_rule,
+                        cairo_polygon_t *polygon)
 {
     cairo_status_t status = CAIRO_STATUS_SUCCESS; /* silence compiler */
     cairo_bo_event_queue_t event_queue;
@@ -1270,93 +1270,93 @@ _cairo_bentley_ottmann_tessellate_bo_edges (cairo_bo_event_t   **start_events,
     _cairo_bo_sweep_line_init (&sweep_line);
 
     while ((event = _cairo_bo_event_dequeue (&event_queue))) {
-	if (event->point.y != sweep_line.current_y) {
-	    _active_edges_to_polygon (sweep_line.head,
-				      sweep_line.current_y,
-				      fill_rule, polygon);
+    if (event->point.y != sweep_line.current_y) {
+        _active_edges_to_polygon (sweep_line.head,
+                      sweep_line.current_y,
+                      fill_rule, polygon);
 
-	    sweep_line.current_y = event->point.y;
-	}
+        sweep_line.current_y = event->point.y;
+    }
 
-	switch (event->type) {
-	case CAIRO_BO_EVENT_TYPE_START:
-	    e1 = &((cairo_bo_start_event_t *) event)->edge;
+    switch (event->type) {
+    case CAIRO_BO_EVENT_TYPE_START:
+        e1 = &((cairo_bo_start_event_t *) event)->edge;
 
-	    status = _cairo_bo_sweep_line_insert (&sweep_line, e1);
-	    if (unlikely (status))
-		goto unwind;
+        status = _cairo_bo_sweep_line_insert (&sweep_line, e1);
+        if (unlikely (status))
+        goto unwind;
 
-	    status = _cairo_bo_event_queue_insert_stop (&event_queue, e1);
-	    if (unlikely (status))
-		goto unwind;
+        status = _cairo_bo_event_queue_insert_stop (&event_queue, e1);
+        if (unlikely (status))
+        goto unwind;
 
-	    left = e1->prev;
-	    right = e1->next;
+        left = e1->prev;
+        right = e1->next;
 
-	    if (left != NULL) {
-		status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, e1);
-		if (unlikely (status))
-		    goto unwind;
-	    }
+        if (left != NULL) {
+        status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, e1);
+        if (unlikely (status))
+            goto unwind;
+        }
 
-	    if (right != NULL) {
-		status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, e1, right);
-		if (unlikely (status))
-		    goto unwind;
-	    }
+        if (right != NULL) {
+        status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, e1, right);
+        if (unlikely (status))
+            goto unwind;
+        }
 
-	    break;
+        break;
 
-	case CAIRO_BO_EVENT_TYPE_STOP:
-	    e1 = ((cairo_bo_queue_event_t *) event)->e1;
-	    _cairo_bo_event_queue_delete (&event_queue, event);
+    case CAIRO_BO_EVENT_TYPE_STOP:
+        e1 = ((cairo_bo_queue_event_t *) event)->e1;
+        _cairo_bo_event_queue_delete (&event_queue, event);
 
-	    left = e1->prev;
-	    right = e1->next;
+        left = e1->prev;
+        right = e1->next;
 
-	    _cairo_bo_sweep_line_delete (&sweep_line, e1);
+        _cairo_bo_sweep_line_delete (&sweep_line, e1);
 
-	    if (e1->deferred.right != NULL)
-		_cairo_bo_edge_end (e1, e1->edge.bottom, polygon);
+        if (e1->deferred.right != NULL)
+        _cairo_bo_edge_end (e1, e1->edge.bottom, polygon);
 
-	    if (left != NULL && right != NULL) {
-		status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, right);
-		if (unlikely (status))
-		    goto unwind;
-	    }
+        if (left != NULL && right != NULL) {
+        status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, right);
+        if (unlikely (status))
+            goto unwind;
+        }
 
-	    break;
+        break;
 
-	case CAIRO_BO_EVENT_TYPE_INTERSECTION:
-	    e1 = ((cairo_bo_queue_event_t *) event)->e1;
-	    e2 = ((cairo_bo_queue_event_t *) event)->e2;
-	    _cairo_bo_event_queue_delete (&event_queue, event);
+    case CAIRO_BO_EVENT_TYPE_INTERSECTION:
+        e1 = ((cairo_bo_queue_event_t *) event)->e1;
+        e2 = ((cairo_bo_queue_event_t *) event)->e2;
+        _cairo_bo_event_queue_delete (&event_queue, event);
 
-	    /* skip this intersection if its edges are not adjacent */
-	    if (e2 != e1->next)
-		break;
+        /* skip this intersection if its edges are not adjacent */
+        if (e2 != e1->next)
+        break;
 
-	    left = e1->prev;
-	    right = e2->next;
+        left = e1->prev;
+        right = e2->next;
 
-	    _cairo_bo_sweep_line_swap (&sweep_line, e1, e2);
+        _cairo_bo_sweep_line_swap (&sweep_line, e1, e2);
 
-	    /* after the swap e2 is left of e1 */
+        /* after the swap e2 is left of e1 */
 
-	    if (left != NULL) {
-		status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, e2);
-		if (unlikely (status))
-		    goto unwind;
-	    }
+        if (left != NULL) {
+        status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, left, e2);
+        if (unlikely (status))
+            goto unwind;
+        }
 
-	    if (right != NULL) {
-		status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, e1, right);
-		if (unlikely (status))
-		    goto unwind;
-	    }
+        if (right != NULL) {
+        status = _cairo_bo_event_queue_insert_if_intersect_below_current_y (&event_queue, e1, right);
+        if (unlikely (status))
+            goto unwind;
+        }
 
-	    break;
-	}
+        break;
+    }
     }
 
  unwind:
@@ -1367,7 +1367,7 @@ _cairo_bentley_ottmann_tessellate_bo_edges (cairo_bo_event_t   **start_events,
 
 cairo_status_t
 _cairo_polygon_reduce (cairo_polygon_t *polygon,
-		       cairo_fill_rule_t fill_rule)
+               cairo_fill_rule_t fill_rule)
 {
     cairo_status_t status;
     cairo_bo_start_event_t stack_events[CAIRO_STACK_ARRAY_LENGTH (cairo_bo_start_event_t)];
@@ -1380,58 +1380,58 @@ _cairo_polygon_reduce (cairo_polygon_t *polygon,
 
     num_events = polygon->num_edges;
     if (unlikely (0 == num_events))
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (DEBUG_POLYGON) {
-	FILE *file = fopen ("reduce_in.txt", "w");
-	_cairo_debug_print_polygon (file, polygon);
-	fclose (file);
+    FILE *file = fopen ("reduce_in.txt", "w");
+    _cairo_debug_print_polygon (file, polygon);
+    fclose (file);
     }
 
     events = stack_events;
     event_ptrs = stack_event_ptrs;
     if (num_events > ARRAY_LENGTH (stack_events)) {
-	events = _cairo_malloc_ab_plus_c (num_events,
-					  sizeof (cairo_bo_start_event_t) +
-					  sizeof (cairo_bo_event_t *),
-					  sizeof (cairo_bo_event_t *));
-	if (unlikely (events == NULL))
-	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    events = _cairo_malloc_ab_plus_c (num_events,
+                      sizeof (cairo_bo_start_event_t) +
+                      sizeof (cairo_bo_event_t *),
+                      sizeof (cairo_bo_event_t *));
+    if (unlikely (events == NULL))
+        return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
-	event_ptrs = (cairo_bo_event_t **) (events + num_events);
+    event_ptrs = (cairo_bo_event_t **) (events + num_events);
     }
 
     for (i = 0; i < num_events; i++) {
-	event_ptrs[i] = (cairo_bo_event_t *) &events[i];
+    event_ptrs[i] = (cairo_bo_event_t *) &events[i];
 
-	events[i].type = CAIRO_BO_EVENT_TYPE_START;
-	events[i].point.y = polygon->edges[i].top;
-	events[i].point.x =
-	    _line_compute_intersection_x_for_y (&polygon->edges[i].line,
-						events[i].point.y);
+    events[i].type = CAIRO_BO_EVENT_TYPE_START;
+    events[i].point.y = polygon->edges[i].top;
+    events[i].point.x =
+        _line_compute_intersection_x_for_y (&polygon->edges[i].line,
+                        events[i].point.y);
 
-	events[i].edge.edge = polygon->edges[i];
-	events[i].edge.deferred.right = NULL;
-	events[i].edge.prev = NULL;
-	events[i].edge.next = NULL;
+    events[i].edge.edge = polygon->edges[i];
+    events[i].edge.deferred.right = NULL;
+    events[i].edge.prev = NULL;
+    events[i].edge.next = NULL;
     }
 
     num_limits = polygon->num_limits; polygon->num_limits = 0;
     polygon->num_edges = 0;
 
     status = _cairo_bentley_ottmann_tessellate_bo_edges (event_ptrs,
-							 num_events,
-							 fill_rule,
-							 polygon);
+                             num_events,
+                             fill_rule,
+                             polygon);
     polygon->num_limits = num_limits;
 
     if (events != stack_events)
-	free (events);
+    free (events);
 
     if (DEBUG_POLYGON) {
-	FILE *file = fopen ("reduce_out.txt", "w");
-	_cairo_debug_print_polygon (file, polygon);
-	fclose (file);
+    FILE *file = fopen ("reduce_out.txt", "w");
+    _cairo_debug_print_polygon (file, polygon);
+    fclose (file);
     }
 
     return status;

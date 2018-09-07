@@ -9,17 +9,17 @@ extern "C" {
 
 struct led_t
 {
-	/* The LED name */
-	char * name;
+    /* The LED name */
+    char * name;
 
-	/* Set LED's brightness (0 ~ CONFIG_MAX_BRIGHTNESS) */
-	void (*set)(struct led_t * led, int brightness);
+    /* Set LED's brightness (0 ~ CONFIG_MAX_BRIGHTNESS) */
+    void (*set)(struct led_t * led, int brightness);
 
-	/* Get LED's brightness */
-	int (*get)(struct led_t * led);
+    /* Get LED's brightness */
+    int (*get)(struct led_t * led);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct led_t * search_led(const char * name);

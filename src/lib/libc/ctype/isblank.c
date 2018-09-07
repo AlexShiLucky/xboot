@@ -6,6 +6,6 @@
 
 int isblank(int c)
 {
-	return (c == ' ' || c == '\t');
+    return (c == ' ' || c == '\t');
 }
 EXPORT_SYMBOL(isblank);

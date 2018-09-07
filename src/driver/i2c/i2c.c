@@ -32,230 +32,230 @@
 /* 检测 */
 static bool_t detect(struct i2c_device_t * dev, u8_t reg, u8_t * val)
 {
-	struct i2c_msg_t msgs[2];
-	u8_t buf;
+    struct i2c_msg_t msgs[2];
+    u8_t buf;
 
-	msgs[0].addr = dev->addr;
-	msgs[0].flags = 0;
-	msgs[0].len = 1;
-	msgs[0].buf = &reg;
+    msgs[0].addr = dev->addr;
+    msgs[0].flags = 0;
+    msgs[0].len = 1;
+    msgs[0].buf = &reg;
 
-	msgs[1].addr = dev->addr;
-	msgs[1].flags = I2C_M_RD;
-	msgs[1].len = 1;
-	msgs[1].buf = &buf;
+    msgs[1].addr = dev->addr;
+    msgs[1].flags = I2C_M_RD;
+    msgs[1].len = 1;
+    msgs[1].buf = &buf;
 
-	if(i2c_transfer(dev->i2c, msgs, 2) != 2)
-		return FALSE;
-	if(val)
-		*val = buf;
-	return TRUE;
+    if(i2c_transfer(dev->i2c, msgs, 2) != 2)
+        return FALSE;
+    if(val)
+        *val = buf;
+    return TRUE;
 }
 
 /* 读检测 */
 static ssize_t i2c_read_detect(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct i2c_t * i2c = (struct i2c_t *)kobj->priv;
-	struct i2c_device_t * i2cdev;
-	char * p = buf;
-	int len = 0;
-	int i, j, a;
+    struct i2c_t * i2c = (struct i2c_t *)kobj->priv;
+    struct i2c_device_t * i2cdev;
+    char * p = buf;
+    int len = 0;
+    int i, j, a;
 
-	len += sprintf((char *)(p + len), "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
-	for(j = 0; j < 8; j++)
-	{
-		len += sprintf((char *)(p + len), "\r\n%02x:", (j << 4) & 0xff);
-		for(i = 0; i < 16; i++)
-		{
-			a = ((j << 4) | (i << 0)) & 0xff;
-			if((a >= 0x08) && (a <= 0x77))
-			{
-				i2cdev = i2c_device_alloc(i2c->name, a, 0);
-				if(i2cdev && detect(i2cdev, 0, 0))
-					len += sprintf((char *)(p + len), " %02x", a);
-				else
-					len += sprintf((char *)(p + len), " --");
-				i2c_device_free(i2cdev);
-			}
-			else
-			{
-				len += sprintf((char *)(p + len), "   ");
-			}
-		}
-	}
-	return len;
+    len += sprintf((char *)(p + len), "     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+    for(j = 0; j < 8; j++)
+    {
+        len += sprintf((char *)(p + len), "\r\n%02x:", (j << 4) & 0xff);
+        for(i = 0; i < 16; i++)
+        {
+            a = ((j << 4) | (i << 0)) & 0xff;
+            if((a >= 0x08) && (a <= 0x77))
+            {
+                i2cdev = i2c_device_alloc(i2c->name, a, 0);
+                if(i2cdev && detect(i2cdev, 0, 0))
+                    len += sprintf((char *)(p + len), " %02x", a);
+                else
+                    len += sprintf((char *)(p + len), " --");
+                i2c_device_free(i2cdev);
+            }
+            else
+            {
+                len += sprintf((char *)(p + len), "   ");
+            }
+        }
+    }
+    return len;
 }
 
 /* 根据名称查找一个i2c设备 */
 struct i2c_t * search_i2c(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_I2C);
-	if(!dev)
-		return NULL;
-	return (struct i2c_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_I2C);
+    if(!dev)
+        return NULL;
+    return (struct i2c_t *)dev->priv;
 }
 
 /* 注册一个i2c设备 */
 bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
     /* 如若注册的i2c不存在或无名,则注册失败 */
-	if(!i2c || !i2c->name)
-		return FALSE;
+    if(!i2c || !i2c->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(i2c->name);
-	dev->type = DEVICE_TYPE_I2C;
-	dev->priv = i2c;
+    dev->name = strdup(i2c->name);
+    dev->type = DEVICE_TYPE_I2C;
+    dev->priv = i2c;
     /* 申请一个i2c名称的路径kobj */
-	dev->kobj = kobj_alloc_directory(dev->name);
+    dev->kobj = kobj_alloc_directory(dev->name);
     /* 将一个detect文件挂接到i2cname路径kobj下 */
-	kobj_add_regular(dev->kobj, "detect", i2c_read_detect, NULL, i2c);
+    kobj_add_regular(dev->kobj, "detect", i2c_read_detect, NULL, i2c);
 
-	if(!register_device(dev))
-	{   /* 如果注册失败,释放相应资源 */
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {   /* 如果注册失败,释放相应资源 */
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销i2c设备 */
 bool_t unregister_i2c(struct i2c_t * i2c)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
     /* 如若注销的i2c设备不存在或无名,则注销设备 */
-	if(!i2c || !i2c->name)
-		return FALSE;
+    if(!i2c || !i2c->name)
+        return FALSE;
 
     /* 根据i2c名称和i2c类型,查找一个i2c设备 */
-	dev = search_device(i2c->name, DEVICE_TYPE_I2C);
-	if(!dev)
-		return FALSE;
+    dev = search_device(i2c->name, DEVICE_TYPE_I2C);
+    if(!dev)
+        return FALSE;
 
     /* 注销设备 */
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
     /* 释放kobj资源 */
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 根据i2c相关参数申请一个i2c设备 */
 struct i2c_device_t * i2c_device_alloc(const char * i2cbus, int addr, int flags)
 {
-	struct i2c_device_t * dev;
-	struct i2c_t * i2c;
+    struct i2c_device_t * dev;
+    struct i2c_t * i2c;
 
     /* 根据名称搜索i2c */
-	i2c = search_i2c(i2cbus);
-	if(!i2c)
-		return NULL;
+    i2c = search_i2c(i2cbus);
+    if(!i2c)
+        return NULL;
 
-	if(flags & I2C_M_TEN)
-	{
-		/* 10-bit address, all values are valid */
-		if(addr > 0x3ff)
-			return NULL;
-	}
-	else
-	{
-		/*
-		 * 7-bit address, reject the general call address
-		 *
-		 * Reserved addresses per I2C specification:
-		 *  0x00       General call address / START byte
-		 *  0x01       CBUS address
-		 *  0x02       Reserved for different bus format
-		 *  0x03       Reserved for future purposes
-		 *  0x04-0x07  Hs-mode master code
-		 *  0x78-0x7b  10-bit slave addressing
-		 *  0x7c-0x7f  Reserved for future purposes
-		 */
-		if(addr < 0x08 || addr > 0x77)
-			return NULL;
-	}
+    if(flags & I2C_M_TEN)
+    {
+        /* 10-bit address, all values are valid */
+        if(addr > 0x3ff)
+            return NULL;
+    }
+    else
+    {
+        /*
+         * 7-bit address, reject the general call address
+         *
+         * Reserved addresses per I2C specification:
+         *  0x00       General call address / START byte
+         *  0x01       CBUS address
+         *  0x02       Reserved for different bus format
+         *  0x03       Reserved for future purposes
+         *  0x04-0x07  Hs-mode master code
+         *  0x78-0x7b  10-bit slave addressing
+         *  0x7c-0x7f  Reserved for future purposes
+         */
+        if(addr < 0x08 || addr > 0x77)
+            return NULL;
+    }
 
     /* 申请一个i2c设备块 */
-	dev = malloc(sizeof(struct i2c_device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct i2c_device_t));
+    if(!dev)
+        return NULL;
 
     /* 配置i2c设备块 */
-	dev->i2c = i2c;
-	dev->addr = addr;
-	dev->flags = flags;
+    dev->i2c = i2c;
+    dev->addr = addr;
+    dev->flags = flags;
 
-	return dev;
+    return dev;
 }
 
 /* 释放一个i2c设备 */
 void i2c_device_free(struct i2c_device_t * dev)
 {
-	if(dev)
-		free(dev);
+    if(dev)
+        free(dev);
 }
 
 /* i2c传输消息 */
 int i2c_transfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 {
-	int try, ret = 0;
+    int try, ret = 0;
 
-	if(!i2c || !i2c->xfer)
-		return -1;
+    if(!i2c || !i2c->xfer)
+        return -1;
 
-	for(try = 0; try < 3; try++)
-	{
-		ret = i2c->xfer(i2c, msgs, num);
-		if(ret >= 0)
-			break;
-	}
+    for(try = 0; try < 3; try++)
+    {
+        ret = i2c->xfer(i2c, msgs, num);
+        if(ret >= 0)
+            break;
+    }
 
-	return ret;
+    return ret;
 }
 
 /* i2c主发送 */
 int i2c_master_send(const struct i2c_device_t * dev, void * buf, int count)
 {
-	struct i2c_msg_t msg;
-	int ret;
+    struct i2c_msg_t msg;
+    int ret;
 
-	msg.addr = dev->addr;
-	msg.flags = dev->flags & I2C_M_TEN;
-	msg.len = count;
-	msg.buf = buf;
+    msg.addr = dev->addr;
+    msg.flags = dev->flags & I2C_M_TEN;
+    msg.len = count;
+    msg.buf = buf;
 
-	ret = i2c_transfer(dev->i2c, &msg, 1);
-	return (ret == 1) ? count : ret;
+    ret = i2c_transfer(dev->i2c, &msg, 1);
+    return (ret == 1) ? count : ret;
 }
 
 /* i2c主接收 */
 int i2c_master_recv(const struct i2c_device_t * dev, void * buf, int count)
 {
-	struct i2c_msg_t msg;
-	int ret;
+    struct i2c_msg_t msg;
+    int ret;
 
-	msg.addr = dev->addr;
-	msg.flags = dev->flags & I2C_M_TEN;
-	msg.flags |= I2C_M_RD;
-	msg.len = count;
-	msg.buf = buf;
+    msg.addr = dev->addr;
+    msg.flags = dev->flags & I2C_M_TEN;
+    msg.flags |= I2C_M_RD;
+    msg.len = count;
+    msg.buf = buf;
 
-	ret = i2c_transfer(dev->i2c, &msg, 1);
-	return (ret == 1) ? count : ret;
+    ret = i2c_transfer(dev->i2c, &msg, 1);
+    return (ret == 1) ? count : ret;
 }

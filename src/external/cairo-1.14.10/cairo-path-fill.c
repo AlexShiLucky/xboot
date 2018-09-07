@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -55,14 +55,14 @@ typedef struct cairo_filler {
 
 static cairo_status_t
 _cairo_filler_line_to (void *closure,
-		       const cairo_point_t *point)
+               const cairo_point_t *point)
 {
     cairo_filler_t *filler = closure;
     cairo_status_t status;
 
     status = _cairo_polygon_add_external_edge (filler->polygon,
-					       &filler->current_point,
-					       point);
+                           &filler->current_point,
+                           point);
 
     filler->current_point = *point;
 
@@ -80,7 +80,7 @@ _cairo_filler_close (void *closure)
 
 static cairo_status_t
 _cairo_filler_move_to (void *closure,
-		       const cairo_point_t *point)
+               const cairo_point_t *point)
 {
     cairo_filler_t *filler = closure;
     cairo_status_t status;
@@ -88,7 +88,7 @@ _cairo_filler_move_to (void *closure,
     /* close current subpath */
     status = _cairo_filler_close (closure);
     if (unlikely (status))
-	return status;
+    return status;
 
         /* make sure that the closure represents a degenerate path */
     filler->current_point = *point;
@@ -98,25 +98,25 @@ _cairo_filler_move_to (void *closure,
 }
 
 static cairo_status_t
-_cairo_filler_curve_to (void		*closure,
-			const cairo_point_t	*p1,
-			const cairo_point_t	*p2,
-			const cairo_point_t	*p3)
+_cairo_filler_curve_to (void        *closure,
+            const cairo_point_t *p1,
+            const cairo_point_t *p2,
+            const cairo_point_t *p3)
 {
     cairo_filler_t *filler = closure;
     cairo_spline_t spline;
 
     if (filler->has_limits) {
-	if (! _cairo_spline_intersects (&filler->current_point, p1, p2, p3,
-					&filler->limit))
-	    return _cairo_filler_line_to (filler, p3);
+    if (! _cairo_spline_intersects (&filler->current_point, p1, p2, p3,
+                    &filler->limit))
+        return _cairo_filler_line_to (filler, p3);
     }
 
     if (! _cairo_spline_init (&spline,
-			      (cairo_spline_add_point_func_t)_cairo_filler_line_to, filler,
-			      &filler->current_point, p1, p2, p3))
+                  (cairo_spline_add_point_func_t)_cairo_filler_line_to, filler,
+                  &filler->current_point, p1, p2, p3))
     {
-	return _cairo_filler_line_to (closure, p3);
+    return _cairo_filler_line_to (closure, p3);
     }
 
     return _cairo_spline_decompose (&spline, filler->tolerance);
@@ -124,8 +124,8 @@ _cairo_filler_curve_to (void		*closure,
 
 cairo_status_t
 _cairo_path_fixed_fill_to_polygon (const cairo_path_fixed_t *path,
-				   double tolerance,
-				   cairo_polygon_t *polygon)
+                   double tolerance,
+                   cairo_polygon_t *polygon)
 {
     cairo_filler_t filler;
     cairo_status_t status;
@@ -135,8 +135,8 @@ _cairo_path_fixed_fill_to_polygon (const cairo_path_fixed_t *path,
 
     filler.has_limits = FALSE;
     if (polygon->num_limits) {
-	filler.has_limits = TRUE;
-	filler.limit = polygon->limit;
+    filler.has_limits = TRUE;
+    filler.limit = polygon->limit;
     }
 
     /* make sure that the closure represents a degenerate path */
@@ -145,13 +145,13 @@ _cairo_path_fixed_fill_to_polygon (const cairo_path_fixed_t *path,
     filler.last_move_to = filler.current_point;
 
     status = _cairo_path_fixed_interpret (path,
-					  _cairo_filler_move_to,
-					  _cairo_filler_line_to,
-					  _cairo_filler_curve_to,
-					  _cairo_filler_close,
-					  &filler);
+                      _cairo_filler_move_to,
+                      _cairo_filler_line_to,
+                      _cairo_filler_curve_to,
+                      _cairo_filler_close,
+                      &filler);
     if (unlikely (status))
-	return status;
+    return status;
 
     return _cairo_filler_close (&filler);
 }
@@ -165,7 +165,7 @@ typedef struct cairo_filler_rectilinear_aligned {
 
 static cairo_status_t
 _cairo_filler_ra_line_to (void *closure,
-			  const cairo_point_t *point)
+              const cairo_point_t *point)
 {
     cairo_filler_ra_t *filler = closure;
     cairo_status_t status;
@@ -175,8 +175,8 @@ _cairo_filler_ra_line_to (void *closure,
     p.y = _cairo_fixed_round_down (point->y);
 
     status = _cairo_polygon_add_external_edge (filler->polygon,
-					       &filler->current_point,
-					       &p);
+                           &filler->current_point,
+                           &p);
 
     filler->current_point = p;
 
@@ -192,7 +192,7 @@ _cairo_filler_ra_close (void *closure)
 
 static cairo_status_t
 _cairo_filler_ra_move_to (void *closure,
-			  const cairo_point_t *point)
+              const cairo_point_t *point)
 {
     cairo_filler_ra_t *filler = closure;
     cairo_status_t status;
@@ -201,7 +201,7 @@ _cairo_filler_ra_move_to (void *closure,
     /* close current subpath */
     status = _cairo_filler_ra_close (closure);
     if (unlikely (status))
-	return status;
+    return status;
 
     p.x = _cairo_fixed_round_down (point->x);
     p.y = _cairo_fixed_round_down (point->y);
@@ -215,14 +215,14 @@ _cairo_filler_ra_move_to (void *closure,
 
 cairo_status_t
 _cairo_path_fixed_fill_rectilinear_to_polygon (const cairo_path_fixed_t *path,
-					       cairo_antialias_t antialias,
-					       cairo_polygon_t *polygon)
+                           cairo_antialias_t antialias,
+                           cairo_polygon_t *polygon)
 {
     cairo_filler_ra_t filler;
     cairo_status_t status;
 
     if (antialias != CAIRO_ANTIALIAS_NONE)
-	return _cairo_path_fixed_fill_to_polygon (path, 0., polygon);
+    return _cairo_path_fixed_fill_to_polygon (path, 0., polygon);
 
     filler.polygon = polygon;
 
@@ -232,36 +232,36 @@ _cairo_path_fixed_fill_rectilinear_to_polygon (const cairo_path_fixed_t *path,
     filler.last_move_to = filler.current_point;
 
     status = _cairo_path_fixed_interpret_flat (path,
-					       _cairo_filler_ra_move_to,
-					       _cairo_filler_ra_line_to,
-					       _cairo_filler_ra_close,
-					       &filler,
-					       0.);
+                           _cairo_filler_ra_move_to,
+                           _cairo_filler_ra_line_to,
+                           _cairo_filler_ra_close,
+                           &filler,
+                           0.);
     if (unlikely (status))
-	return status;
+    return status;
 
     return _cairo_filler_ra_close (&filler);
 }
 
 cairo_status_t
 _cairo_path_fixed_fill_to_traps (const cairo_path_fixed_t *path,
-				 cairo_fill_rule_t fill_rule,
-				 double tolerance,
-				 cairo_traps_t *traps)
+                 cairo_fill_rule_t fill_rule,
+                 double tolerance,
+                 cairo_traps_t *traps)
 {
     cairo_polygon_t polygon;
     cairo_status_t status;
 
     if (_cairo_path_fixed_fill_is_empty (path))
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     _cairo_polygon_init (&polygon, traps->limits, traps->num_limits);
     status = _cairo_path_fixed_fill_to_polygon (path, tolerance, &polygon);
     if (unlikely (status || polygon.num_edges == 0))
-	goto CLEANUP;
+    goto CLEANUP;
 
     status = _cairo_bentley_ottmann_tessellate_polygon (traps,
-							&polygon, fill_rule);
+                            &polygon, fill_rule);
 
   CLEANUP:
     _cairo_polygon_fini (&polygon);
@@ -270,9 +270,9 @@ _cairo_path_fixed_fill_to_traps (const cairo_path_fixed_t *path,
 
 static cairo_status_t
 _cairo_path_fixed_fill_rectilinear_tessellate_to_boxes (const cairo_path_fixed_t *path,
-							cairo_fill_rule_t fill_rule,
-							cairo_antialias_t antialias,
-							cairo_boxes_t *boxes)
+                            cairo_fill_rule_t fill_rule,
+                            cairo_antialias_t antialias,
+                            cairo_boxes_t *boxes)
 {
     cairo_polygon_t polygon;
     cairo_status_t status;
@@ -283,10 +283,10 @@ _cairo_path_fixed_fill_rectilinear_tessellate_to_boxes (const cairo_path_fixed_t
     /* tolerance will be ignored as the path is rectilinear */
     status = _cairo_path_fixed_fill_rectilinear_to_polygon (path, antialias, &polygon);
     if (likely (status == CAIRO_STATUS_SUCCESS)) {
-	status =
-	    _cairo_bentley_ottmann_tessellate_rectilinear_polygon_to_boxes (&polygon,
-									    fill_rule,
-									    boxes);
+    status =
+        _cairo_bentley_ottmann_tessellate_rectilinear_polygon_to_boxes (&polygon,
+                                        fill_rule,
+                                        boxes);
     }
 
     _cairo_polygon_fini (&polygon);
@@ -296,46 +296,46 @@ _cairo_path_fixed_fill_rectilinear_tessellate_to_boxes (const cairo_path_fixed_t
 
 cairo_status_t
 _cairo_path_fixed_fill_rectilinear_to_boxes (const cairo_path_fixed_t *path,
-					     cairo_fill_rule_t fill_rule,
-					     cairo_antialias_t antialias,
-					     cairo_boxes_t *boxes)
+                         cairo_fill_rule_t fill_rule,
+                         cairo_antialias_t antialias,
+                         cairo_boxes_t *boxes)
 {
     cairo_path_fixed_iter_t iter;
     cairo_status_t status;
     cairo_box_t box;
 
     if (_cairo_path_fixed_is_box (path, &box))
-	return _cairo_boxes_add (boxes, antialias, &box);
+    return _cairo_boxes_add (boxes, antialias, &box);
 
     _cairo_path_fixed_iter_init (&iter, path);
     while (_cairo_path_fixed_iter_is_fill_box (&iter, &box)) {
-	if (box.p1.y == box.p2.y || box.p1.x == box.p2.x)
-	    continue;
+    if (box.p1.y == box.p2.y || box.p1.x == box.p2.x)
+        continue;
 
-	if (box.p1.y > box.p2.y) {
-	    cairo_fixed_t t;
+    if (box.p1.y > box.p2.y) {
+        cairo_fixed_t t;
 
-	    t = box.p1.y;
-	    box.p1.y = box.p2.y;
-	    box.p2.y = t;
+        t = box.p1.y;
+        box.p1.y = box.p2.y;
+        box.p2.y = t;
 
-	    t = box.p1.x;
-	    box.p1.x = box.p2.x;
-	    box.p2.x = t;
-	}
+        t = box.p1.x;
+        box.p1.x = box.p2.x;
+        box.p2.x = t;
+    }
 
-	status = _cairo_boxes_add (boxes, antialias, &box);
-	if (unlikely (status))
-	    return status;
+    status = _cairo_boxes_add (boxes, antialias, &box);
+    if (unlikely (status))
+        return status;
     }
 
     if (_cairo_path_fixed_iter_at_end (&iter))
-	return _cairo_bentley_ottmann_tessellate_boxes (boxes, fill_rule, boxes);
+    return _cairo_bentley_ottmann_tessellate_boxes (boxes, fill_rule, boxes);
 
     /* path is not rectangular, try extracting clipped rectilinear edges */
     _cairo_boxes_clear (boxes);
     return _cairo_path_fixed_fill_rectilinear_tessellate_to_boxes (path,
-								   fill_rule,
-								   antialias,
-								   boxes);
+                                   fill_rule,
+                                   antialias,
+                                   boxes);
 }

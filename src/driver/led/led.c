@@ -32,118 +32,118 @@
 /* led亮度读取 */
 static ssize_t led_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct led_t * led = (struct led_t *)kobj->priv;
-	int brightness;
+    struct led_t * led = (struct led_t *)kobj->priv;
+    int brightness;
 
-	brightness = led_get_brightness(led);
-	return sprintf(buf, "%d", brightness);
+    brightness = led_get_brightness(led);
+    return sprintf(buf, "%d", brightness);
 }
 
 /* led亮度写入 */
 static ssize_t led_write_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct led_t * led = (struct led_t *)kobj->priv;
-	int brightness = strtol(buf, NULL, 0);
+    struct led_t * led = (struct led_t *)kobj->priv;
+    int brightness = strtol(buf, NULL, 0);
 
-	led_set_brightness(led, brightness);
-	return size;
+    led_set_brightness(led, brightness);
+    return size;
 }
 
 /* led最大亮度读取 */
 static ssize_t led_read_max_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
+    return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
 }
 
 /* 根据名称搜索一个led设备 */
 struct led_t * search_led(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_LED);
-	if(!dev)
-		return NULL;
-	return (struct led_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_LED);
+    if(!dev)
+        return NULL;
+    return (struct led_t *)dev->priv;
 }
 
 /* 注册一个led设备 */
 bool_t register_led(struct device_t ** device, struct led_t * led)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!led || !led->name)
-		return FALSE;
+    if(!led || !led->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(led->name);
-	dev->type = DEVICE_TYPE_LED;
-	dev->priv = led;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "brightness", led_read_brightness, led_write_brightness, led);
-	kobj_add_regular(dev->kobj, "max_brightness", led_read_max_brightness, NULL, led);
+    dev->name = strdup(led->name);
+    dev->type = DEVICE_TYPE_LED;
+    dev->priv = led;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "brightness", led_read_brightness, led_write_brightness, led);
+    kobj_add_regular(dev->kobj, "max_brightness", led_read_max_brightness, NULL, led);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个led设备 */
 bool_t unregister_led(struct led_t * led)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!led || !led->name)
-		return FALSE;
+    if(!led || !led->name)
+        return FALSE;
 
-	dev = search_device(led->name, DEVICE_TYPE_LED);
-	if(!dev)
-		return FALSE;
+    dev = search_device(led->name, DEVICE_TYPE_LED);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 设置led亮度 */
 void led_set_brightness(struct led_t * led, int brightness)
 {
-	if(led && led->set)
-	{
-		if(brightness < 0)
-			brightness = 0;
-		else if(brightness > CONFIG_MAX_BRIGHTNESS)
-			brightness = CONFIG_MAX_BRIGHTNESS;
-		led->set(led, brightness);
-	}
+    if(led && led->set)
+    {
+        if(brightness < 0)
+            brightness = 0;
+        else if(brightness > CONFIG_MAX_BRIGHTNESS)
+            brightness = CONFIG_MAX_BRIGHTNESS;
+        led->set(led, brightness);
+    }
 }
 
 /* 获取led亮度 */
 int led_get_brightness(struct led_t * led)
 {
-	int brightness = 0;
+    int brightness = 0;
 
-	if(led && led->get)
-		brightness = led->get(led);
+    if(led && led->get)
+        brightness = led->get(led);
 
-	if(brightness < 0)
-		brightness = 0;
-	else if(brightness > CONFIG_MAX_BRIGHTNESS)
-		brightness = CONFIG_MAX_BRIGHTNESS;
+    if(brightness < 0)
+        brightness = 0;
+    else if(brightness > CONFIG_MAX_BRIGHTNESS)
+        brightness = CONFIG_MAX_BRIGHTNESS;
 
-	return brightness;
+    return brightness;
 }

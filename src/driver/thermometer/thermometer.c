@@ -32,89 +32,89 @@
 /* 读取温度计设备稳定 */
 static ssize_t thermometer_read_temperature(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct thermometer_t * thermometer = (struct thermometer_t *)kobj->priv;
-	int temperature = thermometer_get_temperature(thermometer);
-	return sprintf(buf, "%d.%03dC", temperature / 1000, abs(temperature % 1000));
+    struct thermometer_t * thermometer = (struct thermometer_t *)kobj->priv;
+    int temperature = thermometer_get_temperature(thermometer);
+    return sprintf(buf, "%d.%03dC", temperature / 1000, abs(temperature % 1000));
 }
 
 /* 根据名称搜索一个温度计设备 */
 struct thermometer_t * search_thermometer(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return NULL;
-	return (struct thermometer_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return NULL;
+    return (struct thermometer_t *)dev->priv;
 }
 
 /* 搜索第一个温度计设备 */
 struct thermometer_t * search_first_thermometer(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return NULL;
-	return (struct thermometer_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return NULL;
+    return (struct thermometer_t *)dev->priv;
 }
 
 /* 注册一个温度计设备 */
 bool_t register_thermometer(struct device_t ** device,struct thermometer_t * thermometer)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!thermometer || !thermometer->name)
-		return FALSE;
+    if(!thermometer || !thermometer->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(thermometer->name);
-	dev->type = DEVICE_TYPE_THERMOMETER;
-	dev->priv = thermometer;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "temperature", thermometer_read_temperature, NULL, thermometer);
+    dev->name = strdup(thermometer->name);
+    dev->type = DEVICE_TYPE_THERMOMETER;
+    dev->priv = thermometer;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "temperature", thermometer_read_temperature, NULL, thermometer);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个温度计设备 */
 bool_t unregister_thermometer(struct thermometer_t * thermometer)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!thermometer || !thermometer->name)
-		return FALSE;
+    if(!thermometer || !thermometer->name)
+        return FALSE;
 
-	dev = search_device(thermometer->name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return FALSE;
+    dev = search_device(thermometer->name, DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 获取温度计设备温度 */
 int thermometer_get_temperature(struct thermometer_t * thermometer)
 {
-	if(thermometer && thermometer->get)
-		return thermometer->get(thermometer);
-	return 0;
+    if(thermometer && thermometer->get)
+        return thermometer->get(thermometer);
+    return 0;
 }

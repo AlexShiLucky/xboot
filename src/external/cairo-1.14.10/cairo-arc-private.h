@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@redhat.com>
+ *  Carl D. Worth <cworth@redhat.com>
  */
 
 #ifndef CAIRO_ARC_PRIVATE_H
@@ -42,19 +42,19 @@ CAIRO_BEGIN_DECLS
 
 cairo_private void
 _cairo_arc_path (cairo_t *cr,
-		 double	  xc,
-		 double	  yc,
-		 double	  radius,
-		 double	  angle1,
-		 double	  angle2);
+         double   xc,
+         double   yc,
+         double   radius,
+         double   angle1,
+         double   angle2);
 
 cairo_private void
 _cairo_arc_path_negative (cairo_t *cr,
-			  double   xc,
-			  double   yc,
-			  double   radius,
-			  double   angle1,
-			  double   angle2);
+              double   xc,
+              double   yc,
+              double   radius,
+              double   angle1,
+              double   angle2);
 
 CAIRO_END_DECLS
 

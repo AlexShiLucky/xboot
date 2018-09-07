@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Mozilla Foundation
  *
  * Contributor(s):
- *	Vladimir Vukicevic <vladimir@pobox.com>
+ *  Vladimir Vukicevic <vladimir@pobox.com>
  */
 
 #ifndef CAIRO_FIXED_PRIVATE_H
@@ -221,9 +221,9 @@ static inline int
 _cairo_fixed_integer_ceil (cairo_fixed_t f)
 {
     if (f > 0)
-	return ((f - 1)>>CAIRO_FIXED_FRAC_BITS) + 1;
+    return ((f - 1)>>CAIRO_FIXED_FRAC_BITS) + 1;
     else
-	return - (-f >> CAIRO_FIXED_FRAC_BITS);
+    return - (-f >> CAIRO_FIXED_FRAC_BITS);
 }
 
 /* A bunch of explicit 16.16 operators; we need these
@@ -245,11 +245,11 @@ _cairo_fixed_to_16_16 (cairo_fixed_t f)
      * value representable as 16.16
      */
     if ((f >> CAIRO_FIXED_FRAC_BITS) < INT16_MIN) {
-	x = INT32_MIN;
+    x = INT32_MIN;
     } else if ((f >> CAIRO_FIXED_FRAC_BITS) > INT16_MAX) {
-	x = INT32_MAX;
+    x = INT32_MAX;
     } else {
-	x = f << (16 - CAIRO_FIXED_FRAC_BITS);
+    x = f << (16 - CAIRO_FIXED_FRAC_BITS);
     }
 
     return x;
@@ -276,9 +276,9 @@ static inline int
 _cairo_fixed_16_16_floor (cairo_fixed_16_16_t f)
 {
     if (f >= 0)
-	return f >> 16;
+    return f >> 16;
     else
-	return -((-f - 1) >> 16) - 1;
+    return -((-f - 1) >> 16) - 1;
 }
 
 static inline double
@@ -315,20 +315,20 @@ _cairo_fixed_mul_div_floor (cairo_fixed_t a, cairo_fixed_t b, cairo_fixed_t c)
 /* compute y from x so that (x,y), p1, and p2 are collinear */
 static inline cairo_fixed_t
 _cairo_edge_compute_intersection_y_for_x (const cairo_point_t *p1,
-					  const cairo_point_t *p2,
-					  cairo_fixed_t x)
+                      const cairo_point_t *p2,
+                      cairo_fixed_t x)
 {
     cairo_fixed_t y, dx;
 
     if (x == p1->x)
-	return p1->y;
+    return p1->y;
     if (x == p2->x)
-	return p2->y;
+    return p2->y;
 
     y = p1->y;
     dx = p2->x - p1->x;
     if (dx != 0)
-	y += _cairo_fixed_mul_div_floor (x - p1->x, p2->y - p1->y, dx);
+    y += _cairo_fixed_mul_div_floor (x - p1->x, p2->y - p1->y, dx);
 
     return y;
 }
@@ -336,20 +336,20 @@ _cairo_edge_compute_intersection_y_for_x (const cairo_point_t *p1,
 /* compute x from y so that (x,y), p1, and p2 are collinear */
 static inline cairo_fixed_t
 _cairo_edge_compute_intersection_x_for_y (const cairo_point_t *p1,
-					  const cairo_point_t *p2,
-					  cairo_fixed_t y)
+                      const cairo_point_t *p2,
+                      cairo_fixed_t y)
 {
     cairo_fixed_t x, dy;
 
     if (y == p1->y)
-	return p1->x;
+    return p1->x;
     if (y == p2->y)
-	return p2->x;
+    return p2->x;
 
     x = p1->x;
     dy = p2->y - p1->y;
     if (dy != 0)
-	x += _cairo_fixed_mul_div_floor (y - p1->y, p2->x - p1->x, dy);
+    x += _cairo_fixed_mul_div_floor (y - p1->y, p2->x - p1->x, dy);
 
     return x;
 }
@@ -359,10 +359,10 @@ _cairo_edge_compute_intersection_x_for_y (const cairo_point_t *p1,
  * uses floating point math. */
 static inline cairo_bool_t
 _slow_segment_intersection (const cairo_point_t *seg1_p1,
-			    const cairo_point_t *seg1_p2,
-			    const cairo_point_t *seg2_p1,
-			    const cairo_point_t *seg2_p2,
-			    cairo_point_t *intersection)
+                const cairo_point_t *seg1_p2,
+                const cairo_point_t *seg2_p1,
+                const cairo_point_t *seg2_p2,
+                cairo_point_t *intersection)
 {
     double denominator, u_a, u_b;
     double seg1_dx, seg1_dy, seg2_dx, seg2_dy, seg_start_dx, seg_start_dy;
@@ -373,7 +373,7 @@ _slow_segment_intersection (const cairo_point_t *seg1_p1,
     seg2_dy = _cairo_fixed_to_double (seg2_p2->y - seg2_p1->y);
     denominator = (seg2_dy * seg1_dx) - (seg2_dx * seg1_dy);
     if (denominator == 0)
-	return FALSE;
+    return FALSE;
 
     seg_start_dx = _cairo_fixed_to_double (seg1_p1->x - seg2_p1->x);
     seg_start_dy = _cairo_fixed_to_double (seg1_p1->y - seg2_p1->y);
@@ -381,7 +381,7 @@ _slow_segment_intersection (const cairo_point_t *seg1_p1,
     u_b = ((seg1_dx * seg_start_dy) - (seg1_dy * seg_start_dx)) / denominator;
 
     if (u_a <= 0 || u_a >= 1 || u_b <= 0 || u_b >= 1)
-	return FALSE;
+    return FALSE;
 
     intersection->x = seg1_p1->x + _cairo_fixed_from_double ((u_a * seg1_dx));
     intersection->y = seg1_p1->y + _cairo_fixed_from_double ((u_a * seg1_dy));

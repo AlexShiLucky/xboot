@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Adrian Johnson.
  *
  * Contributor(s):
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #include "cairoint.h"
@@ -88,61 +88,61 @@ _jpeg_extract_info (cairo_image_info_t *info, const unsigned char *p)
 }
 
 cairo_int_status_t
-_cairo_image_info_get_jpeg_info (cairo_image_info_t	*info,
-				 const unsigned char	*data,
-				 long			 length)
+_cairo_image_info_get_jpeg_info (cairo_image_info_t *info,
+                 const unsigned char    *data,
+                 long            length)
 {
     const unsigned char *p = data;
 
     while (p + 1 < data + length) {
-	if (*p != 0xff)
-	    return CAIRO_INT_STATUS_UNSUPPORTED;
-	p++;
+    if (*p != 0xff)
+        return CAIRO_INT_STATUS_UNSUPPORTED;
+    p++;
 
-	switch (*p) {
-	    /* skip fill bytes */
-	case 0xff:
-	    p++;
-	    break;
+    switch (*p) {
+        /* skip fill bytes */
+    case 0xff:
+        p++;
+        break;
 
-	case TEM:
-	case SOI:
-	case EOI:
-	    p++;
-	    break;
+    case TEM:
+    case SOI:
+    case EOI:
+        p++;
+        break;
 
-	case SOF0:
-	case SOF1:
-	case SOF2:
-	case SOF3:
-	case SOF5:
-	case SOF6:
-	case SOF7:
-	case SOF9:
-	case SOF10:
-	case SOF11:
-	case SOF13:
-	case SOF14:
-	case SOF15:
-	    /* Start of frame found. Extract the image parameters. */
-	    if (p + 8 > data + length)
-		return CAIRO_INT_STATUS_UNSUPPORTED;
+    case SOF0:
+    case SOF1:
+    case SOF2:
+    case SOF3:
+    case SOF5:
+    case SOF6:
+    case SOF7:
+    case SOF9:
+    case SOF10:
+    case SOF11:
+    case SOF13:
+    case SOF14:
+    case SOF15:
+        /* Start of frame found. Extract the image parameters. */
+        if (p + 8 > data + length)
+        return CAIRO_INT_STATUS_UNSUPPORTED;
 
-	    _jpeg_extract_info (info, p);
-	    return CAIRO_STATUS_SUCCESS;
+        _jpeg_extract_info (info, p);
+        return CAIRO_STATUS_SUCCESS;
 
-	default:
-	    if (*p >= RST_begin && *p <= RST_end) {
-		p++;
-		break;
-	    }
+    default:
+        if (*p >= RST_begin && *p <= RST_end) {
+        p++;
+        break;
+        }
 
-	    if (p + 3 > data + length)
-		return CAIRO_INT_STATUS_UNSUPPORTED;
+        if (p + 3 > data + length)
+        return CAIRO_INT_STATUS_UNSUPPORTED;
 
-	    p = _jpeg_skip_segment (p);
-	    break;
-	}
+        p = _jpeg_skip_segment (p);
+        break;
+    }
     }
 
     return CAIRO_STATUS_SUCCESS;
@@ -179,9 +179,9 @@ _jpx_match_box (const unsigned char *p, const unsigned char *end, uint32_t type)
     uint32_t length;
 
     if (p + 8 < end) {
-	length = get_unaligned_be32 (p);
-	if (get_unaligned_be32 (p + 4) == type &&  p + length < end)
-	    return TRUE;
+    length = get_unaligned_be32 (p);
+    if (get_unaligned_be32 (p + 4) == type &&  p + length < end)
+        return TRUE;
     }
 
     return FALSE;
@@ -191,9 +191,9 @@ static const unsigned char *
 _jpx_find_box (const unsigned char *p, const unsigned char *end, uint32_t type)
 {
     while (p < end) {
-	if (_jpx_match_box (p, end, type))
-	    return p;
-	p = _jpx_next_box (p);
+    if (_jpx_match_box (p, end, type))
+        return p;
+    p = _jpx_next_box (p);
     }
 
     return NULL;
@@ -209,36 +209,36 @@ _jpx_extract_info (const unsigned char *p, cairo_image_info_t *info)
 }
 
 cairo_int_status_t
-_cairo_image_info_get_jpx_info (cairo_image_info_t	*info,
-				const unsigned char	*data,
-				unsigned long		 length)
+_cairo_image_info_get_jpx_info (cairo_image_info_t  *info,
+                const unsigned char *data,
+                unsigned long        length)
 {
     const unsigned char *p = data;
     const unsigned char *end = data + length;
 
     /* First 12 bytes must be the JPEG 2000 signature box. */
     if (length < ARRAY_LENGTH(_jpx_signature) ||
-	memcmp(p, _jpx_signature, ARRAY_LENGTH(_jpx_signature)) != 0)
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    memcmp(p, _jpx_signature, ARRAY_LENGTH(_jpx_signature)) != 0)
+    return CAIRO_INT_STATUS_UNSUPPORTED;
 
     p += ARRAY_LENGTH(_jpx_signature);
 
     /* Next box must be a File Type Box */
     if (! _jpx_match_box (p, end, JPX_FILETYPE))
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    return CAIRO_INT_STATUS_UNSUPPORTED;
 
     p = _jpx_next_box (p);
 
     /* Locate the JP2 header box. */
     p = _jpx_find_box (p, end, JPX_JP2_HEADER);
     if (!p)
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    return CAIRO_INT_STATUS_UNSUPPORTED;
 
     /* Step into the JP2 header box. First box must be the Image
      * Header */
     p = _jpx_get_box_contents (p);
     if (! _jpx_match_box (p, end, JPX_IMAGE_HEADER))
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    return CAIRO_INT_STATUS_UNSUPPORTED;
 
     /* Get the image info */
     p = _jpx_get_box_contents (p);
@@ -288,8 +288,8 @@ _cairo_image_info_get_png_info (cairo_image_info_t     *info,
 
 static const unsigned char *
 _jbig2_find_data_end (const unsigned char *p,
-		      const unsigned char *end,
-		      int                  type)
+              const unsigned char *end,
+              int                  type)
 {
     unsigned char end_seq[2];
     int mmr;
@@ -298,28 +298,28 @@ _jbig2_find_data_end (const unsigned char *p,
      * unspecified data length.  The JBIG2 specification specifies the
      * method to find the end of the data for these segments. */
     if (type == 36 || type == 38 || type == 39) {
-	if (p + 18 < end) {
-	    mmr = p[17] & 0x01;
-	    if (mmr) {
-		/* MMR encoding ends with 0x00, 0x00 */
-		end_seq[0] = 0x00;
-		end_seq[1] = 0x00;
-	    } else {
-		/* Template encoding ends with 0xff, 0xac */
-		end_seq[0] = 0xff;
-		end_seq[1] = 0xac;
-	    }
-	    p += 18;
-	    while (p < end) {
-		if (p[0] == end_seq[0] && p[1] == end_seq[1]) {
-		    /* Skip the 2 terminating bytes and the 4 byte row count that follows. */
-		    p += 6;
-		    if (p < end)
-			return p;
-		}
-		p++;
-	    }
-	}
+    if (p + 18 < end) {
+        mmr = p[17] & 0x01;
+        if (mmr) {
+        /* MMR encoding ends with 0x00, 0x00 */
+        end_seq[0] = 0x00;
+        end_seq[1] = 0x00;
+        } else {
+        /* Template encoding ends with 0xff, 0xac */
+        end_seq[0] = 0xff;
+        end_seq[1] = 0xac;
+        }
+        p += 18;
+        while (p < end) {
+        if (p[0] == end_seq[0] && p[1] == end_seq[1]) {
+            /* Skip the 2 terminating bytes and the 4 byte row count that follows. */
+            p += 6;
+            if (p < end)
+            return p;
+        }
+        p++;
+        }
+    }
     }
 
     return NULL;
@@ -327,10 +327,10 @@ _jbig2_find_data_end (const unsigned char *p,
 
 static const unsigned char *
 _jbig2_get_next_segment (const unsigned char  *p,
-			 const unsigned char  *end,
-			 int                  *type,
-			 const unsigned char **data,
-			 unsigned long        *data_len)
+             const unsigned char  *end,
+             int                  *type,
+             const unsigned char **data,
+             unsigned long        *data_len)
 {
     unsigned long seg_num;
     cairo_bool_t big_page_size;
@@ -339,7 +339,7 @@ _jbig2_get_next_segment (const unsigned char  *p,
     int referred_size;
 
     if (p + 6 >= end)
-	return NULL;
+    return NULL;
 
     seg_num = get_unaligned_be32 (p);
     *type = p[4] & 0x3f;
@@ -348,44 +348,44 @@ _jbig2_get_next_segment (const unsigned char  *p,
 
     num_segs = p[0] >> 5;
     if (num_segs == 7) {
-	num_segs = get_unaligned_be32 (p) & 0x1fffffff;
-	ref_seg_bytes = 4 + ((num_segs + 1)/8);
+    num_segs = get_unaligned_be32 (p) & 0x1fffffff;
+    ref_seg_bytes = 4 + ((num_segs + 1)/8);
     } else {
-	ref_seg_bytes = 1;
+    ref_seg_bytes = 1;
     }
     p += ref_seg_bytes;
 
     if (seg_num <= 256)
-	referred_size = 1;
+    referred_size = 1;
     else if (seg_num <= 65536)
-	referred_size = 2;
+    referred_size = 2;
     else
-	referred_size = 4;
+    referred_size = 4;
 
     p += num_segs * referred_size;
     p += big_page_size ? 4 : 1;
     if (p + 4 >= end)
-	return NULL;
+    return NULL;
 
     *data_len = get_unaligned_be32 (p);
     p += 4;
     *data = p;
 
     if (*data_len == 0xffffffff) {
-	/* if data length is -1 we have to scan through the data to find the end */
-	p = _jbig2_find_data_end (*data, end, *type);
-	if (!p || p >= end)
-	    return NULL;
+    /* if data length is -1 we have to scan through the data to find the end */
+    p = _jbig2_find_data_end (*data, end, *type);
+    if (!p || p >= end)
+        return NULL;
 
-	*data_len = p - *data;
+    *data_len = p - *data;
     } else {
-	p += *data_len;
+    p += *data_len;
     }
 
     if (p < end)
-	return p;
+    return p;
     else
-	return NULL;
+    return NULL;
 }
 
 static void
@@ -398,9 +398,9 @@ _jbig2_extract_info (cairo_image_info_t *info, const unsigned char *p)
 }
 
 cairo_int_status_t
-_cairo_image_info_get_jbig2_info (cairo_image_info_t	*info,
-				  const unsigned char	*data,
-				  unsigned long		 length)
+_cairo_image_info_get_jbig2_info (cairo_image_info_t    *info,
+                  const unsigned char   *data,
+                  unsigned long      length)
 {
     const unsigned char *p = data;
     const unsigned char *end = data + length;
@@ -409,12 +409,12 @@ _cairo_image_info_get_jbig2_info (cairo_image_info_t	*info,
     unsigned long seg_data_len;
 
     while (p && p < end) {
-	p = _jbig2_get_next_segment (p, end, &seg_type, &seg_data, &seg_data_len);
-	if (p && seg_type == 48 && seg_data_len > 8) {
-	    /* page information segment */
-	    _jbig2_extract_info (info, seg_data);
-	    return CAIRO_STATUS_SUCCESS;
-	}
+    p = _jbig2_get_next_segment (p, end, &seg_type, &seg_data, &seg_data_len);
+    if (p && seg_type == 48 && seg_data_len > 8) {
+        /* page information segment */
+        _jbig2_extract_info (info, seg_data);
+        return CAIRO_STATUS_SUCCESS;
+    }
     }
 
     return CAIRO_INT_STATUS_UNSUPPORTED;

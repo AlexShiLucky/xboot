@@ -30,8 +30,8 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #ifndef CAIRO_TRUETYPE_SUBSET_PRIVATE_H

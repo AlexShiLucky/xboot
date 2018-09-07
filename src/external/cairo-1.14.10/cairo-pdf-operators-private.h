@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Carl Worth <cworth@cworth.org>
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Carl Worth <cworth@cworth.org>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #ifndef CAIRO_PDF_OPERATORS_H
@@ -55,8 +55,8 @@
 
 typedef cairo_int_status_t
 (*cairo_pdf_operators_use_font_subset_t) (unsigned int  font_id,
-					  unsigned int  subset_id,
-					  void         *closure);
+                      unsigned int  subset_id,
+                      void         *closure);
 
 typedef struct _cairo_pdf_glyph {
     unsigned int glyph_index;
@@ -91,86 +91,86 @@ typedef struct _cairo_pdf_operators {
 
     /* PDF line style */
     cairo_bool_t         has_line_style;
-    double		 line_width;
-    cairo_line_cap_t	 line_cap;
-    cairo_line_join_t	 line_join;
-    double		 miter_limit;
+    double       line_width;
+    cairo_line_cap_t     line_cap;
+    cairo_line_join_t    line_join;
+    double       miter_limit;
     cairo_bool_t         has_dashes;
 } cairo_pdf_operators_t;
 
 cairo_private void
 _cairo_pdf_operators_init (cairo_pdf_operators_t       *pdf_operators,
-			   cairo_output_stream_t       *stream,
-			   cairo_matrix_t 	       *cairo_to_pdf,
-			   cairo_scaled_font_subsets_t *font_subsets,
-			   cairo_bool_t                 ps);
+               cairo_output_stream_t       *stream,
+               cairo_matrix_t          *cairo_to_pdf,
+               cairo_scaled_font_subsets_t *font_subsets,
+               cairo_bool_t                 ps);
 
 cairo_private cairo_status_t
 _cairo_pdf_operators_fini (cairo_pdf_operators_t       *pdf_operators);
 
 cairo_private void
-_cairo_pdf_operators_set_font_subsets_callback (cairo_pdf_operators_t 		     *pdf_operators,
-						cairo_pdf_operators_use_font_subset_t use_font_subset,
-						void				     *closure);
+_cairo_pdf_operators_set_font_subsets_callback (cairo_pdf_operators_t            *pdf_operators,
+                        cairo_pdf_operators_use_font_subset_t use_font_subset,
+                        void                     *closure);
 
 cairo_private void
-_cairo_pdf_operators_set_stream (cairo_pdf_operators_t 	 *pdf_operators,
-				 cairo_output_stream_t   *stream);
+_cairo_pdf_operators_set_stream (cairo_pdf_operators_t   *pdf_operators,
+                 cairo_output_stream_t   *stream);
 
 
 cairo_private void
 _cairo_pdf_operators_set_cairo_to_pdf_matrix (cairo_pdf_operators_t *pdf_operators,
-					      cairo_matrix_t 	    *cairo_to_pdf);
+                          cairo_matrix_t        *cairo_to_pdf);
 
 cairo_private void
 _cairo_pdf_operators_enable_actual_text (cairo_pdf_operators_t *pdf_operators,
-					 cairo_bool_t 	  	enable);
+                     cairo_bool_t       enable);
 
 cairo_private cairo_status_t
-_cairo_pdf_operators_flush (cairo_pdf_operators_t	 *pdf_operators);
+_cairo_pdf_operators_flush (cairo_pdf_operators_t    *pdf_operators);
 
 cairo_private void
-_cairo_pdf_operators_reset (cairo_pdf_operators_t	 *pdf_operators);
+_cairo_pdf_operators_reset (cairo_pdf_operators_t    *pdf_operators);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_clip (cairo_pdf_operators_t	*pdf_operators,
-			   const cairo_path_fixed_t	*path,
-			   cairo_fill_rule_t		 fill_rule);
+_cairo_pdf_operators_clip (cairo_pdf_operators_t    *pdf_operators,
+               const cairo_path_fixed_t *path,
+               cairo_fill_rule_t         fill_rule);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_emit_stroke_style (cairo_pdf_operators_t		*pdf_operators,
-					const cairo_stroke_style_t	*style,
-					double				 scale);
+_cairo_pdf_operators_emit_stroke_style (cairo_pdf_operators_t       *pdf_operators,
+                    const cairo_stroke_style_t  *style,
+                    double               scale);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_stroke (cairo_pdf_operators_t	*pdf_operators,
-			     const cairo_path_fixed_t	*path,
-			     const cairo_stroke_style_t	*style,
-			     const cairo_matrix_t	*ctm,
-			     const cairo_matrix_t	*ctm_inverse);
+_cairo_pdf_operators_stroke (cairo_pdf_operators_t  *pdf_operators,
+                 const cairo_path_fixed_t   *path,
+                 const cairo_stroke_style_t *style,
+                 const cairo_matrix_t   *ctm,
+                 const cairo_matrix_t   *ctm_inverse);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_fill (cairo_pdf_operators_t	*pdf_operators,
-			   const cairo_path_fixed_t	*path,
-			   cairo_fill_rule_t		fill_rule);
+_cairo_pdf_operators_fill (cairo_pdf_operators_t    *pdf_operators,
+               const cairo_path_fixed_t *path,
+               cairo_fill_rule_t        fill_rule);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_fill_stroke (cairo_pdf_operators_t		*pdf_operators,
-				  const cairo_path_fixed_t	*path,
-				  cairo_fill_rule_t		 fill_rule,
-				  const cairo_stroke_style_t	*style,
-				  const cairo_matrix_t		*ctm,
-				  const cairo_matrix_t		*ctm_inverse);
+_cairo_pdf_operators_fill_stroke (cairo_pdf_operators_t     *pdf_operators,
+                  const cairo_path_fixed_t  *path,
+                  cairo_fill_rule_t      fill_rule,
+                  const cairo_stroke_style_t    *style,
+                  const cairo_matrix_t      *ctm,
+                  const cairo_matrix_t      *ctm_inverse);
 
 cairo_private cairo_int_status_t
-_cairo_pdf_operators_show_text_glyphs (cairo_pdf_operators_t	  *pdf_operators,
-				       const char                 *utf8,
-				       int                         utf8_len,
-				       cairo_glyph_t              *glyphs,
-				       int                         num_glyphs,
-				       const cairo_text_cluster_t *clusters,
-				       int                         num_clusters,
-				       cairo_text_cluster_flags_t  cluster_flags,
-				       cairo_scaled_font_t	  *scaled_font);
+_cairo_pdf_operators_show_text_glyphs (cairo_pdf_operators_t      *pdf_operators,
+                       const char                 *utf8,
+                       int                         utf8_len,
+                       cairo_glyph_t              *glyphs,
+                       int                         num_glyphs,
+                       const cairo_text_cluster_t *clusters,
+                       int                         num_clusters,
+                       cairo_text_cluster_flags_t  cluster_flags,
+                       cairo_scaled_font_t    *scaled_font);
 
 #endif /* CAIRO_PDF_OPERATORS_H */

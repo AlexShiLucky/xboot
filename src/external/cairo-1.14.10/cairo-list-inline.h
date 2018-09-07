@@ -40,38 +40,38 @@
 #include "cairo-list-private.h"
 
 #define cairo_list_entry(ptr, type, member) \
-	cairo_container_of(ptr, type, member)
+    cairo_container_of(ptr, type, member)
 
 #define cairo_list_first_entry(ptr, type, member) \
-	cairo_list_entry((ptr)->next, type, member)
+    cairo_list_entry((ptr)->next, type, member)
 
 #define cairo_list_last_entry(ptr, type, member) \
-	cairo_list_entry((ptr)->prev, type, member)
+    cairo_list_entry((ptr)->prev, type, member)
 
-#define cairo_list_foreach(pos, head)			\
-	for (pos = (head)->next; pos != (head);	pos = pos->next)
+#define cairo_list_foreach(pos, head)           \
+    for (pos = (head)->next; pos != (head); pos = pos->next)
 
-#define cairo_list_foreach_entry(pos, type, head, member)		\
-	for (pos = cairo_list_entry((head)->next, type, member);\
-	     &pos->member != (head);					\
-	     pos = cairo_list_entry(pos->member.next, type, member))
+#define cairo_list_foreach_entry(pos, type, head, member)       \
+    for (pos = cairo_list_entry((head)->next, type, member);\
+         &pos->member != (head);                    \
+         pos = cairo_list_entry(pos->member.next, type, member))
 
-#define cairo_list_foreach_entry_safe(pos, n, type, head, member)	\
-	for (pos = cairo_list_entry ((head)->next, type, member),\
-	     n = cairo_list_entry (pos->member.next, type, member);\
-	     &pos->member != (head);					\
-	     pos = n, n = cairo_list_entry (n->member.next, type, member))
+#define cairo_list_foreach_entry_safe(pos, n, type, head, member)   \
+    for (pos = cairo_list_entry ((head)->next, type, member),\
+         n = cairo_list_entry (pos->member.next, type, member);\
+         &pos->member != (head);                    \
+         pos = n, n = cairo_list_entry (n->member.next, type, member))
 
-#define cairo_list_foreach_entry_reverse(pos, type, head, member)	\
-	for (pos = cairo_list_entry((head)->prev, type, member);\
-	     &pos->member != (head);					\
-	     pos = cairo_list_entry(pos->member.prev, type, member))
+#define cairo_list_foreach_entry_reverse(pos, type, head, member)   \
+    for (pos = cairo_list_entry((head)->prev, type, member);\
+         &pos->member != (head);                    \
+         pos = cairo_list_entry(pos->member.prev, type, member))
 
-#define cairo_list_foreach_entry_reverse_safe(pos, n, type, head, member)	\
-	for (pos = cairo_list_entry((head)->prev, type, member),\
-	     n = cairo_list_entry (pos->member.prev, type, member);\
-	     &pos->member != (head);					\
-	     pos = n, n = cairo_list_entry (n->member.prev, type, member))
+#define cairo_list_foreach_entry_reverse_safe(pos, n, type, head, member)   \
+    for (pos = cairo_list_entry((head)->prev, type, member),\
+         n = cairo_list_entry (pos->member.prev, type, member);\
+         &pos->member != (head);                    \
+         pos = n, n = cairo_list_entry (n->member.prev, type, member))
 
 #ifdef CAIRO_LIST_DEBUG
 static inline void
@@ -86,7 +86,7 @@ cairo_list_validate (const cairo_list_t *head)
     cairo_list_t *link;
 
     cairo_list_foreach (link, head)
-	_cairo_list_validate (link);
+    _cairo_list_validate (link);
 }
 static inline cairo_bool_t
 cairo_list_is_empty (const cairo_list_t *head);
@@ -110,8 +110,8 @@ cairo_list_init (cairo_list_t *entry)
 
 static inline void
 __cairo_list_add (cairo_list_t *entry,
-	          cairo_list_t *prev,
-		  cairo_list_t *next)
+              cairo_list_t *prev,
+          cairo_list_t *next)
 {
     next->prev = entry;
     entry->next = next;
@@ -184,7 +184,7 @@ cairo_list_swap (cairo_list_t *entry, cairo_list_t *other)
 
 static inline cairo_bool_t
 cairo_list_is_first (const cairo_list_t *entry,
-	             const cairo_list_t *head)
+                 const cairo_list_t *head)
 {
     cairo_list_validate (head);
     return entry->prev == head;
@@ -192,7 +192,7 @@ cairo_list_is_first (const cairo_list_t *entry,
 
 static inline cairo_bool_t
 cairo_list_is_last (const cairo_list_t *entry,
-	            const cairo_list_t *head)
+                const cairo_list_t *head)
 {
     cairo_list_validate (head);
     return entry->next == head;

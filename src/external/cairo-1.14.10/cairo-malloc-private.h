@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Mozilla Foundation
  *
  * Contributor(s):
- *	Vladimir Vukicevic <vladimir@pobox.com>
+ *  Vladimir Vukicevic <vladimir@pobox.com>
  */
 
 #ifndef CAIRO_MALLOC_PRIVATE_H

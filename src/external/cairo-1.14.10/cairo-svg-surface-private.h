@@ -33,9 +33,9 @@
  * California.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- * 	Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>
- *	Carl Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_SVG_SURFACE_PRIVATE_H
@@ -59,7 +59,7 @@ typedef struct cairo_svg_surface {
     cairo_svg_document_t *document;
 
     cairo_output_stream_t *xml_node;
-    cairo_array_t	   page_set;
+    cairo_array_t      page_set;
 
     cairo_surface_clipper_t clipper;
     unsigned int clip_level;

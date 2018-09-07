@@ -13,9 +13,9 @@ local M = Class(DisplayObject)
 -- @param pattern (Pattern) The pattern for mask.
 -- @return #DisplayImageMask
 function M:init(texture, pattern)
-	self.super:init()
-	self:setTexture(texture)
-	self:setPattern(pattern or Pattern.color(1, 1, 1, 0))
+  self.super:init()
+  self:setTexture(texture)
+  self:setPattern(pattern or Pattern.color(1, 1, 1, 0))
 end
 
 ---
@@ -25,12 +25,12 @@ end
 -- @param self
 -- @param texture (Texture) The texture object
 function M:setTexture(texture)
-	if texture then
-		local w, h = texture:size()
-		self.texture = texture
-		self:setSize(w, h)
-	end
-	return self
+  if texture then
+    local w, h = texture:size()
+    self.texture = texture
+    self:setSize(w, h)
+  end
+  return self
 end
 
 ---
@@ -40,7 +40,7 @@ end
 -- @param self
 -- @return The texture object of display image.
 function M:getTexture()
-	return self.texture
+  return self.texture
 end
 
 ---
@@ -50,10 +50,10 @@ end
 -- @param self
 -- @param pattern (#Pattern) The new pattern for mask.
 function M:setPattern(pattern)
-	if pattern then
-		self.pattern = pattern
-	end
-	return self
+  if pattern then
+    self.pattern = pattern
+  end
+  return self
 end
 
 ---
@@ -63,7 +63,7 @@ end
 -- @param self
 -- @return pattern (#Pattern) The new pattern for mask.
 function M:getPattern()
-	return self.pattern
+  return self.pattern
 end
 
 ---
@@ -73,8 +73,8 @@ end
 -- @param self
 -- @param display (Display) The context of the screen.
 function M:__draw(display)
-	self:updateTransformMatrix()
-	display:drawTextureMask(self.object, self.texture, self.pattern)
+  self:updateTransformMatrix()
+  display:drawTextureMask(self.object, self.texture, self.pattern)
 end
 
 return M

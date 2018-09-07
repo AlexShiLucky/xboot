@@ -9,17 +9,17 @@ extern "C" {
 
 struct regulator_t
 {
-	char * name;
-	int count;
+    char * name;
+    int count;
 
-	void (*set_parent)(struct regulator_t * supply, const char * pname);
-	const char * (*get_parent)(struct regulator_t * supply);
-	void (*set_enable)(struct regulator_t * supply, bool_t enable);
-	bool_t (*get_enable)(struct regulator_t * supply);
-	void (*set_voltage)(struct regulator_t * supply, int voltage);
-	int (*get_voltage)(struct regulator_t * supply);
+    void (*set_parent)(struct regulator_t * supply, const char * pname);
+    const char * (*get_parent)(struct regulator_t * supply);
+    void (*set_enable)(struct regulator_t * supply, bool_t enable);
+    bool_t (*get_enable)(struct regulator_t * supply);
+    void (*set_voltage)(struct regulator_t * supply, int voltage);
+    int (*get_voltage)(struct regulator_t * supply);
 
-	void * priv;
+    void * priv;
 };
 
 struct regulator_t * search_regulator(const char * name);

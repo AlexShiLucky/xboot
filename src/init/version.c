@@ -29,29 +29,29 @@
 #include <xconfigs.h>
 #include <version.h>
 
-#define	XBOOT_MAJOR		3
-#define	XBOOT_MINOR	    0
-#define	XBOOT_PATCH		0
+#define XBOOT_MAJOR     3
+#define XBOOT_MINOR     0
+#define XBOOT_PATCH     0
 
 #define VERSION_TO_STRING(major, minor, patch) \
-	#major"."#minor"."#patch
+    #major"."#minor"."#patch
 
 #define XBOOT_VERSION_STRING(major, minor, patch) \
-	VERSION_TO_STRING(major, minor, patch)
+    VERSION_TO_STRING(major, minor, patch)
 
 int xboot_version(void)
 {
-	return (XBOOT_MAJOR * 100) + (XBOOT_MINOR * 10) + (XBOOT_PATCH * 1);
+    return (XBOOT_MAJOR * 100) + (XBOOT_MINOR * 10) + (XBOOT_PATCH * 1);
 }
 
 const char * xboot_version_string(void)
 {
-	return XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH);
+    return XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH);
 }
 
 const char * xboot_banner_string(void)
 {
-	return ("V"XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH)" ("__DATE__" - "__TIME__")");
+    return ("V"XBOOT_VERSION_STRING(XBOOT_MAJOR, XBOOT_MINOR, XBOOT_PATCH)" ("__DATE__" - "__TIME__")");
 }
 
 /*
@@ -63,15 +63,15 @@ const char * xboot_banner_string(void)
  */
 const char * xboot_character_logo_string(int i)
 {
-	static const char clogo[5][50] = {
-		"       _                   _                     ",
-		" _  _ | |___ _____ _____ _| |_                   ",
-		"\\ \\/ /|  _  |  _  |  _  |_   _|  (C) 2007-2018   ",
-		" )  ( | |_| | |_| | |_| | | |____JIANJUN.JIANG__ ",
-		"/_/\\_\\|_____|_____|_____| |_____________________|",
-	};
+    static const char clogo[5][50] = {
+        "       _                   _                     ",
+        " _  _ | |___ _____ _____ _| |_                   ",
+        "\\ \\/ /|  _  |  _  |  _  |_   _|  (C) 2007-2018   ",
+        " )  ( | |_| | |_| | |_| | | |____JIANJUN.JIANG__ ",
+        "/_/\\_\\|_____|_____|_____| |_____________________|",
+    };
 
-	if(i < 0 && i > 4)
-		return "";
-	return &clogo[i][0];
+    if(i < 0 && i > 4)
+        return "";
+    return &clogo[i][0];
 }

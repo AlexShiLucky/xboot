@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl Worth <cworth@cworth.org>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_PAGINATED_H
@@ -49,7 +49,7 @@ struct _cairo_paginated_surface_backend {
      * during the user's call to cairo_show_page or cairo_copy_page).
      */
     cairo_warn cairo_int_status_t
-    (*start_page)		(void			*surface);
+    (*start_page)       (void           *surface);
 
     /* Required. Will be called twice for each page, once with an
      * argument of CAIRO_PAGINATED_MODE_ANALYZE and once with
@@ -57,27 +57,27 @@ struct _cairo_paginated_surface_backend {
      * documentation for _cairo_paginated_surface_create below.
      */
     void
-    (*set_paginated_mode)	(void			*surface,
-				 cairo_paginated_mode_t	 mode);
+    (*set_paginated_mode)   (void           *surface,
+                 cairo_paginated_mode_t  mode);
 
     /* Optional. Specifies the smallest box that encloses all objects
      * on the page. Will be called at the end of the ANALYZE phase but
      * before the mode is changed to RENDER.
      */
     cairo_warn cairo_int_status_t
-    (*set_bounding_box)	(void		*surface,
-			 cairo_box_t	*bbox);
+    (*set_bounding_box) (void       *surface,
+             cairo_box_t    *bbox);
 
     /* Optional. Indicates whether the page requires fallback images.
      * Will be called at the end of the ANALYZE phase but before the
      * mode is changed to RENDER.
      */
     cairo_warn cairo_int_status_t
-    (*set_fallback_images_required) (void	    *surface,
-				     cairo_bool_t    fallbacks_required);
+    (*set_fallback_images_required) (void       *surface,
+                     cairo_bool_t    fallbacks_required);
 
     cairo_bool_t
-    (*supports_fine_grained_fallbacks) (void		    *surface);
+    (*supports_fine_grained_fallbacks) (void            *surface);
 };
 
 /* A #cairo_paginated_surface_t provides a very convenient wrapper that
@@ -147,9 +147,9 @@ struct _cairo_paginated_surface_backend {
  * even see these operations.
  */
 cairo_private cairo_surface_t *
-_cairo_paginated_surface_create (cairo_surface_t				*target,
-				 cairo_content_t				 content,
-				 const cairo_paginated_surface_backend_t	*backend);
+_cairo_paginated_surface_create (cairo_surface_t                *target,
+                 cairo_content_t                 content,
+                 const cairo_paginated_surface_backend_t    *backend);
 
 cairo_private cairo_surface_t *
 _cairo_paginated_surface_get_target (cairo_surface_t *surface);
@@ -161,8 +161,8 @@ cairo_private cairo_bool_t
 _cairo_surface_is_paginated (cairo_surface_t *surface);
 
 cairo_private cairo_status_t
-_cairo_paginated_surface_set_size (cairo_surface_t 	*surface,
-				   int			 width,
-				   int			 height);
+_cairo_paginated_surface_set_size (cairo_surface_t  *surface,
+                   int           width,
+                   int           height);
 
 #endif /* CAIRO_PAGINATED_H */

@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
+ *  Kristian Høgsberg <krh@redhat.com>
  */
 
 #include "cairoint.h"
@@ -46,185 +46,185 @@
  */
 
 @ps_standard_encoding = (
-	#   0
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	#  16
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	#  32
-	"space",	"exclam",	"quotedbl",	"numbersign",
-	"dollar",	"percent",	"ampersand",	"quoteright",
-	"parenleft",	"parenright",	"asterisk",	"plus",
-	"comma",	"hyphen",	"period",	"slash",
-	#  48
-	"zero",		"one",		"two",		"three",
-	"four",		"five",		"six",		"seven",
-	"eight",	"nine",		"colon",	"semicolon",
-	"less",		"equal",	"greater",	"question",
-	#  64
-	"at",		"A",		"B",		"C",
-	"D",		"E",		"F",		"G",
-	"H",		"I",		"J",		"K",
-	"L",		"M",		"N",		"O",
-	#  80
-	"P",		"Q",		"R",		"S",
-	"T",		"U",		"V",		"W",
-	"X",		"Y",		"Z",		"bracketleft",
-	"backslash",	"bracketright",	"asciicircum",	"underscore",
-	#  96
-	"quoteleft",	"a",		"b",		"c",
-	"d",		"e",		"f",		"g",
-	"h",		"i",		"j",		"k",
-	"l",		"m",		"n",		"o",
-	# 112
-	"p",		"q",		"r",		"s",
-	"t",		"u",		"v",		"w",
-	"x",		"y",		"z",		"braceleft",
-	"bar",		"braceright",	"asciitilde",	NULL,
-	# 128
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	# 144
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	# 160
-	NULL,		"exclamdown",	"cent",		"sterling",
-	"fraction",	"yen",		"florin",	"section",
-	"currency",	"quotesingle",	"quotedblleft",	"guillemotleft",
-	"guilsinglleft","guilsinglright","fi",		"fl",
-	# 176
-	NULL,		"endash",	"dagger",	"daggerdbl",
-	"periodcentered",NULL,		"paragraph",	"bullet",
-	"quotesinglbase","quotedblbase","quotedblright","guillemotright",
-	"ellipsis",	"perthousand",	NULL,		"questiondown",
-	# 192
-	NULL,		"grave",	"acute",	"circumflex",
-	"tilde",	"macron",	"breve",	"dotaccent",
-	"dieresis",	NULL,		"ring",		"cedilla",
-	NULL,		"hungarumlaut",	"ogonek",	"caron",
-	# 208
-	"emdash",	NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	# 224
-	NULL,		"AE",		NULL,		"ordfeminine",
-	NULL,		NULL,		NULL,		NULL,
-	"Lslash",	"Oslash",	"OE",		"ordmasculine",
-	NULL,		NULL,		NULL,		NULL,
-	# 240
-	NULL,		"ae",		NULL,		NULL,
-	NULL,		"dotlessi",	NULL,		NULL,
-	"lslash",	"oslash",	"oe",		"germandbls",
-	NULL,		NULL,		NULL,		NULL
-	);
+    #   0
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    #  16
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    #  32
+    "space",    "exclam",   "quotedbl", "numbersign",
+    "dollar",   "percent",  "ampersand",    "quoteright",
+    "parenleft",    "parenright",   "asterisk", "plus",
+    "comma",    "hyphen",   "period",   "slash",
+    #  48
+    "zero",     "one",      "two",      "three",
+    "four",     "five",     "six",      "seven",
+    "eight",    "nine",     "colon",    "semicolon",
+    "less",     "equal",    "greater",  "question",
+    #  64
+    "at",       "A",        "B",        "C",
+    "D",        "E",        "F",        "G",
+    "H",        "I",        "J",        "K",
+    "L",        "M",        "N",        "O",
+    #  80
+    "P",        "Q",        "R",        "S",
+    "T",        "U",        "V",        "W",
+    "X",        "Y",        "Z",        "bracketleft",
+    "backslash",    "bracketright", "asciicircum",  "underscore",
+    #  96
+    "quoteleft",    "a",        "b",        "c",
+    "d",        "e",        "f",        "g",
+    "h",        "i",        "j",        "k",
+    "l",        "m",        "n",        "o",
+    # 112
+    "p",        "q",        "r",        "s",
+    "t",        "u",        "v",        "w",
+    "x",        "y",        "z",        "braceleft",
+    "bar",      "braceright",   "asciitilde",   NULL,
+    # 128
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    # 144
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    # 160
+    NULL,       "exclamdown",   "cent",     "sterling",
+    "fraction", "yen",      "florin",   "section",
+    "currency", "quotesingle",  "quotedblleft", "guillemotleft",
+    "guilsinglleft","guilsinglright","fi",      "fl",
+    # 176
+    NULL,       "endash",   "dagger",   "daggerdbl",
+    "periodcentered",NULL,      "paragraph",    "bullet",
+    "quotesinglbase","quotedblbase","quotedblright","guillemotright",
+    "ellipsis", "perthousand",  NULL,       "questiondown",
+    # 192
+    NULL,       "grave",    "acute",    "circumflex",
+    "tilde",    "macron",   "breve",    "dotaccent",
+    "dieresis", NULL,       "ring",     "cedilla",
+    NULL,       "hungarumlaut", "ogonek",   "caron",
+    # 208
+    "emdash",   NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    # 224
+    NULL,       "AE",       NULL,       "ordfeminine",
+    NULL,       NULL,       NULL,       NULL,
+    "Lslash",   "Oslash",   "OE",       "ordmasculine",
+    NULL,       NULL,       NULL,       NULL,
+    # 240
+    NULL,       "ae",       NULL,       NULL,
+    NULL,       "dotlessi", NULL,       NULL,
+    "lslash",   "oslash",   "oe",       "germandbls",
+    NULL,       NULL,       NULL,       NULL
+    );
 
 @winansi_encoding = (
-	#   0
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	#  16
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	NULL,		NULL,		NULL,		NULL,
-	#  32
-	"space",	"exclam",	"quotedbl",	"numbersign",
-	"dollar",	"percent",	"ampersand",	"quotesingle",
-	"parenleft",	"parenright",	"asterisk",	"plus",
-	"comma",	"hyphen",	"period",	"slash",
-	#  48
-	"zero",		"one",		"two",		"three",
-	"four",		"five",		"six",		"seven",
-	"eight",	"nine",		"colon",	"semicolon",
-	"less",		"equal",	"greater",	"question",
-	#  64
-	"at",		"A",		"B",		"C",
-	"D",		"E",		"F",		"G",
-	"H",		"I",		"J",		"K",
-	"L",		"M",		"N",		"O",
-	#  80
-	"P",		"Q",		"R",		"S",
-	"T",		"U",		"V",		"W",
-	"X",		"Y",		"Z",		"bracketleft",
-	"backslash",	"bracketright",	"asciicircum",	"underscore",
-	#  96
-	"grave",	"a",		"b",		"c",
-	"d",		"e",		"f",		"g",
-	"h",		"i",		"j",		"k",
-	"l",		"m",		"n",		"o",
-	# 112
-	"p",		"q",		"r",		"s",
-	"t",		"u",		"v",		"w",
-	"x",		"y",		"z",		"braceleft",
-	"bar",		"braceright",	"asciitilde",	NULL,
-	# 128
-	"Euro",		NULL,		"quotesinglbase","florin",
-	"quotedblbase", "ellipsis",	"dagger",	"daggerdbl",
-	"circumflex",	"perthousand",	"Scaron",	"guilsinglleft",
-	"OE",		NULL,		"Zcaron",	NULL,
-	# 144
-	NULL,		"quoteleft",	"quoteright",	"quotedblleft",
-	"quotedblright","bullet",	"endash",	"emdash",
-	"tilde",	"trademark",	"scaron",	"guilsinglright",
-	"oe",		NULL,		"zcaron",	"Ydieresis",
-	# 160
-	NULL,		"exclamdown",	"cent",		"sterling",
-	"currency",	"yen",		"brokenbar",	"section",
-	"dieresis",	"copyright",	"ordfeminine",	"guillemotleft",
-	# 173 is also "hyphen" but we leave this NULL to avoid duplicate names
-	"logicalnot",	NULL,		"registered",	"macron",
-	# 176
-	"degree",	"plusminus",	"twosuperior",	"threesuperior",
-	"acute",	"mu",		"paragraph",	"periodcentered",
-	"cedilla",	"onesuperior",	"ordmasculine",	"guillemotright",
-	"onequarter",	"onehalf",	"threequarters","questiondown",
-	# 192
-	"Agrave",	"Aacute",	"Acircumflex",	"Atilde",
-	"Adieresis",	"Aring",	"AE",		"Ccedilla",
-	"Egrave",	"Eacute",	"Ecircumflex",	"Edieresis",
-	"Igrave",	"Iacute",	"Icircumflex",	"Idieresis",
-	# 208
-	"Eth",		"Ntilde",	"Ograve",	"Oacute",
-	"Ocircumflex",	"Otilde",	"Odieresis",	"multiply",
-	"Oslash",	"Ugrave",	"Uacute",	"Ucircumflex",
-	"Udieresis",	"Yacute",	"Thorn",	"germandbls",
-	# 224
-	"agrave",	"aacute",	"acircumflex",	"atilde",
-	"adieresis",	"aring",	"ae",		"ccedilla",
-	"egrave",	"eacute",	"ecircumflex",	"edieresis",
-	"igrave",	"iacute",	"icircumflex",	"idieresis",
-	# 240
-	"eth",		"ntilde",	"ograve",	"oacute",
-	"ocircumflex",	"otilde",	"odieresis",	"divide",
-	"oslash",	"ugrave",	"uacute",	"ucircumflex",
-	"udieresis",	"yacute",	"thorn",	"ydieresis"
+    #   0
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    #  16
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    NULL,       NULL,       NULL,       NULL,
+    #  32
+    "space",    "exclam",   "quotedbl", "numbersign",
+    "dollar",   "percent",  "ampersand",    "quotesingle",
+    "parenleft",    "parenright",   "asterisk", "plus",
+    "comma",    "hyphen",   "period",   "slash",
+    #  48
+    "zero",     "one",      "two",      "three",
+    "four",     "five",     "six",      "seven",
+    "eight",    "nine",     "colon",    "semicolon",
+    "less",     "equal",    "greater",  "question",
+    #  64
+    "at",       "A",        "B",        "C",
+    "D",        "E",        "F",        "G",
+    "H",        "I",        "J",        "K",
+    "L",        "M",        "N",        "O",
+    #  80
+    "P",        "Q",        "R",        "S",
+    "T",        "U",        "V",        "W",
+    "X",        "Y",        "Z",        "bracketleft",
+    "backslash",    "bracketright", "asciicircum",  "underscore",
+    #  96
+    "grave",    "a",        "b",        "c",
+    "d",        "e",        "f",        "g",
+    "h",        "i",        "j",        "k",
+    "l",        "m",        "n",        "o",
+    # 112
+    "p",        "q",        "r",        "s",
+    "t",        "u",        "v",        "w",
+    "x",        "y",        "z",        "braceleft",
+    "bar",      "braceright",   "asciitilde",   NULL,
+    # 128
+    "Euro",     NULL,       "quotesinglbase","florin",
+    "quotedblbase", "ellipsis", "dagger",   "daggerdbl",
+    "circumflex",   "perthousand",  "Scaron",   "guilsinglleft",
+    "OE",       NULL,       "Zcaron",   NULL,
+    # 144
+    NULL,       "quoteleft",    "quoteright",   "quotedblleft",
+    "quotedblright","bullet",   "endash",   "emdash",
+    "tilde",    "trademark",    "scaron",   "guilsinglright",
+    "oe",       NULL,       "zcaron",   "Ydieresis",
+    # 160
+    NULL,       "exclamdown",   "cent",     "sterling",
+    "currency", "yen",      "brokenbar",    "section",
+    "dieresis", "copyright",    "ordfeminine",  "guillemotleft",
+    # 173 is also "hyphen" but we leave this NULL to avoid duplicate names
+    "logicalnot",   NULL,       "registered",   "macron",
+    # 176
+    "degree",   "plusminus",    "twosuperior",  "threesuperior",
+    "acute",    "mu",       "paragraph",    "periodcentered",
+    "cedilla",  "onesuperior",  "ordmasculine", "guillemotright",
+    "onequarter",   "onehalf",  "threequarters","questiondown",
+    # 192
+    "Agrave",   "Aacute",   "Acircumflex",  "Atilde",
+    "Adieresis",    "Aring",    "AE",       "Ccedilla",
+    "Egrave",   "Eacute",   "Ecircumflex",  "Edieresis",
+    "Igrave",   "Iacute",   "Icircumflex",  "Idieresis",
+    # 208
+    "Eth",      "Ntilde",   "Ograve",   "Oacute",
+    "Ocircumflex",  "Otilde",   "Odieresis",    "multiply",
+    "Oslash",   "Ugrave",   "Uacute",   "Ucircumflex",
+    "Udieresis",    "Yacute",   "Thorn",    "germandbls",
+    # 224
+    "agrave",   "aacute",   "acircumflex",  "atilde",
+    "adieresis",    "aring",    "ae",       "ccedilla",
+    "egrave",   "eacute",   "ecircumflex",  "edieresis",
+    "igrave",   "iacute",   "icircumflex",  "idieresis",
+    # 240
+    "eth",      "ntilde",   "ograve",   "oacute",
+    "ocircumflex",  "otilde",   "odieresis",    "divide",
+    "oslash",   "ugrave",   "uacute",   "ucircumflex",
+    "udieresis",    "yacute",   "thorn",    "ydieresis"
 );
 
 sub print_offsets {
     $s = qq();
     for $sym (@_) {
         if (! ($sym eq NULL)) {
-	    $ss = qq( $hash{$sym}/*$sym*/,);
-	} else {
-	    $ss = qq( 0,);
-	}
-	if (length($s) + length($ss) > 78) {
-	    print qq( $s\n);
-	    $s = "";
-	}
-	$s .= $ss;
+        $ss = qq( $hash{$sym}/*$sym*/,);
+    } else {
+        $ss = qq( 0,);
+    }
+    if (length($s) + length($ss) > 78) {
+        print qq( $s\n);
+        $s = "";
+    }
+    $s .= $ss;
     }
     print qq( $s\n);
 }
@@ -237,15 +237,15 @@ $offset = 1;
 for $sym (@combined) {
     if (! ($sym eq NULL)) {
         if (! exists $hash{$sym}) {
-	    $hash{$sym} = $offset;
-	    $offset += length($sym) + 1;
-	    $ss = qq( "$sym\\0");
-	    if (length($s) + length($ss) > 78) {
-	        print qq( $s\n);
-	        $s = "";
-	    }
-	    $s .= $ss;
-	}
+        $hash{$sym} = $offset;
+        $offset += length($sym) + 1;
+        $ss = qq( "$sym\\0");
+        if (length($s) + length($ss) > 78) {
+            print qq( $s\n);
+            $s = "";
+        }
+        $s .= $ss;
+    }
     }
 }
 print qq( $s\n);
@@ -393,18 +393,18 @@ const char *
 _cairo_ps_standard_encoding_to_glyphname (int glyph)
 {
     if (ps_standard_encoding_offset[glyph])
-	return glyph_name_symbol + ps_standard_encoding_offset[glyph];
+    return glyph_name_symbol + ps_standard_encoding_offset[glyph];
     else
-	return NULL;
+    return NULL;
 }
 
 const char *
 _cairo_winansi_to_glyphname (int glyph)
 {
     if (winansi_encoding_offset[glyph])
-	return glyph_name_symbol + winansi_encoding_offset[glyph];
+    return glyph_name_symbol + winansi_encoding_offset[glyph];
     else
-	return NULL;
+    return NULL;
 }
 
 #endif /* CAIRO_HAS_FONT_SUBSET */

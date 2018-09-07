@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_SURFACE_INLINE_H
@@ -45,7 +45,7 @@ __cairo_surface_flush (cairo_surface_t *surface, unsigned flags)
 {
     cairo_status_t status = CAIRO_STATUS_SUCCESS;
     if (surface->backend->flush)
-	status = surface->backend->flush (surface, flags);
+    status = surface->backend->flush (surface, flags);
     return status;
 }
 
@@ -53,7 +53,7 @@ static inline cairo_surface_t *
 _cairo_surface_reference (cairo_surface_t *surface)
 {
     if (!CAIRO_REFERENCE_COUNT_IS_INVALID (&surface->ref_count))
-	_cairo_reference_count_inc (&surface->ref_count);
+    _cairo_reference_count_inc (&surface->ref_count);
     return surface;
 }
 

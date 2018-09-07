@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Kristian Høgsberg <krh@redhat.com>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -67,37 +67,37 @@ pot (int v)
 
 static cairo_bool_t
 _cairo_clip_contains_rectangle_box (const cairo_clip_t *clip,
-				    const cairo_rectangle_int_t *rect,
-				    const cairo_box_t *box)
+                    const cairo_rectangle_int_t *rect,
+                    const cairo_box_t *box)
 {
     int i;
 
     /* clip == NULL means no clip, so the clip contains everything */
     if (clip == NULL)
-	return TRUE;
+    return TRUE;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return FALSE;
+    return FALSE;
 
     /* If we have a non-trivial path, just say no */
     if (clip->path)
-	return FALSE;
+    return FALSE;
 
     if (! _cairo_rectangle_contains_rectangle (&clip->extents, rect))
-	return FALSE;
+    return FALSE;
 
     if (clip->num_boxes == 0)
-	return TRUE;
+    return TRUE;
 
     /* Check for a clip-box that wholly contains the rectangle */
     for (i = 0; i < clip->num_boxes; i++) {
-	if (box->p1.x >= clip->boxes[i].p1.x &&
-	    box->p1.y >= clip->boxes[i].p1.y &&
-	    box->p2.x <= clip->boxes[i].p2.x &&
-	    box->p2.y <= clip->boxes[i].p2.y)
-	{
-	    return TRUE;
-	}
+    if (box->p1.x >= clip->boxes[i].p1.x &&
+        box->p1.y >= clip->boxes[i].p1.y &&
+        box->p2.x <= clip->boxes[i].p2.x &&
+        box->p2.y <= clip->boxes[i].p2.y)
+    {
+        return TRUE;
+    }
     }
 
     return FALSE;
@@ -105,7 +105,7 @@ _cairo_clip_contains_rectangle_box (const cairo_clip_t *clip,
 
 cairo_bool_t
 _cairo_clip_contains_box (const cairo_clip_t *clip,
-			  const cairo_box_t *box)
+              const cairo_box_t *box)
 {
     cairo_rectangle_int_t rect;
 
@@ -115,7 +115,7 @@ _cairo_clip_contains_box (const cairo_clip_t *clip,
 
 cairo_bool_t
 _cairo_clip_contains_rectangle (const cairo_clip_t *clip,
-				const cairo_rectangle_int_t *rect)
+                const cairo_rectangle_int_t *rect)
 {
     cairo_box_t box;
 
@@ -129,22 +129,22 @@ _cairo_clip_contains_rectangle (const cairo_clip_t *clip,
 
 cairo_clip_t *
 _cairo_clip_intersect_rectilinear_path (cairo_clip_t *clip,
-					const cairo_path_fixed_t *path,
-					cairo_fill_rule_t fill_rule,
-					cairo_antialias_t antialias)
+                    const cairo_path_fixed_t *path,
+                    cairo_fill_rule_t fill_rule,
+                    cairo_antialias_t antialias)
 {
     cairo_status_t status;
     cairo_boxes_t boxes;
 
     _cairo_boxes_init (&boxes);
     status = _cairo_path_fixed_fill_rectilinear_to_boxes (path,
-							  fill_rule,
-							  antialias,
-							  &boxes);
+                              fill_rule,
+                              antialias,
+                              &boxes);
     if (likely (status == CAIRO_STATUS_SUCCESS && boxes.num_boxes))
-	clip = _cairo_clip_intersect_boxes (clip, &boxes);
+    clip = _cairo_clip_intersect_boxes (clip, &boxes);
     else
-	clip = _cairo_clip_set_all_clipped (clip);
+    clip = _cairo_clip_set_all_clipped (clip);
     _cairo_boxes_fini (&boxes);
 
     return clip;
@@ -152,100 +152,100 @@ _cairo_clip_intersect_rectilinear_path (cairo_clip_t *clip,
 
 static cairo_clip_t *
 _cairo_clip_intersect_rectangle_box (cairo_clip_t *clip,
-				     const cairo_rectangle_int_t *r,
-				     const cairo_box_t *box)
+                     const cairo_rectangle_int_t *r,
+                     const cairo_box_t *box)
 {
     cairo_box_t extents_box;
     cairo_bool_t changed = FALSE;
     int i, j;
 
     if (clip == NULL) {
-	clip = _cairo_clip_create ();
-	if (clip == NULL)
-	    return _cairo_clip_set_all_clipped (clip);
+    clip = _cairo_clip_create ();
+    if (clip == NULL)
+        return _cairo_clip_set_all_clipped (clip);
     }
 
     if (clip->num_boxes == 0) {
-	clip->boxes = &clip->embedded_box;
-	clip->boxes[0] = *box;
-	clip->num_boxes = 1;
-	if (clip->path == NULL) {
-	    clip->extents = *r;
-	} else {
-	    if (! _cairo_rectangle_intersect (&clip->extents, r))
-		return _cairo_clip_set_all_clipped (clip);
-	}
-	if (clip->path == NULL)
-	    clip->is_region = _cairo_box_is_pixel_aligned (box);
-	return clip;
+    clip->boxes = &clip->embedded_box;
+    clip->boxes[0] = *box;
+    clip->num_boxes = 1;
+    if (clip->path == NULL) {
+        clip->extents = *r;
+    } else {
+        if (! _cairo_rectangle_intersect (&clip->extents, r))
+        return _cairo_clip_set_all_clipped (clip);
+    }
+    if (clip->path == NULL)
+        clip->is_region = _cairo_box_is_pixel_aligned (box);
+    return clip;
     }
 
     /* Does the new box wholly subsume the clip? Perform a cheap check
      * for the common condition of a single clip rectangle.
      */
     if (clip->num_boxes == 1 &&
-	clip->boxes[0].p1.x >= box->p1.x &&
-	clip->boxes[0].p1.y >= box->p1.y &&
-	clip->boxes[0].p2.x <= box->p2.x &&
-	clip->boxes[0].p2.y <= box->p2.y)
+    clip->boxes[0].p1.x >= box->p1.x &&
+    clip->boxes[0].p1.y >= box->p1.y &&
+    clip->boxes[0].p2.x <= box->p2.x &&
+    clip->boxes[0].p2.y <= box->p2.y)
     {
-	return clip;
+    return clip;
     }
 
     for (i = j = 0; i < clip->num_boxes; i++) {
-	cairo_box_t *b = &clip->boxes[j];
+    cairo_box_t *b = &clip->boxes[j];
 
-	if (j != i)
-	    *b = clip->boxes[i];
+    if (j != i)
+        *b = clip->boxes[i];
 
-	if (box->p1.x > b->p1.x)
-	    b->p1.x = box->p1.x, changed = TRUE;
-	if (box->p2.x < b->p2.x)
-	    b->p2.x = box->p2.x, changed = TRUE;
+    if (box->p1.x > b->p1.x)
+        b->p1.x = box->p1.x, changed = TRUE;
+    if (box->p2.x < b->p2.x)
+        b->p2.x = box->p2.x, changed = TRUE;
 
-	if (box->p1.y > b->p1.y)
-	    b->p1.y = box->p1.y, changed = TRUE;
-	if (box->p2.y < b->p2.y)
-	    b->p2.y = box->p2.y, changed = TRUE;
+    if (box->p1.y > b->p1.y)
+        b->p1.y = box->p1.y, changed = TRUE;
+    if (box->p2.y < b->p2.y)
+        b->p2.y = box->p2.y, changed = TRUE;
 
-	j += b->p2.x > b->p1.x && b->p2.y > b->p1.y;
+    j += b->p2.x > b->p1.x && b->p2.y > b->p1.y;
     }
     clip->num_boxes = j;
 
     if (clip->num_boxes == 0)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     if (! changed)
-	return clip;
+    return clip;
 
     extents_box = clip->boxes[0];
     for (i = 1; i < clip->num_boxes; i++) {
-	    if (clip->boxes[i].p1.x < extents_box.p1.x)
-		extents_box.p1.x = clip->boxes[i].p1.x;
+        if (clip->boxes[i].p1.x < extents_box.p1.x)
+        extents_box.p1.x = clip->boxes[i].p1.x;
 
-	    if (clip->boxes[i].p1.y < extents_box.p1.y)
-		extents_box.p1.y = clip->boxes[i].p1.y;
+        if (clip->boxes[i].p1.y < extents_box.p1.y)
+        extents_box.p1.y = clip->boxes[i].p1.y;
 
-	    if (clip->boxes[i].p2.x > extents_box.p2.x)
-		extents_box.p2.x = clip->boxes[i].p2.x;
+        if (clip->boxes[i].p2.x > extents_box.p2.x)
+        extents_box.p2.x = clip->boxes[i].p2.x;
 
-	    if (clip->boxes[i].p2.y > extents_box.p2.y)
-		extents_box.p2.y = clip->boxes[i].p2.y;
+        if (clip->boxes[i].p2.y > extents_box.p2.y)
+        extents_box.p2.y = clip->boxes[i].p2.y;
     }
 
     if (clip->path == NULL) {
-	_cairo_box_round_to_rectangle (&extents_box, &clip->extents);
+    _cairo_box_round_to_rectangle (&extents_box, &clip->extents);
     } else {
-	cairo_rectangle_int_t extents_rect;
+    cairo_rectangle_int_t extents_rect;
 
-	_cairo_box_round_to_rectangle (&extents_box, &extents_rect);
-	if (! _cairo_rectangle_intersect (&clip->extents, &extents_rect))
-	    return _cairo_clip_set_all_clipped (clip);
+    _cairo_box_round_to_rectangle (&extents_box, &extents_rect);
+    if (! _cairo_rectangle_intersect (&clip->extents, &extents_rect))
+        return _cairo_clip_set_all_clipped (clip);
     }
 
     if (clip->region) {
-	cairo_region_destroy (clip->region);
-	clip->region = NULL;
+    cairo_region_destroy (clip->region);
+    clip->region = NULL;
     }
 
     clip->is_region = FALSE;
@@ -254,98 +254,98 @@ _cairo_clip_intersect_rectangle_box (cairo_clip_t *clip,
 
 cairo_clip_t *
 _cairo_clip_intersect_box (cairo_clip_t *clip,
-			   const cairo_box_t *box)
+               const cairo_box_t *box)
 {
     cairo_rectangle_int_t r;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     _cairo_box_round_to_rectangle (box, &r);
     if (r.width == 0 || r.height == 0)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     return _cairo_clip_intersect_rectangle_box (clip, &r, box);
 }
 
 cairo_clip_t *
 _cairo_clip_intersect_boxes (cairo_clip_t *clip,
-			     const cairo_boxes_t *boxes)
+                 const cairo_boxes_t *boxes)
 {
     cairo_boxes_t clip_boxes;
     cairo_box_t limits;
     cairo_rectangle_int_t extents;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     if (boxes->num_boxes == 0)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     if (boxes->num_boxes == 1)
-	return _cairo_clip_intersect_box (clip, boxes->chunks.base);
+    return _cairo_clip_intersect_box (clip, boxes->chunks.base);
 
     if (clip == NULL)
-	clip = _cairo_clip_create ();
+    clip = _cairo_clip_create ();
 
     if (clip->num_boxes) {
-	_cairo_boxes_init_for_array (&clip_boxes, clip->boxes, clip->num_boxes);
-	if (unlikely (_cairo_boxes_intersect (&clip_boxes, boxes, &clip_boxes))) {
-	    clip = _cairo_clip_set_all_clipped (clip);
-	    goto out;
-	}
+    _cairo_boxes_init_for_array (&clip_boxes, clip->boxes, clip->num_boxes);
+    if (unlikely (_cairo_boxes_intersect (&clip_boxes, boxes, &clip_boxes))) {
+        clip = _cairo_clip_set_all_clipped (clip);
+        goto out;
+    }
 
-	if (clip->boxes != &clip->embedded_box)
-	    free (clip->boxes);
+    if (clip->boxes != &clip->embedded_box)
+        free (clip->boxes);
 
-	clip->boxes = NULL;
-	boxes = &clip_boxes;
+    clip->boxes = NULL;
+    boxes = &clip_boxes;
     }
 
     if (boxes->num_boxes == 0) {
-	clip = _cairo_clip_set_all_clipped (clip);
-	goto out;
+    clip = _cairo_clip_set_all_clipped (clip);
+    goto out;
     } else if (boxes->num_boxes == 1) {
-	clip->boxes = &clip->embedded_box;
-	clip->boxes[0] = boxes->chunks.base[0];
-	clip->num_boxes = 1;
+    clip->boxes = &clip->embedded_box;
+    clip->boxes[0] = boxes->chunks.base[0];
+    clip->num_boxes = 1;
     } else {
-	clip->boxes = _cairo_boxes_to_array (boxes, &clip->num_boxes, TRUE);
+    clip->boxes = _cairo_boxes_to_array (boxes, &clip->num_boxes, TRUE);
     }
     _cairo_boxes_extents (boxes, &limits);
 
     _cairo_box_round_to_rectangle (&limits, &extents);
     if (clip->path == NULL) {
-	clip->extents = extents;
+    clip->extents = extents;
     } else if (! _cairo_rectangle_intersect (&clip->extents, &extents)) {
-	clip = _cairo_clip_set_all_clipped (clip);
-	goto out;
+    clip = _cairo_clip_set_all_clipped (clip);
+    goto out;
     }
 
     if (clip->region) {
-	cairo_region_destroy (clip->region);
-	clip->region = NULL;
+    cairo_region_destroy (clip->region);
+    clip->region = NULL;
     }
     clip->is_region = FALSE;
 
 out:
     if (boxes == &clip_boxes)
-	_cairo_boxes_fini (&clip_boxes);
+    _cairo_boxes_fini (&clip_boxes);
 
     return clip;
 }
 
 cairo_clip_t *
 _cairo_clip_intersect_rectangle (cairo_clip_t       *clip,
-				 const cairo_rectangle_int_t *r)
+                 const cairo_rectangle_int_t *r)
 {
     cairo_box_t box;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     if (r->width == 0 || r->height == 0)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     box.p1.x = _cairo_fixed_from_int (r->x);
     box.p1.y = _cairo_fixed_from_int (r->y);
@@ -367,104 +367,104 @@ struct reduce {
 
 static void
 _add_clipped_edge (struct reduce *r,
-		   const cairo_point_t *p1,
-		   const cairo_point_t *p2,
-		   int y1, int y2)
+           const cairo_point_t *p1,
+           const cairo_point_t *p2,
+           int y1, int y2)
 {
     cairo_fixed_t x;
 
     x = _cairo_edge_compute_intersection_x_for_y (p1, p2, y1);
     if (x < r->extents.p1.x)
-	r->extents.p1.x = x;
+    r->extents.p1.x = x;
 
     x = _cairo_edge_compute_intersection_x_for_y (p1, p2, y2);
     if (x > r->extents.p2.x)
-	r->extents.p2.x = x;
+    r->extents.p2.x = x;
 
     if (y1 < r->extents.p1.y)
-	r->extents.p1.y = y1;
+    r->extents.p1.y = y1;
 
     if (y2 > r->extents.p2.y)
-	r->extents.p2.y = y2;
+    r->extents.p2.y = y2;
 
     r->inside = TRUE;
 }
 
 static void
 _add_edge (struct reduce *r,
-	   const cairo_point_t *p1,
-	   const cairo_point_t *p2)
+       const cairo_point_t *p1,
+       const cairo_point_t *p2)
 {
     int top, bottom;
     int top_y, bot_y;
     int n;
 
     if (p1->y < p2->y) {
-	top = p1->y;
-	bottom = p2->y;
+    top = p1->y;
+    bottom = p2->y;
     } else {
-	top = p2->y;
-	bottom = p1->y;
+    top = p2->y;
+    bottom = p1->y;
     }
 
     if (bottom < r->limit.p1.y || top > r->limit.p2.y)
-	return;
+    return;
 
     if (p1->x > p2->x) {
-	const cairo_point_t *t = p1;
-	p1 = p2;
-	p2 = t;
+    const cairo_point_t *t = p1;
+    p1 = p2;
+    p2 = t;
     }
 
     if (p2->x <= r->limit.p1.x || p1->x >= r->limit.p2.x)
-	return;
+    return;
 
     for (n = 0; n < r->clip->num_boxes; n++) {
-	const cairo_box_t *limits = &r->clip->boxes[n];
+    const cairo_box_t *limits = &r->clip->boxes[n];
 
-	if (bottom < limits->p1.y || top > limits->p2.y)
-	    continue;
+    if (bottom < limits->p1.y || top > limits->p2.y)
+        continue;
 
-	if (p2->x <= limits->p1.x || p1->x >= limits->p2.x)
-	    continue;
+    if (p2->x <= limits->p1.x || p1->x >= limits->p2.x)
+        continue;
 
-	if (p1->x >= limits->p1.x && p2->x <= limits->p1.x) {
-	    top_y = top;
-	    bot_y = bottom;
-	} else {
-	    int p1_y, p2_y;
+    if (p1->x >= limits->p1.x && p2->x <= limits->p1.x) {
+        top_y = top;
+        bot_y = bottom;
+    } else {
+        int p1_y, p2_y;
 
-	    p1_y = _cairo_edge_compute_intersection_y_for_x (p1, p2,
-							     limits->p1.x);
-	    p2_y = _cairo_edge_compute_intersection_y_for_x (p1, p2,
-							     limits->p2.x);
-	    if (p1_y < p2_y) {
-		top_y = p1_y;
-		bot_y = p2_y;
-	    } else {
-		top_y = p2_y;
-		bot_y = p1_y;
-	    }
+        p1_y = _cairo_edge_compute_intersection_y_for_x (p1, p2,
+                                 limits->p1.x);
+        p2_y = _cairo_edge_compute_intersection_y_for_x (p1, p2,
+                                 limits->p2.x);
+        if (p1_y < p2_y) {
+        top_y = p1_y;
+        bot_y = p2_y;
+        } else {
+        top_y = p2_y;
+        bot_y = p1_y;
+        }
 
-	    if (top_y < top)
-		top_y = top;
-	    if (bot_y > bottom)
-		bot_y = bottom;
-	}
+        if (top_y < top)
+        top_y = top;
+        if (bot_y > bottom)
+        bot_y = bottom;
+    }
 
-	if (top_y < limits->p1.y)
-	    top_y = limits->p1.y;
+    if (top_y < limits->p1.y)
+        top_y = limits->p1.y;
 
-	if (bot_y > limits->p2.y)
-	    bot_y = limits->p2.y;
-	if (bot_y > top_y)
-	    _add_clipped_edge (r, p1, p2, top_y, bot_y);
+    if (bot_y > limits->p2.y)
+        bot_y = limits->p2.y;
+    if (bot_y > top_y)
+        _add_clipped_edge (r, p1, p2, top_y, bot_y);
     }
 }
 
 static cairo_status_t
 _reduce_line_to (void *closure,
-		       const cairo_point_t *point)
+               const cairo_point_t *point)
 {
     struct reduce *r = closure;
 
@@ -484,7 +484,7 @@ _reduce_close (void *closure)
 
 static cairo_status_t
 _reduce_move_to (void *closure,
-		 const cairo_point_t *point)
+         const cairo_point_t *point)
 {
     struct reduce *r = closure;
     cairo_status_t status;
@@ -506,9 +506,9 @@ _cairo_clip_reduce_to_boxes (cairo_clip_t *clip)
     cairo_clip_path_t *clip_path;
     cairo_status_t status;
 
-	return clip;
+    return clip;
     if (clip->path == NULL)
-	return clip;
+    return clip;
 
     r.clip = clip;
     r.extents.p1.x = r.extents.p1.y = INT_MAX;
@@ -522,23 +522,23 @@ _cairo_clip_reduce_to_boxes (cairo_clip_t *clip)
 
     clip_path = clip->path;
     do {
-	r.current_point.x = 0;
-	r.current_point.y = 0;
-	r.last_move_to = r.current_point;
+    r.current_point.x = 0;
+    r.current_point.y = 0;
+    r.last_move_to = r.current_point;
 
-	status = _cairo_path_fixed_interpret_flat (&clip_path->path,
-						   _reduce_move_to,
-						   _reduce_line_to,
-						   _reduce_close,
-						   &r,
-						   clip_path->tolerance);
-	assert (status == CAIRO_STATUS_SUCCESS);
-	_reduce_close (&r);
+    status = _cairo_path_fixed_interpret_flat (&clip_path->path,
+                           _reduce_move_to,
+                           _reduce_line_to,
+                           _reduce_close,
+                           &r,
+                           clip_path->tolerance);
+    assert (status == CAIRO_STATUS_SUCCESS);
+    _reduce_close (&r);
     } while ((clip_path = clip_path->prev));
 
     if (! r.inside) {
-	_cairo_clip_path_destroy (clip->path);
-	clip->path = NULL;
+    _cairo_clip_path_destroy (clip->path);
+    clip->path = NULL;
     }
 
     return _cairo_clip_intersect_box (clip, &r.extents);
@@ -546,26 +546,26 @@ _cairo_clip_reduce_to_boxes (cairo_clip_t *clip)
 
 cairo_clip_t *
 _cairo_clip_reduce_to_rectangle (const cairo_clip_t *clip,
-				 const cairo_rectangle_int_t *r)
+                 const cairo_rectangle_int_t *r)
 {
     cairo_clip_t *copy;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return (cairo_clip_t *) clip;
+    return (cairo_clip_t *) clip;
 
     if (_cairo_clip_contains_rectangle (clip, r))
-	return _cairo_clip_intersect_rectangle (NULL, r);
+    return _cairo_clip_intersect_rectangle (NULL, r);
 
     copy = _cairo_clip_copy_intersect_rectangle (clip, r);
     if (_cairo_clip_is_all_clipped (copy))
-	return copy;
+    return copy;
 
     return _cairo_clip_reduce_to_boxes (copy);
 }
 
 cairo_clip_t *
 _cairo_clip_reduce_for_composite (const cairo_clip_t *clip,
-				  cairo_composite_rectangles_t *extents)
+                  cairo_composite_rectangles_t *extents)
 {
     const cairo_rectangle_int_t *r;
 
@@ -579,17 +579,17 @@ _cairo_clip_from_boxes (const cairo_boxes_t *boxes)
     cairo_box_t extents;
     cairo_clip_t *clip = _cairo_clip_create ();
     if (clip == NULL)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     /* XXX cow-boxes? */
     if(boxes->num_boxes == 1) {
-	clip->boxes = &clip->embedded_box;
-	clip->boxes[0] = boxes->chunks.base[0];
-	clip->num_boxes = 1;
+    clip->boxes = &clip->embedded_box;
+    clip->boxes[0] = boxes->chunks.base[0];
+    clip->num_boxes = 1;
     } else {
-	clip->boxes = _cairo_boxes_to_array (boxes, &clip->num_boxes, TRUE);
-	if (clip->boxes == NULL)
-	    return _cairo_clip_set_all_clipped (clip);
+    clip->boxes = _cairo_boxes_to_array (boxes, &clip->num_boxes, TRUE);
+    if (clip->boxes == NULL)
+        return _cairo_clip_set_all_clipped (clip);
     }
 
     _cairo_boxes_extents (boxes, &extents);

@@ -9,12 +9,12 @@
  */
 char * strcat(char * dest, const char * src)
 {
-	char * tmp = dest;
+    char * tmp = dest;
 
-	while (*dest)
-		dest++;
-	while ((*dest++ = *src++) != '\0');
+    while (*dest)
+        dest++;
+    while ((*dest++ = *src++) != '\0');
 
-	return tmp;
+    return tmp;
 }
 EXPORT_SYMBOL(strcat);

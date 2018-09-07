@@ -14,16 +14,16 @@ local M = Class(DisplayObject)
 -- @param height (number) The height of drawing area in pixels.
 -- @return #DisplayNinepatch
 function M:init(ninepatch, width, height)
-	self.super:init()
-	self:setNinepatch(ninepatch, width, height)
+  self.super:init()
+  self:setNinepatch(ninepatch, width, height)
 end
 
 function M:setSize(width, height)
-	self.super:setSize(width, height)
-	if self.ninepatch then
-		self.ninepatch:setSize(width, height)
-	end
-	return self
+  self.super:setSize(width, height)
+  if self.ninepatch then
+    self.ninepatch:setSize(width, height)
+  end
+  return self
 end
 
 ---
@@ -33,12 +33,12 @@ end
 -- @param self
 -- @param ninepatch (Ninepatch) The ninepatch object
 function M:setNinepatch(ninepatch, width, height)
-	if ninepatch then
-		local w, h = ninepatch:getSize()
-		self.ninepatch = ninepatch
-		self:setSize(width or w, height or h)
-	end
-	return self
+  if ninepatch then
+    local w, h = ninepatch:getSize()
+    self.ninepatch = ninepatch
+    self:setSize(width or w, height or h)
+  end
+  return self
 end
 
 ---
@@ -48,7 +48,7 @@ end
 -- @param self
 -- @return The ninepatch object
 function M:getNinepatch()
-	return self.ninepatch
+  return self.ninepatch
 end
 
 ---

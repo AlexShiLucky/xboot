@@ -6,6 +6,6 @@
 
 int getc(FILE * f)
 {
-	return fgetc(f);
+    return fgetc(f);
 }
 EXPORT_SYMBOL(getc);

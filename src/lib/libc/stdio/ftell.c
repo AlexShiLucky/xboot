@@ -7,6 +7,6 @@
 
 fpos_t ftell(FILE * f)
 {
-	return f->pos;
+    return f->pos;
 }
 EXPORT_SYMBOL(ftell);

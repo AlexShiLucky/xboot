@@ -10,12 +10,12 @@ extern "C" {
 
 struct nvmem_t
 {
-	char * name;
-	struct kvdb_t * db;
-	int (*capacity)(struct nvmem_t * m);
-	int (*read)(struct nvmem_t * m, void * buf, int offset, int count);
-	int (*write)(struct nvmem_t * m, void * buf, int offset, int count);
-	void * priv;
+    char * name;
+    struct kvdb_t * db;
+    int (*capacity)(struct nvmem_t * m);
+    int (*read)(struct nvmem_t * m, void * buf, int offset, int count);
+    int (*write)(struct nvmem_t * m, void * buf, int offset, int count);
+    void * priv;
 };
 
 struct nvmem_t * search_nvmem(const char * name);

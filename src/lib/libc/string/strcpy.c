@@ -10,9 +10,9 @@
  */
 char * strcpy(char * dest, const char * src)
 {
-	char * tmp = dest;
+    char * tmp = dest;
 
-	while ((*dest++ = *src++) != '\0');
-	return tmp;
+    while ((*dest++ = *src++) != '\0');
+    return tmp;
 }
 EXPORT_SYMBOL(strcpy);

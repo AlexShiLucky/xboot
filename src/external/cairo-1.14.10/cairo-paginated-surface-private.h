@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl Worth <cworth@cworth.org>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_PAGINATED_SURFACE_H

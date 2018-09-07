@@ -32,13 +32,13 @@
 
 int ctrlc(void)
 {
-	int ch;
+    int ch;
 
-	if((ch = getchar()) != EOF)
-	{
-		if(ch == 0x3)
-			return 1;
-	}
-	return 0;
+    if((ch = getchar()) != EOF)
+    {
+        if(ch == 0x3)
+            return 1;
+    }
+    return 0;
 }
 EXPORT_SYMBOL(ctrlc);

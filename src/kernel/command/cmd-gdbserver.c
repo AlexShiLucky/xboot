@@ -32,69 +32,69 @@
 
 static void usage(void)
 {
-	struct device_t * pos, * n;
+    struct device_t * pos, * n;
 
-	printf("usage:\r\n");
-	printf("    gdbserver <device>\r\n");
-	printf("    gdbserver --kill\r\n");
+    printf("usage:\r\n");
+    printf("    gdbserver <device>\r\n");
+    printf("    gdbserver --kill\r\n");
 
-	printf("supported device list:\r\n");
-	list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_UART], head)
-	{
-		printf("    %s\r\n", pos->name);
-	}
+    printf("supported device list:\r\n");
+    list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_UART], head)
+    {
+        printf("    %s\r\n", pos->name);
+    }
 }
 
 static int do_gdbserver(int argc, char ** argv)
 {
-	int s;
+    int s;
 
-	if(argc < 2)
-	{
-		usage();
-		return -1;
-	}
+    if(argc < 2)
+    {
+        usage();
+        return -1;
+    }
 
-	if(strcmp(argv[1], "--kill") == 0)
-	{
-		gdbserver_stop();
-		return 0;
-	}
+    if(strcmp(argv[1], "--kill") == 0)
+    {
+        gdbserver_stop();
+        return 0;
+    }
 
-	printf("Start gdbserver on device '%s'\r\n", argv[1]);
-	if((s = gdbserver_start(argv[1])) < 0)
-	{
-		if(s == -1)
-		{
-			printf("This machine don't support gdbserver\r\n", argv[1]);
-			return -1;
-		}
-		else if(s == -2)
-		{
-			printf("Can not start gdbserver on device '%s'\r\n", argv[1]);
-			usage();
-			return -1;
-		}
-	}
+    printf("Start gdbserver on device '%s'\r\n", argv[1]);
+    if((s = gdbserver_start(argv[1])) < 0)
+    {
+        if(s == -1)
+        {
+            printf("This machine don't support gdbserver\r\n", argv[1]);
+            return -1;
+        }
+        else if(s == -2)
+        {
+            printf("Can not start gdbserver on device '%s'\r\n", argv[1]);
+            usage();
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_gdbserver = {
-	.name	= "gdbserver",
-	.desc	= "remote server for gnu debugger",
-	.usage	= usage,
-	.exec	= do_gdbserver,
+    .name   = "gdbserver",
+    .desc   = "remote server for gnu debugger",
+    .usage  = usage,
+    .exec   = do_gdbserver,
 };
 
 static __init void gdbserver_cmd_init(void)
 {
-	register_command(&cmd_gdbserver);
+    register_command(&cmd_gdbserver);
 }
 
 static __exit void gdbserver_cmd_exit(void)
 {
-	unregister_command(&cmd_gdbserver);
+    unregister_command(&cmd_gdbserver);
 }
 
 command_initcall(gdbserver_cmd_init);

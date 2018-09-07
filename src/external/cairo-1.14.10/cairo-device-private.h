@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Intel Corporation.
  *
  * Contributors(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef _CAIRO_DEVICE_PRIVATE_H_
@@ -70,11 +70,11 @@ _cairo_device_create_in_error (cairo_status_t status);
 
 cairo_private void
 _cairo_device_init (cairo_device_t *device,
-		    const cairo_device_backend_t *backend);
+            const cairo_device_backend_t *backend);
 
 cairo_private cairo_status_t
 _cairo_device_set_error (cairo_device_t *device,
-		         cairo_status_t error);
+                 cairo_status_t error);
 
 slim_hidden_proto_no_warn (cairo_device_reference);
 slim_hidden_proto (cairo_device_acquire);

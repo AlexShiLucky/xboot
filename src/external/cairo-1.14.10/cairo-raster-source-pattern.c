@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -61,41 +61,41 @@
 
 cairo_surface_t *
 _cairo_raster_source_pattern_acquire (const cairo_pattern_t *abstract_pattern,
-				      cairo_surface_t *target,
-				      const cairo_rectangle_int_t *extents)
+                      cairo_surface_t *target,
+                      const cairo_rectangle_int_t *extents)
 {
     cairo_raster_source_pattern_t *pattern =
-	(cairo_raster_source_pattern_t *) abstract_pattern;
+    (cairo_raster_source_pattern_t *) abstract_pattern;
 
     if (pattern->acquire == NULL)
-	return NULL;
+    return NULL;
 
     if (extents == NULL)
-	extents = &pattern->extents;
+    extents = &pattern->extents;
 
     return pattern->acquire (&pattern->base, pattern->user_data,
-			     target, extents);
+                 target, extents);
 }
 
 void
 _cairo_raster_source_pattern_release (const cairo_pattern_t *abstract_pattern,
-				      cairo_surface_t *surface)
+                      cairo_surface_t *surface)
 {
     cairo_raster_source_pattern_t *pattern =
-	(cairo_raster_source_pattern_t *) abstract_pattern;
+    (cairo_raster_source_pattern_t *) abstract_pattern;
 
     if (pattern->release == NULL)
-	return;
+    return;
 
     pattern->release (&pattern->base, pattern->user_data, surface);
 }
 
 cairo_status_t
 _cairo_raster_source_pattern_init_copy (cairo_pattern_t *abstract_pattern,
-					const cairo_pattern_t *other)
+                    const cairo_pattern_t *other)
 {
     cairo_raster_source_pattern_t *pattern =
-	(cairo_raster_source_pattern_t *) abstract_pattern;
+    (cairo_raster_source_pattern_t *) abstract_pattern;
     cairo_status_t status;
 
     VG (VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_raster_source_pattern_t)));
@@ -103,7 +103,7 @@ _cairo_raster_source_pattern_init_copy (cairo_pattern_t *abstract_pattern,
 
     status = CAIRO_STATUS_SUCCESS;
     if (pattern->copy)
-	status = pattern->copy (&pattern->base, pattern->user_data, other);
+    status = pattern->copy (&pattern->base, pattern->user_data, other);
 
     return status;
 }
@@ -112,10 +112,10 @@ cairo_status_t
 _cairo_raster_source_pattern_snapshot (cairo_pattern_t *abstract_pattern)
 {
     cairo_raster_source_pattern_t *pattern =
-	(cairo_raster_source_pattern_t *) abstract_pattern;
+    (cairo_raster_source_pattern_t *) abstract_pattern;
 
     if (pattern->snapshot == NULL)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     return pattern->snapshot (&pattern->base, pattern->user_data);
 }
@@ -124,10 +124,10 @@ void
 _cairo_raster_source_pattern_finish (cairo_pattern_t *abstract_pattern)
 {
     cairo_raster_source_pattern_t *pattern =
-	(cairo_raster_source_pattern_t *) abstract_pattern;
+    (cairo_raster_source_pattern_t *) abstract_pattern;
 
     if (pattern->finish == NULL)
-	return;
+    return;
 
     pattern->finish (&pattern->base, pattern->user_data);
 }
@@ -155,25 +155,25 @@ _cairo_raster_source_pattern_finish (cairo_pattern_t *abstract_pattern)
  **/
 cairo_pattern_t *
 cairo_pattern_create_raster_source (void *user_data,
-				    cairo_content_t content,
-				    int width, int height)
+                    cairo_content_t content,
+                    int width, int height)
 {
     cairo_raster_source_pattern_t *pattern;
 
     CAIRO_MUTEX_INITIALIZE ();
 
     if (width < 0 || height < 0)
-	return _cairo_pattern_create_in_error (CAIRO_STATUS_INVALID_SIZE);
+    return _cairo_pattern_create_in_error (CAIRO_STATUS_INVALID_SIZE);
 
     if (! CAIRO_CONTENT_VALID (content))
-	return _cairo_pattern_create_in_error (CAIRO_STATUS_INVALID_CONTENT);
+    return _cairo_pattern_create_in_error (CAIRO_STATUS_INVALID_CONTENT);
 
     pattern = calloc (1, sizeof (*pattern));
     if (unlikely (pattern == NULL))
-	return _cairo_pattern_create_in_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_pattern_create_in_error (CAIRO_STATUS_NO_MEMORY);
 
     _cairo_pattern_init (&pattern->base,
-			 CAIRO_PATTERN_TYPE_RASTER_SOURCE);
+             CAIRO_PATTERN_TYPE_RASTER_SOURCE);
     CAIRO_REFERENCE_COUNT_INIT (&pattern->base.ref_count, 1);
 
     pattern->content = content;
@@ -199,12 +199,12 @@ cairo_pattern_create_raster_source (void *user_data,
  **/
 void
 cairo_raster_source_pattern_set_callback_data (cairo_pattern_t *abstract_pattern,
-					       void *data)
+                           void *data)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     pattern->user_data = data;
@@ -226,7 +226,7 @@ cairo_raster_source_pattern_get_callback_data (cairo_pattern_t *abstract_pattern
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return NULL;
+    return NULL;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     return pattern->user_data;
@@ -253,13 +253,13 @@ cairo_raster_source_pattern_get_callback_data (cairo_pattern_t *abstract_pattern
  **/
 void
 cairo_raster_source_pattern_set_acquire (cairo_pattern_t *abstract_pattern,
-					 cairo_raster_source_acquire_func_t acquire,
-					 cairo_raster_source_release_func_t release)
+                     cairo_raster_source_acquire_func_t acquire,
+                     cairo_raster_source_release_func_t release)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     pattern->acquire = acquire;
@@ -278,19 +278,19 @@ cairo_raster_source_pattern_set_acquire (cairo_pattern_t *abstract_pattern,
  **/
 void
 cairo_raster_source_pattern_get_acquire (cairo_pattern_t *abstract_pattern,
-					 cairo_raster_source_acquire_func_t *acquire,
-					 cairo_raster_source_release_func_t *release)
+                     cairo_raster_source_acquire_func_t *acquire,
+                     cairo_raster_source_release_func_t *release)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     if (acquire)
-	*acquire = pattern->acquire;
+    *acquire = pattern->acquire;
     if (release)
-	*release = pattern->release;
+    *release = pattern->release;
 }
 
 /**
@@ -306,12 +306,12 @@ cairo_raster_source_pattern_get_acquire (cairo_pattern_t *abstract_pattern,
  **/
 void
 cairo_raster_source_pattern_set_snapshot (cairo_pattern_t *abstract_pattern,
-					  cairo_raster_source_snapshot_func_t snapshot)
+                      cairo_raster_source_snapshot_func_t snapshot)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     pattern->snapshot = snapshot;
@@ -333,7 +333,7 @@ cairo_raster_source_pattern_get_snapshot (cairo_pattern_t *abstract_pattern)
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return NULL;
+    return NULL;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     return pattern->snapshot;
@@ -351,12 +351,12 @@ cairo_raster_source_pattern_get_snapshot (cairo_pattern_t *abstract_pattern)
  **/
 void
 cairo_raster_source_pattern_set_copy (cairo_pattern_t *abstract_pattern,
-				      cairo_raster_source_copy_func_t copy)
+                      cairo_raster_source_copy_func_t copy)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     pattern->copy = copy;
@@ -378,7 +378,7 @@ cairo_raster_source_pattern_get_copy (cairo_pattern_t *abstract_pattern)
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return NULL;
+    return NULL;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     return pattern->copy;
@@ -396,12 +396,12 @@ cairo_raster_source_pattern_get_copy (cairo_pattern_t *abstract_pattern)
  **/
 void
 cairo_raster_source_pattern_set_finish (cairo_pattern_t *abstract_pattern,
-					cairo_raster_source_finish_func_t finish)
+                    cairo_raster_source_finish_func_t finish)
 {
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return;
+    return;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     pattern->finish = finish;
@@ -423,7 +423,7 @@ cairo_raster_source_pattern_get_finish (cairo_pattern_t *abstract_pattern)
     cairo_raster_source_pattern_t *pattern;
 
     if (abstract_pattern->type != CAIRO_PATTERN_TYPE_RASTER_SOURCE)
-	return NULL;
+    return NULL;
 
     pattern = (cairo_raster_source_pattern_t *) abstract_pattern;
     return pattern->finish;

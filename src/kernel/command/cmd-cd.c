@@ -30,47 +30,47 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    cd [dir]\r\n");
+    printf("usage:\r\n");
+    printf("    cd [dir]\r\n");
 }
 
 static int do_cd(int argc, char ** argv)
 {
-	if(argc == 1)
-	{
-		if(chdir("/") != 0)
-		{
-			printf("cd: %s: No such file or directory\r\n", "/");
-			return -1;
-		}
-	}
-	else
-	{
-		if(chdir(argv[1]) != 0)
-		{
-			printf("cd: %s: No such file or directory\r\n", argv[1]);
-			return -1;
-		}
-	}
+    if(argc == 1)
+    {
+        if(chdir("/") != 0)
+        {
+            printf("cd: %s: No such file or directory\r\n", "/");
+            return -1;
+        }
+    }
+    else
+    {
+        if(chdir(argv[1]) != 0)
+        {
+            printf("cd: %s: No such file or directory\r\n", argv[1]);
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_cd = {
-	.name	= "cd",
-	.desc	= "change the current working directory",
-	.usage	= usage,
-	.exec	= do_cd,
+    .name   = "cd",
+    .desc   = "change the current working directory",
+    .usage  = usage,
+    .exec   = do_cd,
 };
 
 static __init void cd_cmd_init(void)
 {
-	register_command(&cmd_cd);
+    register_command(&cmd_cd);
 }
 
 static __exit void cd_cmd_exit(void)
 {
-	unregister_command(&cmd_cd);
+    unregister_command(&cmd_cd);
 }
 
 command_initcall(cd_cmd_init);

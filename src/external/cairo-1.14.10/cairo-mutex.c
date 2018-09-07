@@ -28,7 +28,7 @@
  * The Original Code is the cairo graphics library.
  *
  * Contributor(s):
- *	Mathias Hasselmann <mathias.hasselmann@gmx.de>
+ *  Mathias Hasselmann <mathias.hasselmann@gmx.de>
  */
 
 #include "cairoint.h"

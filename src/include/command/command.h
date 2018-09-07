@@ -9,23 +9,23 @@ extern "C" {
 
 struct command_t
 {
-	/* Command name */
-	const char * name;
+    /* Command name */
+    const char * name;
 
-	/* Command description */
-	const char * desc;
+    /* Command description */
+    const char * desc;
 
-	/* Command usage function */
-	void (*usage)(void);
+    /* Command usage function */
+    void (*usage)(void);
 
-	/* Command exec function */
-	int (*exec)(int argc, char ** argv);
+    /* Command exec function */
+    int (*exec)(int argc, char ** argv);
 };
 
 struct command_list_t
 {
-	struct command_t * cmd;
-	struct list_head entry;
+    struct command_t * cmd;
+    struct list_head entry;
 };
 
 extern struct command_list_t __command_list;

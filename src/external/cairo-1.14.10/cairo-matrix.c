@@ -31,7 +31,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -87,9 +87,9 @@ void
 cairo_matrix_init_identity (cairo_matrix_t *matrix)
 {
     cairo_matrix_init (matrix,
-		       1, 0,
-		       0, 1,
-		       0, 0);
+               1, 0,
+               0, 1,
+               0, 0);
 }
 slim_hidden_def(cairo_matrix_init_identity);
 
@@ -115,10 +115,10 @@ slim_hidden_def(cairo_matrix_init_identity);
  **/
 void
 cairo_matrix_init (cairo_matrix_t *matrix,
-		   double xx, double yx,
+           double xx, double yx,
 
-		   double xy, double yy,
-		   double x0, double y0)
+           double xy, double yy,
+           double x0, double y0)
 {
     matrix->xx = xx; matrix->yx = yx;
     matrix->xy = xy; matrix->yy = yy;
@@ -148,9 +148,9 @@ slim_hidden_def(cairo_matrix_init);
  **/
 void
 _cairo_matrix_get_affine (const cairo_matrix_t *matrix,
-			  double *xx, double *yx,
-			  double *xy, double *yy,
-			  double *x0, double *y0)
+              double *xx, double *yx,
+              double *xy, double *yy,
+              double *x0, double *y0)
 {
     *xx  = matrix->xx;
     *yx  = matrix->yx;
@@ -159,9 +159,9 @@ _cairo_matrix_get_affine (const cairo_matrix_t *matrix,
     *yy  = matrix->yy;
 
     if (x0)
-	*x0 = matrix->x0;
+    *x0 = matrix->x0;
     if (y0)
-	*y0 = matrix->y0;
+    *y0 = matrix->y0;
 }
 
 /**
@@ -177,12 +177,12 @@ _cairo_matrix_get_affine (const cairo_matrix_t *matrix,
  **/
 void
 cairo_matrix_init_translate (cairo_matrix_t *matrix,
-			     double tx, double ty)
+                 double tx, double ty)
 {
     cairo_matrix_init (matrix,
-		       1, 0,
-		       0, 1,
-		       tx, ty);
+               1, 0,
+               0, 1,
+               tx, ty);
 }
 slim_hidden_def(cairo_matrix_init_translate);
 
@@ -223,12 +223,12 @@ slim_hidden_def (cairo_matrix_translate);
  **/
 void
 cairo_matrix_init_scale (cairo_matrix_t *matrix,
-			 double sx, double sy)
+             double sx, double sy)
 {
     cairo_matrix_init (matrix,
-		       sx,  0,
-		       0, sy,
-		       0, 0);
+               sx,  0,
+               0, sy,
+               0, 0);
 }
 slim_hidden_def(cairo_matrix_init_scale);
 
@@ -270,7 +270,7 @@ slim_hidden_def(cairo_matrix_scale);
  **/
 void
 cairo_matrix_init_rotate (cairo_matrix_t *matrix,
-			  double radians)
+              double radians)
 {
     double  s;
     double  c;
@@ -279,9 +279,9 @@ cairo_matrix_init_rotate (cairo_matrix_t *matrix,
     c = cos (radians);
 
     cairo_matrix_init (matrix,
-		       c, s,
-		       -s, c,
-		       0, 0);
+               c, s,
+               -s, c,
+               0, 0);
 }
 slim_hidden_def(cairo_matrix_init_rotate);
 
@@ -353,8 +353,8 @@ slim_hidden_def(cairo_matrix_multiply);
 
 void
 _cairo_matrix_multiply (cairo_matrix_t *r,
-			const cairo_matrix_t *a,
-			const cairo_matrix_t *b)
+            const cairo_matrix_t *a,
+            const cairo_matrix_t *b)
 {
     r->xx = a->xx * b->xx + a->yx * b->xy;
     r->yx = a->xx * b->yx + a->yx * b->yy;
@@ -424,9 +424,9 @@ slim_hidden_def(cairo_matrix_transform_point);
 
 void
 _cairo_matrix_transform_bounding_box (const cairo_matrix_t *matrix,
-				      double *x1, double *y1,
-				      double *x2, double *y2,
-				      cairo_bool_t *is_tight)
+                      double *x1, double *y1,
+                      double *x2, double *y2,
+                      cairo_bool_t *is_tight)
 {
     int i;
     double quad_x[4], quad_y[4];
@@ -434,44 +434,44 @@ _cairo_matrix_transform_bounding_box (const cairo_matrix_t *matrix,
     double min_y, max_y;
 
     if (matrix->xy == 0. && matrix->yx == 0.) {
-	/* non-rotation/skew matrix, just map the two extreme points */
+    /* non-rotation/skew matrix, just map the two extreme points */
 
-	if (matrix->xx != 1.) {
-	    quad_x[0] = *x1 * matrix->xx;
-	    quad_x[1] = *x2 * matrix->xx;
-	    if (quad_x[0] < quad_x[1]) {
-		*x1 = quad_x[0];
-		*x2 = quad_x[1];
-	    } else {
-		*x1 = quad_x[1];
-		*x2 = quad_x[0];
-	    }
-	}
-	if (matrix->x0 != 0.) {
-	    *x1 += matrix->x0;
-	    *x2 += matrix->x0;
-	}
+    if (matrix->xx != 1.) {
+        quad_x[0] = *x1 * matrix->xx;
+        quad_x[1] = *x2 * matrix->xx;
+        if (quad_x[0] < quad_x[1]) {
+        *x1 = quad_x[0];
+        *x2 = quad_x[1];
+        } else {
+        *x1 = quad_x[1];
+        *x2 = quad_x[0];
+        }
+    }
+    if (matrix->x0 != 0.) {
+        *x1 += matrix->x0;
+        *x2 += matrix->x0;
+    }
 
-	if (matrix->yy != 1.) {
-	    quad_y[0] = *y1 * matrix->yy;
-	    quad_y[1] = *y2 * matrix->yy;
-	    if (quad_y[0] < quad_y[1]) {
-		*y1 = quad_y[0];
-		*y2 = quad_y[1];
-	    } else {
-		*y1 = quad_y[1];
-		*y2 = quad_y[0];
-	    }
-	}
-	if (matrix->y0 != 0.) {
-	    *y1 += matrix->y0;
-	    *y2 += matrix->y0;
-	}
+    if (matrix->yy != 1.) {
+        quad_y[0] = *y1 * matrix->yy;
+        quad_y[1] = *y2 * matrix->yy;
+        if (quad_y[0] < quad_y[1]) {
+        *y1 = quad_y[0];
+        *y2 = quad_y[1];
+        } else {
+        *y1 = quad_y[1];
+        *y2 = quad_y[0];
+        }
+    }
+    if (matrix->y0 != 0.) {
+        *y1 += matrix->y0;
+        *y2 += matrix->y0;
+    }
 
-	if (is_tight)
-	    *is_tight = TRUE;
+    if (is_tight)
+        *is_tight = TRUE;
 
-	return;
+    return;
     }
 
     /* general matrix */
@@ -495,15 +495,15 @@ _cairo_matrix_transform_bounding_box (const cairo_matrix_t *matrix,
     min_y = max_y = quad_y[0];
 
     for (i=1; i < 4; i++) {
-	if (quad_x[i] < min_x)
-	    min_x = quad_x[i];
-	if (quad_x[i] > max_x)
-	    max_x = quad_x[i];
+    if (quad_x[i] < min_x)
+        min_x = quad_x[i];
+    if (quad_x[i] > max_x)
+        max_x = quad_x[i];
 
-	if (quad_y[i] < min_y)
-	    min_y = quad_y[i];
-	if (quad_y[i] > max_y)
-	    max_y = quad_y[i];
+    if (quad_y[i] < min_y)
+        min_y = quad_y[i];
+    if (quad_y[i] > max_y)
+        max_y = quad_y[i];
     }
 
     *x1 = min_x;
@@ -529,8 +529,8 @@ _cairo_matrix_transform_bounding_box (const cairo_matrix_t *matrix,
 
 cairo_private void
 _cairo_matrix_transform_bounding_box_fixed (const cairo_matrix_t *matrix,
-					    cairo_box_t          *bbox,
-					    cairo_bool_t *is_tight)
+                        cairo_box_t          *bbox,
+                        cairo_bool_t *is_tight)
 {
     double x1, y1, x2, y2;
 
@@ -563,14 +563,14 @@ _cairo_matrix_compute_adjoint (cairo_matrix_t *matrix)
     double a, b, c, d, tx, ty;
 
     _cairo_matrix_get_affine (matrix,
-			      &a,  &b,
-			      &c,  &d,
-			      &tx, &ty);
+                  &a,  &b,
+                  &c,  &d,
+                  &tx, &ty);
 
     cairo_matrix_init (matrix,
-		       d, -b,
-		       -c, a,
-		       c*ty - d*tx, b*tx - a*ty);
+               d, -b,
+               -c, a,
+               c*ty - d*tx, b*tx - a*ty);
 }
 
 /**
@@ -595,36 +595,36 @@ cairo_matrix_invert (cairo_matrix_t *matrix)
 
     /* Simple scaling|translation matrices are quite common... */
     if (matrix->xy == 0. && matrix->yx == 0.) {
-	matrix->x0 = -matrix->x0;
-	matrix->y0 = -matrix->y0;
+    matrix->x0 = -matrix->x0;
+    matrix->y0 = -matrix->y0;
 
-	if (matrix->xx != 1.) {
-	    if (matrix->xx == 0.)
-		return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    if (matrix->xx != 1.) {
+        if (matrix->xx == 0.)
+        return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
 
-	    matrix->xx = 1. / matrix->xx;
-	    matrix->x0 *= matrix->xx;
-	}
+        matrix->xx = 1. / matrix->xx;
+        matrix->x0 *= matrix->xx;
+    }
 
-	if (matrix->yy != 1.) {
-	    if (matrix->yy == 0.)
-		return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    if (matrix->yy != 1.) {
+        if (matrix->yy == 0.)
+        return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
 
-	    matrix->yy = 1. / matrix->yy;
-	    matrix->y0 *= matrix->yy;
-	}
+        matrix->yy = 1. / matrix->yy;
+        matrix->y0 *= matrix->yy;
+    }
 
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
     }
 
     /* inv (A) = 1/det (A) * adj (A) */
     det = _cairo_matrix_compute_determinant (matrix);
 
     if (! ISFINITE (det))
-	return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
 
     if (det == 0)
-	return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
 
     _cairo_matrix_compute_adjoint (matrix);
     _cairo_matrix_scalar_multiply (matrix, 1 / det);
@@ -678,47 +678,47 @@ _cairo_matrix_compute_determinant (const cairo_matrix_t *matrix)
  **/
 cairo_status_t
 _cairo_matrix_compute_basis_scale_factors (const cairo_matrix_t *matrix,
-					   double *basis_scale, double *normal_scale,
-					   cairo_bool_t x_basis)
+                       double *basis_scale, double *normal_scale,
+                       cairo_bool_t x_basis)
 {
     double det;
 
     det = _cairo_matrix_compute_determinant (matrix);
 
     if (! ISFINITE (det))
-	return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
 
     if (det == 0)
     {
-	*basis_scale = *normal_scale = 0;
+    *basis_scale = *normal_scale = 0;
     }
     else
     {
-	double x = x_basis != 0;
-	double y = x == 0;
-	double major, minor;
+    double x = x_basis != 0;
+    double y = x == 0;
+    double major, minor;
 
-	cairo_matrix_transform_distance (matrix, &x, &y);
-	major = hypot (x, y);
-	/*
-	 * ignore mirroring
-	 */
-	if (det < 0)
-	    det = -det;
-	if (major)
-	    minor = det / major;
-	else
-	    minor = 0.0;
-	if (x_basis)
-	{
-	    *basis_scale = major;
-	    *normal_scale = minor;
-	}
-	else
-	{
-	    *basis_scale = minor;
-	    *normal_scale = major;
-	}
+    cairo_matrix_transform_distance (matrix, &x, &y);
+    major = hypot (x, y);
+    /*
+     * ignore mirroring
+     */
+    if (det < 0)
+        det = -det;
+    if (major)
+        minor = det / major;
+    else
+        minor = 0.0;
+    if (x_basis)
+    {
+        *basis_scale = major;
+        *normal_scale = minor;
+    }
+    else
+    {
+        *basis_scale = minor;
+        *normal_scale = major;
+    }
     }
 
     return CAIRO_STATUS_SUCCESS;
@@ -726,7 +726,7 @@ _cairo_matrix_compute_basis_scale_factors (const cairo_matrix_t *matrix,
 
 cairo_bool_t
 _cairo_matrix_is_integer_translation (const cairo_matrix_t *matrix,
-				      int *itx, int *ity)
+                      int *itx, int *ity)
 {
     if (_cairo_matrix_is_translation (matrix))
     {
@@ -762,16 +762,16 @@ _cairo_matrix_has_unity_scale (const cairo_matrix_t *matrix)
     /* check that the determinant is near +/-1 */
     double det = _cairo_matrix_compute_determinant (matrix);
     if (fabs (det * det - 1.0) < SCALING_EPSILON) {
-	/* check that one axis is close to zero */
-	if (fabs (matrix->xy) < SCALING_EPSILON  &&
-	    fabs (matrix->yx) < SCALING_EPSILON)
-	    return TRUE;
-	if (fabs (matrix->xx) < SCALING_EPSILON  &&
-	    fabs (matrix->yy) < SCALING_EPSILON)
-	    return TRUE;
-	/* If rotations are allowed then it must instead test for
-	 * orthogonality. This is xx*xy+yx*yy ~= 0.
-	 */
+    /* check that one axis is close to zero */
+    if (fabs (matrix->xy) < SCALING_EPSILON  &&
+        fabs (matrix->yx) < SCALING_EPSILON)
+        return TRUE;
+    if (fabs (matrix->xx) < SCALING_EPSILON  &&
+        fabs (matrix->yy) < SCALING_EPSILON)
+        return TRUE;
+    /* If rotations are allowed then it must instead test for
+     * orthogonality. This is xx*xy+yx*yy ~= 0.
+     */
     }
     return FALSE;
 }
@@ -787,7 +787,7 @@ _cairo_matrix_is_pixel_exact (const cairo_matrix_t *matrix)
     cairo_fixed_t x0_fixed, y0_fixed;
 
     if (! _cairo_matrix_has_unity_scale (matrix))
-	return FALSE;
+    return FALSE;
 
     x0_fixed = _cairo_fixed_from_double (matrix->x0);
     y0_fixed = _cairo_fixed_from_double (matrix->y0);
@@ -881,8 +881,8 @@ _cairo_matrix_is_pixel_exact (const cairo_matrix_t *matrix)
   Now apply the double angle formulae (A) to (C) from above:
 
        r²(θ) = (a² + b² + c² + d²)/2
-	     + (a² + b² - c² - d²)*cos(2*θ)/2
-  	     + (a*c + b*d)*sin(2*θ)
+         + (a² + b² - c² - d²)*cos(2*θ)/2
+         + (a*c + b*d)*sin(2*θ)
              = f + g*cos(φ) + h*sin(φ)
 
   Where
@@ -918,12 +918,12 @@ _cairo_matrix_is_pixel_exact (const cairo_matrix_t *matrix)
    after applying the transformation matrix. */
 double
 _cairo_matrix_transformed_circle_major_axis (const cairo_matrix_t *matrix,
-					     double radius)
+                         double radius)
 {
     double  a, b, c, d, f, g, h, i, j;
 
     if (_cairo_matrix_has_unity_scale (matrix))
-	return radius;
+    return radius;
 
     _cairo_matrix_get_affine (matrix,
                               &a, &b,
@@ -952,10 +952,10 @@ static const pixman_transform_t pixman_identity_transform = {{
     }};
 
 static cairo_status_t
-_cairo_matrix_to_pixman_matrix (const cairo_matrix_t	*matrix,
-				pixman_transform_t	*pixman_transform,
-				double xc,
-				double yc)
+_cairo_matrix_to_pixman_matrix (const cairo_matrix_t    *matrix,
+                pixman_transform_t  *pixman_transform,
+                double xc,
+                double yc)
 {
     cairo_matrix_t inv;
     unsigned max_iterations;
@@ -984,55 +984,55 @@ _cairo_matrix_to_pixman_matrix (const cairo_matrix_t	*matrix,
      */
 
     if (_cairo_matrix_has_unity_scale (matrix))
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (unlikely (fabs (matrix->xx) > PIXMAN_MAX_INT ||
-		  fabs (matrix->xy) > PIXMAN_MAX_INT ||
-		  fabs (matrix->x0) > PIXMAN_MAX_INT ||
-		  fabs (matrix->yx) > PIXMAN_MAX_INT ||
-		  fabs (matrix->yy) > PIXMAN_MAX_INT ||
-		  fabs (matrix->y0) > PIXMAN_MAX_INT))
+          fabs (matrix->xy) > PIXMAN_MAX_INT ||
+          fabs (matrix->x0) > PIXMAN_MAX_INT ||
+          fabs (matrix->yx) > PIXMAN_MAX_INT ||
+          fabs (matrix->yy) > PIXMAN_MAX_INT ||
+          fabs (matrix->y0) > PIXMAN_MAX_INT))
     {
-	return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
+    return _cairo_error (CAIRO_STATUS_INVALID_MATRIX);
     }
 
     /* Note: If we can't invert the transformation, skip the adjustment. */
     inv = *matrix;
     if (cairo_matrix_invert (&inv) != CAIRO_STATUS_SUCCESS)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     /* find the pattern space coordinate that maps to (xc, yc) */
     max_iterations = 5;
     do {
-	double x,y;
-	pixman_vector_t vector;
-	cairo_fixed_16_16_t dx, dy;
+    double x,y;
+    pixman_vector_t vector;
+    cairo_fixed_16_16_t dx, dy;
 
-	vector.vector[0] = _cairo_fixed_16_16_from_double (xc);
-	vector.vector[1] = _cairo_fixed_16_16_from_double (yc);
-	vector.vector[2] = 1 << 16;
+    vector.vector[0] = _cairo_fixed_16_16_from_double (xc);
+    vector.vector[1] = _cairo_fixed_16_16_from_double (yc);
+    vector.vector[2] = 1 << 16;
 
-	/* If we can't transform the reference point, skip the adjustment. */
-	if (! pixman_transform_point_3d (pixman_transform, &vector))
-	    return CAIRO_STATUS_SUCCESS;
+    /* If we can't transform the reference point, skip the adjustment. */
+    if (! pixman_transform_point_3d (pixman_transform, &vector))
+        return CAIRO_STATUS_SUCCESS;
 
-	x = pixman_fixed_to_double (vector.vector[0]);
-	y = pixman_fixed_to_double (vector.vector[1]);
-	cairo_matrix_transform_point (&inv, &x, &y);
+    x = pixman_fixed_to_double (vector.vector[0]);
+    y = pixman_fixed_to_double (vector.vector[1]);
+    cairo_matrix_transform_point (&inv, &x, &y);
 
-	/* Ideally, the vector should now be (xc, yc).
-	 * We can now compensate for the resulting error.
-	 */
-	x -= xc;
-	y -= yc;
-	cairo_matrix_transform_distance (matrix, &x, &y);
-	dx = _cairo_fixed_16_16_from_double (x);
-	dy = _cairo_fixed_16_16_from_double (y);
-	pixman_transform->matrix[0][2] -= dx;
-	pixman_transform->matrix[1][2] -= dy;
+    /* Ideally, the vector should now be (xc, yc).
+     * We can now compensate for the resulting error.
+     */
+    x -= xc;
+    y -= yc;
+    cairo_matrix_transform_distance (matrix, &x, &y);
+    dx = _cairo_fixed_16_16_from_double (x);
+    dy = _cairo_fixed_16_16_from_double (y);
+    pixman_transform->matrix[0][2] -= dx;
+    pixman_transform->matrix[1][2] -= dy;
 
-	if (dx == 0 && dy == 0)
-	    return CAIRO_STATUS_SUCCESS;
+    if (dx == 0 && dy == 0)
+        return CAIRO_STATUS_SUCCESS;
     } while (--max_iterations);
 
     /* We didn't find an exact match between cairo and pixman, but
@@ -1070,30 +1070,30 @@ _pixman_nearest_sample (double d)
  **/
 cairo_bool_t
 _cairo_matrix_is_pixman_translation (const cairo_matrix_t     *matrix,
-				     cairo_filter_t            filter,
-				     int                      *x_offset,
-				     int                      *y_offset)
+                     cairo_filter_t            filter,
+                     int                      *x_offset,
+                     int                      *y_offset)
 {
     double tx, ty;
 
     if (!_cairo_matrix_is_translation (matrix))
-	return FALSE;
+    return FALSE;
 
     if (matrix->x0 == 0. && matrix->y0 == 0.)
-	return TRUE;
+    return TRUE;
 
     tx = matrix->x0 + *x_offset;
     ty = matrix->y0 + *y_offset;
 
     if (filter == CAIRO_FILTER_FAST || filter == CAIRO_FILTER_NEAREST) {
-	tx = _pixman_nearest_sample (tx);
-	ty = _pixman_nearest_sample (ty);
+    tx = _pixman_nearest_sample (tx);
+    ty = _pixman_nearest_sample (ty);
     } else if (tx != floor (tx) || ty != floor (ty)) {
-	return FALSE;
+    return FALSE;
     }
 
     if (fabs (tx) > PIXMAN_MAX_INT || fabs (ty) > PIXMAN_MAX_INT)
-	return FALSE;
+    return FALSE;
 
     *x_offset = _cairo_lround (tx);
     *y_offset = _cairo_lround (ty);
@@ -1133,80 +1133,80 @@ _cairo_matrix_is_pixman_translation (const cairo_matrix_t     *matrix,
  * overflows, %CAIRO_STATUS_SUCCESS otherwise.
  **/
 cairo_status_t
-_cairo_matrix_to_pixman_matrix_offset (const cairo_matrix_t	*matrix,
-				       cairo_filter_t            filter,
-				       double                    xc,
-				       double                    yc,
-				       pixman_transform_t	*out_transform,
-				       int                      *x_offset,
-				       int                      *y_offset)
+_cairo_matrix_to_pixman_matrix_offset (const cairo_matrix_t *matrix,
+                       cairo_filter_t            filter,
+                       double                    xc,
+                       double                    yc,
+                       pixman_transform_t   *out_transform,
+                       int                      *x_offset,
+                       int                      *y_offset)
 {
     cairo_bool_t is_pixman_translation;
 
     is_pixman_translation = _cairo_matrix_is_pixman_translation (matrix,
-								 filter,
-								 x_offset,
-								 y_offset);
+                                 filter,
+                                 x_offset,
+                                 y_offset);
 
     if (is_pixman_translation) {
-	*out_transform = pixman_identity_transform;
-	return CAIRO_INT_STATUS_NOTHING_TO_DO;
+    *out_transform = pixman_identity_transform;
+    return CAIRO_INT_STATUS_NOTHING_TO_DO;
     } else {
-	cairo_matrix_t m;
+    cairo_matrix_t m;
 
-	m = *matrix;
-	cairo_matrix_translate (&m, *x_offset, *y_offset);
-	if (m.x0 != 0.0 || m.y0 != 0.0) {
-	    double tx, ty, norm;
-	    int i, j;
+    m = *matrix;
+    cairo_matrix_translate (&m, *x_offset, *y_offset);
+    if (m.x0 != 0.0 || m.y0 != 0.0) {
+        double tx, ty, norm;
+        int i, j;
 
-	    /* pixman also limits the [xy]_offset to 16 bits so evenly
-	     * spread the bits between the two.
-	     *
-	     * To do this, find the solutions of:
-	     *   |x| = |x*m.xx + y*m.xy + m.x0|
-	     *   |y| = |x*m.yx + y*m.yy + m.y0|
-	     *
-	     * and select the one whose maximum norm is smallest.
-	     */
-	    tx = m.x0;
-	    ty = m.y0;
-	    norm = MAX (fabs (tx), fabs (ty));
+        /* pixman also limits the [xy]_offset to 16 bits so evenly
+         * spread the bits between the two.
+         *
+         * To do this, find the solutions of:
+         *   |x| = |x*m.xx + y*m.xy + m.x0|
+         *   |y| = |x*m.yx + y*m.yy + m.y0|
+         *
+         * and select the one whose maximum norm is smallest.
+         */
+        tx = m.x0;
+        ty = m.y0;
+        norm = MAX (fabs (tx), fabs (ty));
 
-	    for (i = -1; i < 2; i+=2) {
-		for (j = -1; j < 2; j+=2) {
-		    double x, y, den, new_norm;
+        for (i = -1; i < 2; i+=2) {
+        for (j = -1; j < 2; j+=2) {
+            double x, y, den, new_norm;
 
-		    den = (m.xx + i) * (m.yy + j) - m.xy * m.yx;
-		    if (fabs (den) < DBL_EPSILON)
-			continue;
+            den = (m.xx + i) * (m.yy + j) - m.xy * m.yx;
+            if (fabs (den) < DBL_EPSILON)
+            continue;
 
-		    x = m.y0 * m.xy - m.x0 * (m.yy + j);
-		    y = m.x0 * m.yx - m.y0 * (m.xx + i);
+            x = m.y0 * m.xy - m.x0 * (m.yy + j);
+            y = m.x0 * m.yx - m.y0 * (m.xx + i);
 
-		    den = 1 / den;
-		    x *= den;
-		    y *= den;
+            den = 1 / den;
+            x *= den;
+            y *= den;
 
-		    new_norm = MAX (fabs (x), fabs (y));
-		    if (norm > new_norm) {
-			norm = new_norm;
-			tx = x;
-			ty = y;
-		    }
-		}
-	    }
+            new_norm = MAX (fabs (x), fabs (y));
+            if (norm > new_norm) {
+            norm = new_norm;
+            tx = x;
+            ty = y;
+            }
+        }
+        }
 
-	    tx = floor (tx);
-	    ty = floor (ty);
-	    *x_offset = -tx;
-	    *y_offset = -ty;
-	    cairo_matrix_translate (&m, tx, ty);
-	} else {
-	    *x_offset = 0;
-	    *y_offset = 0;
-	}
+        tx = floor (tx);
+        ty = floor (ty);
+        *x_offset = -tx;
+        *y_offset = -ty;
+        cairo_matrix_translate (&m, tx, ty);
+    } else {
+        *x_offset = 0;
+        *y_offset = 0;
+    }
 
-	return _cairo_matrix_to_pixman_matrix (&m, out_transform, xc, yc);
+    return _cairo_matrix_to_pixman_matrix (&m, out_transform, xc, yc);
     }
 }

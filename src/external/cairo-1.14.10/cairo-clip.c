@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Kristian Høgsberg <krh@redhat.com>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -62,9 +62,9 @@ _cairo_clip_path_create (cairo_clip_t *clip)
 
     clip_path = _freed_pool_get (&clip_path_pool);
     if (unlikely (clip_path == NULL)) {
-	clip_path = malloc (sizeof (cairo_clip_path_t));
-	if (unlikely (clip_path == NULL))
-	    return NULL;
+    clip_path = malloc (sizeof (cairo_clip_path_t));
+    if (unlikely (clip_path == NULL))
+        return NULL;
     }
 
     CAIRO_REFERENCE_COUNT_INIT (&clip_path->ref_count, 1);
@@ -91,12 +91,12 @@ _cairo_clip_path_destroy (cairo_clip_path_t *clip_path)
     assert (CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&clip_path->ref_count));
 
     if (! _cairo_reference_count_dec_and_test (&clip_path->ref_count))
-	return;
+    return;
 
     _cairo_path_fixed_fini (&clip_path->path);
 
     if (clip_path->prev != NULL)
-	_cairo_clip_path_destroy (clip_path->prev);
+    _cairo_clip_path_destroy (clip_path->prev);
 
     _freed_pool_put (&clip_path_pool, clip_path);
 }
@@ -108,9 +108,9 @@ _cairo_clip_create (void)
 
     clip = _freed_pool_get (&clip_pool);
     if (unlikely (clip == NULL)) {
-	clip = malloc (sizeof (cairo_clip_t));
-	if (unlikely (clip == NULL))
-	    return NULL;
+    clip = malloc (sizeof (cairo_clip_t));
+    if (unlikely (clip == NULL))
+        return NULL;
     }
 
     clip->extents = _cairo_unbounded_rectangle;
@@ -128,13 +128,13 @@ void
 _cairo_clip_destroy (cairo_clip_t *clip)
 {
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return;
+    return;
 
     if (clip->path != NULL)
-	_cairo_clip_path_destroy (clip->path);
+    _cairo_clip_path_destroy (clip->path);
 
     if (clip->boxes != &clip->embedded_box)
-	free (clip->boxes);
+    free (clip->boxes);
     cairo_region_destroy (clip->region);
 
     _freed_pool_put (&clip_pool, clip);
@@ -146,25 +146,25 @@ _cairo_clip_copy (const cairo_clip_t *clip)
     cairo_clip_t *copy;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return (cairo_clip_t *) clip;
+    return (cairo_clip_t *) clip;
 
     copy = _cairo_clip_create ();
 
     if (clip->path)
-	copy->path = _cairo_clip_path_reference (clip->path);
+    copy->path = _cairo_clip_path_reference (clip->path);
 
     if (clip->num_boxes) {
-	if (clip->num_boxes == 1) {
-	    copy->boxes = &copy->embedded_box;
-	} else {
-	    copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
-	    if (unlikely (copy->boxes == NULL))
-		return _cairo_clip_set_all_clipped (copy);
-	}
+    if (clip->num_boxes == 1) {
+        copy->boxes = &copy->embedded_box;
+    } else {
+        copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
+        if (unlikely (copy->boxes == NULL))
+        return _cairo_clip_set_all_clipped (copy);
+    }
 
-	memcpy (copy->boxes, clip->boxes,
-		clip->num_boxes * sizeof (cairo_box_t));
-	copy->num_boxes = clip->num_boxes;
+    memcpy (copy->boxes, clip->boxes,
+        clip->num_boxes * sizeof (cairo_box_t));
+    copy->num_boxes = clip->num_boxes;
     }
 
     copy->extents = clip->extents;
@@ -180,14 +180,14 @@ _cairo_clip_copy_path (const cairo_clip_t *clip)
     cairo_clip_t *copy;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return (cairo_clip_t *) clip;
+    return (cairo_clip_t *) clip;
 
     assert (clip->num_boxes);
 
     copy = _cairo_clip_create ();
     copy->extents = clip->extents;
     if (clip->path)
-	copy->path = _cairo_clip_path_reference (clip->path);
+    copy->path = _cairo_clip_path_reference (clip->path);
 
     return copy;
 }
@@ -199,7 +199,7 @@ _cairo_clip_copy_region (const cairo_clip_t *clip)
     int i;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return (cairo_clip_t *) clip;
+    return (cairo_clip_t *) clip;
 
     assert (clip->num_boxes);
 
@@ -207,18 +207,18 @@ _cairo_clip_copy_region (const cairo_clip_t *clip)
     copy->extents = clip->extents;
 
     if (clip->num_boxes == 1) {
-	copy->boxes = &copy->embedded_box;
+    copy->boxes = &copy->embedded_box;
     } else {
-	copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
-	if (unlikely (copy->boxes == NULL))
-	    return _cairo_clip_set_all_clipped (copy);
+    copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
+    if (unlikely (copy->boxes == NULL))
+        return _cairo_clip_set_all_clipped (copy);
     }
 
     for (i = 0; i < clip->num_boxes; i++) {
-	copy->boxes[i].p1.x = _cairo_fixed_floor (clip->boxes[i].p1.x);
-	copy->boxes[i].p1.y = _cairo_fixed_floor (clip->boxes[i].p1.y);
-	copy->boxes[i].p2.x = _cairo_fixed_ceil (clip->boxes[i].p2.x);
-	copy->boxes[i].p2.y = _cairo_fixed_ceil (clip->boxes[i].p2.y);
+    copy->boxes[i].p1.x = _cairo_fixed_floor (clip->boxes[i].p1.x);
+    copy->boxes[i].p1.y = _cairo_fixed_floor (clip->boxes[i].p1.y);
+    copy->boxes[i].p2.x = _cairo_fixed_ceil (clip->boxes[i].p2.x);
+    copy->boxes[i].p2.y = _cairo_fixed_ceil (clip->boxes[i].p2.y);
     }
     copy->num_boxes = clip->num_boxes;
 
@@ -230,10 +230,10 @@ _cairo_clip_copy_region (const cairo_clip_t *clip)
 
 cairo_clip_t *
 _cairo_clip_intersect_path (cairo_clip_t       *clip,
-			    const cairo_path_fixed_t *path,
-			    cairo_fill_rule_t   fill_rule,
-			    double              tolerance,
-			    cairo_antialias_t   antialias)
+                const cairo_path_fixed_t *path,
+                cairo_fill_rule_t   fill_rule,
+                double              tolerance,
+                cairo_antialias_t   antialias)
 {
     cairo_clip_path_t *clip_path;
     cairo_status_t status;
@@ -241,49 +241,49 @@ _cairo_clip_intersect_path (cairo_clip_t       *clip,
     cairo_box_t box;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     /* catch the empty clip path */
     if (_cairo_path_fixed_fill_is_empty (path))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     if (_cairo_path_fixed_is_box (path, &box)) {
-	if (antialias == CAIRO_ANTIALIAS_NONE) {
-	    box.p1.x = _cairo_fixed_round_down (box.p1.x);
-	    box.p1.y = _cairo_fixed_round_down (box.p1.y);
-	    box.p2.x = _cairo_fixed_round_down (box.p2.x);
-	    box.p2.y = _cairo_fixed_round_down (box.p2.y);
-	}
+    if (antialias == CAIRO_ANTIALIAS_NONE) {
+        box.p1.x = _cairo_fixed_round_down (box.p1.x);
+        box.p1.y = _cairo_fixed_round_down (box.p1.y);
+        box.p2.x = _cairo_fixed_round_down (box.p2.x);
+        box.p2.y = _cairo_fixed_round_down (box.p2.y);
+    }
 
-	return _cairo_clip_intersect_box (clip, &box);
+    return _cairo_clip_intersect_box (clip, &box);
     }
     if (_cairo_path_fixed_fill_is_rectilinear (path))
-	return _cairo_clip_intersect_rectilinear_path (clip, path,
-						       fill_rule, antialias);
+    return _cairo_clip_intersect_rectilinear_path (clip, path,
+                               fill_rule, antialias);
 
     _cairo_path_fixed_approximate_clip_extents (path, &extents);
     if (extents.width == 0 || extents.height == 0)
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     clip = _cairo_clip_intersect_rectangle (clip, &extents);
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     clip_path = _cairo_clip_path_create (clip);
     if (unlikely (clip_path == NULL))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     status = _cairo_path_fixed_init_copy (&clip_path->path, path);
     if (unlikely (status))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     clip_path->fill_rule = fill_rule;
     clip_path->tolerance = tolerance;
     clip_path->antialias = antialias;
 
     if (clip->region) {
-	cairo_region_destroy (clip->region);
-	clip->region = NULL;
+    cairo_region_destroy (clip->region);
+    clip->region = NULL;
     }
 
     clip->is_region = FALSE;
@@ -292,56 +292,56 @@ _cairo_clip_intersect_path (cairo_clip_t       *clip,
 
 static cairo_clip_t *
 _cairo_clip_intersect_clip_path (cairo_clip_t *clip,
-				 const cairo_clip_path_t *clip_path)
+                 const cairo_clip_path_t *clip_path)
 {
     if (clip_path->prev)
-	clip = _cairo_clip_intersect_clip_path (clip, clip_path->prev);
+    clip = _cairo_clip_intersect_clip_path (clip, clip_path->prev);
 
     return _cairo_clip_intersect_path (clip,
-				       &clip_path->path,
-				       clip_path->fill_rule,
-				       clip_path->tolerance,
-				       clip_path->antialias);
+                       &clip_path->path,
+                       clip_path->fill_rule,
+                       clip_path->tolerance,
+                       clip_path->antialias);
 }
 
 cairo_clip_t *
 _cairo_clip_intersect_clip (cairo_clip_t *clip,
-			    const cairo_clip_t *other)
+                const cairo_clip_t *other)
 {
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     if (other == NULL)
-	return clip;
+    return clip;
 
     if (clip == NULL)
-	return _cairo_clip_copy (other);
+    return _cairo_clip_copy (other);
 
     if (_cairo_clip_is_all_clipped (other))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     if (! _cairo_rectangle_intersect (&clip->extents, &other->extents))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     if (other->num_boxes) {
-	cairo_boxes_t boxes;
+    cairo_boxes_t boxes;
 
-	_cairo_boxes_init_for_array (&boxes, other->boxes, other->num_boxes);
-	clip = _cairo_clip_intersect_boxes (clip, &boxes);
+    _cairo_boxes_init_for_array (&boxes, other->boxes, other->num_boxes);
+    clip = _cairo_clip_intersect_boxes (clip, &boxes);
     }
 
     if (! _cairo_clip_is_all_clipped (clip)) {
-	if (other->path) {
-	    if (clip->path == NULL)
-		clip->path = _cairo_clip_path_reference (other->path);
-	    else
-		clip = _cairo_clip_intersect_clip_path (clip, other->path);
-	}
+    if (other->path) {
+        if (clip->path == NULL)
+        clip->path = _cairo_clip_path_reference (other->path);
+        else
+        clip = _cairo_clip_intersect_clip_path (clip, other->path);
+    }
     }
 
     if (clip->region) {
-	cairo_region_destroy (clip->region);
-	clip->region = NULL;
+    cairo_region_destroy (clip->region);
+    clip->region = NULL;
     }
     clip->is_region = FALSE;
 
@@ -350,54 +350,54 @@ _cairo_clip_intersect_clip (cairo_clip_t *clip,
 
 cairo_bool_t
 _cairo_clip_equal (const cairo_clip_t *clip_a,
-		   const cairo_clip_t *clip_b)
+           const cairo_clip_t *clip_b)
 {
     const cairo_clip_path_t *cp_a, *cp_b;
 
     /* are both all-clipped or no-clip? */
     if (clip_a == clip_b)
-	return TRUE;
+    return TRUE;
 
     /* or just one of them? */
     if (clip_a == NULL || clip_b == NULL ||
-	_cairo_clip_is_all_clipped (clip_a) ||
-	_cairo_clip_is_all_clipped (clip_b))
+    _cairo_clip_is_all_clipped (clip_a) ||
+    _cairo_clip_is_all_clipped (clip_b))
     {
-	return FALSE;
+    return FALSE;
     }
 
     /* We have a pair of normal clips, check their contents */
 
     if (clip_a->num_boxes != clip_b->num_boxes)
-	return FALSE;
+    return FALSE;
 
     if (memcmp (clip_a->boxes, clip_b->boxes,
-		sizeof (cairo_box_t) * clip_a->num_boxes))
-	return FALSE;
+        sizeof (cairo_box_t) * clip_a->num_boxes))
+    return FALSE;
 
     cp_a = clip_a->path;
     cp_b = clip_b->path;
     while (cp_a && cp_b) {
-	if (cp_a == cp_b)
-	    return TRUE;
+    if (cp_a == cp_b)
+        return TRUE;
 
-	/* XXX compare reduced polygons? */
+    /* XXX compare reduced polygons? */
 
-	if (cp_a->antialias != cp_b->antialias)
-	    return FALSE;
+    if (cp_a->antialias != cp_b->antialias)
+        return FALSE;
 
-	if (cp_a->tolerance != cp_b->tolerance)
-	    return FALSE;
+    if (cp_a->tolerance != cp_b->tolerance)
+        return FALSE;
 
-	if (cp_a->fill_rule != cp_b->fill_rule)
-	    return FALSE;
+    if (cp_a->fill_rule != cp_b->fill_rule)
+        return FALSE;
 
-	if (! _cairo_path_fixed_equal (&cp_a->path,
-				       &cp_b->path))
-	    return FALSE;
+    if (! _cairo_path_fixed_equal (&cp_a->path,
+                       &cp_b->path))
+        return FALSE;
 
-	cp_a = cp_a->prev;
-	cp_b = cp_b->prev;
+    cp_a = cp_a->prev;
+    cp_b = cp_b->prev;
     }
 
     return cp_a == NULL && cp_b == NULL;
@@ -405,26 +405,26 @@ _cairo_clip_equal (const cairo_clip_t *clip_a,
 
 static cairo_clip_t *
 _cairo_clip_path_copy_with_translation (cairo_clip_t      *clip,
-					cairo_clip_path_t *other_path,
-					int fx, int fy)
+                    cairo_clip_path_t *other_path,
+                    int fx, int fy)
 {
     cairo_status_t status;
     cairo_clip_path_t *clip_path;
 
     if (other_path->prev != NULL)
-	clip = _cairo_clip_path_copy_with_translation (clip, other_path->prev,
-						       fx, fy);
+    clip = _cairo_clip_path_copy_with_translation (clip, other_path->prev,
+                               fx, fy);
     if (_cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     clip_path = _cairo_clip_path_create (clip);
     if (unlikely (clip_path == NULL))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     status = _cairo_path_fixed_init_copy (&clip_path->path,
-					  &other_path->path);
+                      &other_path->path);
     if (unlikely (status))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     _cairo_path_fixed_translate (&clip_path->path, fx, fy);
 
@@ -442,26 +442,26 @@ _cairo_clip_translate (cairo_clip_t *clip, int tx, int ty)
     cairo_clip_path_t *clip_path;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     if (tx == 0 && ty == 0)
-	return clip;
+    return clip;
 
     fx = _cairo_fixed_from_int (tx);
     fy = _cairo_fixed_from_int (ty);
 
     for (i = 0; i < clip->num_boxes; i++) {
-	clip->boxes[i].p1.x += fx;
-	clip->boxes[i].p2.x += fx;
-	clip->boxes[i].p1.y += fy;
-	clip->boxes[i].p2.y += fy;
+    clip->boxes[i].p1.x += fx;
+    clip->boxes[i].p2.x += fx;
+    clip->boxes[i].p1.y += fy;
+    clip->boxes[i].p2.y += fy;
     }
 
     clip->extents.x += tx;
     clip->extents.y += ty;
 
     if (clip->path == NULL)
-	return clip;
+    return clip;
 
     clip_path = clip->path;
     clip->path = NULL;
@@ -473,32 +473,32 @@ _cairo_clip_translate (cairo_clip_t *clip, int tx, int ty)
 
 static cairo_status_t
 _cairo_path_fixed_add_box (cairo_path_fixed_t *path,
-			   const cairo_box_t *box)
+               const cairo_box_t *box)
 {
     cairo_status_t status;
 
     status = _cairo_path_fixed_move_to (path, box->p1.x, box->p1.y);
     if (unlikely (status))
-	return status;
+    return status;
 
     status = _cairo_path_fixed_line_to (path, box->p2.x, box->p1.y);
     if (unlikely (status))
-	return status;
+    return status;
 
     status = _cairo_path_fixed_line_to (path, box->p2.x, box->p2.y);
     if (unlikely (status))
-	return status;
+    return status;
 
     status = _cairo_path_fixed_line_to (path, box->p1.x, box->p2.y);
     if (unlikely (status))
-	return status;
+    return status;
 
     return _cairo_path_fixed_close_path (path);
 }
 
 static cairo_status_t
 _cairo_path_fixed_init_from_boxes (cairo_path_fixed_t *path,
-				   const cairo_boxes_t *boxes)
+                   const cairo_boxes_t *boxes)
 {
     cairo_status_t status;
     const struct _cairo_boxes_chunk *chunk;
@@ -506,16 +506,16 @@ _cairo_path_fixed_init_from_boxes (cairo_path_fixed_t *path,
 
     _cairo_path_fixed_init (path);
     if (boxes->num_boxes == 0)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     for (chunk = &boxes->chunks; chunk; chunk = chunk->next) {
-	for (i = 0; i < chunk->count; i++) {
-	    status = _cairo_path_fixed_add_box (path, &chunk->base[i]);
-	    if (unlikely (status)) {
-		_cairo_path_fixed_fini (path);
-		return status;
-	    }
-	}
+    for (i = 0; i < chunk->count; i++) {
+        status = _cairo_path_fixed_add_box (path, &chunk->base[i]);
+        if (unlikely (status)) {
+        _cairo_path_fixed_fini (path);
+        return status;
+        }
+    }
     }
 
     return CAIRO_STATUS_SUCCESS;
@@ -523,26 +523,26 @@ _cairo_path_fixed_init_from_boxes (cairo_path_fixed_t *path,
 
 static cairo_clip_t *
 _cairo_clip_intersect_clip_path_transformed (cairo_clip_t *clip,
-					     const cairo_clip_path_t *clip_path,
-					     const cairo_matrix_t *m)
+                         const cairo_clip_path_t *clip_path,
+                         const cairo_matrix_t *m)
 {
     cairo_path_fixed_t path;
 
     if (clip_path->prev)
-	clip = _cairo_clip_intersect_clip_path_transformed (clip,
-							    clip_path->prev,
-							    m);
+    clip = _cairo_clip_intersect_clip_path_transformed (clip,
+                                clip_path->prev,
+                                m);
 
     if (_cairo_path_fixed_init_copy (&path, &clip_path->path))
-	return _cairo_clip_set_all_clipped (clip);
+    return _cairo_clip_set_all_clipped (clip);
 
     _cairo_path_fixed_transform (&path, m);
 
     clip =  _cairo_clip_intersect_path (clip,
-				       &path,
-				       clip_path->fill_rule,
-				       clip_path->tolerance,
-				       clip_path->antialias);
+                       &path,
+                       clip_path->fill_rule,
+                       clip_path->tolerance,
+                       clip_path->antialias);
     _cairo_path_fixed_fini (&path);
 
     return clip;
@@ -554,31 +554,31 @@ _cairo_clip_transform (cairo_clip_t *clip, const cairo_matrix_t *m)
     cairo_clip_t *copy;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return clip;
+    return clip;
 
     if (_cairo_matrix_is_translation (m))
-	return _cairo_clip_translate (clip, m->x0, m->y0);
+    return _cairo_clip_translate (clip, m->x0, m->y0);
 
     copy = _cairo_clip_create ();
 
     if (clip->num_boxes) {
-	cairo_path_fixed_t path;
-	cairo_boxes_t boxes;
+    cairo_path_fixed_t path;
+    cairo_boxes_t boxes;
 
-	_cairo_boxes_init_for_array (&boxes, clip->boxes, clip->num_boxes);
-	_cairo_path_fixed_init_from_boxes (&path, &boxes);
-	_cairo_path_fixed_transform (&path, m);
+    _cairo_boxes_init_for_array (&boxes, clip->boxes, clip->num_boxes);
+    _cairo_path_fixed_init_from_boxes (&path, &boxes);
+    _cairo_path_fixed_transform (&path, m);
 
-	copy = _cairo_clip_intersect_path (copy, &path,
-					   CAIRO_FILL_RULE_WINDING,
-					   0.1,
-					   CAIRO_ANTIALIAS_DEFAULT);
+    copy = _cairo_clip_intersect_path (copy, &path,
+                       CAIRO_FILL_RULE_WINDING,
+                       0.1,
+                       CAIRO_ANTIALIAS_DEFAULT);
 
-	_cairo_path_fixed_fini (&path);
+    _cairo_path_fixed_fini (&path);
     }
 
     if (clip->path)
-	copy = _cairo_clip_intersect_clip_path_transformed (copy, clip->path,m);
+    copy = _cairo_clip_intersect_clip_path_transformed (copy, clip->path,m);
 
     _cairo_clip_destroy (clip);
     return copy;
@@ -591,34 +591,34 @@ _cairo_clip_copy_with_translation (const cairo_clip_t *clip, int tx, int ty)
     int fx, fy, i;
 
     if (clip == NULL || _cairo_clip_is_all_clipped (clip))
-	return (cairo_clip_t *)clip;
+    return (cairo_clip_t *)clip;
 
     if (tx == 0 && ty == 0)
-	return _cairo_clip_copy (clip);
+    return _cairo_clip_copy (clip);
 
     copy = _cairo_clip_create ();
     if (copy == NULL)
-	    return _cairo_clip_set_all_clipped (copy);
+        return _cairo_clip_set_all_clipped (copy);
 
     fx = _cairo_fixed_from_int (tx);
     fy = _cairo_fixed_from_int (ty);
 
     if (clip->num_boxes) {
-	if (clip->num_boxes == 1) {
-	    copy->boxes = &copy->embedded_box;
-	} else {
-	    copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
-	    if (unlikely (copy->boxes == NULL))
-		return _cairo_clip_set_all_clipped (copy);
-	}
+    if (clip->num_boxes == 1) {
+        copy->boxes = &copy->embedded_box;
+    } else {
+        copy->boxes = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_box_t));
+        if (unlikely (copy->boxes == NULL))
+        return _cairo_clip_set_all_clipped (copy);
+    }
 
-	for (i = 0; i < clip->num_boxes; i++) {
-	    copy->boxes[i].p1.x = clip->boxes[i].p1.x + fx;
-	    copy->boxes[i].p2.x = clip->boxes[i].p2.x + fx;
-	    copy->boxes[i].p1.y = clip->boxes[i].p1.y + fy;
-	    copy->boxes[i].p2.y = clip->boxes[i].p2.y + fy;
-	}
-	copy->num_boxes = clip->num_boxes;
+    for (i = 0; i < clip->num_boxes; i++) {
+        copy->boxes[i].p1.x = clip->boxes[i].p1.x + fx;
+        copy->boxes[i].p2.x = clip->boxes[i].p2.x + fx;
+        copy->boxes[i].p1.y = clip->boxes[i].p1.y + fy;
+        copy->boxes[i].p2.y = clip->boxes[i].p2.y + fy;
+    }
+    copy->num_boxes = clip->num_boxes;
     }
 
     copy->extents = clip->extents;
@@ -626,14 +626,14 @@ _cairo_clip_copy_with_translation (const cairo_clip_t *clip, int tx, int ty)
     copy->extents.y += ty;
 
     if (clip->path == NULL)
-	return copy;
+    return copy;
 
     return _cairo_clip_path_copy_with_translation (copy, clip->path, fx, fy);
 }
 
 cairo_bool_t
 _cairo_clip_contains_extents (const cairo_clip_t *clip,
-			      const cairo_composite_rectangles_t *extents)
+                  const cairo_composite_rectangles_t *extents)
 {
     const cairo_rectangle_int_t *rect;
 
@@ -647,40 +647,40 @@ _cairo_debug_print_clip (FILE *stream, const cairo_clip_t *clip)
     int i;
 
     if (clip == NULL) {
-	fprintf (stream, "no clip\n");
-	return;
+    fprintf (stream, "no clip\n");
+    return;
     }
 
     if (_cairo_clip_is_all_clipped (clip)) {
-	fprintf (stream, "clip: all-clipped\n");
-	return;
+    fprintf (stream, "clip: all-clipped\n");
+    return;
     }
 
     fprintf (stream, "clip:\n");
     fprintf (stream, "  extents: (%d, %d) x (%d, %d), is-region? %d",
-	     clip->extents.x, clip->extents.y,
-	     clip->extents.width, clip->extents.height,
-	     clip->is_region);
+         clip->extents.x, clip->extents.y,
+         clip->extents.width, clip->extents.height,
+         clip->is_region);
 
     fprintf (stream, "  num_boxes = %d\n", clip->num_boxes);
     for (i = 0; i < clip->num_boxes; i++) {
-	fprintf (stream, "  [%d] = (%f, %f), (%f, %f)\n", i,
-		 _cairo_fixed_to_double (clip->boxes[i].p1.x),
-		 _cairo_fixed_to_double (clip->boxes[i].p1.y),
-		 _cairo_fixed_to_double (clip->boxes[i].p2.x),
-		 _cairo_fixed_to_double (clip->boxes[i].p2.y));
+    fprintf (stream, "  [%d] = (%f, %f), (%f, %f)\n", i,
+         _cairo_fixed_to_double (clip->boxes[i].p1.x),
+         _cairo_fixed_to_double (clip->boxes[i].p1.y),
+         _cairo_fixed_to_double (clip->boxes[i].p2.x),
+         _cairo_fixed_to_double (clip->boxes[i].p2.y));
     }
 
     if (clip->path) {
-	cairo_clip_path_t *clip_path = clip->path;
-	do {
-	    fprintf (stream, "path: aa=%d, tolerance=%f, rule=%d: ",
-		     clip_path->antialias,
-		     clip_path->tolerance,
-		     clip_path->fill_rule);
-	    _cairo_debug_print_path (stream, &clip_path->path);
-	    fprintf (stream, "\n");
-	} while ((clip_path = clip_path->prev) != NULL);
+    cairo_clip_path_t *clip_path = clip->path;
+    do {
+        fprintf (stream, "path: aa=%d, tolerance=%f, rule=%d: ",
+             clip_path->antialias,
+             clip_path->tolerance,
+             clip_path->fill_rule);
+        _cairo_debug_print_path (stream, &clip_path->path);
+        fprintf (stream, "\n");
+    } while ((clip_path = clip_path->prev) != NULL);
     }
 }
 
@@ -688,10 +688,10 @@ const cairo_rectangle_int_t *
 _cairo_clip_get_extents (const cairo_clip_t *clip)
 {
     if (clip == NULL)
-	return &_cairo_unbounded_rectangle;
+    return &_cairo_unbounded_rectangle;
 
     if (_cairo_clip_is_all_clipped (clip))
-	return &_cairo_empty_rectangle;
+    return &_cairo_empty_rectangle;
 
     return &clip->extents;
 }
@@ -703,8 +703,8 @@ static const cairo_rectangle_list_t _cairo_rectangles_not_representable =
 
 static cairo_bool_t
 _cairo_clip_int_rect_to_user (cairo_gstate_t *gstate,
-			      cairo_rectangle_int_t *clip_rect,
-			      cairo_rectangle_t *user_rect)
+                  cairo_rectangle_int_t *clip_rect,
+                  cairo_rectangle_t *user_rect)
 {
     cairo_bool_t is_tight;
 
@@ -714,8 +714,8 @@ _cairo_clip_int_rect_to_user (cairo_gstate_t *gstate,
     double y2 = clip_rect->y + (int) clip_rect->height;
 
     _cairo_gstate_backend_to_user_rectangle (gstate,
-					     &x1, &y1, &x2, &y2,
-					     &is_tight);
+                         &x1, &y1, &x2, &y2,
+                         &is_tight);
 
     user_rect->x = x1;
     user_rect->y = y1;
@@ -731,14 +731,14 @@ _cairo_rectangle_list_create_in_error (cairo_status_t status)
     cairo_rectangle_list_t *list;
 
     if (status == CAIRO_STATUS_NO_MEMORY)
-	return (cairo_rectangle_list_t*) &_cairo_rectangles_nil;
+    return (cairo_rectangle_list_t*) &_cairo_rectangles_nil;
     if (status == CAIRO_STATUS_CLIP_NOT_REPRESENTABLE)
-	return (cairo_rectangle_list_t*) &_cairo_rectangles_not_representable;
+    return (cairo_rectangle_list_t*) &_cairo_rectangles_not_representable;
 
     list = malloc (sizeof (*list));
     if (unlikely (list == NULL)) {
-	status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-	return (cairo_rectangle_list_t*) &_cairo_rectangles_nil;
+    status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return (cairo_rectangle_list_t*) &_cairo_rectangles_nil;
     }
 
     list->status = status;
@@ -760,45 +760,45 @@ _cairo_clip_copy_rectangle_list (cairo_clip_t *clip, cairo_gstate_t *gstate)
     int i;
 
     if (clip == NULL)
-	return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
+    return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
 
     if (_cairo_clip_is_all_clipped (clip))
-	goto DONE;
+    goto DONE;
 
     if (! _cairo_clip_is_region (clip))
-	return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
+    return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
 
     region = _cairo_clip_get_region (clip);
     if (region == NULL)
-	return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
+    return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
 
     n_rects = cairo_region_num_rectangles (region);
     if (n_rects) {
-	rectangles = _cairo_malloc_ab (n_rects, sizeof (cairo_rectangle_t));
-	if (unlikely (rectangles == NULL)) {
-	    return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
-	}
+    rectangles = _cairo_malloc_ab (n_rects, sizeof (cairo_rectangle_t));
+    if (unlikely (rectangles == NULL)) {
+        return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
+    }
 
-	for (i = 0; i < n_rects; ++i) {
-	    cairo_rectangle_int_t clip_rect;
+    for (i = 0; i < n_rects; ++i) {
+        cairo_rectangle_int_t clip_rect;
 
-	    cairo_region_get_rectangle (region, i, &clip_rect);
+        cairo_region_get_rectangle (region, i, &clip_rect);
 
-	    if (! _cairo_clip_int_rect_to_user (gstate,
-						&clip_rect,
-						&rectangles[i]))
-	    {
-		free (rectangles);
-		return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
-	    }
-	}
+        if (! _cairo_clip_int_rect_to_user (gstate,
+                        &clip_rect,
+                        &rectangles[i]))
+        {
+        free (rectangles);
+        return ERROR_LIST (CAIRO_STATUS_CLIP_NOT_REPRESENTABLE);
+        }
+    }
     }
 
  DONE:
     list = malloc (sizeof (cairo_rectangle_list_t));
     if (unlikely (list == NULL)) {
         free (rectangles);
-	return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
+    return ERROR_LIST (CAIRO_STATUS_NO_MEMORY);
     }
 
     list->status = CAIRO_STATUS_SUCCESS;

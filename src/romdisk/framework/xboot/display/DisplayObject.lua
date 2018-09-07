@@ -13,11 +13,11 @@ local M = Class(EventDispatcher)
 -- @param height (number) The height of the display object in pixels.
 -- @return #DisplayObject
 function M:init(width, height)
-	self.super:init()
-	self.parent = nil
-	self.children = {}
-	self.object = Object.new()
-	self.object:setSize(width or 0, height or 0)
+  self.super:init()
+  self.parent = nil
+  self.children = {}
+  self.object = Object.new()
+  self.object:setSize(width or 0, height or 0)
 end
 
 ---
@@ -30,13 +30,13 @@ end
 -- @return 'true' if the child object is contained in the subtree of this 'DisplayObject'
 -- instance, otherwise 'false'.
 function M:contains(child)
-	for i, v in ipairs(self.children) do
-		if v == child then
-			return true
-		end
-	end
+  for i, v in ipairs(self.children) do
+    if v == child then
+      return true
+    end
+  end
 
-	return false
+  return false
 end
 
 ---
@@ -46,7 +46,7 @@ end
 -- @param self
 -- @return The parent display object.
 function M:getParent()
-	return self.parent
+  return self.parent
 end
 
 ---
@@ -63,19 +63,19 @@ end
 -- @param child (DisplayObject) The child display object to add.
 -- @return A value of 'true' or 'false'.
 function M:addChild(child)
-	if child == nil or self == child then
-		return false
-	end
+  if child == nil or self == child then
+    return false
+  end
 
-	if child.parent == self then
-		return false
-	end
+  if child.parent == self then
+    return false
+  end
 
-	child:removeSelf()
-	table.insert(self.children, child)
-	child.parent = self
+  child:removeSelf()
+  table.insert(self.children, child)
+  child.parent = self
 
-	return true
+  return true
 end
 
 ---
@@ -87,27 +87,27 @@ end
 -- @param child (DisplayObject) The child display object to remove.
 -- @return A value of 'true' or 'false'.
 function M:removeChild(child)
-	if child == nil or self == child then
-		return false
-	end
+  if child == nil or self == child then
+    return false
+  end
 
-	local index = 0
+  local index = 0
 
-	for i, v in ipairs(self.children) do
-		if v == child then
-			index = i
-			break
-		end
-	end
+  for i, v in ipairs(self.children) do
+    if v == child then
+      index = i
+      break
+    end
+  end
 
-	if index <= 0 then
-		return false
-	end
+  if index <= 0 then
+    return false
+  end
 
-	table.remove(self.children, index)
-	child.parent = nil
+  table.remove(self.children, index)
+  child.parent = nil
 
-	return true
+  return true
 end
 
 ---
@@ -118,13 +118,13 @@ end
 -- @param self
 -- @return A value of 'true' or 'false'.
 function M:removeSelf()
-	local parent = self.parent
+  local parent = self.parent
 
-	if parent == nil then
-		return false
-	end
+  if parent == nil then
+    return false
+  end
 
-	return parent:removeChild(self)
+  return parent:removeChild(self)
 end
 
 ---
@@ -134,20 +134,20 @@ end
 -- @param self
 -- @return A value of 'true' or 'false'.
 function M:toFront()
-	local parent = self.parent
+  local parent = self.parent
 
-	if parent == nil then
-		return false
-	end
+  if parent == nil then
+    return false
+  end
 
-	if not parent:removeChild(self) then
-		return false
-	end
+  if not parent:removeChild(self) then
+    return false
+  end
 
-	table.insert(parent.children, self)
-	self.parent = parent
+  table.insert(parent.children, self)
+  self.parent = parent
 
-	return true
+  return true
 end
 
 ---
@@ -157,20 +157,20 @@ end
 -- @param self
 -- @return A value of 'true' or 'false'.
 function M:toBack()
-	local parent = self.parent
+  local parent = self.parent
 
-	if parent == nil then
-		return false
-	end
+  if parent == nil then
+    return false
+  end
 
-	if not parent:removeChild(self) then
-		return false
-	end
+  if not parent:removeChild(self) then
+    return false
+  end
 
-	table.insert(parent.children, 1, self)
-	self.parent = parent
+  table.insert(parent.children, 1, self)
+  self.parent = parent
 
-	return true
+  return true
 end
 
 ---
@@ -181,8 +181,8 @@ end
 -- @param width (number) The width of the display object.
 -- @param height (number) The height of the display object.
 function M:setSize(width, height)
-	self.object:setSize(width, height)
-	return self
+  self.object:setSize(width, height)
+  return self
 end
 
 ---
@@ -192,7 +192,7 @@ end
 -- @param self
 -- @return The width and height of the display object.
 function M:getSize()
-	return self.object:getSize()
+  return self.object:getSize()
 end
 
 ---
@@ -202,8 +202,8 @@ end
 -- @param self
 -- @param x (number) The new x coordinate of the display object.
 function M:setX(x)
-	self.object:setX(x)
-	return self
+  self.object:setX(x)
+  return self
 end
 
 ---
@@ -213,7 +213,7 @@ end
 -- @param self
 -- @return The x coordinate of the display object.
 function M:getX()
-	return self.object:getX()
+  return self.object:getX()
 end
 
 ---
@@ -223,8 +223,8 @@ end
 -- @param self
 -- @param y (number) The new y coordinate of the display object.
 function M:setY(y)
-	self.object:setY(y)
-	return self
+  self.object:setY(y)
+  return self
 end
 
 ---
@@ -234,7 +234,7 @@ end
 -- @param self
 -- @return The y coordinate of the display object.
 function M:getY()
-	return self.object:getY()
+  return self.object:getY()
 end
 
 ---
@@ -245,8 +245,8 @@ end
 -- @param x (number) The new x coordinate of the display object.
 -- @param y (number) The new y coordinate of the display object.
 function M:setPosition(x, y)
-	self.object:setPosition(x, y)
-	return self
+  self.object:setPosition(x, y)
+  return self
 end
 
 ---
@@ -256,7 +256,7 @@ end
 -- @param self
 -- @return The x and y coordinates of the display object.
 function M:getPosition()
-	return self.object:getPosition()
+  return self.object:getPosition()
 end
 
 ---
@@ -266,8 +266,8 @@ end
 -- @param self
 -- @param rotation (number) rotation of the display object
 function M:setRotation(rotation)
-	self.object:setRotation(rotation)
-	return self
+  self.object:setRotation(rotation)
+  return self
 end
 
 ---
@@ -277,7 +277,7 @@ end
 -- @param self
 -- @return Rotation of the display object.
 function M:getRotation()
-	return self.object:getRotation()
+  return self.object:getRotation()
 end
 
 ---
@@ -287,8 +287,8 @@ end
 -- @param self
 -- @param x (number) horizontal scale of the display object
 function M:setScaleX(x)
-	self.object:setScaleX(x)
-	return self
+  self.object:setScaleX(x)
+  return self
 end
 
 ---
@@ -298,7 +298,7 @@ end
 -- @param self
 -- @return The horizontal scale (percentage) of the display object.
 function M:getScaleX()
-	return self.object:getScaleX()
+  return self.object:getScaleX()
 end
 
 ---
@@ -308,8 +308,8 @@ end
 -- @param self
 -- @param y (number) vertical scale of the display object
 function M:setScaleY(y)
-	self.object:setScaleY(y)
-	return self
+  self.object:setScaleY(y)
+  return self
 end
 
 ---
@@ -319,7 +319,7 @@ end
 -- @param self
 -- @return The vertical scale of the display object.
 function M:getScaleY()
-	return self.object:getScaleY()
+  return self.object:getScaleY()
 end
 
 ---
@@ -330,8 +330,8 @@ end
 -- @param x (number) horizontal scale (percentage) of the display object
 -- @param y (number) vertical scale (percentage) of the display object
 function M:setScale(x, y)
-	self.object:setScale(x, y or x)
-	return self
+  self.object:setScale(x, y or x)
+  return self
 end
 
 ---
@@ -341,7 +341,7 @@ end
 -- @param self
 -- @return The horizontal and vertical scales of the display object
 function M:getScale()
-	return self.object:getScale()
+  return self.object:getScale()
 end
 
 ---
@@ -352,8 +352,8 @@ end
 -- @param x (number) The horizontal percentage of anchor point.
 -- @param y (number) The vertical percentage of anchor point.
 function M:setAnchor(x, y)
-	self.object:setAnchor(x, y or x)
-	return self
+  self.object:setAnchor(x, y or x)
+  return self
 end
 
 ---
@@ -363,7 +363,7 @@ end
 -- @param self
 -- @return The anchor point of the display object in percentage.
 function M:getAnchor()
-	return self.object:getAnchor()
+  return self.object:getAnchor()
 end
 
 ---
@@ -373,8 +373,8 @@ end
 -- @param self
 -- @param alpha (number) The new alpha transparency of the display object
 function M:setAlpha(alpha)
-	self.object:setAlpha(alpha)
-	return self
+  self.object:setAlpha(alpha)
+  return self
 end
 
 ---
@@ -384,7 +384,7 @@ end
 -- @param self
 -- @return The alpha of the display object
 function M:getAlpha()
-	return self.object:getAlpha()
+  return self.object:getAlpha()
 end
 
 ---
@@ -394,8 +394,8 @@ end
 -- @param self
 -- @param align the alignment of display object
 function M:setAlignment(align)
-	self.object:setAlignment(align)
-	return self
+  self.object:setAlignment(align)
+  return self
 end
 
 ---
@@ -405,7 +405,7 @@ end
 -- @param self
 -- @return the alignment of display object
 function M:getAlignment()
-	return self.object:getAlignment()
+  return self.object:getAlignment()
 end
 
 ---
@@ -416,8 +416,8 @@ end
 -- @param self
 -- @param visible (bool) whether or not the display object is visible
 function M:setVisible(visible)
-	self.object:setVisible(visible)
-	return self
+  self.object:setVisible(visible)
+  return self
 end
 
 ---
@@ -427,7 +427,7 @@ end
 -- @param self
 -- @return A value of 'true' if display object is visible; 'false' otherwise.
 function M:getVisible()
-	return self.object:getVisible()
+  return self.object:getVisible()
 end
 
 ---
@@ -437,8 +437,8 @@ end
 -- @param self
 -- @param touchable (bool) whether or not the display object is touchable
 function M:setTouchable(touchable)
-	self.object:setTouchable(touchable)
-	return self
+  self.object:setTouchable(touchable)
+  return self
 end
 
 ---
@@ -448,7 +448,7 @@ end
 -- @param self
 -- @return A value of 'true' if display object is touchable; 'false' otherwise.
 function M:getTouchable()
-	return self.object:getTouchable()
+  return self.object:getTouchable()
 end
 ---
 -- Update cache matrix that represents the transformation from the local coordinate system to another.
@@ -457,14 +457,14 @@ end
 -- @param self
 -- @param target (optional) The destination space of the transformation, nil for the screen space.
 function M:updateTransformMatrix(target)
-	local o = self.parent
+  local o = self.parent
 
-	self.object:initTransormMatrix()
-	while(o and o ~= target) do
-		self.object:upateTransformMatrix(o.object)
-		o = o.parent
-	end
-	return self
+  self.object:initTransormMatrix()
+  while(o and o ~= target) do
+    self.object:upateTransformMatrix(o.object)
+    o = o.parent
+  end
+  return self
 end
 
 ---
@@ -475,8 +475,8 @@ end
 -- @param target (optional) The destination space of the transformation, nil for the screen space.
 -- @return The transformation matrix of the display object to another
 function M:getTransformMatrix(target)
-	self:updateTransformMatrix(target)
-	return self.object:getTransformMatrix()
+  self:updateTransformMatrix(target)
+  return self.object:getTransformMatrix()
 end
 
 ---
@@ -490,8 +490,8 @@ end
 -- @return x coordinate relative to the display object.
 -- @return y coordinate relative to the display object.
 function M:globalToLocal(x, y, target)
-	self:updateTransformMatrix(target)
-	return self.object:globalToLocal(x, y)
+  self:updateTransformMatrix(target)
+  return self.object:globalToLocal(x, y)
 end
 
 ---
@@ -505,8 +505,8 @@ end
 -- @return x coordinate relative to the display area.
 -- @return y coordinate relative to the display area.
 function M:localToGlobal(x, y, target)
-	self:updateTransformMatrix(target)
-	return self.object:localToGlobal(x, y)
+  self:updateTransformMatrix(target)
+  return self.object:localToGlobal(x, y)
 end
 
 ---
@@ -519,12 +519,12 @@ end
 -- @param target (DisplayObject) The display object that defines the other coordinate system to transform
 -- @return 'true' if the given global coordinates are in bounds of the display object, 'false' otherwise.
 function M:hitTestPoint(x, y, target)
-	if self:getVisible() and self:getTouchable() then
-		self:updateTransformMatrix(target)
-		return self.object:hitTestPoint(x, y)
-	else
-		return false
-	end
+  if self:getVisible() and self:getTouchable() then
+    self:updateTransformMatrix(target)
+    return self.object:hitTestPoint(x, y)
+  else
+    return false
+  end
 end
 
 ---
@@ -536,8 +536,8 @@ end
 -- @param target (DisplayObject) The display object that defines the other coordinate system to transform
 -- @return area has 4 values as x, y, w and h of bounds
 function M:getBounds(target)
-	self:updateTransformMatrix(target)
-	return self.object:bounds()
+  self:updateTransformMatrix(target)
+  return self.object:bounds()
 end
 
 ---
@@ -550,114 +550,114 @@ end
 -- @param easing (#Easing) The string indicating which easing function to use for transition.
 -- The following easing functions can be used:
 -- "linear"
--- "inSine"		"outSine"		"inOutSine"
--- "inQuad"		"outQuad"		"inOutQuad"
--- "inCubic"	"outCubic"		"inOutCubic"
--- "inQuart"	"outQuart"		"inOutQuart"
--- "inQuint"	"outQuint"		"inOutQuint"
--- "inExpo"		"outExpo"		"inOutExpo"
--- "inCirc"		"outCirc"		"inOutCirc"
--- "inBack"		"outBack"		"inOutBack"
--- "inElastic"	"outElastic"	"inOutElastic"
--- "inBounce"	"outBounce"		"inOutBounce"
+-- "inSine"   "outSine"   "inOutSine"
+-- "inQuad"   "outQuad"   "inOutQuad"
+-- "inCubic"  "outCubic"    "inOutCubic"
+-- "inQuart"  "outQuart"    "inOutQuart"
+-- "inQuint"  "outQuint"    "inOutQuint"
+-- "inExpo"   "outExpo"   "inOutExpo"
+-- "inCirc"   "outCirc"   "inOutCirc"
+-- "inBack"   "outBack"   "inOutBack"
+-- "inElastic"  "outElastic"  "inOutElastic"
+-- "inBounce" "outBounce"   "inOutBounce"
 function M:animate(properties, duration, easing)
-	local function __animate_listener(d, e)
-		if d.__animate ~= true then
-			d:removeEventListener(Event.ENTER_FRAME, __animate_listener, d)
-			d.__duration = nil
-			d.__tween = nil
-			d.__watch = nil
-			d.__animate = nil
-			return
-		end
+  local function __animate_listener(d, e)
+    if d.__animate ~= true then
+      d:removeEventListener(Event.ENTER_FRAME, __animate_listener, d)
+      d.__duration = nil
+      d.__tween = nil
+      d.__watch = nil
+      d.__animate = nil
+      return
+    end
 
-		local elapsed = d.__watch:elapsed()
+    local elapsed = d.__watch:elapsed()
 
-		if elapsed > d.__duration then
-			elapsed = d.__duration
-		end
+    if elapsed > d.__duration then
+      elapsed = d.__duration
+    end
 
-		for k, v in pairs(d.__tween) do
-			if k == "x" then
-				d:setX(v:easing(elapsed))
-			elseif k == "y" then
-				d:setY(v:easing(elapsed))
-			elseif k == "rotation" then
-				d:setRotation(v:easing(elapsed))
-			elseif k == "scalex" then
-				d:setScaleX(v:easing(elapsed))
-			elseif k == "scaley" then
-				d:setScaleY(v:easing(elapsed))
-			elseif k == "alpha" then
-				d:setAlpha(v:easing(elapsed))
-			end
-		end
+    for k, v in pairs(d.__tween) do
+      if k == "x" then
+        d:setX(v:easing(elapsed))
+      elseif k == "y" then
+        d:setY(v:easing(elapsed))
+      elseif k == "rotation" then
+        d:setRotation(v:easing(elapsed))
+      elseif k == "scalex" then
+        d:setScaleX(v:easing(elapsed))
+      elseif k == "scaley" then
+        d:setScaleY(v:easing(elapsed))
+      elseif k == "alpha" then
+        d:setAlpha(v:easing(elapsed))
+      end
+    end
 
-		if elapsed >= d.__duration then
-			d:removeEventListener(Event.ENTER_FRAME, __animate_listener, d)
-			self:dispatchEvent(Event.new(Event.ANIMATE_COMPLETE))
-			d.__duration = nil
-			d.__tween = nil
-			d.__watch = nil
-			d.__animate = nil
-		end
-	end
+    if elapsed >= d.__duration then
+      d:removeEventListener(Event.ENTER_FRAME, __animate_listener, d)
+      self:dispatchEvent(Event.new(Event.ANIMATE_COMPLETE))
+      d.__duration = nil
+      d.__tween = nil
+      d.__watch = nil
+      d.__animate = nil
+    end
+  end
 
-	if self.__animate == true then
-		self:removeEventListener(Event.ENTER_FRAME, __animate_listener, self)
-		self:dispatchEvent(Event.new(Event.ANIMATE_COMPLETE))
-		self.__duration = nil
-		self.__tween = nil
-		self.__watch = nil
-		self.__animate = nil
-	end
+  if self.__animate == true then
+    self:removeEventListener(Event.ENTER_FRAME, __animate_listener, self)
+    self:dispatchEvent(Event.new(Event.ANIMATE_COMPLETE))
+    self.__duration = nil
+    self.__tween = nil
+    self.__watch = nil
+    self.__animate = nil
+  end
 
-	if not properties or type(properties) ~= "table" or not next(properties) then
-		return self
-	end
+  if not properties or type(properties) ~= "table" or not next(properties) then
+    return self
+  end
 
-	if duration and duration <= 0 then
-		return self
-	end
+  if duration and duration <= 0 then
+    return self
+  end
 
-	self.__duration = duration or 1
-	self.__tween = {}
-	
-	for k, v in pairs(properties) do
-		local b = nil
+  self.__duration = duration or 1
+  self.__tween = {}
+  
+  for k, v in pairs(properties) do
+    local b = nil
 
-		if k == "x" then
-			b = self:getX()
-		elseif k == "y" then
-			b = self:getY()
-		elseif k == "rotation" then
-			b = self:getRotation()
-		elseif k == "scalex" then
-			b = self:getScaleX()
-		elseif k == "scaley" then
-			b = self:getScaleY()
-		elseif k == "alpha" then
-			b = self:getAlpha()
-		end
+    if k == "x" then
+      b = self:getX()
+    elseif k == "y" then
+      b = self:getY()
+    elseif k == "rotation" then
+      b = self:getRotation()
+    elseif k == "scalex" then
+      b = self:getScaleX()
+    elseif k == "scaley" then
+      b = self:getScaleY()
+    elseif k == "alpha" then
+      b = self:getAlpha()
+    end
 
-		if b ~= nil then
-			self.__tween[k] = Easing.new(b, v - b, self.__duration, easing)
-		end
-	end
+    if b ~= nil then
+      self.__tween[k] = Easing.new(b, v - b, self.__duration, easing)
+    end
+  end
 
-	if not next(self.__tween) then
-		self:removeEventListener(Event.ENTER_FRAME, __animate_listener, self)
-		self.__duration = nil
-		self.__tween = nil
-		self.__watch = nil
-		self.__animate = nil
-	else
-		self:addEventListener(Event.ENTER_FRAME, __animate_listener, self)
-		self.__watch = Stopwatch.new()
-		self.__animate = true
-	end
-	
-	return self
+  if not next(self.__tween) then
+    self:removeEventListener(Event.ENTER_FRAME, __animate_listener, self)
+    self.__duration = nil
+    self.__tween = nil
+    self.__watch = nil
+    self.__animate = nil
+  else
+    self:addEventListener(Event.ENTER_FRAME, __animate_listener, self)
+    self.__watch = Stopwatch.new()
+    self.__animate = true
+  end
+  
+  return self
 end
 
 ---
@@ -666,13 +666,13 @@ end
 -- @function [parent=#DisplayObject] layout
 -- @param self
 function M:layout()
-	local x1, y1, x2, y2
-	for i, v in ipairs(self.children) do
-		if v:getVisible() then
-			x1, y1, x2, y2 = self.object:layout(v.object, x1, y1, x2, y2)
-			v:layout()
-		end
-	end
+  local x1, y1, x2, y2
+  for i, v in ipairs(self.children) do
+    if v:getVisible() then
+      x1, y1, x2, y2 = self.object:layout(v.object, x1, y1, x2, y2)
+      v:layout()
+    end
+  end
 end
 
 ---
@@ -692,15 +692,15 @@ end
 -- @param display (Display) The context of the screen.
 -- @param event (Event) The 'Event' object to be dispatched.
 function M:render(display, event)
-	self:dispatchEvent(event)
+  self:dispatchEvent(event)
 
-	if self:getVisible() then
-		self:__draw(display)
-	end
+  if self:getVisible() then
+    self:__draw(display)
+  end
 
-	for i, v in ipairs(self.children) do
-		v:render(display, event)
-	end
+  for i, v in ipairs(self.children) do
+    v:render(display, event)
+  end
 end
 
 ---
@@ -710,13 +710,13 @@ end
 -- @param self
 -- @param event (Event) The 'Event' object to be dispatched.
 function M:dispatch(event)
-	local children = self.children
+  local children = self.children
 
-	for i = #children, 1, -1 do
-		children[i]:dispatch(event)
-	end
+  for i = #children, 1, -1 do
+    children[i]:dispatch(event)
+  end
 
-	self:dispatchEvent(event)
+  self:dispatchEvent(event)
 end
 
 return M

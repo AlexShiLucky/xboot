@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  *      Joonas Pihlaja <jpihlaja@cc.helsinki.fi>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -45,7 +45,7 @@
 
 static cairo_int_status_t
 _cairo_no_compositor_paint (const cairo_compositor_t *_compositor,
-			    cairo_composite_rectangles_t *extents)
+                cairo_composite_rectangles_t *extents)
 {
     ASSERT_NOT_REACHED;
     return CAIRO_INT_STATUS_NOTHING_TO_DO;
@@ -53,7 +53,7 @@ _cairo_no_compositor_paint (const cairo_compositor_t *_compositor,
 
 static cairo_int_status_t
 _cairo_no_compositor_mask (const cairo_compositor_t *compositor,
-			   cairo_composite_rectangles_t *extents)
+               cairo_composite_rectangles_t *extents)
 {
     ASSERT_NOT_REACHED;
     return CAIRO_INT_STATUS_NOTHING_TO_DO;
@@ -61,13 +61,13 @@ _cairo_no_compositor_mask (const cairo_compositor_t *compositor,
 
 static cairo_int_status_t
 _cairo_no_compositor_stroke (const cairo_compositor_t *_compositor,
-			     cairo_composite_rectangles_t *extents,
-			     const cairo_path_fixed_t	*path,
-			     const cairo_stroke_style_t	*style,
-			     const cairo_matrix_t	*ctm,
-			     const cairo_matrix_t	*ctm_inverse,
-			     double		 tolerance,
-			     cairo_antialias_t	 antialias)
+                 cairo_composite_rectangles_t *extents,
+                 const cairo_path_fixed_t   *path,
+                 const cairo_stroke_style_t *style,
+                 const cairo_matrix_t   *ctm,
+                 const cairo_matrix_t   *ctm_inverse,
+                 double      tolerance,
+                 cairo_antialias_t   antialias)
 {
     ASSERT_NOT_REACHED;
     return CAIRO_INT_STATUS_NOTHING_TO_DO;
@@ -75,11 +75,11 @@ _cairo_no_compositor_stroke (const cairo_compositor_t *_compositor,
 
 static cairo_int_status_t
 _cairo_no_compositor_fill (const cairo_compositor_t *_compositor,
-			   cairo_composite_rectangles_t *extents,
-			   const cairo_path_fixed_t	*path,
-			   cairo_fill_rule_t	 fill_rule,
-			   double			 tolerance,
-			   cairo_antialias_t	 antialias)
+               cairo_composite_rectangles_t *extents,
+               const cairo_path_fixed_t *path,
+               cairo_fill_rule_t     fill_rule,
+               double            tolerance,
+               cairo_antialias_t     antialias)
 {
     ASSERT_NOT_REACHED;
     return CAIRO_INT_STATUS_NOTHING_TO_DO;
@@ -87,11 +87,11 @@ _cairo_no_compositor_fill (const cairo_compositor_t *_compositor,
 
 static cairo_int_status_t
 _cairo_no_compositor_glyphs (const cairo_compositor_t *compositor,
-			     cairo_composite_rectangles_t *extents,
-			     cairo_scaled_font_t	*scaled_font,
-			     cairo_glyph_t		*glyphs,
-			     int			 num_glyphs,
-			     cairo_bool_t overlap)
+                 cairo_composite_rectangles_t *extents,
+                 cairo_scaled_font_t    *scaled_font,
+                 cairo_glyph_t      *glyphs,
+                 int             num_glyphs,
+                 cairo_bool_t overlap)
 {
     ASSERT_NOT_REACHED;
     return CAIRO_INT_STATUS_NOTHING_TO_DO;

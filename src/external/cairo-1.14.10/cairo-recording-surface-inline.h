@@ -30,8 +30,8 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #ifndef CAIRO_RECORDING_SURFACE_INLINE_H
@@ -41,11 +41,11 @@
 
 static inline cairo_bool_t
 _cairo_recording_surface_get_bounds (cairo_surface_t *surface,
-				     cairo_rectangle_t *extents)
+                     cairo_rectangle_t *extents)
 {
     cairo_recording_surface_t *recording = (cairo_recording_surface_t *)surface;
     if (recording->unbounded)
-	return FALSE;
+    return FALSE;
 
     *extents = recording->extents_pixels;
     return TRUE;

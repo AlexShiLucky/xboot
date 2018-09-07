@@ -31,7 +31,7 @@
  * California.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_REFRENCE_COUNT_PRIVATE_H

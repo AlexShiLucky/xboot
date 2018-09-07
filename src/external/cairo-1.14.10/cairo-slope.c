@@ -31,7 +31,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -65,18 +65,18 @@ _cairo_slope_compare (const cairo_slope_t *a, const cairo_slope_t *b)
 
     cmp = _cairo_int64_cmp (ady_bdx, bdy_adx);
     if (cmp)
-	return cmp;
+    return cmp;
 
     /* special-case zero vectors.  the intended logic here is:
      * zero vectors all compare equal, and more positive than any
      * non-zero vector.
      */
     if (a->dx == 0 && a->dy == 0 && b->dx == 0 && b->dy ==0)
-	return 0;
+    return 0;
     if (a->dx == 0 && a->dy == 0)
-	return 1;
+    return 1;
     if (b->dx == 0 && b->dy ==0)
-	return -1;
+    return -1;
 
     /* Finally, we're looking at two vectors that are either equal or
      * that differ by exactly pi. We can identify the "differ by pi"
@@ -88,10 +88,10 @@ _cairo_slope_compare (const cairo_slope_t *a, const cairo_slope_t *b)
      * always be considered less than 'b').
      */
     if ((a->dx ^ b->dx) < 0 || (a->dy ^ b->dy) < 0) {
-	if (a->dx > 0 || (a->dx == 0 && a->dy > 0))
-	    return -1;
-	else
-	    return +1;
+    if (a->dx > 0 || (a->dx == 0 && a->dy > 0))
+        return -1;
+    else
+        return +1;
     }
 
     /* Finally, for identical slopes, we obviously return 0. */

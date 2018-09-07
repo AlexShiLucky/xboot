@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -62,18 +62,18 @@ _cairo_stock_color (cairo_stock_t stock)
 {
     switch (stock) {
     case CAIRO_STOCK_WHITE:
-	return &cairo_color_white;
+    return &cairo_color_white;
     case CAIRO_STOCK_BLACK:
-	return &cairo_color_black;
+    return &cairo_color_black;
     case CAIRO_STOCK_TRANSPARENT:
-	return &cairo_color_transparent;
+    return &cairo_color_transparent;
 
     case CAIRO_STOCK_NUM_COLORS:
     default:
-	ASSERT_NOT_REACHED;
-	/* If the user can get here somehow, give a color that indicates a
-	 * problem. */
-	return &cairo_color_magenta;
+    ASSERT_NOT_REACHED;
+    /* If the user can get here somehow, give a color that indicates a
+     * problem. */
+    return &cairo_color_magenta;
     }
 }
 
@@ -98,8 +98,8 @@ _cairo_color_compute_shorts (cairo_color_t *color)
 
 void
 _cairo_color_init_rgba (cairo_color_t *color,
-			double red, double green, double blue,
-			double alpha)
+            double red, double green, double blue,
+            double alpha)
 {
     color->red   = red;
     color->green = green;
@@ -111,7 +111,7 @@ _cairo_color_init_rgba (cairo_color_t *color,
 
 void
 _cairo_color_multiply_alpha (cairo_color_t *color,
-			     double	    alpha)
+                 double     alpha)
 {
     color->alpha *= alpha;
 
@@ -120,10 +120,10 @@ _cairo_color_multiply_alpha (cairo_color_t *color,
 
 void
 _cairo_color_get_rgba (cairo_color_t *color,
-		       double	     *red,
-		       double	     *green,
-		       double	     *blue,
-		       double	     *alpha)
+               double        *red,
+               double        *green,
+               double        *blue,
+               double        *alpha)
 {
     *red   = color->red;
     *green = color->green;
@@ -133,10 +133,10 @@ _cairo_color_get_rgba (cairo_color_t *color,
 
 void
 _cairo_color_get_rgba_premultiplied (cairo_color_t *color,
-				     double	   *red,
-				     double	   *green,
-				     double	   *blue,
-				     double	   *alpha)
+                     double    *red,
+                     double    *green,
+                     double    *blue,
+                     double    *alpha)
 {
     *red   = color->red   * color->alpha;
     *green = color->green * color->alpha;
@@ -147,10 +147,10 @@ _cairo_color_get_rgba_premultiplied (cairo_color_t *color,
 /* NB: This function works both for unmultiplied and premultiplied colors */
 cairo_bool_t
 _cairo_color_equal (const cairo_color_t *color_a,
-	            const cairo_color_t *color_b)
+                const cairo_color_t *color_b)
 {
     if (color_a == color_b)
-	return TRUE;
+    return TRUE;
 
     if (color_a->alpha_short != color_b->alpha_short)
         return FALSE;
@@ -165,10 +165,10 @@ _cairo_color_equal (const cairo_color_t *color_a,
 
 cairo_bool_t
 _cairo_color_stop_equal (const cairo_color_stop_t *color_a,
-			 const cairo_color_stop_t *color_b)
+             const cairo_color_stop_t *color_b)
 {
     if (color_a == color_b)
-	return TRUE;
+    return TRUE;
 
     return color_a->alpha_short == color_b->alpha_short &&
            color_a->red_short   == color_b->red_short   &&
@@ -183,8 +183,8 @@ _cairo_color_get_content (const cairo_color_t *color)
         return CAIRO_CONTENT_COLOR;
 
     if (color->red_short == 0 &&
-	color->green_short == 0 &&
-	color->blue_short == 0)
+    color->green_short == 0 &&
+    color->blue_short == 0)
     {
         return CAIRO_CONTENT_ALPHA;
     }

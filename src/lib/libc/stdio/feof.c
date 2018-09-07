@@ -6,6 +6,6 @@
 
 int feof(FILE * f)
 {
-	return f->eof;
+    return f->eof;
 }
 EXPORT_SYMBOL(feof);

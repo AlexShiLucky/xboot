@@ -6,9 +6,9 @@ extern "C" {
 #endif
 
 enum {
-	DMA_BIDIRECTIONAL	= 0,
-	DMA_TO_DEVICE		= 1,
-	DMA_FROM_DEVICE		= 2,
+    DMA_BIDIRECTIONAL   = 0,
+    DMA_TO_DEVICE       = 1,
+    DMA_FROM_DEVICE     = 2,
 };
 
 void * dma_alloc_coherent(unsigned long size);

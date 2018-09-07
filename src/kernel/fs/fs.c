@@ -34,10 +34,10 @@
  * 全局文件系统链表
  */
 static struct fs_list __fs_list = {
-	.entry = {
-		.next	= &(__fs_list.entry),
-		.prev	= &(__fs_list.entry),
-	},
+    .entry = {
+        .next   = &(__fs_list.entry),
+        .prev   = &(__fs_list.entry),
+    },
 };
 struct fs_list * fs_list = &__fs_list;
 
@@ -47,20 +47,20 @@ struct fs_list * fs_list = &__fs_list;
  */
 struct filesystem_t * filesystem_search(const char * name)
 {
-	struct fs_list * list;
-	struct list_head * pos;
+    struct fs_list * list;
+    struct list_head * pos;
 
-	if(!name)
-		return NULL;
+    if(!name)
+        return NULL;
 
-	for(pos = (&fs_list->entry)->next; pos != (&fs_list->entry); pos = pos->next)
-	{
-		list = list_entry(pos, struct fs_list, entry);
-		if(strcmp(list->fs->name, name) == 0)
-			return list->fs;
-	}
+    for(pos = (&fs_list->entry)->next; pos != (&fs_list->entry); pos = pos->next)
+    {
+        list = list_entry(pos, struct fs_list, entry);
+        if(strcmp(list->fs->name, name) == 0)
+            return list->fs;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /*
@@ -69,25 +69,25 @@ struct filesystem_t * filesystem_search(const char * name)
  */
 bool_t filesystem_register(struct filesystem_t * fs)
 {
-	struct fs_list * list;
+    struct fs_list * list;
 
-	list = malloc(sizeof(struct fs_list));
-	if(!list || !fs)
-	{
-		free(list);
-		return FALSE;
-	}
+    list = malloc(sizeof(struct fs_list));
+    if(!list || !fs)
+    {
+        free(list);
+        return FALSE;
+    }
 
-	if(!fs->name || filesystem_search(fs->name))
-	{
-		free(list);
-		return FALSE;
-	}
+    if(!fs->name || filesystem_search(fs->name))
+    {
+        free(list);
+        return FALSE;
+    }
 
-	list->fs = fs;
-	list_add(&list->entry, &fs_list->entry);
+    list->fs = fs;
+    list_add(&list->entry, &fs_list->entry);
 
-	return TRUE;
+    return TRUE;
 }
 
 /*
@@ -96,22 +96,22 @@ bool_t filesystem_register(struct filesystem_t * fs)
  */
 bool_t filesystem_unregister(struct filesystem_t * fs)
 {
-	struct fs_list * list;
-	struct list_head * pos;
+    struct fs_list * list;
+    struct list_head * pos;
 
-	if(!fs || !fs->name)
-		return FALSE;
+    if(!fs || !fs->name)
+        return FALSE;
 
-	for(pos = (&fs_list->entry)->next; pos != (&fs_list->entry); pos = pos->next)
-	{
-		list = list_entry(pos, struct fs_list, entry);
-		if(list->fs == fs)
-		{
-			list_del(pos);
-			free(list);
-			return TRUE;
-		}
-	}
+    for(pos = (&fs_list->entry)->next; pos != (&fs_list->entry); pos = pos->next)
+    {
+        list = list_entry(pos, struct fs_list, entry);
+        if(list->fs == fs)
+        {
+            list_del(pos);
+            free(list);
+            return TRUE;
+        }
+    }
 
-	return FALSE;
+    return FALSE;
 }

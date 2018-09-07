@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Chris Wilson.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -49,10 +49,10 @@ typedef struct cairo_in_fill {
 } cairo_in_fill_t;
 
 static void
-_cairo_in_fill_init (cairo_in_fill_t	*in_fill,
-		     double		 tolerance,
-		     double		 x,
-		     double		 y)
+_cairo_in_fill_init (cairo_in_fill_t    *in_fill,
+             double      tolerance,
+             double      x,
+             double      y)
 {
     in_fill->on_edge = FALSE;
     in_fill->winding = 0;
@@ -73,9 +73,9 @@ _cairo_in_fill_fini (cairo_in_fill_t *in_fill)
 
 static int
 edge_compare_for_y_against_x (const cairo_point_t *p1,
-			      const cairo_point_t *p2,
-			      cairo_fixed_t y,
-			      cairo_fixed_t x)
+                  const cairo_point_t *p2,
+                  cairo_fixed_t y,
+                  cairo_fixed_t x)
 {
     cairo_fixed_t adx, ady;
     cairo_fixed_t dx, dy;
@@ -85,9 +85,9 @@ edge_compare_for_y_against_x (const cairo_point_t *p1,
     dx = x - p1->x;
 
     if (adx == 0)
-	return -dx;
+    return -dx;
     if ((adx ^ dx) < 0)
-	return adx;
+    return adx;
 
     dy = y - p1->y;
     ady = p2->y - p1->y;
@@ -100,65 +100,65 @@ edge_compare_for_y_against_x (const cairo_point_t *p1,
 
 static void
 _cairo_in_fill_add_edge (cairo_in_fill_t *in_fill,
-			 const cairo_point_t *p1,
-			 const cairo_point_t *p2)
+             const cairo_point_t *p1,
+             const cairo_point_t *p2)
 {
     int dir;
 
     if (in_fill->on_edge)
-	return;
+    return;
 
     /* count the number of edge crossing to -∞ */
 
     dir = 1;
     if (p2->y < p1->y) {
-	const cairo_point_t *tmp;
+    const cairo_point_t *tmp;
 
-	tmp = p1;
-	p1 = p2;
-	p2 = tmp;
+    tmp = p1;
+    p1 = p2;
+    p2 = tmp;
 
-	dir = -1;
+    dir = -1;
     }
 
     /* First check whether the query is on an edge */
     if ((p1->x == in_fill->x && p1->y == in_fill->y) ||
-	(p2->x == in_fill->x && p2->y == in_fill->y) ||
-	(! (p2->y < in_fill->y || p1->y > in_fill->y ||
-	   (p1->x > in_fill->x && p2->x > in_fill->x) ||
-	   (p1->x < in_fill->x && p2->x < in_fill->x)) &&
-	 edge_compare_for_y_against_x (p1, p2, in_fill->y, in_fill->x) == 0))
+    (p2->x == in_fill->x && p2->y == in_fill->y) ||
+    (! (p2->y < in_fill->y || p1->y > in_fill->y ||
+       (p1->x > in_fill->x && p2->x > in_fill->x) ||
+       (p1->x < in_fill->x && p2->x < in_fill->x)) &&
+     edge_compare_for_y_against_x (p1, p2, in_fill->y, in_fill->x) == 0))
     {
-	in_fill->on_edge = TRUE;
-	return;
+    in_fill->on_edge = TRUE;
+    return;
     }
 
     /* edge is entirely above or below, note the shortening rule */
     if (p2->y <= in_fill->y || p1->y > in_fill->y)
-	return;
+    return;
 
     /* edge lies wholly to the right */
     if (p1->x >= in_fill->x && p2->x >= in_fill->x)
-	return;
+    return;
 
     if ((p1->x <= in_fill->x && p2->x <= in_fill->x) ||
-	edge_compare_for_y_against_x (p1, p2, in_fill->y, in_fill->x) < 0)
+    edge_compare_for_y_against_x (p1, p2, in_fill->y, in_fill->x) < 0)
     {
-	in_fill->winding += dir;
+    in_fill->winding += dir;
     }
 }
 
 static cairo_status_t
 _cairo_in_fill_move_to (void *closure,
-			const cairo_point_t *point)
+            const cairo_point_t *point)
 {
     cairo_in_fill_t *in_fill = closure;
 
     /* implicit close path */
     if (in_fill->has_current_point) {
-	_cairo_in_fill_add_edge (in_fill,
-				 &in_fill->current_point,
-				 &in_fill->first_point);
+    _cairo_in_fill_add_edge (in_fill,
+                 &in_fill->current_point,
+                 &in_fill->first_point);
     }
 
     in_fill->first_point = *point;
@@ -170,12 +170,12 @@ _cairo_in_fill_move_to (void *closure,
 
 static cairo_status_t
 _cairo_in_fill_line_to (void *closure,
-			const cairo_point_t *point)
+            const cairo_point_t *point)
 {
     cairo_in_fill_t *in_fill = closure;
 
     if (in_fill->has_current_point)
-	_cairo_in_fill_add_edge (in_fill, &in_fill->current_point, point);
+    _cairo_in_fill_add_edge (in_fill, &in_fill->current_point, point);
 
     in_fill->current_point = *point;
     in_fill->has_current_point = TRUE;
@@ -185,9 +185,9 @@ _cairo_in_fill_line_to (void *closure,
 
 static cairo_status_t
 _cairo_in_fill_curve_to (void *closure,
-			 const cairo_point_t *b,
-			 const cairo_point_t *c,
-			 const cairo_point_t *d)
+             const cairo_point_t *b,
+             const cairo_point_t *c,
+             const cairo_point_t *d)
 {
     cairo_in_fill_t *in_fill = closure;
     cairo_spline_t spline;
@@ -202,8 +202,8 @@ _cairo_in_fill_curve_to (void *closure,
     if (d->y < top) top = d->y;
     if (d->y > bot) bot = d->y;
     if (bot < in_fill->y || top > in_fill->y) {
-	in_fill->current_point = *d;
-	return CAIRO_STATUS_SUCCESS;
+    in_fill->current_point = *d;
+    return CAIRO_STATUS_SUCCESS;
     }
 
     left = in_fill->current_point.x;
@@ -211,17 +211,17 @@ _cairo_in_fill_curve_to (void *closure,
     if (c->x < left) left = c->x;
     if (d->x < left) left = d->x;
     if (left > in_fill->x) {
-	in_fill->current_point = *d;
-	return CAIRO_STATUS_SUCCESS;
+    in_fill->current_point = *d;
+    return CAIRO_STATUS_SUCCESS;
     }
 
     /* XXX Investigate direct inspection of the inflections? */
     if (! _cairo_spline_init (&spline,
-			      (cairo_spline_add_point_func_t)_cairo_in_fill_line_to,
-			      in_fill,
-			      &in_fill->current_point, b, c, d))
+                  (cairo_spline_add_point_func_t)_cairo_in_fill_line_to,
+                  in_fill,
+                  &in_fill->current_point, b, c, d))
     {
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
     }
 
     return _cairo_spline_decompose (&spline, in_fill->tolerance);
@@ -233,55 +233,55 @@ _cairo_in_fill_close_path (void *closure)
     cairo_in_fill_t *in_fill = closure;
 
     if (in_fill->has_current_point) {
-	_cairo_in_fill_add_edge (in_fill,
-				 &in_fill->current_point,
-				 &in_fill->first_point);
+    _cairo_in_fill_add_edge (in_fill,
+                 &in_fill->current_point,
+                 &in_fill->first_point);
 
-	in_fill->has_current_point = FALSE;
+    in_fill->has_current_point = FALSE;
     }
 
     return CAIRO_STATUS_SUCCESS;
 }
 
 cairo_bool_t
-_cairo_path_fixed_in_fill (const cairo_path_fixed_t	*path,
-			   cairo_fill_rule_t	 fill_rule,
-			   double		 tolerance,
-			   double		 x,
-			   double		 y)
+_cairo_path_fixed_in_fill (const cairo_path_fixed_t *path,
+               cairo_fill_rule_t     fill_rule,
+               double        tolerance,
+               double        x,
+               double        y)
 {
     cairo_in_fill_t in_fill;
     cairo_status_t status;
     cairo_bool_t is_inside;
 
     if (_cairo_path_fixed_fill_is_empty (path))
-	return FALSE;
+    return FALSE;
 
     _cairo_in_fill_init (&in_fill, tolerance, x, y);
 
     status = _cairo_path_fixed_interpret (path,
-					  _cairo_in_fill_move_to,
-					  _cairo_in_fill_line_to,
-					  _cairo_in_fill_curve_to,
-					  _cairo_in_fill_close_path,
-					  &in_fill);
+                      _cairo_in_fill_move_to,
+                      _cairo_in_fill_line_to,
+                      _cairo_in_fill_curve_to,
+                      _cairo_in_fill_close_path,
+                      &in_fill);
     assert (status == CAIRO_STATUS_SUCCESS);
 
     _cairo_in_fill_close_path (&in_fill);
 
     if (in_fill.on_edge) {
-	is_inside = TRUE;
+    is_inside = TRUE;
     } else switch (fill_rule) {
     case CAIRO_FILL_RULE_EVEN_ODD:
-	is_inside = in_fill.winding & 1;
-	break;
+    is_inside = in_fill.winding & 1;
+    break;
     case CAIRO_FILL_RULE_WINDING:
-	is_inside = in_fill.winding != 0;
-	break;
+    is_inside = in_fill.winding != 0;
+    break;
     default:
-	ASSERT_NOT_REACHED;
-	is_inside = FALSE;
-	break;
+    ASSERT_NOT_REACHED;
+    is_inside = FALSE;
+    break;
     }
 
     _cairo_in_fill_fini (&in_fill);

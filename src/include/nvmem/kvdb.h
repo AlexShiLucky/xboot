@@ -8,12 +8,12 @@ extern "C" {
 #include <xboot.h>
 
 struct kvdb_t {
-	struct hlist_head * hash;
-	struct list_head list;
-	int max_size;
-	int hash_size;
-	int store_size;
-	spinlock_t lock;
+    struct hlist_head * hash;
+    struct list_head list;
+    int max_size;
+    int hash_size;
+    int store_size;
+    spinlock_t lock;
 };
 
 struct kvdb_t * kvdb_alloc(int size);

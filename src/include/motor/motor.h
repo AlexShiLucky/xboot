@@ -9,12 +9,12 @@ extern "C" {
 
 struct motor_t
 {
-	char * name;
+    char * name;
 
-	void (*enable)(struct motor_t * m);
-	void (*disable)(struct motor_t * m);
-	void (*set)(struct motor_t * m, int speed);
-	void * priv;
+    void (*enable)(struct motor_t * m);
+    void (*disable)(struct motor_t * m);
+    void (*set)(struct motor_t * m, int speed);
+    void * priv;
 };
 
 struct motor_t * search_motor(const char * name);

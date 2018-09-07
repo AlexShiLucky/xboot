@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Intel Corporation
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_CONTOUR_PRIVATE_H
@@ -79,7 +79,7 @@ typedef struct _cairo_shape cairo_shape_t;
 #if 0
 cairo_private cairo_status_t
 _cairo_shape_init_from_polygon (cairo_shape_t *shape,
-				const cairo_polygon_t *polygon);
+                const cairo_polygon_t *polygon);
 
 cairo_private cairo_status_t
 _cairo_shape_reduce (cairo_shape_t *shape, double tolerance);
@@ -87,11 +87,11 @@ _cairo_shape_reduce (cairo_shape_t *shape, double tolerance);
 
 cairo_private void
 _cairo_contour_init (cairo_contour_t *contour,
-		     int direction);
+             int direction);
 
 cairo_private cairo_int_status_t
 __cairo_contour_add_point (cairo_contour_t *contour,
-			   const cairo_point_t *point);
+               const cairo_point_t *point);
 
 cairo_private void
 _cairo_contour_simplify (cairo_contour_t *contour, double tolerance);
@@ -101,11 +101,11 @@ _cairo_contour_reverse (cairo_contour_t *contour);
 
 cairo_private cairo_int_status_t
 _cairo_contour_add (cairo_contour_t *dst,
-		    const cairo_contour_t *src);
+            const cairo_contour_t *src);
 
 cairo_private cairo_int_status_t
 _cairo_contour_add_reversed (cairo_contour_t *dst,
-			     const cairo_contour_t *src);
+                 const cairo_contour_t *src);
 
 cairo_private void
 __cairo_contour_remove_last_chain (cairo_contour_t *contour);

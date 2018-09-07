@@ -33,9 +33,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Mathias Hasselmann <mathias.hasselmann@gmx.de>
- *	Behdad Esfahbod <behdad@behdad.org>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Mathias Hasselmann <mathias.hasselmann@gmx.de>
+ *  Behdad Esfahbod <behdad@behdad.org>
  */
 
 #ifndef CAIRO_MUTEX_PRIVATE_H

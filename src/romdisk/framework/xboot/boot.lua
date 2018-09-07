@@ -41,11 +41,11 @@ TimerManager = require "xboot.timer.TimerManager"
 -- External widget module
 --
 Widget = {
-	Button = require "xboot.widget.Button",
-	CheckBox = require "xboot.widget.CheckBox",
-	RadioButton = require "xboot.widget.RadioButton",
-	Stepper = require "xboot.widget.Stepper",
-	Slider = require "xboot.widget.Slider",
+  Button = require "xboot.widget.Button",
+  CheckBox = require "xboot.widget.CheckBox",
+  RadioButton = require "xboot.widget.RadioButton",
+  Stepper = require "xboot.widget.Stepper",
+  Slider = require "xboot.widget.Slider",
 }
 
 assets = Assets.new()

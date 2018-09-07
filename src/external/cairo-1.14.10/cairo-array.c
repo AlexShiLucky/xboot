@@ -32,8 +32,8 @@
  * California.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Carl Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -95,29 +95,29 @@ _cairo_array_grow_by (cairo_array_t *array, unsigned int additional)
 
     /* check for integer overflow */
     if (required_size > INT_MAX || required_size < array->num_elements)
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     if (CAIRO_INJECT_FAULT ())
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     if (required_size <= old_size)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (old_size == 0)
-	new_size = 1;
+    new_size = 1;
     else
-	new_size = old_size * 2;
+    new_size = old_size * 2;
 
     while (new_size < required_size)
-	new_size = new_size * 2;
+    new_size = new_size * 2;
 
     array->size = new_size;
     new_elements = _cairo_realloc_ab (array->elements,
-			              array->size, array->element_size);
+                          array->size, array->element_size);
 
     if (unlikely (new_elements == NULL)) {
-	array->size = old_size;
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    array->size = old_size;
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
     }
 
     array->elements = new_elements;
@@ -137,7 +137,7 @@ void
 _cairo_array_truncate (cairo_array_t *array, unsigned int num_elements)
 {
     if (num_elements < array->num_elements)
-	array->num_elements = num_elements;
+    array->num_elements = num_elements;
 }
 
 /**
@@ -151,15 +151,15 @@ _cairo_array_truncate (cairo_array_t *array, unsigned int num_elements)
  * example:
  *
  * <informalexample><programlisting>
- *	cairo_array_t array;
- *	double *values;
+ *  cairo_array_t array;
+ *  double *values;
  *
- *	_cairo_array_init (&array, sizeof(double));
- *	... calls to _cairo_array_append() here ...
+ *  _cairo_array_init (&array, sizeof(double));
+ *  ... calls to _cairo_array_append() here ...
  *
- *	values = _cairo_array_index (&array, 0);
+ *  values = _cairo_array_index (&array, 0);
  *      for (i = 0; i < _cairo_array_num_elements (&array); i++)
- *	    ... use values[i] here ...
+ *      ... use values[i] here ...
  * </programlisting></informalexample>
  **/
 void *
@@ -169,7 +169,7 @@ _cairo_array_index (cairo_array_t *array, unsigned int index)
      * This makes for cleaner calling code which will often look like:
      *
      *    elements = _cairo_array_index (array, 0);
-     *	  for (i=0; i < num_elements; i++) {
+     *    for (i=0; i < num_elements; i++) {
      *        ... use elements[i] here ...
      *    }
      *
@@ -177,7 +177,7 @@ _cairo_array_index (cairo_array_t *array, unsigned int index)
      * but never dereferences it.
      */
     if (index == 0 && array->num_elements == 0)
-	return NULL;
+    return NULL;
 
     assert (index < array->num_elements);
 
@@ -195,15 +195,15 @@ _cairo_array_index (cairo_array_t *array, unsigned int index)
  * example:
  *
  * <informalexample><programlisting>
- *	cairo_array_t array;
- *	const double *values;
+ *  cairo_array_t array;
+ *  const double *values;
  *
- *	_cairo_array_init (&array, sizeof(double));
- *	... calls to _cairo_array_append() here ...
+ *  _cairo_array_init (&array, sizeof(double));
+ *  ... calls to _cairo_array_append() here ...
  *
- *	values = _cairo_array_index_const (&array, 0);
+ *  values = _cairo_array_index_const (&array, 0);
  *      for (i = 0; i < _cairo_array_num_elements (&array); i++)
- *	    ... read values[i] here ...
+ *      ... read values[i] here ...
  * </programlisting></informalexample>
  **/
 const void *
@@ -213,7 +213,7 @@ _cairo_array_index_const (const cairo_array_t *array, unsigned int index)
      * This makes for cleaner calling code which will often look like:
      *
      *    elements = _cairo_array_index_const (array, 0);
-     *	  for (i=0; i < num_elements; i++) {
+     *    for (i=0; i < num_elements; i++) {
      *        ... read elements[i] here ...
      *    }
      *
@@ -221,7 +221,7 @@ _cairo_array_index_const (const cairo_array_t *array, unsigned int index)
      * but never dereferences it.
      */
     if (index == 0 && array->num_elements == 0)
-	return NULL;
+    return NULL;
 
     assert (index < array->num_elements);
 
@@ -237,8 +237,8 @@ _cairo_array_index_const (const cairo_array_t *array, unsigned int index)
  **/
 void
 _cairo_array_copy_element (const cairo_array_t *array,
-			   unsigned int         index,
-			   void                *dst)
+               unsigned int         index,
+               void                *dst)
 {
     memcpy (dst, _cairo_array_index_const (array, index), array->element_size);
 }
@@ -259,8 +259,8 @@ _cairo_array_copy_element (const cairo_array_t *array,
  * operation.
  **/
 cairo_status_t
-_cairo_array_append (cairo_array_t	*array,
-		     const void		*element)
+_cairo_array_append (cairo_array_t  *array,
+             const void     *element)
 {
     return _cairo_array_append_multiple (array, element, 1);
 }
@@ -278,16 +278,16 @@ _cairo_array_append (cairo_array_t	*array,
  * operation.
  **/
 cairo_status_t
-_cairo_array_append_multiple (cairo_array_t	*array,
-			      const void	*elements,
-			      unsigned int	 num_elements)
+_cairo_array_append_multiple (cairo_array_t *array,
+                  const void    *elements,
+                  unsigned int   num_elements)
 {
     cairo_status_t status;
     void *dest;
 
     status = _cairo_array_allocate (array, num_elements, &dest);
     if (unlikely (status))
-	return status;
+    return status;
 
     memcpy (dest, elements, num_elements * array->element_size);
 
@@ -308,15 +308,15 @@ _cairo_array_append_multiple (cairo_array_t	*array,
  * operation.
  **/
 cairo_status_t
-_cairo_array_allocate (cairo_array_t	 *array,
-		       unsigned int	  num_elements,
-		       void		**elements)
+_cairo_array_allocate (cairo_array_t     *array,
+               unsigned int   num_elements,
+               void     **elements)
 {
     cairo_status_t status;
 
     status = _cairo_array_grow_by (array, num_elements);
     if (unlikely (status))
-	return status;
+    return status;
 
     assert (array->num_elements + num_elements <= array->size);
 
@@ -383,14 +383,14 @@ _cairo_user_data_array_fini (cairo_user_data_array_t *array)
 
     num_slots = array->num_elements;
     if (num_slots) {
-	cairo_user_data_slot_t *slots;
+    cairo_user_data_slot_t *slots;
 
-	slots = _cairo_array_index (array, 0);
-	while (num_slots--) {
-	    cairo_user_data_slot_t *s = &slots[num_slots];
-	    if (s->user_data != NULL && s->destroy != NULL)
-		s->destroy (s->user_data);
-	}
+    slots = _cairo_array_index (array, 0);
+    while (num_slots--) {
+        cairo_user_data_slot_t *s = &slots[num_slots];
+        if (s->user_data != NULL && s->destroy != NULL)
+        s->destroy (s->user_data);
+    }
     }
 
     _cairo_array_fini (array);
@@ -410,20 +410,20 @@ _cairo_user_data_array_fini (cairo_user_data_array_t *array)
  **/
 void *
 _cairo_user_data_array_get_data (cairo_user_data_array_t     *array,
-				 const cairo_user_data_key_t *key)
+                 const cairo_user_data_key_t *key)
 {
     int i, num_slots;
     cairo_user_data_slot_t *slots;
 
     /* We allow this to support degenerate objects such as cairo_surface_nil. */
     if (array == NULL)
-	return NULL;
+    return NULL;
 
     num_slots = array->num_elements;
     slots = _cairo_array_index (array, 0);
     for (i = 0; i < num_slots; i++) {
-	if (slots[i].key == key)
-	    return slots[i].user_data;
+    if (slots[i].key == key)
+        return slots[i].user_data;
     }
 
     return NULL;
@@ -447,75 +447,75 @@ _cairo_user_data_array_get_data (cairo_user_data_array_t     *array,
  **/
 cairo_status_t
 _cairo_user_data_array_set_data (cairo_user_data_array_t     *array,
-				 const cairo_user_data_key_t *key,
-				 void			     *user_data,
-				 cairo_destroy_func_t	      destroy)
+                 const cairo_user_data_key_t *key,
+                 void                *user_data,
+                 cairo_destroy_func_t         destroy)
 {
     cairo_status_t status;
     int i, num_slots;
     cairo_user_data_slot_t *slots, *slot, new_slot;
 
     if (user_data) {
-	new_slot.key = key;
-	new_slot.user_data = user_data;
-	new_slot.destroy = destroy;
+    new_slot.key = key;
+    new_slot.user_data = user_data;
+    new_slot.destroy = destroy;
     } else {
-	new_slot.key = NULL;
-	new_slot.user_data = NULL;
-	new_slot.destroy = NULL;
+    new_slot.key = NULL;
+    new_slot.user_data = NULL;
+    new_slot.destroy = NULL;
     }
 
     slot = NULL;
     num_slots = array->num_elements;
     slots = _cairo_array_index (array, 0);
     for (i = 0; i < num_slots; i++) {
-	if (slots[i].key == key) {
-	    slot = &slots[i];
-	    if (slot->destroy && slot->user_data)
-		slot->destroy (slot->user_data);
-	    break;
-	}
-	if (user_data && slots[i].user_data == NULL) {
-	    slot = &slots[i];	/* Have to keep searching for an exact match */
-	}
+    if (slots[i].key == key) {
+        slot = &slots[i];
+        if (slot->destroy && slot->user_data)
+        slot->destroy (slot->user_data);
+        break;
+    }
+    if (user_data && slots[i].user_data == NULL) {
+        slot = &slots[i];   /* Have to keep searching for an exact match */
+    }
     }
 
     if (slot) {
-	*slot = new_slot;
-	return CAIRO_STATUS_SUCCESS;
+    *slot = new_slot;
+    return CAIRO_STATUS_SUCCESS;
     }
 
     if (user_data == NULL)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     status = _cairo_array_append (array, &new_slot);
     if (unlikely (status))
-	return status;
+    return status;
 
     return CAIRO_STATUS_SUCCESS;
 }
 
 cairo_status_t
-_cairo_user_data_array_copy (cairo_user_data_array_t	*dst,
-			     const cairo_user_data_array_t	*src)
+_cairo_user_data_array_copy (cairo_user_data_array_t    *dst,
+                 const cairo_user_data_array_t  *src)
 {
     /* discard any existing user-data */
     if (dst->num_elements != 0) {
-	_cairo_user_data_array_fini (dst);
-	_cairo_user_data_array_init (dst);
+    _cairo_user_data_array_fini (dst);
+    _cairo_user_data_array_init (dst);
     }
 
     return _cairo_array_append_multiple (dst,
-					 _cairo_array_index_const (src, 0),
-					 src->num_elements);
+                     _cairo_array_index_const (src, 0),
+                     src->num_elements);
 }
 
 void
 _cairo_user_data_array_foreach (cairo_user_data_array_t     *array,
-				void (*func) (const void *key,
-					      void *elt,
-					      void *closure),
-				void *closure)
+                void (*func) (const void *key,
+                          void *elt,
+                          void *closure),
+                void *closure)
 {
     cairo_user_data_slot_t *slots;
     int i, num_slots;
@@ -523,7 +523,7 @@ _cairo_user_data_array_foreach (cairo_user_data_array_t     *array,
     num_slots = array->num_elements;
     slots = _cairo_array_index (array, 0);
     for (i = 0; i < num_slots; i++) {
-	if (slots[i].user_data != NULL)
-	    func (slots[i].key, slots[i].user_data, closure);
+    if (slots[i].user_data != NULL)
+        func (slots[i].key, slots[i].user_data, closure);
     }
 }

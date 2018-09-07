@@ -10,14 +10,14 @@ extern "C" {
 
 struct ledtrigger_t
 {
-	/* The led trigger name */
-	char * name;
+    /* The led trigger name */
+    char * name;
 
-	/* Activity led trigger */
-	void (*activity)(struct ledtrigger_t * trigger);
+    /* Activity led trigger */
+    void (*activity)(struct ledtrigger_t * trigger);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct ledtrigger_t * search_ledtrigger(const char * name);

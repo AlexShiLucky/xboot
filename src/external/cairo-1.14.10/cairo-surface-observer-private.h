@@ -103,72 +103,72 @@ struct _cairo_observation {
     /* XXX put interesting stats here! */
 
     struct paint {
-	cairo_time_t elapsed;
-	unsigned int count;
-	struct extents extents;
-	unsigned int operators[NUM_OPERATORS];
-	struct pattern source;
-	struct clip clip;
-	unsigned int noop;
+    cairo_time_t elapsed;
+    unsigned int count;
+    struct extents extents;
+    unsigned int operators[NUM_OPERATORS];
+    struct pattern source;
+    struct clip clip;
+    unsigned int noop;
 
-	cairo_observation_record_t slowest;
+    cairo_observation_record_t slowest;
     } paint;
 
     struct mask {
-	cairo_time_t elapsed;
-	unsigned int count;
-	struct extents extents;
-	unsigned int operators[NUM_OPERATORS];
-	struct pattern source;
-	struct pattern mask;
-	struct clip clip;
-	unsigned int noop;
+    cairo_time_t elapsed;
+    unsigned int count;
+    struct extents extents;
+    unsigned int operators[NUM_OPERATORS];
+    struct pattern source;
+    struct pattern mask;
+    struct clip clip;
+    unsigned int noop;
 
-	cairo_observation_record_t slowest;
+    cairo_observation_record_t slowest;
     } mask;
 
     struct fill {
-	cairo_time_t elapsed;
-	unsigned int count;
-	struct extents extents;
-	unsigned int operators[NUM_OPERATORS];
-	struct pattern source;
-	struct path path;
-	unsigned int antialias[NUM_ANTIALIAS];
-	unsigned int fill_rule[NUM_FILL_RULE];
-	struct clip clip;
-	unsigned int noop;
+    cairo_time_t elapsed;
+    unsigned int count;
+    struct extents extents;
+    unsigned int operators[NUM_OPERATORS];
+    struct pattern source;
+    struct path path;
+    unsigned int antialias[NUM_ANTIALIAS];
+    unsigned int fill_rule[NUM_FILL_RULE];
+    struct clip clip;
+    unsigned int noop;
 
-	cairo_observation_record_t slowest;
+    cairo_observation_record_t slowest;
     } fill;
 
     struct stroke {
-	cairo_time_t elapsed;
-	unsigned int count;
-	struct extents extents;
-	unsigned int operators[NUM_OPERATORS];
-	unsigned int caps[NUM_CAPS];
-	unsigned int joins[NUM_CAPS];
-	unsigned int antialias[NUM_ANTIALIAS];
-	struct pattern source;
-	struct path path;
-	struct stat_cairo_xboot_t line_width;
-	struct clip clip;
-	unsigned int noop;
+    cairo_time_t elapsed;
+    unsigned int count;
+    struct extents extents;
+    unsigned int operators[NUM_OPERATORS];
+    unsigned int caps[NUM_CAPS];
+    unsigned int joins[NUM_CAPS];
+    unsigned int antialias[NUM_ANTIALIAS];
+    struct pattern source;
+    struct path path;
+    struct stat_cairo_xboot_t line_width;
+    struct clip clip;
+    unsigned int noop;
 
-	cairo_observation_record_t slowest;
+    cairo_observation_record_t slowest;
     } stroke;
 
     struct glyphs {
-	cairo_time_t elapsed;
-	unsigned int count;
-	struct extents extents;
-	unsigned int operators[NUM_OPERATORS];
-	struct pattern source;
-	struct clip clip;
-	unsigned int noop;
+    cairo_time_t elapsed;
+    unsigned int count;
+    struct extents extents;
+    unsigned int operators[NUM_OPERATORS];
+    struct pattern source;
+    struct clip clip;
+    unsigned int noop;
 
-	cairo_observation_record_t slowest;
+    cairo_observation_record_t slowest;
     } glyphs;
 
     cairo_array_t timings;

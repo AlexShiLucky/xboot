@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Adrian Johnson.
  *
  * Author(s):
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #include "cairoint.h"
@@ -83,7 +83,7 @@ cairo_deflate_stream_deflate (cairo_deflate_stream_t *stream, cairo_bool_t flush
 static cairo_status_t
 _cairo_deflate_stream_write (cairo_output_stream_t *base,
                              const unsigned char   *data,
-                             unsigned int	    length)
+                             unsigned int       length)
 {
     cairo_deflate_stream_t *stream = (cairo_deflate_stream_t *) base;
     unsigned int count;
@@ -122,18 +122,18 @@ _cairo_deflate_stream_create (cairo_output_stream_t *output)
     cairo_deflate_stream_t *stream;
 
     if (output->status)
-	return _cairo_output_stream_create_in_error (output->status);
+    return _cairo_output_stream_create_in_error (output->status);
 
     stream = malloc (sizeof (cairo_deflate_stream_t));
     if (unlikely (stream == NULL)) {
-	_cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
-	return (cairo_output_stream_t *) &_cairo_output_stream_nil;
+    _cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
+    return (cairo_output_stream_t *) &_cairo_output_stream_nil;
     }
 
     _cairo_output_stream_init (&stream->base,
-			       _cairo_deflate_stream_write,
-			       NULL,
-			       _cairo_deflate_stream_close);
+                   _cairo_deflate_stream_write,
+                   NULL,
+                   _cairo_deflate_stream_close);
     stream->output = output;
 
     stream->zlib_stream.zalloc = Z_NULL;
@@ -141,8 +141,8 @@ _cairo_deflate_stream_create (cairo_output_stream_t *output)
     stream->zlib_stream.opaque  = Z_NULL;
 
     if (deflateInit (&stream->zlib_stream, Z_DEFAULT_COMPRESSION) != Z_OK) {
-	free (stream);
-	return (cairo_output_stream_t *) &_cairo_output_stream_nil;
+    free (stream);
+    return (cairo_output_stream_t *) &_cairo_output_stream_nil;
     }
 
     stream->zlib_stream.next_in = stream->input_buf;

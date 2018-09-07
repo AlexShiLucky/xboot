@@ -9,17 +9,17 @@ extern "C" {
 
 struct watchdog_t
 {
-	/* The watchdog name */
-	char * name;
+    /* The watchdog name */
+    char * name;
 
-	/* Set watchdog's timeout in seconds, zero means stop */
-	void (*set)(struct watchdog_t * wdg, int timeout);
+    /* Set watchdog's timeout in seconds, zero means stop */
+    void (*set)(struct watchdog_t * wdg, int timeout);
 
-	/* Get watchdog's timeout in seconds, remaining time */
-	int (*get)(struct watchdog_t * wdg);
+    /* Get watchdog's timeout in seconds, remaining time */
+    int (*get)(struct watchdog_t * wdg);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct watchdog_t * search_watchdog(const char * name);

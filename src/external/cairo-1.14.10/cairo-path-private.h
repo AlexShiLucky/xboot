@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@redhat.com>
+ *  Carl D. Worth <cworth@redhat.com>
  */
 
 #ifndef CAIRO_PATH_PRIVATE_H
@@ -41,17 +41,17 @@
 
 cairo_private cairo_path_t *
 _cairo_path_create (cairo_path_fixed_t *path,
-		    cairo_t		*cr);
+            cairo_t     *cr);
 
 cairo_private cairo_path_t *
 _cairo_path_create_flat (cairo_path_fixed_t *path,
-			 cairo_t	    *cr);
+             cairo_t        *cr);
 
 cairo_private cairo_path_t *
 _cairo_path_create_in_error (cairo_status_t status);
 
 cairo_private cairo_status_t
-_cairo_path_append_to_context (const cairo_path_t	*path,
-			       cairo_t			*cr);
+_cairo_path_append_to_context (const cairo_path_t   *path,
+                   cairo_t          *cr);
 
 #endif /* CAIRO_PATH_DATA_PRIVATE_H */

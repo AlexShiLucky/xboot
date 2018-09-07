@@ -6,9 +6,9 @@
 
 int fflush(FILE * f)
 {
-	if(!f->write)
-		return EINVAL;
+    if(!f->write)
+        return EINVAL;
 
-	return __stdio_write_flush(f);
+    return __stdio_write_flush(f);
 }
 EXPORT_SYMBOL(fflush);

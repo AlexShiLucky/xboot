@@ -30,8 +30,8 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_CLIP_PRIVATE_H
@@ -49,12 +49,12 @@
 extern const cairo_private cairo_rectangle_list_t _cairo_rectangles_nil;
 
 struct _cairo_clip_path {
-    cairo_reference_count_t	 ref_count;
-    cairo_path_fixed_t		 path;
-    cairo_fill_rule_t		 fill_rule;
-    double			 tolerance;
-    cairo_antialias_t		 antialias;
-    cairo_clip_path_t		*prev;
+    cairo_reference_count_t  ref_count;
+    cairo_path_fixed_t       path;
+    cairo_fill_rule_t        fill_rule;
+    double           tolerance;
+    cairo_antialias_t        antialias;
+    cairo_clip_path_t       *prev;
 };
 
 struct _cairo_clip {
@@ -104,36 +104,36 @@ _cairo_clip_copy_with_translation (const cairo_clip_t *clip, int tx, int ty);
 
 cairo_private cairo_bool_t
 _cairo_clip_equal (const cairo_clip_t *clip_a,
-		   const cairo_clip_t *clip_b);
+           const cairo_clip_t *clip_b);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_rectangle (cairo_clip_t       *clip,
-				 const cairo_rectangle_int_t *rectangle);
+                 const cairo_rectangle_int_t *rectangle);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_clip (cairo_clip_t *clip,
-			    const cairo_clip_t *other);
+                const cairo_clip_t *other);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_box (cairo_clip_t       *clip,
-			   const cairo_box_t *box);
+               const cairo_box_t *box);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_boxes (cairo_clip_t *clip,
-			     const cairo_boxes_t *boxes);
+                 const cairo_boxes_t *boxes);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_rectilinear_path (cairo_clip_t       *clip,
-					const cairo_path_fixed_t *path,
-					cairo_fill_rule_t   fill_rule,
-					cairo_antialias_t   antialias);
+                    const cairo_path_fixed_t *path,
+                    cairo_fill_rule_t   fill_rule,
+                    cairo_antialias_t   antialias);
 
 cairo_private cairo_clip_t *
 _cairo_clip_intersect_path (cairo_clip_t       *clip,
-			    const cairo_path_fixed_t *path,
-			    cairo_fill_rule_t   fill_rule,
-			    double              tolerance,
-			    cairo_antialias_t   antialias);
+                const cairo_path_fixed_t *path,
+                cairo_fill_rule_t   fill_rule,
+                double              tolerance,
+                cairo_antialias_t   antialias);
 
 cairo_private const cairo_rectangle_int_t *
 _cairo_clip_get_extents (const cairo_clip_t *clip);
@@ -143,13 +143,13 @@ _cairo_clip_get_surface (const cairo_clip_t *clip, cairo_surface_t *dst, int *tx
 
 cairo_private cairo_surface_t *
 _cairo_clip_get_image (const cairo_clip_t *clip,
-		       cairo_surface_t *target,
-		       const cairo_rectangle_int_t *extents);
+               cairo_surface_t *target,
+               const cairo_rectangle_int_t *extents);
 
 cairo_private cairo_status_t
 _cairo_clip_combine_with_surface (const cairo_clip_t *clip,
-				  cairo_surface_t *dst,
-				  int dst_x, int dst_y);
+                  cairo_surface_t *dst,
+                  int dst_x, int dst_y);
 
 cairo_private cairo_clip_t *
 _cairo_clip_from_boxes (const cairo_boxes_t *boxes);
@@ -162,23 +162,23 @@ _cairo_clip_is_region (const cairo_clip_t *clip);
 
 cairo_private cairo_clip_t *
 _cairo_clip_reduce_to_rectangle (const cairo_clip_t *clip,
-				 const cairo_rectangle_int_t *r);
+                 const cairo_rectangle_int_t *r);
 
 cairo_private cairo_clip_t *
 _cairo_clip_reduce_for_composite (const cairo_clip_t *clip,
-				  cairo_composite_rectangles_t *extents);
+                  cairo_composite_rectangles_t *extents);
 
 cairo_private cairo_bool_t
 _cairo_clip_contains_rectangle (const cairo_clip_t *clip,
-				const cairo_rectangle_int_t *rect);
+                const cairo_rectangle_int_t *rect);
 
 cairo_private cairo_bool_t
 _cairo_clip_contains_box (const cairo_clip_t *clip,
-			  const cairo_box_t *box);
+              const cairo_box_t *box);
 
 cairo_private cairo_bool_t
 _cairo_clip_contains_extents (const cairo_clip_t *clip,
-			      const cairo_composite_rectangles_t *extents);
+                  const cairo_composite_rectangles_t *extents);
 
 cairo_private cairo_rectangle_list_t*
 _cairo_clip_copy_rectangle_list (cairo_clip_t *clip, cairo_gstate_t *gstate);
@@ -191,8 +191,8 @@ _cairo_clip_is_polygon (const cairo_clip_t *clip);
 
 cairo_private cairo_int_status_t
 _cairo_clip_get_polygon (const cairo_clip_t *clip,
-			 cairo_polygon_t *polygon,
-			 cairo_fill_rule_t *fill_rule,
-			 cairo_antialias_t *antialias);
+             cairo_polygon_t *polygon,
+             cairo_fill_rule_t *fill_rule,
+             cairo_antialias_t *antialias);
 
 #endif /* CAIRO_CLIP_PRIVATE_H */

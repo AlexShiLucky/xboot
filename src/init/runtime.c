@@ -35,71 +35,71 @@ static struct runtime_t * __current_runtime = NULL;
 /* 获取当前运行环境 */
 struct runtime_t * runtime_get(void)
 {
-	return __current_runtime;
+    return __current_runtime;
 }
 
 /* 创建新运行环境并保存先前运行环境 */
 void runtime_create_save(struct runtime_t * rt, const char * path, struct runtime_t ** r)
 {
-	if(!rt)
-		return;
+    if(!rt)
+        return;
     /* 返回先前运行环境 */
-	if(r)
-		*r = __current_runtime;
+    if(r)
+        *r = __current_runtime;
     /* 设置当前运行环境 */
-	__current_runtime = rt;
+    __current_runtime = rt;
 
-	rt->__errno = 0;
+    rt->__errno = 0;
 
-	rt->__seed[0] = 1;
-	rt->__seed[1] = 1;
-	rt->__seed[2] = 1;
+    rt->__seed[0] = 1;
+    rt->__seed[1] = 1;
+    rt->__seed[2] = 1;
 
     /* 初始化当前运行环境的环境变量链表 */
-	rt->__environ.content = "";
-	rt->__environ.next = &(rt->__environ);
-	rt->__environ.prev = &(rt->__environ);
+    rt->__environ.content = "";
+    rt->__environ.next = &(rt->__environ);
+    rt->__environ.prev = &(rt->__environ);
 
     /* 读取运行环境分配stdin */
-	rt->__stdin = __file_alloc(0);
+    rt->__stdin = __file_alloc(0);
     /* 读取运行环境分配stdout */
-	rt->__stdout = __file_alloc(1);
+    rt->__stdout = __file_alloc(1);
     /* 读取运行环境分配stderr */
-	rt->__stderr = __file_alloc(2);
+    rt->__stderr = __file_alloc(2);
 
     /* 给当前运行环境申请一个事件块 */
-	rt->__event_base = __event_base_alloc();
+    rt->__event_base = __event_base_alloc();
     /* 给当前运行环境申请一个xfs上下文 */
-	rt->__xfs_ctx = __xfs_alloc(path);
+    rt->__xfs_ctx = __xfs_alloc(path);
 }
 
 /* 销毁当前运行环境并恢复先前运行环境 */
 void runtime_destroy_restore(struct runtime_t * rt, struct runtime_t * r)
 {
-	if(!rt)
-		return;
+    if(!rt)
+        return;
 
     /* 释放前运行环境申请一个xfs上下文 */
-	if(rt->__xfs_ctx)
-		__xfs_free(rt->__xfs_ctx);
+    if(rt->__xfs_ctx)
+        __xfs_free(rt->__xfs_ctx);
 
     /* 释放当前运行环境申请一个事件块 */
-	if(rt->__event_base)
-		__event_base_free(rt->__event_base);
+    if(rt->__event_base)
+        __event_base_free(rt->__event_base);
 
     /* 关闭当前运行环境stderr */
-	if(rt->__stderr)
-		fclose(rt->__stderr);
+    if(rt->__stderr)
+        fclose(rt->__stderr);
 
     /* 关闭当前运行环境stdout */
-	if(rt->__stdout)
-		fclose(rt->__stdout);
+    if(rt->__stdout)
+        fclose(rt->__stdout);
 
     /* 关闭当前运行环境stdin */
-	if(rt->__stdin)
-		fclose(rt->__stdin);
+    if(rt->__stdin)
+        fclose(rt->__stdin);
 
     /* 恢复先前运行环境 */
-	if(r)
-		__current_runtime = r;
+    if(r)
+        __current_runtime = r;
 }

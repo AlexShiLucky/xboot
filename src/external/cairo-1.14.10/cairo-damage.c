@@ -29,7 +29,7 @@
  * The Initial Developer of the Original Code is Chris Wilson
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -53,8 +53,8 @@ _cairo_damage_create (void)
 
     damage = malloc (sizeof (*damage));
     if (unlikely (damage == NULL)) {
-	_cairo_error_throw(CAIRO_STATUS_NO_MEMORY);
-	return (cairo_damage_t *) &__cairo_damage__nil;
+    _cairo_error_throw(CAIRO_STATUS_NO_MEMORY);
+    return (cairo_damage_t *) &__cairo_damage__nil;
     }
 
     damage->status = CAIRO_STATUS_SUCCESS;
@@ -77,11 +77,11 @@ _cairo_damage_destroy (cairo_damage_t *damage)
     struct _cairo_damage_chunk *chunk, *next;
 
     if (damage == (cairo_damage_t *) &__cairo_damage__nil)
-	return;
+    return;
 
     for (chunk = damage->chunks.next; chunk != NULL; chunk = next) {
-	next = chunk->next;
-	free (chunk);
+    next = chunk->next;
+    free (chunk);
     }
     cairo_region_destroy (damage->region);
     free (damage);
@@ -89,8 +89,8 @@ _cairo_damage_destroy (cairo_damage_t *damage)
 
 static cairo_damage_t *
 _cairo_damage_add_boxes(cairo_damage_t *damage,
-			const cairo_box_t *boxes,
-			int count)
+            const cairo_box_t *boxes,
+            int count)
 {
     struct _cairo_damage_chunk *chunk;
     int n, size;
@@ -98,34 +98,34 @@ _cairo_damage_add_boxes(cairo_damage_t *damage,
     TRACE ((stderr, "%s x%d\n", __FUNCTION__, count));
 
     if (damage == NULL)
-	damage = _cairo_damage_create ();
+    damage = _cairo_damage_create ();
     if (damage->status)
-	return damage;
+    return damage;
 
     damage->dirty += count;
 
     n = count;
     if (n > damage->remain)
-	n = damage->remain;
+    n = damage->remain;
 
     memcpy (damage->tail->base + damage->tail->count, boxes,
-	    n * sizeof (cairo_box_t));
+        n * sizeof (cairo_box_t));
 
     count -= n;
     damage->tail->count += n;
     damage->remain -= n;
 
     if (count == 0)
-	return damage;
+    return damage;
 
     size = 2 * damage->tail->size;
     if (size < count)
-	size = (count + 64) & ~63;
+    size = (count + 64) & ~63;
 
     chunk = malloc (sizeof (*chunk) + sizeof (cairo_box_t) * size);
     if (unlikely (chunk == NULL)) {
-	_cairo_damage_destroy (damage);
-	return (cairo_damage_t *) &__cairo_damage__nil;
+    _cairo_damage_destroy (damage);
+    return (cairo_damage_t *) &__cairo_damage__nil;
     }
 
     chunk->next = NULL;
@@ -137,7 +137,7 @@ _cairo_damage_add_boxes(cairo_damage_t *damage,
     damage->tail = chunk;
 
     memcpy (damage->tail->base, boxes + n,
-	    count * sizeof (cairo_box_t));
+        count * sizeof (cairo_box_t));
     damage->remain = size - count;
 
     return damage;
@@ -145,22 +145,22 @@ _cairo_damage_add_boxes(cairo_damage_t *damage,
 
 cairo_damage_t *
 _cairo_damage_add_box(cairo_damage_t *damage,
-		      const cairo_box_t *box)
+              const cairo_box_t *box)
 {
     TRACE ((stderr, "%s: (%d, %d),(%d, %d)\n", __FUNCTION__,
-	    box->p1.x, box->p1.y, box->p2.x, box->p2.y));
+        box->p1.x, box->p1.y, box->p2.x, box->p2.y));
 
     return _cairo_damage_add_boxes(damage, box, 1);
 }
 
 cairo_damage_t *
 _cairo_damage_add_rectangle(cairo_damage_t *damage,
-			    const cairo_rectangle_int_t *r)
+                const cairo_rectangle_int_t *r)
 {
     cairo_box_t box;
 
     TRACE ((stderr, "%s: (%d, %d)x(%d, %d)\n", __FUNCTION__,
-	    r->x, r->y, r->width, r->height));
+        r->x, r->y, r->width, r->height));
 
     box.p1.x = r->x;
     box.p1.y = r->y;
@@ -172,7 +172,7 @@ _cairo_damage_add_rectangle(cairo_damage_t *damage,
 
 cairo_damage_t *
 _cairo_damage_add_region (cairo_damage_t *damage,
-			  const cairo_region_t *region)
+              const cairo_region_t *region)
 {
     cairo_box_t *boxes;
     int nbox;
@@ -191,49 +191,49 @@ _cairo_damage_reduce (cairo_damage_t *damage)
     struct _cairo_damage_chunk *chunk, *last;
 
     TRACE ((stderr, "%s: dirty=%d\n", __FUNCTION__,
-	    damage ? damage->dirty : -1));
+        damage ? damage->dirty : -1));
     if (damage == NULL || damage->status || !damage->dirty)
-	return damage;
+    return damage;
 
     if (damage->region) {
-	cairo_region_t *region;
+    cairo_region_t *region;
 
-	region = damage->region;
-	damage->region = NULL;
+    region = damage->region;
+    damage->region = NULL;
 
-	damage = _cairo_damage_add_region (damage, region);
-	cairo_region_destroy (region);
+    damage = _cairo_damage_add_region (damage, region);
+    cairo_region_destroy (region);
 
-	if (unlikely (damage->status))
-	    return damage;
+    if (unlikely (damage->status))
+        return damage;
     }
 
     boxes = damage->tail->base;
     if (damage->dirty > damage->tail->size) {
-	boxes = free_boxes = malloc (damage->dirty * sizeof (cairo_box_t));
-	if (unlikely (boxes == NULL)) {
-	    _cairo_damage_destroy (damage);
-	    return (cairo_damage_t *) &__cairo_damage__nil;
-	}
+    boxes = free_boxes = malloc (damage->dirty * sizeof (cairo_box_t));
+    if (unlikely (boxes == NULL)) {
+        _cairo_damage_destroy (damage);
+        return (cairo_damage_t *) &__cairo_damage__nil;
+    }
 
-	b = boxes;
-	last = NULL;
+    b = boxes;
+    last = NULL;
     } else {
-	b = boxes + damage->tail->count;
-	last = damage->tail;
+    b = boxes + damage->tail->count;
+    last = damage->tail;
     }
 
     for (chunk = &damage->chunks; chunk != last; chunk = chunk->next) {
-	memcpy (b, chunk->base, chunk->count * sizeof (cairo_box_t));
-	b += chunk->count;
+    memcpy (b, chunk->base, chunk->count * sizeof (cairo_box_t));
+    b += chunk->count;
     }
 
     damage->region = _cairo_region_create_from_boxes (boxes, damage->dirty);
     free (free_boxes);
 
     if (unlikely (damage->region->status)) {
-	_cairo_damage_destroy (damage);
-	return (cairo_damage_t *) &__cairo_damage__nil;
+    _cairo_damage_destroy (damage);
+    return (cairo_damage_t *) &__cairo_damage__nil;
     }
 
     damage->dirty = 0;

@@ -32,23 +32,23 @@
 /* 纳秒延时 */
 void ndelay(u32_t ns)
 {
-	ktime_t timeout = ktime_add_ns(ktime_get(), ns);
-	while(ktime_before(ktime_get(), timeout));
+    ktime_t timeout = ktime_add_ns(ktime_get(), ns);
+    while(ktime_before(ktime_get(), timeout));
 }
 EXPORT_SYMBOL(ndelay);
 
 /* 微秒延时 */
 void udelay(u32_t us)
 {
-	ktime_t timeout = ktime_add_us(ktime_get(), us);
-	while(ktime_before(ktime_get(), timeout));
+    ktime_t timeout = ktime_add_us(ktime_get(), us);
+    while(ktime_before(ktime_get(), timeout));
 }
 EXPORT_SYMBOL(udelay);
 
 /* 毫秒延时 */
 void mdelay(u32_t ms)
 {
-	ktime_t timeout = ktime_add_ms(ktime_get(), ms);
-	while(ktime_before(ktime_get(), timeout));
+    ktime_t timeout = ktime_add_ms(ktime_get(), ms);
+    while(ktime_before(ktime_get(), timeout));
 }
 EXPORT_SYMBOL(mdelay);

@@ -32,8 +32,8 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_STROKE_DASH_PRIVATE_H
@@ -57,7 +57,7 @@ typedef struct _cairo_stroker_dash {
 
 cairo_private void
 _cairo_stroker_dash_init (cairo_stroker_dash_t *dash,
-			  const cairo_stroke_style_t *style);
+              const cairo_stroke_style_t *style);
 
 cairo_private void
 _cairo_stroker_dash_start (cairo_stroker_dash_t *dash);

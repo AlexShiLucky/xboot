@@ -33,9 +33,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Kristian Høgsberg <krh@redhat.com>
- *	Keith Packard <keithp@keithp.com>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Keith Packard <keithp@keithp.com>
  */
 
 #ifndef CAIRO_PS_SURFACE_PRIVATE_H

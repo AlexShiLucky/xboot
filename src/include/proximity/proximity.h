@@ -9,9 +9,9 @@ extern "C" {
 
 struct proximity_t
 {
-	char * name;
-	int (*get)(struct proximity_t * p);
-	void * priv;
+    char * name;
+    int (*get)(struct proximity_t * p);
+    void * priv;
 };
 
 struct proximity_t * search_proximity(const char * name);

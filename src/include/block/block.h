@@ -9,64 +9,64 @@ extern "C" {
 
 struct block_t
 {
-	/* The block name */
-	char * name;
+    /* The block name */
+    char * name;
 
-	/* The size of block */
-	u64_t blksz;
+    /* The size of block */
+    u64_t blksz;
 
-	/* The total count of block */
-	u64_t blkcnt;
+    /* The total count of block */
+    u64_t blkcnt;
 
-	/* Read block device, return the block counts of reading */
-	u64_t (*read)(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt);
+    /* Read block device, return the block counts of reading */
+    u64_t (*read)(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt);
 
-	/* Write block device, return the block counts of writing */
-	u64_t (*write)(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt);
+    /* Write block device, return the block counts of writing */
+    u64_t (*write)(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt);
 
-	/* Sync cache to block device */
-	void (*sync)(struct block_t * blk);
+    /* Sync cache to block device */
+    void (*sync)(struct block_t * blk);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 static inline u64_t block_size(struct block_t * blk)
 {
-	return (blk->blksz);
+    return (blk->blksz);
 }
 
 static inline u64_t block_count(struct block_t * blk)
 {
-	return (blk->blkcnt);
+    return (blk->blkcnt);
 }
 
 static inline u64_t block_capacity(struct block_t * blk)
 {
-	return (blk->blksz * blk->blkcnt);
+    return (blk->blksz * blk->blkcnt);
 }
 
 static inline u64_t block_offset(struct block_t * blk, u64_t blkno)
 {
-	return (blk->blksz * blkno);
+    return (blk->blksz * blkno);
 }
 
 static inline u64_t block_available_count(struct block_t * blk, u64_t blkno, u64_t blkcnt)
 {
-	u64_t count = 0;
+    u64_t count = 0;
 
-	if(blk->blkcnt > blkno)
-	{
-		count = blk->blkcnt - blkno;
-		if(count > blkcnt)
-			count = blkcnt;
-	}
-	return count;
+    if(blk->blkcnt > blkno)
+    {
+        count = blk->blkcnt - blkno;
+        if(count > blkcnt)
+            count = blkcnt;
+    }
+    return count;
 }
 
 static inline u64_t block_available_length(struct block_t * blk, u64_t blkno, u64_t blkcnt)
 {
-	return (block_size(blk) * block_available_count(blk, blkno, blkcnt));
+    return (block_size(blk) * block_available_count(blk, blkno, blkcnt));
 }
 
 struct block_t * search_block(const char * name);

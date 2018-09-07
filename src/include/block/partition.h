@@ -10,8 +10,8 @@ extern "C" {
 
 struct partition_map_t
 {
-	const char * name;
-	bool_t (*map)(struct disk_t * disk);
+    const char * name;
+    bool_t (*map)(struct disk_t * disk);
 };
 
 bool_t register_partition_map(struct partition_map_t * map);

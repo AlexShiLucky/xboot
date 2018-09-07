@@ -30,105 +30,105 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    fileram -f <file> <addr>\r\n");
-	printf("    fileram -r <addr> <size> <file>\r\n");
+    printf("usage:\r\n");
+    printf("    fileram -f <file> <addr>\r\n");
+    printf("    fileram -r <addr> <size> <file>\r\n");
 }
 
 static int do_fileram(int argc, char ** argv)
 {
-	char * filename;
-	s32_t fd;
-	u32_t addr, size = 0;
-	s32_t n;
+    char * filename;
+    s32_t fd;
+    u32_t addr, size = 0;
+    s32_t n;
 
-	if(argc != 4 && argc != 5)
-	{
-		usage();
-		return -1;
-	}
+    if(argc != 4 && argc != 5)
+    {
+        usage();
+        return -1;
+    }
 
-	if( !strcmp((const char *)argv[1],"-f") )
-	{
-		if(argc != 4)
-		{
-			usage();
-			return -1;
-		}
+    if( !strcmp((const char *)argv[1],"-f") )
+    {
+        if(argc != 4)
+        {
+            usage();
+            return -1;
+        }
 
-		filename = (char *)argv[2];
-		addr = strtoul((const char *)argv[3], NULL, 0);
-		size = 0;
+        filename = (char *)argv[2];
+        addr = strtoul((const char *)argv[3], NULL, 0);
+        size = 0;
 
-		fd = open(filename, O_RDONLY, (S_IRUSR|S_IRGRP|S_IROTH));
-		if(fd < 0)
-		{
-			printf("can not to open the file '%s'\r\n", filename);
-			return -1;
-		}
+        fd = open(filename, O_RDONLY, (S_IRUSR|S_IRGRP|S_IROTH));
+        if(fd < 0)
+        {
+            printf("can not to open the file '%s'\r\n", filename);
+            return -1;
+        }
 
-	    for(;;)
-	    {
-	        n = read(fd, (void *)(addr + size), SZ_512K);
-	        if(n <= 0)
-	        	break;
-			size += n;
-	    }
+        for(;;)
+        {
+            n = read(fd, (void *)(addr + size), SZ_512K);
+            if(n <= 0)
+                break;
+            size += n;
+        }
 
-		close(fd);
-		printf("copy file %s to ram 0x%08lx ~ 0x%08lx.\r\n", filename, addr, addr + size);
-	}
-	else if( !strcmp((const char *)argv[1], "-r") )
-	{
-		if(argc != 5)
-		{
-			usage();
-			return (-1);
-		}
+        close(fd);
+        printf("copy file %s to ram 0x%08lx ~ 0x%08lx.\r\n", filename, addr, addr + size);
+    }
+    else if( !strcmp((const char *)argv[1], "-r") )
+    {
+        if(argc != 5)
+        {
+            usage();
+            return (-1);
+        }
 
-		addr = strtoul((const char *)argv[2], NULL, 0);
-		size = strtoul((const char *)argv[3], NULL, 0);
-		filename = (char *)argv[4];
+        addr = strtoul((const char *)argv[2], NULL, 0);
+        size = strtoul((const char *)argv[3], NULL, 0);
+        filename = (char *)argv[4];
 
-		fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH));
-		if(fd < 0)
-			return -1;
+        fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH));
+        if(fd < 0)
+            return -1;
 
-		n = write(fd, (void *)addr, size);
-		if( n != size )
-		{
-			close(fd);
-			unlink(filename);
-			printf("failed to write file from ram\r\n");
-			return -1;
-		}
-		close(fd);
-		printf("copy ram 0x%08lx ~ 0x%08lx to file %s.\r\n", addr, addr + size, filename);
-	}
-	else
-	{
-		usage();
-		return (-1);
-	}
+        n = write(fd, (void *)addr, size);
+        if( n != size )
+        {
+            close(fd);
+            unlink(filename);
+            printf("failed to write file from ram\r\n");
+            return -1;
+        }
+        close(fd);
+        printf("copy ram 0x%08lx ~ 0x%08lx to file %s.\r\n", addr, addr + size, filename);
+    }
+    else
+    {
+        usage();
+        return (-1);
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_fileram = {
-	.name	= "fileram",
-	.desc	= "copy file to ram or ram to file",
-	.usage	= usage,
-	.exec	= do_fileram,
+    .name   = "fileram",
+    .desc   = "copy file to ram or ram to file",
+    .usage  = usage,
+    .exec   = do_fileram,
 };
 
 static __init void fileram_cmd_init(void)
 {
-	register_command(&cmd_fileram);
+    register_command(&cmd_fileram);
 }
 
 static __exit void fileram_cmd_exit(void)
 {
-	unregister_command(&cmd_fileram);
+    unregister_command(&cmd_fileram);
 }
 
 command_initcall(fileram_cmd_init);

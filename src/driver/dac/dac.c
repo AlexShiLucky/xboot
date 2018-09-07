@@ -32,145 +32,145 @@
 /* 读取dac参考电压 */
 static ssize_t dac_read_vreference(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct dac_t * dac = (struct dac_t *)kobj->priv;
-	return sprintf(buf, "%Ld.%06LdV", dac->vreference / (u64_t)(1000 * 1000), dac->vreference % (u64_t)(1000 * 1000));
+    struct dac_t * dac = (struct dac_t *)kobj->priv;
+    return sprintf(buf, "%Ld.%06LdV", dac->vreference / (u64_t)(1000 * 1000), dac->vreference % (u64_t)(1000 * 1000));
 }
 
 /* 读取dac分辨率 */
 static ssize_t dac_read_resolution(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct dac_t * dac = (struct dac_t *)kobj->priv;
-	return sprintf(buf, "%d", dac->resolution);
+    struct dac_t * dac = (struct dac_t *)kobj->priv;
+    return sprintf(buf, "%d", dac->resolution);
 }
 
 /* 读取dac通道数 */
 static ssize_t dac_read_nchannel(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct dac_t * dac = (struct dac_t *)kobj->priv;
-	return sprintf(buf, "%d", dac->nchannel);
+    struct dac_t * dac = (struct dac_t *)kobj->priv;
+    return sprintf(buf, "%d", dac->nchannel);
 }
 
 /* 写入dac通道原始数据 */
 static ssize_t dac_write_raw_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct dac_t * dac = (struct dac_t *)kobj->priv;
-	int channel = strtoul(kobj->name + strlen("raw"), NULL, 0);
-	u32_t value = strtol(buf, NULL, 0);
-	dac_write_raw(dac, channel, value);
-	return size;
+    struct dac_t * dac = (struct dac_t *)kobj->priv;
+    int channel = strtoul(kobj->name + strlen("raw"), NULL, 0);
+    u32_t value = strtol(buf, NULL, 0);
+    dac_write_raw(dac, channel, value);
+    return size;
 }
 
 /* 写入dac通道电压 */
 static ssize_t dac_write_voltage_channel(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct dac_t * dac = (struct dac_t *)kobj->priv;
-	int channel = strtoul(kobj->name + strlen("voltage"), NULL, 0);
-	int voltage = strtol(buf, NULL, 0);
-	dac_write_voltage(dac, channel, voltage);
-	return size;
+    struct dac_t * dac = (struct dac_t *)kobj->priv;
+    int channel = strtoul(kobj->name + strlen("voltage"), NULL, 0);
+    int voltage = strtol(buf, NULL, 0);
+    dac_write_voltage(dac, channel, voltage);
+    return size;
 }
 
 /* 根据名称搜索一个dac设备 */
 struct dac_t * search_dac(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_DAC);
-	if(!dev)
-		return NULL;
-	return (struct dac_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_DAC);
+    if(!dev)
+        return NULL;
+    return (struct dac_t *)dev->priv;
 }
 
 /* 注册一个dac设备 */
 bool_t register_dac(struct device_t ** device, struct dac_t * dac)
 {
-	struct device_t * dev;
-	char buf[64];
-	int i;
+    struct device_t * dev;
+    char buf[64];
+    int i;
 
-	if(!dac || !dac->name || (dac->resolution <= 0) || (dac->nchannel <= 0) || !dac->write)
-		return FALSE;
+    if(!dac || !dac->name || (dac->resolution <= 0) || (dac->nchannel <= 0) || !dac->write)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(dac->name);
-	dev->type = DEVICE_TYPE_DAC;
-	dev->priv = dac;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "vreference", dac_read_vreference, NULL, dac);
-	kobj_add_regular(dev->kobj, "resolution", dac_read_resolution, NULL, dac);
-	kobj_add_regular(dev->kobj, "nchannel", dac_read_nchannel, NULL, dac);
-	for(i = 0; i< dac->nchannel; i++)
-	{
-		sprintf(buf, "raw%d", i);
-		kobj_add_regular(dev->kobj, buf, NULL, dac_write_raw_channel, dac);
-	}
-	for(i = 0; i< dac->nchannel; i++)
-	{
-		sprintf(buf, "voltage%d", i);
-		kobj_add_regular(dev->kobj, buf, NULL, dac_write_voltage_channel, dac);
-	}
+    dev->name = strdup(dac->name);
+    dev->type = DEVICE_TYPE_DAC;
+    dev->priv = dac;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "vreference", dac_read_vreference, NULL, dac);
+    kobj_add_regular(dev->kobj, "resolution", dac_read_resolution, NULL, dac);
+    kobj_add_regular(dev->kobj, "nchannel", dac_read_nchannel, NULL, dac);
+    for(i = 0; i< dac->nchannel; i++)
+    {
+        sprintf(buf, "raw%d", i);
+        kobj_add_regular(dev->kobj, buf, NULL, dac_write_raw_channel, dac);
+    }
+    for(i = 0; i< dac->nchannel; i++)
+    {
+        sprintf(buf, "voltage%d", i);
+        kobj_add_regular(dev->kobj, buf, NULL, dac_write_voltage_channel, dac);
+    }
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个dac设备 */
 bool_t unregister_dac(struct dac_t * dac)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!dac || !dac->name)
-		return FALSE;
+    if(!dac || !dac->name)
+        return FALSE;
 
-	dev = search_device(dac->name, DEVICE_TYPE_DAC);
-	if(!dev)
-		return FALSE;
+    dev = search_device(dac->name, DEVICE_TYPE_DAC);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 写入dac某通道原始数据*/
 void dac_write_raw(struct dac_t * dac, int channel, u32_t value)
 {
-	if(dac && dac->write)
-	{
-		if(channel < 0)
-			channel = 0;
-		else if(channel > dac->nchannel - 1)
-			channel = dac->nchannel - 1;
-		dac->write(dac, channel, value);
-	}
+    if(dac && dac->write)
+    {
+        if(channel < 0)
+            channel = 0;
+        else if(channel > dac->nchannel - 1)
+            channel = dac->nchannel - 1;
+        dac->write(dac, channel, value);
+    }
 }
 
 /* 写入dac某通道电压数据 */
 void dac_write_voltage(struct dac_t * dac, int channel, int voltage)
 {
-	if(dac && dac->write)
-	{
-		if(channel < 0)
-			channel = 0;
-		else if(channel > dac->nchannel - 1)
-			channel = dac->nchannel - 1;
-		if(voltage > dac->vreference)
-			voltage = dac->vreference;
-		dac->write(dac, channel, voltage * ((1 << dac->resolution) - 1) / dac->vreference);
-	}
+    if(dac && dac->write)
+    {
+        if(channel < 0)
+            channel = 0;
+        else if(channel > dac->nchannel - 1)
+            channel = dac->nchannel - 1;
+        if(voltage > dac->vreference)
+            voltage = dac->vreference;
+        dac->write(dac, channel, voltage * ((1 << dac->resolution) - 1) / dac->vreference);
+    }
 }

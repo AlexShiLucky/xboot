@@ -9,14 +9,14 @@ extern "C" {
 
 struct rng_t
 {
-	/* The rng name */
-	char * name;
+    /* The rng name */
+    char * name;
 
-	/* Read rng data */
-	int (*read)(struct rng_t * rng, void * buf, int max, int wait);
+    /* Read rng data */
+    int (*read)(struct rng_t * rng, void * buf, int max, int wait);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct rng_t * search_rng(const char * name);

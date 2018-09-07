@@ -31,51 +31,51 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    mc <src> <dst> <size>\r\n");
+    printf("usage:\r\n");
+    printf("    mc <src> <dst> <size>\r\n");
 }
 
 static int do_mc(int argc, char ** argv)
 {
-	u32_t src, dst, size = 0;
-	u32_t i;
+    u32_t src, dst, size = 0;
+    u32_t i;
 
-	if(argc != 4)
-	{
-		usage();
-		return -1;
-	}
+    if(argc != 4)
+    {
+        usage();
+        return -1;
+    }
 
-	src = strtoul((const char *)argv[1], NULL, 0);
-	dst = strtoul((const char *)argv[2], NULL, 0);
-	size = strtoul((const char *)argv[3], NULL, 0);
+    src = strtoul((const char *)argv[1], NULL, 0);
+    dst = strtoul((const char *)argv[2], NULL, 0);
+    size = strtoul((const char *)argv[3], NULL, 0);
 
-	for(i = 0; i < size; i++)
-	{
-		*((u8_t *)(dst+i)) = *((u8_t *)(src+i));
+    for(i = 0; i < size; i++)
+    {
+        *((u8_t *)(dst+i)) = *((u8_t *)(src+i));
 
-		if(ctrlc())
-			return -1;
-	}
+        if(ctrlc())
+            return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_mc = {
-	.name	= "mc",
-	.desc	= "memory copy",
-	.usage	= usage,
-	.exec	= do_mc,
+    .name   = "mc",
+    .desc   = "memory copy",
+    .usage  = usage,
+    .exec   = do_mc,
 };
 
 static __init void mc_cmd_init(void)
 {
-	register_command(&cmd_mc);
+    register_command(&cmd_mc);
 }
 
 static __exit void mc_cmd_exit(void)
 {
-	unregister_command(&cmd_mc);
+    unregister_command(&cmd_mc);
 }
 
 command_initcall(mc_cmd_init);

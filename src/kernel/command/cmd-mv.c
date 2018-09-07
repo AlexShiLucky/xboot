@@ -30,76 +30,76 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    mv SOURCE DEST\r\n");
+    printf("usage:\r\n");
+    printf("    mv SOURCE DEST\r\n");
 }
 
 static int do_mv(int argc, char ** argv)
 {
-	char path[MAX_PATH];
-	char * src, * dest, * p;
-	struct stat st1, st2;
-	s32_t rc;
+    char path[MAX_PATH];
+    char * src, * dest, * p;
+    struct stat st1, st2;
+    s32_t rc;
 
-	src = (char *)argv[1];
-	dest = (char *)argv[2];
+    src = (char *)argv[1];
+    dest = (char *)argv[2];
 
-	if(argc != 3)
-	{
-		usage();
-		return -1;
-	}
+    if(argc != 3)
+    {
+        usage();
+        return -1;
+    }
 
-	/* check if source exists and it's regular file. */
-	if(stat((const char *)src, &st1) != 0)
-	{
-		printf("mv: cannot access %s: No such file or directory\r\n", src);
-		return -1;
-	}
+    /* check if source exists and it's regular file. */
+    if(stat((const char *)src, &st1) != 0)
+    {
+        printf("mv: cannot access %s: No such file or directory\r\n", src);
+        return -1;
+    }
 
-	if(!S_ISREG(st1.st_mode))
-	{
-		printf("mv: invalid file type\r\n");
-		return -1;
-	}
+    if(!S_ISREG(st1.st_mode))
+    {
+        printf("mv: invalid file type\r\n");
+        return -1;
+    }
 
-	/* check if target is a directory. */
-	rc = stat((const char *)dest, &st2);
-	if(!rc && S_ISDIR(st2.st_mode))
-	{
-		p = strrchr(src, '/');
-		p = p ? p + 1 : src;
-		strlcpy(path, dest, sizeof(path));
-		if(strcmp(dest, "/"))
-			strlcat(path, "/", sizeof(path));
-		strlcat(path, p, sizeof(path));
-		dest = path;
-	}
+    /* check if target is a directory. */
+    rc = stat((const char *)dest, &st2);
+    if(!rc && S_ISDIR(st2.st_mode))
+    {
+        p = strrchr(src, '/');
+        p = p ? p + 1 : src;
+        strlcpy(path, dest, sizeof(path));
+        if(strcmp(dest, "/"))
+            strlcat(path, "/", sizeof(path));
+        strlcat(path, p, sizeof(path));
+        dest = path;
+    }
 
     if(rename((char *)src, (char *)dest) != 0)
     {
-    	printf("mv: failed to move file %s to %s\r\n", src, dest);
-    	return -1;
+        printf("mv: failed to move file %s to %s\r\n", src, dest);
+        return -1;
     }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_mv = {
-	.name	= "mv",
-	.desc	= "move (rename) files",
-	.usage	= usage,
-	.exec	= do_mv,
+    .name   = "mv",
+    .desc   = "move (rename) files",
+    .usage  = usage,
+    .exec   = do_mv,
 };
 
 static __init void mv_cmd_init(void)
 {
-	register_command(&cmd_mv);
+    register_command(&cmd_mv);
 }
 
 static __exit void mv_cmd_exit(void)
 {
-	unregister_command(&cmd_mv);
+    unregister_command(&cmd_mv);
 }
 
 command_initcall(mv_cmd_init);

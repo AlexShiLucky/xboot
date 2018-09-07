@@ -6,6 +6,6 @@
 
 int putc(int c, FILE * f)
 {
-	return fputc(c, f);
+    return fputc(c, f);
 }
 EXPORT_SYMBOL(putc);

@@ -30,48 +30,48 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    rmdir DIRECTORY...\r\n");
+    printf("usage:\r\n");
+    printf("    rmdir DIRECTORY...\r\n");
 }
 
 static int do_rmdir(int argc, char ** argv)
 {
-	s32_t ret = 0;
-	s32_t i;
+    s32_t ret = 0;
+    s32_t i;
 
-	if(argc < 2)
-	{
-		usage();
-		return -1;
-	}
+    if(argc < 2)
+    {
+        usage();
+        return -1;
+    }
 
-	for(i = 1; i < argc; i++)
-	{
-		if(rmdir((const char*)argv[i]) != 0)
-		{
-			ret = -1;
-			printf("mkdir: failed to remove directory %s\r\n", argv[i]);
-		}
-	}
+    for(i = 1; i < argc; i++)
+    {
+        if(rmdir((const char*)argv[i]) != 0)
+        {
+            ret = -1;
+            printf("mkdir: failed to remove directory %s\r\n", argv[i]);
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 static struct command_t cmd_rmdir = {
-	.name	= "rmdir",
-	.desc	= "remove empty directories",
-	.usage	= usage,
-	.exec	= do_rmdir,
+    .name   = "rmdir",
+    .desc   = "remove empty directories",
+    .usage  = usage,
+    .exec   = do_rmdir,
 };
 
 static __init void rmdir_cmd_init(void)
 {
-	register_command(&cmd_rmdir);
+    register_command(&cmd_rmdir);
 }
 
 static __exit void rmdir_cmd_exit(void)
 {
-	unregister_command(&cmd_rmdir);
+    unregister_command(&cmd_rmdir);
 }
 
 command_initcall(rmdir_cmd_init);

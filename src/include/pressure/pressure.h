@@ -9,9 +9,9 @@ extern "C" {
 
 struct pressure_t
 {
-	char * name;
-	int (*get)(struct pressure_t * p);
-	void * priv;
+    char * name;
+    int (*get)(struct pressure_t * p);
+    void * priv;
 };
 
 struct pressure_t * search_pressure(const char * name);

@@ -25,8 +25,8 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Authors: Peter Weilbacher <mozilla@weilbacher.org>
- *	    Vladimir Vukicevic <vladimir@pobox.com>
- *	    Carl Worth <cworth@cworth.org>
+ *      Vladimir Vukicevic <vladimir@pobox.com>
+ *      Carl Worth <cworth@cworth.org>
  *          Andrea Canciani <ranma42@gmail.com>
  */
 
@@ -184,7 +184,7 @@ _cairo_time_get (void)
 
 int
 _cairo_time_cmp (const void *a,
-		 const void *b)
+         const void *b)
 {
     const cairo_time_t *ta = a, *tb = b;
     return _cairo_int64_cmp (*ta, *tb);
@@ -196,7 +196,7 @@ _cairo_time_ticks_per_sec (void)
     static double ticks = 0;
 
     if (unlikely (ticks == 0))
-	ticks = _cairo_time_1s ();
+    ticks = _cairo_time_1s ();
 
     return ticks;
 }
@@ -207,7 +207,7 @@ _cairo_time_s_per_tick (void)
     static double s = 0;
 
     if (unlikely (s == 0))
-	s = 1. / _cairo_time_ticks_per_sec ();
+    s = 1. / _cairo_time_ticks_per_sec ();
 
     return s;
 }

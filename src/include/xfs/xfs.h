@@ -8,22 +8,22 @@ extern "C" {
 #include <xfs/archiver.h>
 
 struct xfs_path_t {
-	char * path;
-	void * mhandle;
-	int writable;
-	struct xfs_archiver_t * archiver;
-	struct list_head list;
+    char * path;
+    void * mhandle;
+    int writable;
+    struct xfs_archiver_t * archiver;
+    struct list_head list;
 };
 
 struct xfs_context_t {
-	struct xfs_path_t mounts;
-	spinlock_t lock;
+    struct xfs_path_t mounts;
+    spinlock_t lock;
 };
 
 struct xfs_file_t {
-	struct xfs_context_t * ctx;
-	struct xfs_path_t * path;
-	void * fhandle;
+    struct xfs_context_t * ctx;
+    struct xfs_path_t * path;
+    void * fhandle;
 };
 
 bool_t xfs_mount(struct xfs_context_t * ctx, const char * path, int writable);

@@ -33,7 +33,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  *      Graydon Hoare <graydon@redhat.com>
  *      Owen Taylor <otaylor@redhat.com>
  */
@@ -61,26 +61,26 @@
 /* #cairo_font_face_t */
 
 const cairo_font_face_t _cairo_font_face_nil = {
-    { 0 },				/* hash_entry */
-    CAIRO_STATUS_NO_MEMORY,		/* status */
-    CAIRO_REFERENCE_COUNT_INVALID,	/* ref_count */
-    { 0, 0, 0, NULL },			/* user_data */
+    { 0 },              /* hash_entry */
+    CAIRO_STATUS_NO_MEMORY,     /* status */
+    CAIRO_REFERENCE_COUNT_INVALID,  /* ref_count */
+    { 0, 0, 0, NULL },          /* user_data */
     NULL
 };
 const cairo_font_face_t _cairo_font_face_nil_file_not_found = {
-    { 0 },				/* hash_entry */
-    CAIRO_STATUS_FILE_NOT_FOUND,	/* status */
-    CAIRO_REFERENCE_COUNT_INVALID,	/* ref_count */
-    { 0, 0, 0, NULL },			/* user_data */
+    { 0 },              /* hash_entry */
+    CAIRO_STATUS_FILE_NOT_FOUND,    /* status */
+    CAIRO_REFERENCE_COUNT_INVALID,  /* ref_count */
+    { 0, 0, 0, NULL },          /* user_data */
     NULL
 };
 
 cairo_status_t
 _cairo_font_face_set_error (cairo_font_face_t *font_face,
-	                    cairo_status_t     status)
+                        cairo_status_t     status)
 {
     if (status == CAIRO_STATUS_SUCCESS)
-	return status;
+    return status;
 
     /* Don't overwrite an existing error. This preserves the first
      * error, which is the most significant. */
@@ -91,7 +91,7 @@ _cairo_font_face_set_error (cairo_font_face_t *font_face,
 
 void
 _cairo_font_face_init (cairo_font_face_t               *font_face,
-		       const cairo_font_face_backend_t *backend)
+               const cairo_font_face_backend_t *backend)
 {
     CAIRO_MUTEX_INITIALIZE ();
 
@@ -122,8 +122,8 @@ cairo_font_face_t *
 cairo_font_face_reference (cairo_font_face_t *font_face)
 {
     if (font_face == NULL ||
-	CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
-	return font_face;
+    CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
+    return font_face;
 
     /* We would normally assert that we have a reference here but we
      * can't get away with that due to the zombie case as documented
@@ -142,7 +142,7 @@ __put(cairo_reference_count_t *v)
 
     c = CAIRO_REFERENCE_COUNT_GET_VALUE(v);
     while (c != 1 && (old = _cairo_atomic_int_cmpxchg_return_old(&v->ref_count, c, c - 1)) != c)
-	c = old;
+    c = old;
 
     return c != 1;
 }
@@ -171,8 +171,8 @@ void
 cairo_font_face_destroy (cairo_font_face_t *font_face)
 {
     if (font_face == NULL ||
-	CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
-	return;
+    CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
+    return;
 
     assert (CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&font_face->ref_count));
 
@@ -181,10 +181,10 @@ cairo_font_face_destroy (cairo_font_face_t *font_face)
      * need to effectively mutually reference each other
      */
     if (__put (&font_face->ref_count))
-	return;
+    return;
 
     if (! font_face->backend->destroy (font_face))
-	return;
+    return;
 
     _cairo_user_data_array_fini (&font_face->user_data);
 
@@ -207,7 +207,7 @@ cairo_font_type_t
 cairo_font_face_get_type (cairo_font_face_t *font_face)
 {
     if (CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
-	return CAIRO_FONT_TYPE_TOY;
+    return CAIRO_FONT_TYPE_TOY;
 
     return font_face->backend->type;
 }
@@ -227,8 +227,8 @@ unsigned int
 cairo_font_face_get_reference_count (cairo_font_face_t *font_face)
 {
     if (font_face == NULL ||
-	CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
-	return 0;
+    CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
+    return 0;
 
     return CAIRO_REFERENCE_COUNT_GET_VALUE (&font_face->ref_count);
 }
@@ -266,11 +266,11 @@ cairo_font_face_status (cairo_font_face_t *font_face)
  * Since: 1.0
  **/
 void *
-cairo_font_face_get_user_data (cairo_font_face_t	   *font_face,
-			       const cairo_user_data_key_t *key)
+cairo_font_face_get_user_data (cairo_font_face_t       *font_face,
+                   const cairo_user_data_key_t *key)
 {
     return _cairo_user_data_array_get_data (&font_face->user_data,
-					    key);
+                        key);
 }
 slim_hidden_def (cairo_font_face_get_user_data);
 
@@ -293,22 +293,22 @@ slim_hidden_def (cairo_font_face_get_user_data);
  * Since: 1.0
  **/
 cairo_status_t
-cairo_font_face_set_user_data (cairo_font_face_t	   *font_face,
-			       const cairo_user_data_key_t *key,
-			       void			   *user_data,
-			       cairo_destroy_func_t	    destroy)
+cairo_font_face_set_user_data (cairo_font_face_t       *font_face,
+                   const cairo_user_data_key_t *key,
+                   void            *user_data,
+                   cairo_destroy_func_t     destroy)
 {
     if (CAIRO_REFERENCE_COUNT_IS_INVALID (&font_face->ref_count))
-	return font_face->status;
+    return font_face->status;
 
     return _cairo_user_data_array_set_data (&font_face->user_data,
-					    key, user_data, destroy);
+                        key, user_data, destroy);
 }
 slim_hidden_def (cairo_font_face_set_user_data);
 
 void
 _cairo_unscaled_font_init (cairo_unscaled_font_t               *unscaled_font,
-			   const cairo_unscaled_font_backend_t *backend)
+               const cairo_unscaled_font_backend_t *backend)
 {
     CAIRO_REFERENCE_COUNT_INIT (&unscaled_font->ref_count, 1);
     unscaled_font->backend = backend;
@@ -318,7 +318,7 @@ cairo_unscaled_font_t *
 _cairo_unscaled_font_reference (cairo_unscaled_font_t *unscaled_font)
 {
     if (unscaled_font == NULL)
-	return NULL;
+    return NULL;
 
     assert (CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&unscaled_font->ref_count));
 
@@ -331,15 +331,15 @@ void
 _cairo_unscaled_font_destroy (cairo_unscaled_font_t *unscaled_font)
 {
     if (unscaled_font == NULL)
-	return;
+    return;
 
     assert (CAIRO_REFERENCE_COUNT_HAS_REFERENCE (&unscaled_font->ref_count));
 
     if (__put (&unscaled_font->ref_count))
-	return;
+    return;
 
     if (! unscaled_font->backend->destroy (unscaled_font))
-	return;
+    return;
 
     free (unscaled_font);
 }

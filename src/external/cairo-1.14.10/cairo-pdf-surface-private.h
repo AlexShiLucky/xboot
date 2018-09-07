@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Carl Worth <cworth@cworth.org>
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Carl Worth <cworth@cworth.org>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #ifndef CAIRO_PDF_SURFACE_PRIVATE_H
@@ -108,27 +108,27 @@ typedef enum _cairo_pdf_operation {
 } cairo_pdf_operation_t;
 
 typedef struct _cairo_pdf_smask_group {
-    double		  width;
-    double		  height;
+    double        width;
+    double        height;
     cairo_rectangle_int_t extents;
     cairo_pdf_resource_t  group_res;
     cairo_pdf_operation_t operation;
-    cairo_pattern_t	 *source;
+    cairo_pattern_t  *source;
     cairo_pdf_resource_t  source_res;
-    cairo_pattern_t	 *mask;
-    cairo_path_fixed_t	  path;
-    cairo_fill_rule_t	  fill_rule;
+    cairo_pattern_t  *mask;
+    cairo_path_fixed_t    path;
+    cairo_fill_rule_t     fill_rule;
     cairo_stroke_style_t  style;
-    cairo_matrix_t	  ctm;
-    cairo_matrix_t	  ctm_inverse;
-    char		 *utf8;
+    cairo_matrix_t    ctm;
+    cairo_matrix_t    ctm_inverse;
+    char         *utf8;
     int                   utf8_len;
-    cairo_glyph_t	 *glyphs;
-    int			  num_glyphs;
+    cairo_glyph_t    *glyphs;
+    int           num_glyphs;
     cairo_text_cluster_t *clusters;
     int                   num_clusters;
     cairo_bool_t          cluster_flags;
-    cairo_scaled_font_t	 *scaled_font;
+    cairo_scaled_font_t  *scaled_font;
 } cairo_pdf_smask_group_t;
 
 typedef struct _cairo_pdf_jbig2_global {
@@ -178,22 +178,22 @@ struct _cairo_pdf_surface {
     cairo_bool_t header_emitted;
 
     struct {
-	cairo_bool_t active;
-	cairo_pdf_resource_t self;
-	cairo_pdf_resource_t length;
-	long start_offset;
-	cairo_bool_t compressed;
-	cairo_output_stream_t *old_output;
+    cairo_bool_t active;
+    cairo_pdf_resource_t self;
+    cairo_pdf_resource_t length;
+    long start_offset;
+    cairo_bool_t compressed;
+    cairo_output_stream_t *old_output;
     } pdf_stream;
 
     struct {
-	cairo_bool_t active;
-	cairo_output_stream_t *stream;
-	cairo_output_stream_t *mem_stream;
-	cairo_output_stream_t *old_output;
-	cairo_pdf_resource_t   resource;
-	cairo_box_double_t     bbox;
-	cairo_bool_t is_knockout;
+    cairo_bool_t active;
+    cairo_output_stream_t *stream;
+    cairo_output_stream_t *mem_stream;
+    cairo_output_stream_t *old_output;
+    cairo_pdf_resource_t   resource;
+    cairo_box_double_t     bbox;
+    cairo_bool_t is_knockout;
     } group_stream;
 
     cairo_surface_clipper_t clipper;

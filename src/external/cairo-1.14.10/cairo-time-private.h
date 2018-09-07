@@ -46,7 +46,7 @@ typedef cairo_int64_t cairo_time_t;
 
 cairo_private int
 _cairo_time_cmp (const void *a,
-		 const void *b);
+         const void *b);
 
 cairo_private double
 _cairo_time_to_s (cairo_time_t t);
@@ -77,18 +77,18 @@ static cairo_always_inline cairo_time_t
 _cairo_time_max (cairo_time_t a, cairo_time_t b)
 {
     if (_cairo_int64_gt (a, b))
-	return a;
+    return a;
     else
-	return b;
+    return b;
 }
 
 static cairo_always_inline cairo_time_t
 _cairo_time_min (cairo_time_t a, cairo_time_t b)
 {
     if (_cairo_int64_lt (a, b))
-	return a;
+    return a;
     else
-	return b;
+    return b;
 }
 
 #endif

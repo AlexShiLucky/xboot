@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Intel Corporation
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_BACKEND_PRIVATE_H
@@ -160,15 +160,15 @@ struct _cairo_backend {
     cairo_status_t (*font_extents) (void *cr, cairo_font_extents_t *extents);
 
     cairo_status_t (*glyphs) (void *cr,
-			      const cairo_glyph_t *glyphs, int num_glyphs,
-			      cairo_glyph_text_info_t *info);
+                  const cairo_glyph_t *glyphs, int num_glyphs,
+                  cairo_glyph_text_info_t *info);
     cairo_status_t (*glyph_path) (void *cr,
-				  const cairo_glyph_t *glyphs, int num_glyphs);
+                  const cairo_glyph_t *glyphs, int num_glyphs);
 
     cairo_status_t (*glyph_extents) (void *cr,
-				     const cairo_glyph_t *glyphs,
-				     int num_glyphs,
-				     cairo_text_extents_t *extents);
+                     const cairo_glyph_t *glyphs,
+                     int num_glyphs,
+                     cairo_text_extents_t *extents);
 
     cairo_status_t (*copy_page) (void *cr);
     cairo_status_t (*show_page) (void *cr);

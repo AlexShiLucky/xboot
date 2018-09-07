@@ -8,67 +8,67 @@ extern "C" {
 #include <xboot.h>
 
 enum pcm_format_t {
-	PCM_FORMAT_BIT8		= 8,
-	PCM_FORMAT_BIT16	= 16,
-	PCM_FORMAT_BIT24	= 24,
-	PCM_FORMAT_BIT32	= 32,
+    PCM_FORMAT_BIT8     = 8,
+    PCM_FORMAT_BIT16    = 16,
+    PCM_FORMAT_BIT24    = 24,
+    PCM_FORMAT_BIT32    = 32,
 };
 
 enum pcm_rate_t {
-	PCM_RATE_8000		= 8000,
-	PCM_RATE_11025		= 11025,
-	PCM_RATE_16000		= 16000,
-	PCM_RATE_22050		= 22050,
-	PCM_RATE_32000		= 32000,
-	PCM_RATE_44100		= 44100,
-	PCM_RATE_48000		= 48000,
-	PCM_RATE_64000		= 64000,
-	PCM_RATE_88200		= 88200,
-	PCM_RATE_96000		= 96000,
-	PCM_RATE_176400		= 176400,
-	PCM_RATE_192000		= 192000,
+    PCM_RATE_8000       = 8000,
+    PCM_RATE_11025      = 11025,
+    PCM_RATE_16000      = 16000,
+    PCM_RATE_22050      = 22050,
+    PCM_RATE_32000      = 32000,
+    PCM_RATE_44100      = 44100,
+    PCM_RATE_48000      = 48000,
+    PCM_RATE_64000      = 64000,
+    PCM_RATE_88200      = 88200,
+    PCM_RATE_96000      = 96000,
+    PCM_RATE_176400     = 176400,
+    PCM_RATE_192000     = 192000,
 };
 
 enum sound_status_t {
-	SOUND_STATUS_STOP	= 0,
-	SOUND_STATUS_PLAY	= 1,
-	SOUND_STATUS_PAUSE	= 2,
+    SOUND_STATUS_STOP   = 0,
+    SOUND_STATUS_PLAY   = 1,
+    SOUND_STATUS_PAUSE  = 2,
 };
 
 struct sound_info_t {
-	char * title;
-	char * singer;
-	enum pcm_rate_t rate;
-	enum pcm_format_t fmt;
-	int channel;
-	int length;
+    char * title;
+    char * singer;
+    enum pcm_rate_t rate;
+    enum pcm_format_t fmt;
+    int channel;
+    int length;
 };
 
 struct sound_t
 {
-	/* Sound information */
-	struct sound_info_t info;
+    /* Sound information */
+    struct sound_info_t info;
 
-	/* Sound status */
-	enum sound_status_t status;
+    /* Sound status */
+    enum sound_status_t status;
 
-	/* Sound volume */
-	int volume;
+    /* Sound volume */
+    int volume;
 
-	/* Sound position */
-	int position;
+    /* Sound position */
+    int position;
 
-	/* Sound seek */
-	int (*seek)(struct sound_t * snd, int offset);
+    /* Sound seek */
+    int (*seek)(struct sound_t * snd, int offset);
 
-	/* Sound read */
-	int (*read)(struct sound_t * snd, void * buf, int count);
+    /* Sound read */
+    int (*read)(struct sound_t * snd, void * buf, int count);
 
-	/* Sound close */
-	void (*close)(struct sound_t * snd);
+    /* Sound close */
+    void (*close)(struct sound_t * snd);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct sound_t * sound_alloc(const char * filename);

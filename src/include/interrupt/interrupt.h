@@ -8,32 +8,32 @@ extern "C" {
 #include <xboot.h>
 
 enum irq_type_t {
-	IRQ_TYPE_NONE			= 0,
-	IRQ_TYPE_LEVEL_LOW		= 1,
-	IRQ_TYPE_LEVEL_HIGH		= 2,
-	IRQ_TYPE_EDGE_FALLING	= 3,
-	IRQ_TYPE_EDGE_RISING	= 4,
-	IRQ_TYPE_EDGE_BOTH		= 5,
+    IRQ_TYPE_NONE           = 0,
+    IRQ_TYPE_LEVEL_LOW      = 1,
+    IRQ_TYPE_LEVEL_HIGH     = 2,
+    IRQ_TYPE_EDGE_FALLING   = 3,
+    IRQ_TYPE_EDGE_RISING    = 4,
+    IRQ_TYPE_EDGE_BOTH      = 5,
 };
 
 struct irq_handler_t {
-	void (*func)(void * data);
-	void * data;
+    void (*func)(void * data);
+    void * data;
 };
 
 struct irqchip_t
 {
-	char * name;
-	int base;
-	int nirq;
+    char * name;
+    int base;
+    int nirq;
 
-	struct irq_handler_t * handler;
-	void (*enable)(struct irqchip_t * chip, int offset);
-	void (*disable)(struct irqchip_t * chip, int offset);
-	void (*settype)(struct irqchip_t * chip, int offset, enum irq_type_t type);
-	void (*dispatch)(struct irqchip_t * chip);
+    struct irq_handler_t * handler;
+    void (*enable)(struct irqchip_t * chip, int offset);
+    void (*disable)(struct irqchip_t * chip, int offset);
+    void (*settype)(struct irqchip_t * chip, int offset, enum irq_type_t type);
+    void (*dispatch)(struct irqchip_t * chip);
 
-	void * priv;
+    void * priv;
 };
 
 bool_t register_irqchip(struct device_t ** device, struct irqchip_t * chip);

@@ -9,13 +9,13 @@ extern "C" {
 
 struct adc_t
 {
-	char * name;
-	int vreference;
-	int resolution;
-	int nchannel;
+    char * name;
+    int vreference;
+    int resolution;
+    int nchannel;
 
-	u32_t (*read)(struct adc_t * adc, int channel);
-	void * priv;
+    u32_t (*read)(struct adc_t * adc, int channel);
+    void * priv;
 };
 
 struct adc_t * search_adc(const char * name);

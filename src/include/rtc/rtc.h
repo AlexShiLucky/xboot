@@ -8,28 +8,28 @@ extern "C" {
 #include <xboot.h>
 
 struct rtc_time_t {
-	u8_t second;
-	u8_t minute;
-	u8_t hour;
-	u8_t week;
-	u8_t day;
-	u8_t month;
-	u16_t year;
+    u8_t second;
+    u8_t minute;
+    u8_t hour;
+    u8_t week;
+    u8_t day;
+    u8_t month;
+    u16_t year;
 };
 
 struct rtc_t
 {
-	/* The rtc name */
-	char * name;
+    /* The rtc name */
+    char * name;
 
-	/* Set rtc time */
-	bool_t (*settime)(struct rtc_t * rtc, struct rtc_time_t * time);
+    /* Set rtc time */
+    bool_t (*settime)(struct rtc_t * rtc, struct rtc_time_t * time);
 
-	/* Get rtc time */
-	bool_t (*gettime)(struct rtc_t * rtc, struct rtc_time_t * time);
+    /* Get rtc time */
+    bool_t (*gettime)(struct rtc_t * rtc, struct rtc_time_t * time);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct rtc_t * search_rtc(const char * name);

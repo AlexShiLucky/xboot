@@ -9,10 +9,10 @@ extern "C" {
 
 struct compass_t
 {
-	char * name;
-	int ox, oy, oz;
-	bool_t (*get)(struct compass_t * c, int * x, int * y, int * z);
-	void * priv;
+    char * name;
+    int ox, oy, oz;
+    bool_t (*get)(struct compass_t * c, int * x, int * y, int * z);
+    void * priv;
 };
 
 struct compass_t * search_compass(const char * name);

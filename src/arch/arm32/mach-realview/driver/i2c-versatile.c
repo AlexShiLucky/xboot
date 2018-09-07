@@ -45,103 +45,103 @@
  *   }
  */
 
-#define I2C_CONTROL		(0x00)
-#define I2C_CONTROLS	(0x00)
-#define I2C_CONTROLC	(0x04)
-#define SCL				(1 << 0)
-#define SDA				(1 << 1)
+#define I2C_CONTROL     (0x00)
+#define I2C_CONTROLS    (0x00)
+#define I2C_CONTROLC    (0x04)
+#define SCL             (1 << 0)
+#define SDA             (1 << 1)
 
 struct i2c_versatile_pdata_t {
-	virtual_addr_t virt;
-	struct i2c_algo_bit_data_t bdat;
+    virtual_addr_t virt;
+    struct i2c_algo_bit_data_t bdat;
 };
 
 static void i2c_versatile_setsda(struct i2c_algo_bit_data_t * bdat, int state)
 {
-	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
-	write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SDA);
+    struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
+    write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SDA);
 }
 
 static void i2c_versatile_setscl(struct i2c_algo_bit_data_t * bdat, int state)
 {
-	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
-	write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SCL);
+    struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
+    write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SCL);
 }
 
 static int i2c_versatile_getsda(struct i2c_algo_bit_data_t * bdat)
 {
-	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
-	return !!(read32(pdat->virt + I2C_CONTROL) & SDA);
+    struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
+    return !!(read32(pdat->virt + I2C_CONTROL) & SDA);
 }
 
 static int i2c_versatile_getscl(struct i2c_algo_bit_data_t * bdat)
 {
-	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
-	return !!(read32(pdat->virt + I2C_CONTROL) & SCL);
+    struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
+    return !!(read32(pdat->virt + I2C_CONTROL) & SCL);
 }
 
 static int i2c_versatile_xfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 {
-	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)i2c->priv;
-	struct i2c_algo_bit_data_t * bdat = (struct i2c_algo_bit_data_t *)(&pdat->bdat);
-	return i2c_algo_bit_xfer(bdat, msgs, num);
+    struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)i2c->priv;
+    struct i2c_algo_bit_data_t * bdat = (struct i2c_algo_bit_data_t *)(&pdat->bdat);
+    return i2c_algo_bit_xfer(bdat, msgs, num);
 }
 
 static struct device_t * i2c_versatile_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct i2c_versatile_pdata_t * pdat;
-	struct i2c_t * i2c;
-	struct device_t * dev;
-	virtual_addr_t virt = phys_to_virt(dt_read_address(n));
+    struct i2c_versatile_pdata_t * pdat;
+    struct i2c_t * i2c;
+    struct device_t * dev;
+    virtual_addr_t virt = phys_to_virt(dt_read_address(n));
 
-	pdat = malloc(sizeof(struct i2c_versatile_pdata_t));
-	if(!pdat)
-		return FALSE;
+    pdat = malloc(sizeof(struct i2c_versatile_pdata_t));
+    if(!pdat)
+        return FALSE;
 
-	i2c = malloc(sizeof(struct i2c_t));
-	if(!i2c)
-	{
-		free(pdat);
-		return FALSE;
-	}
+    i2c = malloc(sizeof(struct i2c_t));
+    if(!i2c)
+    {
+        free(pdat);
+        return FALSE;
+    }
 
-	pdat->virt = virt;
-	pdat->bdat.setsda = i2c_versatile_setsda;
-	pdat->bdat.setscl = i2c_versatile_setscl;
-	pdat->bdat.getsda = i2c_versatile_getsda;
-	pdat->bdat.getscl = i2c_versatile_getscl;
-	pdat->bdat.udelay = dt_read_int(n, "delay-us", 5);
-	pdat->bdat.priv = pdat;
+    pdat->virt = virt;
+    pdat->bdat.setsda = i2c_versatile_setsda;
+    pdat->bdat.setscl = i2c_versatile_setscl;
+    pdat->bdat.getsda = i2c_versatile_getsda;
+    pdat->bdat.getscl = i2c_versatile_getscl;
+    pdat->bdat.udelay = dt_read_int(n, "delay-us", 5);
+    pdat->bdat.priv = pdat;
 
-	i2c->name = alloc_device_name(dt_read_name(n), -1);
-	i2c->xfer = i2c_versatile_xfer;
-	i2c->priv = pdat;
+    i2c->name = alloc_device_name(dt_read_name(n), -1);
+    i2c->xfer = i2c_versatile_xfer;
+    i2c->priv = pdat;
 
-	i2c_versatile_setsda(&pdat->bdat, 1);
-	i2c_versatile_setscl(&pdat->bdat, 1);
+    i2c_versatile_setsda(&pdat->bdat, 1);
+    i2c_versatile_setscl(&pdat->bdat, 1);
 
-	if(!register_i2c(&dev, i2c))
-	{
-		free_device_name(i2c->name);
-		free(i2c->priv);
-		free(i2c);
-		return NULL;
-	}
-	dev->driver = drv;
+    if(!register_i2c(&dev, i2c))
+    {
+        free_device_name(i2c->name);
+        free(i2c->priv);
+        free(i2c);
+        return NULL;
+    }
+    dev->driver = drv;
 
-	return dev;
+    return dev;
 }
 
 static void i2c_versatile_remove(struct device_t * dev)
 {
-	struct i2c_t * i2c = (struct i2c_t *)dev->priv;
+    struct i2c_t * i2c = (struct i2c_t *)dev->priv;
 
-	if(i2c && unregister_i2c(i2c))
-	{
-		free_device_name(i2c->name);
-		free(i2c->priv);
-		free(i2c);
-	}
+    if(i2c && unregister_i2c(i2c))
+    {
+        free_device_name(i2c->name);
+        free(i2c->priv);
+        free(i2c);
+    }
 }
 
 static void i2c_versatile_suspend(struct device_t * dev)
@@ -154,21 +154,21 @@ static void i2c_versatile_resume(struct device_t * dev)
 
 /* 全局i2c驱动控制块 */
 static struct driver_t i2c_versatile = {
-	.name		= "i2c-versatile",
-	.probe		= i2c_versatile_probe,
-	.remove		= i2c_versatile_remove,
-	.suspend	= i2c_versatile_suspend,
-	.resume		= i2c_versatile_resume,
+    .name       = "i2c-versatile",
+    .probe      = i2c_versatile_probe,
+    .remove     = i2c_versatile_remove,
+    .suspend    = i2c_versatile_suspend,
+    .resume     = i2c_versatile_resume,
 };
 
 static __init void i2c_versatile_driver_init(void)
 {
-	register_driver(&i2c_versatile);
+    register_driver(&i2c_versatile);
 }
 
 static __exit void i2c_versatile_driver_exit(void)
 {
-	unregister_driver(&i2c_versatile);
+    unregister_driver(&i2c_versatile);
 }
 
 driver_initcall(i2c_versatile_driver_init);

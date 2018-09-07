@@ -6,6 +6,6 @@
 
 void rewind(FILE * f)
 {
-	fseek(f, 0, SEEK_SET);
+    fseek(f, 0, SEEK_SET);
 }
 EXPORT_SYMBOL(rewind);

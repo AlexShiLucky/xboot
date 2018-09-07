@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Kristian Høgsberg <krh@redhat.com>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -58,43 +58,43 @@ _cairo_clip_extract_region (cairo_clip_t *clip)
     int i;
 
     if (clip->num_boxes == 0)
-	return;
+    return;
 
     if (clip->num_boxes > ARRAY_LENGTH (stack_rects)) {
-	r = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_rectangle_int_t));
-	if (r == NULL){
-	    _cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
-	    return;
-	}
+    r = _cairo_malloc_ab (clip->num_boxes, sizeof (cairo_rectangle_int_t));
+    if (r == NULL){
+        _cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
+        return;
+    }
     }
 
     is_region = clip->path == NULL;
     for (i = 0; i < clip->num_boxes; i++) {
-	cairo_box_t *b = &clip->boxes[i];
-	if (is_region)
-	    is_region =
-		_cairo_fixed_is_integer (b->p1.x | b->p1.y |  b->p2.x | b->p2.y);
-	r[i].x = _cairo_fixed_integer_floor (b->p1.x);
-	r[i].y = _cairo_fixed_integer_floor (b->p1.y);
-	r[i].width  = _cairo_fixed_integer_ceil (b->p2.x) - r[i].x;
-	r[i].height = _cairo_fixed_integer_ceil (b->p2.y) - r[i].y;
+    cairo_box_t *b = &clip->boxes[i];
+    if (is_region)
+        is_region =
+        _cairo_fixed_is_integer (b->p1.x | b->p1.y |  b->p2.x | b->p2.y);
+    r[i].x = _cairo_fixed_integer_floor (b->p1.x);
+    r[i].y = _cairo_fixed_integer_floor (b->p1.y);
+    r[i].width  = _cairo_fixed_integer_ceil (b->p2.x) - r[i].x;
+    r[i].height = _cairo_fixed_integer_ceil (b->p2.y) - r[i].y;
     }
     clip->is_region = is_region;
 
     clip->region = cairo_region_create_rectangles (r, i);
 
     if (r != stack_rects)
-	free (r);
+    free (r);
 }
 
 cairo_region_t *
 _cairo_clip_get_region (const cairo_clip_t *clip)
 {
     if (clip == NULL)
-	return NULL;
+    return NULL;
 
     if (clip->region == NULL)
-	_cairo_clip_extract_region ((cairo_clip_t *) clip);
+    _cairo_clip_extract_region ((cairo_clip_t *) clip);
 
     return clip->region;
 }
@@ -103,21 +103,21 @@ cairo_bool_t
 _cairo_clip_is_region (const cairo_clip_t *clip)
 {
     if (clip == NULL)
-	return TRUE;
+    return TRUE;
 
     if (clip->is_region)
-	return TRUE;
+    return TRUE;
 
     /* XXX Geometric reduction? */
 
     if (clip->path)
-	return FALSE;
+    return FALSE;
 
     if (clip->num_boxes == 0)
-	return TRUE;
+    return TRUE;
 
     if (clip->region == NULL)
-	_cairo_clip_extract_region ((cairo_clip_t *) clip);
+    _cairo_clip_extract_region ((cairo_clip_t *) clip);
 
     return clip->is_region;
 }

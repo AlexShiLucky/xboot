@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_SCALED_FONT_PRIVATE_H
@@ -74,7 +74,7 @@ struct _cairo_scaled_font {
      *
      * 2. The cache of glyphs (scaled_font->glyphs)
      * 3. The backend private data (scaled_font->surface_backend,
-     *				    scaled_font->surface_private)
+     *                  scaled_font->surface_private)
      *
      *    Modifications to these fields are protected with locks on
      *    scaled_font->mutex in the generic scaled_font code.
@@ -91,8 +91,8 @@ struct _cairo_scaled_font {
 
     /* hash key members */
     cairo_font_face_t *font_face; /* may be NULL */
-    cairo_matrix_t font_matrix;	  /* font space => user space */
-    cairo_matrix_t ctm;	          /* user space => device space */
+    cairo_matrix_t font_matrix;   /* font space => user space */
+    cairo_matrix_t ctm;           /* user space => device space */
     cairo_font_options_t options;
 
     unsigned int placeholder : 1; /*  protected by fontmap mutex */
@@ -100,9 +100,9 @@ struct _cairo_scaled_font {
     unsigned int finished : 1;
 
     /* "live" scaled_font members */
-    cairo_matrix_t scale;	     /* font space => device space */
+    cairo_matrix_t scale;        /* font space => device space */
     cairo_matrix_t scale_inverse;    /* device space => font space */
-    double max_scale;		     /* maximum x/y expansion of scale */
+    double max_scale;            /* maximum x/y expansion of scale */
     cairo_font_extents_t extents;    /* user space */
     cairo_font_extents_t fs_extents; /* font space */
 
@@ -125,25 +125,25 @@ struct _cairo_scaled_font_private {
     cairo_list_t link;
     const void *key;
     void (*destroy) (cairo_scaled_font_private_t *,
-		     cairo_scaled_font_t *);
+             cairo_scaled_font_t *);
 };
 
 struct _cairo_scaled_glyph {
     cairo_hash_entry_t hash_entry;
 
-    cairo_text_extents_t    metrics;		/* user-space metrics */
-    cairo_text_extents_t    fs_metrics;		/* font-space metrics */
-    cairo_box_t		    bbox;		/* device-space bounds */
-    int16_t                 x_advance;		/* device-space rounded X advance */
-    int16_t                 y_advance;		/* device-space rounded Y advance */
+    cairo_text_extents_t    metrics;        /* user-space metrics */
+    cairo_text_extents_t    fs_metrics;     /* font-space metrics */
+    cairo_box_t         bbox;       /* device-space bounds */
+    int16_t                 x_advance;      /* device-space rounded X advance */
+    int16_t                 y_advance;      /* device-space rounded Y advance */
 
-    unsigned int	    has_info;
-    cairo_image_surface_t   *surface;		/* device-space image */
-    cairo_path_fixed_t	    *path;		/* device-space outline */
-    cairo_surface_t         *recording_surface;	/* device-space recording-surface */
+    unsigned int        has_info;
+    cairo_image_surface_t   *surface;       /* device-space image */
+    cairo_path_fixed_t      *path;      /* device-space outline */
+    cairo_surface_t         *recording_surface; /* device-space recording-surface */
 
-    const void		   *dev_private_key;
-    void		   *dev_private;
+    const void         *dev_private_key;
+    void           *dev_private;
     cairo_list_t            dev_privates;
 };
 
@@ -151,32 +151,32 @@ struct _cairo_scaled_glyph_private {
     cairo_list_t link;
     const void *key;
     void (*destroy) (cairo_scaled_glyph_private_t *,
-		     cairo_scaled_glyph_t *,
-		     cairo_scaled_font_t *);
+             cairo_scaled_glyph_t *,
+             cairo_scaled_font_t *);
 };
 
 cairo_private cairo_scaled_font_private_t *
 _cairo_scaled_font_find_private (cairo_scaled_font_t *scaled_font,
-				 const void *key);
+                 const void *key);
 
 cairo_private void
 _cairo_scaled_font_attach_private (cairo_scaled_font_t *scaled_font,
-				   cairo_scaled_font_private_t *priv,
-				   const void *key,
-				   void (*destroy) (cairo_scaled_font_private_t *,
-						    cairo_scaled_font_t *));
+                   cairo_scaled_font_private_t *priv,
+                   const void *key,
+                   void (*destroy) (cairo_scaled_font_private_t *,
+                            cairo_scaled_font_t *));
 
 cairo_private cairo_scaled_glyph_private_t *
 _cairo_scaled_glyph_find_private (cairo_scaled_glyph_t *scaled_glyph,
-				 const void *key);
+                 const void *key);
 
 cairo_private void
 _cairo_scaled_glyph_attach_private (cairo_scaled_glyph_t *scaled_glyph,
-				   cairo_scaled_glyph_private_t *priv,
-				   const void *key,
-				   void (*destroy) (cairo_scaled_glyph_private_t *,
-						    cairo_scaled_glyph_t *,
-						    cairo_scaled_font_t *));
+                   cairo_scaled_glyph_private_t *priv,
+                   const void *key,
+                   void (*destroy) (cairo_scaled_glyph_private_t *,
+                            cairo_scaled_glyph_t *,
+                            cairo_scaled_font_t *));
 
 CAIRO_END_DECLS
 

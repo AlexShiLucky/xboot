@@ -6,13 +6,13 @@
 
 int sprintf(char * buf, const char * fmt, ...)
 {
-	va_list ap;
-	int rv;
+    va_list ap;
+    int rv;
 
-	va_start(ap, fmt);
-	rv = vsnprintf(buf, ~(size_t)0, fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    rv = vsnprintf(buf, ~(size_t)0, fmt, ap);
+    va_end(ap);
 
-	return rv;
+    return rv;
 }
 EXPORT_SYMBOL(sprintf);

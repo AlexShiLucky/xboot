@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Adrian Johnson.
  *
  * Contributor(s):
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #include "cairoint.h"
@@ -99,36 +99,36 @@ encode_alpha (unsigned char *p, const cairo_color_t *color)
 
 static cairo_status_t
 _cairo_pdf_shading_generate_decode_array (cairo_pdf_shading_t        *shading,
-					  const cairo_mesh_pattern_t *mesh,
-					  cairo_bool_t                is_alpha)
+                      const cairo_mesh_pattern_t *mesh,
+                      cairo_bool_t                is_alpha)
 {
     unsigned int num_color_components, i;
     cairo_bool_t is_valid;
 
     if (is_alpha)
-	num_color_components = 1;
+    num_color_components = 1;
     else
-	num_color_components = 3;
+    num_color_components = 3;
 
     shading->decode_array_length = 4 + num_color_components * 2;
     shading->decode_array = _cairo_malloc_ab (shading->decode_array_length,
-					      sizeof (double));
+                          sizeof (double));
     if (unlikely (shading->decode_array == NULL))
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     is_valid = _cairo_mesh_pattern_coord_box (mesh,
-					      &shading->decode_array[0],
-					      &shading->decode_array[2],
-					      &shading->decode_array[1],
-					      &shading->decode_array[3]);
+                          &shading->decode_array[0],
+                          &shading->decode_array[2],
+                          &shading->decode_array[1],
+                          &shading->decode_array[3]);
 
     assert (is_valid);
     assert (shading->decode_array[1] - shading->decode_array[0] >= DBL_EPSILON);
     assert (shading->decode_array[3] - shading->decode_array[2] >= DBL_EPSILON);
 
     for (i = 0; i < num_color_components; i++) {
-	shading->decode_array[4 + 2*i] = 0;
-	shading->decode_array[5 + 2*i] = 1;
+    shading->decode_array[4 + 2*i] = 0;
+    shading->decode_array[5 + 2*i] = 1;
     }
 
     return CAIRO_STATUS_SUCCESS;
@@ -143,8 +143,8 @@ static const int pdf_points_order_j[16] = {
 
 static cairo_status_t
 _cairo_pdf_shading_generate_data (cairo_pdf_shading_t        *shading,
-				  const cairo_mesh_pattern_t *mesh,
-				  cairo_bool_t                is_alpha)
+                  const cairo_mesh_pattern_t *mesh,
+                  cairo_bool_t                is_alpha)
 {
     const cairo_mesh_patch_t *patch;
     double x_off, y_off, x_scale, y_scale;
@@ -154,9 +154,9 @@ _cairo_pdf_shading_generate_data (cairo_pdf_shading_t        *shading,
     unsigned int i, j;
 
     if (is_alpha)
-	num_color_components = 1;
+    num_color_components = 1;
     else
-	num_color_components = 3;
+    num_color_components = 3;
 
     num_patches = _cairo_array_num_elements (&mesh->patches);
     patch = _cairo_array_index_const (&mesh->patches, 0);
@@ -172,7 +172,7 @@ _cairo_pdf_shading_generate_data (cairo_pdf_shading_t        *shading,
     shading->data_length = num_patches * (1 + 16 * 2 * 4 + 4 * 2 * num_color_components);
     shading->data = malloc (shading->data_length);
     if (unlikely (shading->data == NULL))
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     x_off = shading->decode_array[0];
     y_off = shading->decode_array[2];
@@ -181,39 +181,39 @@ _cairo_pdf_shading_generate_data (cairo_pdf_shading_t        *shading,
 
     p = shading->data;
     for (i = 0; i < num_patches; i++) {
-	/* edge flag */
-	*p++ = 0;
+    /* edge flag */
+    *p++ = 0;
 
-	/* 16 points */
-	for (j = 0; j < 16; j++) {
-	    cairo_point_double_t point;
-	    int pi, pj;
+    /* 16 points */
+    for (j = 0; j < 16; j++) {
+        cairo_point_double_t point;
+        int pi, pj;
 
-	    pi = pdf_points_order_i[j];
-	    pj = pdf_points_order_j[j];
-	    point = patch[i].points[pi][pj];
+        pi = pdf_points_order_i[j];
+        pj = pdf_points_order_j[j];
+        point = patch[i].points[pi][pj];
 
-	    /* Transform the point as specified in the decode array */
-	    point.x -= x_off;
-	    point.y -= y_off;
-	    point.x *= x_scale;
-	    point.y *= y_scale;
+        /* Transform the point as specified in the decode array */
+        point.x -= x_off;
+        point.y -= y_off;
+        point.x *= x_scale;
+        point.y *= y_scale;
 
-	    /* Make sure that rounding errors don't cause
-	     * wraparounds */
-	    point.x = _cairo_restrict_value (point.x, 0, UINT32_MAX);
-	    point.y = _cairo_restrict_value (point.y, 0, UINT32_MAX);
+        /* Make sure that rounding errors don't cause
+         * wraparounds */
+        point.x = _cairo_restrict_value (point.x, 0, UINT32_MAX);
+        point.y = _cairo_restrict_value (point.y, 0, UINT32_MAX);
 
-	    p = encode_point (p, &point);
-	}
+        p = encode_point (p, &point);
+    }
 
-	/* 4 colors */
-	for (j = 0; j < 4; j++) {
-	    if (is_alpha)
-		p = encode_alpha (p, &patch[i].colors[j]);
-	    else
-		p = encode_color (p, &patch[i].colors[j]);
-	}
+    /* 4 colors */
+    for (j = 0; j < 4; j++) {
+        if (is_alpha)
+        p = encode_alpha (p, &patch[i].colors[j]);
+        else
+        p = encode_color (p, &patch[i].colors[j]);
+    }
     }
 
     assert (p == shading->data + shading->data_length);
@@ -223,8 +223,8 @@ _cairo_pdf_shading_generate_data (cairo_pdf_shading_t        *shading,
 
 static cairo_status_t
 _cairo_pdf_shading_init (cairo_pdf_shading_t        *shading,
-			 const cairo_mesh_pattern_t *mesh,
-			 cairo_bool_t                is_alpha)
+             const cairo_mesh_pattern_t *mesh,
+             cairo_bool_t                is_alpha)
 {
     cairo_status_t status;
 
@@ -250,21 +250,21 @@ _cairo_pdf_shading_init (cairo_pdf_shading_t        *shading,
 
     status = _cairo_pdf_shading_generate_decode_array (shading, mesh, is_alpha);
     if (unlikely (status))
-	return status;
+    return status;
 
     return _cairo_pdf_shading_generate_data (shading, mesh, is_alpha);
 }
 
 cairo_status_t
 _cairo_pdf_shading_init_color (cairo_pdf_shading_t        *shading,
-			       const cairo_mesh_pattern_t *pattern)
+                   const cairo_mesh_pattern_t *pattern)
 {
     return _cairo_pdf_shading_init (shading, pattern, FALSE);
 }
 
 cairo_status_t
 _cairo_pdf_shading_init_alpha (cairo_pdf_shading_t        *shading,
-			       const cairo_mesh_pattern_t *pattern)
+                   const cairo_mesh_pattern_t *pattern)
 {
     return _cairo_pdf_shading_init (shading, pattern, TRUE);
 }

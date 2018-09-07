@@ -30,105 +30,105 @@
 
 static ssize_t resetchip_read_base(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct resetchip_t * chip = (struct resetchip_t *)kobj->priv;
-	return sprintf(buf, "%d", chip->base);
+    struct resetchip_t * chip = (struct resetchip_t *)kobj->priv;
+    return sprintf(buf, "%d", chip->base);
 }
 
 static ssize_t resetchip_read_nreset(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct resetchip_t * chip = (struct resetchip_t *)kobj->priv;
-	return sprintf(buf, "%d", chip->nreset);
+    struct resetchip_t * chip = (struct resetchip_t *)kobj->priv;
+    return sprintf(buf, "%d", chip->nreset);
 }
 
 struct resetchip_t * search_resetchip(int reset)
 {
-	struct device_t * pos, * n;
-	struct resetchip_t * chip;
+    struct device_t * pos, * n;
+    struct resetchip_t * chip;
 
-	list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_RESETCHIP], head)
-	{
-		chip = (struct resetchip_t *)(pos->priv);
-		if((reset >= chip->base) && (reset < (chip->base + chip->nreset)))
-			return chip;
-	}
-	return NULL;
+    list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_RESETCHIP], head)
+    {
+        chip = (struct resetchip_t *)(pos->priv);
+        if((reset >= chip->base) && (reset < (chip->base + chip->nreset)))
+            return chip;
+    }
+    return NULL;
 }
 
 bool_t register_resetchip(struct device_t ** device, struct resetchip_t * chip)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!chip || !chip->name)
-		return FALSE;
+    if(!chip || !chip->name)
+        return FALSE;
 
-	if(chip->base < 0 || chip->nreset <= 0)
-		return FALSE;
+    if(chip->base < 0 || chip->nreset <= 0)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(chip->name);
-	dev->type = DEVICE_TYPE_RESETCHIP;
-	dev->priv = chip;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "base", resetchip_read_base, NULL, chip);
-	kobj_add_regular(dev->kobj, "nreset", resetchip_read_nreset, NULL, chip);
+    dev->name = strdup(chip->name);
+    dev->type = DEVICE_TYPE_RESETCHIP;
+    dev->priv = chip;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "base", resetchip_read_base, NULL, chip);
+    kobj_add_regular(dev->kobj, "nreset", resetchip_read_nreset, NULL, chip);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 bool_t unregister_resetchip(struct resetchip_t * chip)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!chip || !chip->name)
-		return FALSE;
+    if(!chip || !chip->name)
+        return FALSE;
 
-	if(chip->base < 0 || chip->nreset <= 0)
-		return FALSE;
+    if(chip->base < 0 || chip->nreset <= 0)
+        return FALSE;
 
-	dev = search_device(chip->name, DEVICE_TYPE_RESETCHIP);
-	if(!dev)
-		return FALSE;
+    dev = search_device(chip->name, DEVICE_TYPE_RESETCHIP);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 int reset_is_valid(int reset)
 {
-	return search_resetchip(reset) ? 1 : 0;
+    return search_resetchip(reset) ? 1 : 0;
 }
 
 void reset_assert(int rst)
 {
-	struct resetchip_t * chip = search_resetchip(rst);
+    struct resetchip_t * chip = search_resetchip(rst);
 
-	#undef assert
-	if(chip && chip->assert)
-		chip->assert(chip, rst - chip->base);
+    #undef assert
+    if(chip && chip->assert)
+        chip->assert(chip, rst - chip->base);
 }
 
 void reset_deassert(int rst)
 {
-	struct resetchip_t * chip = search_resetchip(rst);
+    struct resetchip_t * chip = search_resetchip(rst);
 
-	if(chip && chip->deassert)
-		chip->deassert(chip, rst - chip->base);
+    if(chip && chip->deassert)
+        chip->deassert(chip, rst - chip->base);
 }

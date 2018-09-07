@@ -9,10 +9,10 @@ extern "C" {
 
 struct light_t
 {
-	char * name;
+    char * name;
 
-	int (*get)(struct light_t * light);
-	void * priv;
+    int (*get)(struct light_t * light);
+    void * priv;
 };
 
 struct light_t * search_light(const char * name);

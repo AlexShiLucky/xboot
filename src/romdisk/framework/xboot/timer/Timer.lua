@@ -13,13 +13,13 @@ local M = Class()
 -- @param listener (function) The listener to invoke after the delay.
 -- @return New 'Timer' object.
 function M:init(delay, iteration, listener)
-	self.delay = delay or 1
-	self.iteration = iteration or 1
-	self.listener = listener
-	self.running = true
+  self.delay = delay or 1
+  self.iteration = iteration or 1
+  self.listener = listener
+  self.running = true
 
-	self.__time = 0
-	self.__count = 0
+  self.__time = 0
+  self.__count = 0
 end
 
 ---
@@ -29,7 +29,7 @@ end
 -- @param self
 -- @return 'true' if the timer is running, 'false' otherwise.
 function M:isRunning()
-	return self.running
+  return self.running
 end
 
 ---
@@ -38,7 +38,7 @@ end
 -- @function [parent=#Timer] resume
 -- @param self
 function M:resume()
-	self.running = true
+  self.running = true
 end
 
 ---
@@ -47,7 +47,7 @@ end
 -- @function [parent=#Timer] pause
 -- @param self
 function M:pause()
-	self.running = false
+  self.running = false
 end
 
 return M

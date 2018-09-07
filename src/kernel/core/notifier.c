@@ -31,97 +31,97 @@
 /* 注册一个通知 */
 static bool_t __notifier_register(struct notifier_t ** nl, struct notifier_t * n)
 {
-	while((*nl) != NULL)
-	{
-		if((*nl) == n)
-			return TRUE;
-		if(n->priority > (*nl)->priority)
-			break;
-		nl = &((*nl)->next);
-	}
+    while((*nl) != NULL)
+    {
+        if((*nl) == n)
+            return TRUE;
+        if(n->priority > (*nl)->priority)
+            break;
+        nl = &((*nl)->next);
+    }
 
-	n->next = *nl;
-	*nl = n;
-	return TRUE;
+    n->next = *nl;
+    *nl = n;
+    return TRUE;
 }
 
 /* 注销一个通知 */
 static bool_t __notifier_unregister(struct notifier_t ** nl, struct notifier_t * n)
 {
-	while((*nl) != NULL)
-	{
-		if((*nl) == n)
-		{
-			*nl = n->next;
-			return TRUE;
-		}
-		nl = &((*nl)->next);
-	}
+    while((*nl) != NULL)
+    {
+        if((*nl) == n)
+        {
+            *nl = n->next;
+            return TRUE;
+        }
+        nl = &((*nl)->next);
+    }
 
-	return FALSE;
+    return FALSE;
 }
 
 /* 调用通知链上所有通知 */
 static bool_t __notifier_call(struct notifier_t ** nl, int cmd, void * arg)
 {
-	struct notifier_t * n, * nn;
-	int ret = 0;
+    struct notifier_t * n, * nn;
+    int ret = 0;
 
-	n = *nl;
-	while(n)
-	{
-		nn = n->next;
-		ret = n->call(n, cmd, arg);
-		if(ret < 0)
-			break;
-		n = nn;
-	}
+    n = *nl;
+    while(n)
+    {
+        nn = n->next;
+        ret = n->call(n, cmd, arg);
+        if(ret < 0)
+            break;
+        n = nn;
+    }
 
-	return (ret == 0) ? TRUE : FALSE;
+    return (ret == 0) ? TRUE : FALSE;
 }
 
 /* 通知链初始化 */
 void notifier_chain_init(struct notifier_chain_t * nc)
 {
-	spin_lock_init(&nc->lock);
-	nc->head = NULL;
+    spin_lock_init(&nc->lock);
+    nc->head = NULL;
 }
 
 /* 注册一个通知 */
 bool_t notifier_chain_register(struct notifier_chain_t * nc, struct notifier_t * n)
 {
-	irq_flags_t flags;
-	bool_t ret;
+    irq_flags_t flags;
+    bool_t ret;
 
-	spin_lock_irqsave(&nc->lock, flags);
-	ret = __notifier_register(&nc->head, n);
-	spin_unlock_irqrestore(&nc->lock, flags);
+    spin_lock_irqsave(&nc->lock, flags);
+    ret = __notifier_register(&nc->head, n);
+    spin_unlock_irqrestore(&nc->lock, flags);
 
-	return ret;
+    return ret;
 }
 
 /* 注销一个通知 */
 bool_t notifier_chain_unregister(struct notifier_chain_t * nc, struct notifier_t * n)
 {
-	irq_flags_t flags;
-	bool_t ret;
+    irq_flags_t flags;
+    bool_t ret;
 
-	spin_lock_irqsave(&nc->lock, flags);
-	ret = __notifier_unregister(&nc->head, n);
-	spin_unlock_irqrestore(&nc->lock, flags);
+    spin_lock_irqsave(&nc->lock, flags);
+    ret = __notifier_unregister(&nc->head, n);
+    spin_unlock_irqrestore(&nc->lock, flags);
 
-	return ret;
+    return ret;
 }
 
 /* 调用通知链上所有通知 */
 bool_t notifier_chain_call(struct notifier_chain_t * nc, int cmd, void * arg)
 {
-	irq_flags_t flags;
-	bool_t ret;
+    irq_flags_t flags;
+    bool_t ret;
 
-	spin_lock_irqsave(&nc->lock, flags);
-	ret = __notifier_call(&nc->head, cmd, arg);
-	spin_unlock_irqrestore(&nc->lock, flags);
+    spin_lock_irqsave(&nc->lock, flags);
+    ret = __notifier_call(&nc->head, cmd, arg);
+    spin_unlock_irqrestore(&nc->lock, flags);
 
-	return ret;
+    return ret;
 }

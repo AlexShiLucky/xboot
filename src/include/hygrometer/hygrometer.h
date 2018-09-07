@@ -9,10 +9,10 @@ extern "C" {
 
 struct hygrometer_t
 {
-	char * name;
+    char * name;
 
-	int (*get)(struct hygrometer_t * hygrometer);
-	void * priv;
+    int (*get)(struct hygrometer_t * hygrometer);
+    void * priv;
 };
 
 struct hygrometer_t * search_hygrometer(const char * name);

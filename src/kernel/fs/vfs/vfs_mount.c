@@ -34,8 +34,8 @@
  * list for vfs mount points.
  */
 struct list_head mount_list = {
-	.next	= &mount_list,
-	.prev	= &mount_list,
+    .next   = &mount_list,
+    .prev   = &mount_list,
 };
 
 /*
@@ -45,25 +45,25 @@ struct list_head mount_list = {
  */
 static s32_t count_match(char * path, char * mount_root)
 {
-	s32_t len = 0;
+    s32_t len = 0;
 
-	while(*path && *mount_root)
-	{
-		if((*path++) != (*mount_root++))
-			break;
-		len++;
-	}
+    while(*path && *mount_root)
+    {
+        if((*path++) != (*mount_root++))
+            break;
+        len++;
+    }
 
-	if(*mount_root != '\0')
-		return 0;
+    if(*mount_root != '\0')
+        return 0;
 
-	if((len == 1) && (*(path - 1) == '/'))
-		return 1;
+    if((len == 1) && (*(path - 1) == '/'))
+        return 1;
 
-	if((*path == '\0') || (*path == '/'))
-		return len;
+    if((*path == '\0') || (*path == '/'))
+        return len;
 
-	return 0;
+    return 0;
 }
 
 /*
@@ -71,7 +71,7 @@ static s32_t count_match(char * path, char * mount_root)
  */
 void vfs_busy(struct mount_t * m)
 {
-	m->m_count++;
+    m->m_count++;
 }
 
 /*
@@ -79,7 +79,7 @@ void vfs_busy(struct mount_t * m)
  */
 void vfs_unbusy(struct mount_t * m)
 {
-	m->m_count--;
+    m->m_count--;
 }
 
 /*
@@ -90,34 +90,34 @@ void vfs_unbusy(struct mount_t * m)
  */
 s32_t vfs_findroot(char * path, struct mount_t ** mp, char ** root)
 {
-	struct list_head * pos;
-	struct mount_t *m, *tmp;
-	s32_t len, max_len = 0;
+    struct list_head * pos;
+    struct mount_t *m, *tmp;
+    s32_t len, max_len = 0;
 
-	if(!path)
-		return -1;
+    if(!path)
+        return -1;
 
-	/* find mount point from nearest path */
-	m = NULL;
+    /* find mount point from nearest path */
+    m = NULL;
 
-	list_for_each(pos, &mount_list)
-	{
-		tmp = list_entry(pos, struct mount_t, m_link);
-		len = count_match(path, tmp->m_path);
-		if(len > max_len)
-		{
-			max_len = len;
-			m = tmp;
-		}
-	}
+    list_for_each(pos, &mount_list)
+    {
+        tmp = list_entry(pos, struct mount_t, m_link);
+        len = count_match(path, tmp->m_path);
+        if(len > max_len)
+        {
+            max_len = len;
+            m = tmp;
+        }
+    }
 
-	if(m == NULL)
-		return -1;
+    if(m == NULL)
+        return -1;
 
-	*root = (char *)(path + max_len);
-	if(**root == '/')
-		(*root)++;
-	*mp = m;
+    *root = (char *)(path + max_len);
+    if(**root == '/')
+        (*root)++;
+    *mp = m;
 
-	return 0;
+    return 0;
 }

@@ -39,13 +39,13 @@
  */
 int mount(const char * dev, const char * dir, const char * fs, u32_t flags)
 {
-	char dir_path[MAX_PATH];
-	int err;
+    char dir_path[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(dir, dir_path)) != 0)
-		return err;
+    if((err = vfs_path_conv(dir, dir_path)) != 0)
+        return err;
 
-	return sys_mount((char *)dev, dir_path, (char *)fs, flags);
+    return sys_mount((char *)dev, dir_path, (char *)fs, flags);
 }
 
 /*
@@ -53,7 +53,7 @@ int mount(const char * dev, const char * dir, const char * fs, u32_t flags)
  */
 void sync(void)
 {
-	sys_sync();
+    sys_sync();
 }
 
 /*
@@ -61,13 +61,13 @@ void sync(void)
  */
 int umount(const char * dir)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(dir, buf)) != 0)
-		return err;
+    if((err = vfs_path_conv(dir, buf)) != 0)
+        return err;
 
-	return sys_umount(buf);
+    return sys_umount(buf);
 }
 
 /*
@@ -75,28 +75,28 @@ int umount(const char * dir)
  */
 int open(const char * path, u32_t flags, u32_t mode)
 {
-	char buf[MAX_PATH];
-	struct file_t * fp;
-	int fd;
-	int err;
+    char buf[MAX_PATH];
+    struct file_t * fp;
+    int fd;
+    int err;
 
-	if((fd = fd_alloc(0)) < 0)
-		return -1;
+    if((fd = fd_alloc(0)) < 0)
+        return -1;
 
-	if(vfs_path_conv(path, buf) !=0 )
-	{
-		fd_free(fd);
-		return -1;
-	}
+    if(vfs_path_conv(path, buf) !=0 )
+    {
+        fd_free(fd);
+        return -1;
+    }
 
-	if((err = sys_open(buf, flags, mode, &fp)) != 0)
-	{
-		fd_free(fd);
-		return err;
-	}
+    if((err = sys_open(buf, flags, mode, &fp)) != 0)
+    {
+        fd_free(fd);
+        return err;
+    }
 
-	set_fp(fd, fp);
-	return fd;
+    set_fp(fd, fp);
+    return fd;
 }
 
 /*
@@ -104,19 +104,19 @@ int open(const char * path, u32_t flags, u32_t mode)
  */
 loff_t read(int fd, void * buf, loff_t len)
 {
-	struct file_t * fp;
-	loff_t bytes;
+    struct file_t * fp;
+    loff_t bytes;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	if(sys_read(fp, buf, len, &bytes) != 0)
-		return -1;
+    if(sys_read(fp, buf, len, &bytes) != 0)
+        return -1;
 
-	return bytes;
+    return bytes;
 }
 
 /*
@@ -124,19 +124,19 @@ loff_t read(int fd, void * buf, loff_t len)
  */
 loff_t write(int fd, void * buf, loff_t len)
 {
-	struct file_t * fp;
-	loff_t bytes;
+    struct file_t * fp;
+    loff_t bytes;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	if(sys_write(fp, buf, len, &bytes) != 0)
-		return -1;
+    if(sys_write(fp, buf, len, &bytes) != 0)
+        return -1;
 
-	return bytes;
+    return bytes;
 }
 
 /*
@@ -144,19 +144,19 @@ loff_t write(int fd, void * buf, loff_t len)
  */
 loff_t lseek(int fd, loff_t offset, s32_t whence)
 {
-	struct file_t * fp;
-	loff_t org;
+    struct file_t * fp;
+    loff_t org;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	if(sys_lseek(fp, offset, whence, &org) != 0)
-		return -1;
+    if(sys_lseek(fp, offset, whence, &org) != 0)
+        return -1;
 
-	return org;
+    return org;
 }
 
 /*
@@ -164,15 +164,15 @@ loff_t lseek(int fd, loff_t offset, s32_t whence)
  */
 int fstat(int fd, struct stat * st)
 {
-	struct file_t * fp;
+    struct file_t * fp;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	return sys_fstat(fp, st);
+    return sys_fstat(fp, st);
 }
 
 /*
@@ -180,15 +180,15 @@ int fstat(int fd, struct stat * st)
  */
 int ioctl(int fd, int cmd, void * arg)
 {
-	struct file_t * fp;
+    struct file_t * fp;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	return sys_ioctl(fp, cmd, arg);
+    return sys_ioctl(fp, cmd, arg);
 }
 
 /*
@@ -196,15 +196,15 @@ int ioctl(int fd, int cmd, void * arg)
  */
 int fsync(int fd)
 {
-	struct file_t * fp;
+    struct file_t * fp;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	return sys_fsync(fp);
+    return sys_fsync(fp);
 }
 
 /*
@@ -212,20 +212,20 @@ int fsync(int fd)
  */
 int close(int fd)
 {
-	struct file_t * fp;
-	int err;
+    struct file_t * fp;
+    int err;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	if((err = sys_close(fp)) != 0)
-		return err;
+    if((err = sys_close(fp)) != 0)
+        return err;
 
-	fd_free(fd);
-	return 0;
+    fd_free(fd);
+    return 0;
 }
 
 /*
@@ -233,40 +233,40 @@ int close(int fd)
  */
 void * opendir(const char * name)
 {
-	char buf[MAX_PATH];
-	struct dir * dir;
-	struct file_t * fp;
-	int fd;
-	int err;
+    char buf[MAX_PATH];
+    struct dir * dir;
+    struct file_t * fp;
+    int fd;
+    int err;
 
-	if((dir = malloc(sizeof(struct dir))) == NULL)
-		return NULL;
+    if((dir = malloc(sizeof(struct dir))) == NULL)
+        return NULL;
 
-	/* find empty slot for file descriptor. */
-	if((fd = fd_alloc(0)) < 0)
-	{
-		free(dir);
-		return NULL;
-	}
+    /* find empty slot for file descriptor. */
+    if((fd = fd_alloc(0)) < 0)
+    {
+        free(dir);
+        return NULL;
+    }
 
-	if((err = vfs_path_conv(name, buf)) !=0 )
-	{
-		free(dir);
-		fd_free(fd);
-		return NULL;
-	}
+    if((err = vfs_path_conv(name, buf)) !=0 )
+    {
+        free(dir);
+        fd_free(fd);
+        return NULL;
+    }
 
-	if((err = sys_opendir(buf, &fp)) != 0)
-	{
-		free(dir);
-		fd_free(fd);
-		return NULL;
-	}
+    if((err = sys_opendir(buf, &fp)) != 0)
+    {
+        free(dir);
+        fd_free(fd);
+        return NULL;
+    }
 
-	set_fp(fd, fp);
-	dir->fd = fd;
+    set_fp(fd, fp);
+    dir->fd = fd;
 
-	return (void *)dir;
+    return (void *)dir;
 }
 
 /*
@@ -274,19 +274,19 @@ void * opendir(const char * name)
  */
 struct dirent_t * readdir(void * dir)
 {
-	struct dir * pdir;
-	struct file_t * fp;
+    struct dir * pdir;
+    struct file_t * fp;
 
-	if(!dir)
-		return NULL;
+    if(!dir)
+        return NULL;
 
-	pdir = (struct dir *)dir;
-	if((fp = get_fp(pdir->fd)) == NULL)
-		return NULL;
+    pdir = (struct dir *)dir;
+    if((fp = get_fp(pdir->fd)) == NULL)
+        return NULL;
 
-	if(sys_readdir(fp, &pdir->entry) == 0)
-		return &pdir->entry;
-	return NULL;
+    if(sys_readdir(fp, &pdir->entry) == 0)
+        return &pdir->entry;
+    return NULL;
 }
 
 /*
@@ -294,17 +294,17 @@ struct dirent_t * readdir(void * dir)
  */
 int rewinddir(void * dir)
 {
-	struct dir * pdir;
-	struct file_t * fp;
+    struct dir * pdir;
+    struct file_t * fp;
 
-	if(!dir)
-		return -1;
+    if(!dir)
+        return -1;
 
-	pdir = (struct dir *)dir;
-	if((fp = get_fp(pdir->fd)) == NULL)
-		return -1;
+    pdir = (struct dir *)dir;
+    if((fp = get_fp(pdir->fd)) == NULL)
+        return -1;
 
-	return sys_rewinddir(fp);
+    return sys_rewinddir(fp);
 }
 
 /*
@@ -312,24 +312,24 @@ int rewinddir(void * dir)
  */
 int closedir(void * dir)
 {
-	struct file_t * fp;
-	struct dir * pdir;
-	int err;
+    struct file_t * fp;
+    struct dir * pdir;
+    int err;
 
-	if(!dir)
-		return -1;
+    if(!dir)
+        return -1;
 
-	pdir = (struct dir *)dir;
-	if((fp = get_fp(pdir->fd)) == NULL)
-		return -1;
+    pdir = (struct dir *)dir;
+    if((fp = get_fp(pdir->fd)) == NULL)
+        return -1;
 
-	if((err = sys_closedir(fp)) != 0)
-		return err;
+    if((err = sys_closedir(fp)) != 0)
+        return err;
 
-	fd_free(pdir->fd);
-	free(dir);
+    fd_free(pdir->fd);
+    free(dir);
 
-	return 0;
+    return 0;
 }
 
 /*
@@ -337,7 +337,7 @@ int closedir(void * dir)
  */
 char * getcwd(char * buf, size_t size)
 {
-	return vfs_getcwd(buf, size);
+    return vfs_getcwd(buf, size);
 }
 
 /*
@@ -345,26 +345,26 @@ char * getcwd(char * buf, size_t size)
  */
 int chdir(const char * path)
 {
-	char buf[MAX_PATH];
-	struct file_t * fp;
-	int err;
+    char buf[MAX_PATH];
+    struct file_t * fp;
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	/* check if directory exits */
-	if((err = sys_opendir(buf, &fp)) != 0)
-		return err;
+    /* check if directory exits */
+    if((err = sys_opendir(buf, &fp)) != 0)
+        return err;
 
-	/* new fp for current work directory */
-	if(vfs_getcwdfp())
-		sys_closedir(vfs_getcwdfp());
-	vfs_setcwdfp(fp);
+    /* new fp for current work directory */
+    if(vfs_getcwdfp())
+        sys_closedir(vfs_getcwdfp());
+    vfs_setcwdfp(fp);
 
-	/* set current work directory */
-	vfs_setcwd(buf);
+    /* set current work directory */
+    vfs_setcwd(buf);
 
-	return 0;
+    return 0;
 }
 
 /*
@@ -372,13 +372,13 @@ int chdir(const char * path)
  */
 int mkdir(const char * path, u32_t mode)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	return sys_mkdir(buf, mode);
+    return sys_mkdir(buf, mode);
 }
 
 /*
@@ -386,13 +386,13 @@ int mkdir(const char * path, u32_t mode)
  */
 int rmdir(const char * path)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	return sys_rmdir(buf);
+    return sys_rmdir(buf);
 }
 
 /*
@@ -400,13 +400,13 @@ int rmdir(const char * path)
  */
 int stat(const char * path, struct stat * st)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	return sys_stat(buf, st);
+    return sys_stat(buf, st);
 }
 
 /*
@@ -414,13 +414,13 @@ int stat(const char * path, struct stat * st)
  */
 int access(const char * path, u32_t mode)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) != 0)
-		return err;
+    if((err = vfs_path_conv(path, buf)) != 0)
+        return err;
 
-	return sys_access(buf, mode);
+    return sys_access(buf, mode);
 }
 
 /*
@@ -428,17 +428,17 @@ int access(const char * path, u32_t mode)
  */
 int rename(const char * old, const char * new)
 {
-	char src[MAX_PATH];
-	char dest[MAX_PATH];
-	int err;
+    char src[MAX_PATH];
+    char dest[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(old, src)) != 0)
-		return err;
+    if((err = vfs_path_conv(old, src)) != 0)
+        return err;
 
-	if((err = vfs_path_conv(new, dest)) != 0)
-		return err;
+    if((err = vfs_path_conv(new, dest)) != 0)
+        return err;
 
-	return sys_rename(src, dest);
+    return sys_rename(src, dest);
 }
 
 /*
@@ -446,13 +446,13 @@ int rename(const char * old, const char * new)
  */
 int unlink(const char * path)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) != 0)
-		return err;
+    if((err = vfs_path_conv(path, buf)) != 0)
+        return err;
 
-	return sys_unlink(buf);
+    return sys_unlink(buf);
 }
 
 /*
@@ -460,8 +460,8 @@ int unlink(const char * path)
  */
 int remove(const char * path)
 {
-	struct stat st;
-	int err = -1;
+    struct stat st;
+    int err = -1;
 
     if(stat(path, &st) == 0)
     {
@@ -479,13 +479,13 @@ int remove(const char * path)
  */
 int mknod(const char * path, u32_t mode)
 {
-	char buf[MAX_PATH];
-	s32_t err;
+    char buf[MAX_PATH];
+    s32_t err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	return sys_mknod(buf, mode);
+    return sys_mknod(buf, mode);
 }
 
 /*
@@ -493,7 +493,7 @@ int mknod(const char * path, u32_t mode)
  */
 int chmod(const char * path, u32_t mode)
 {
-	return -1;
+    return -1;
 }
 
 /*
@@ -501,7 +501,7 @@ int chmod(const char * path, u32_t mode)
  */
 int chown(const char * path, u32_t owner, u32_t group)
 {
-	return -1;
+    return -1;
 }
 
 /*
@@ -509,7 +509,7 @@ int chown(const char * path, u32_t owner, u32_t group)
  */
 u32_t umask(u32_t mode)
 {
-	return -1;
+    return -1;
 }
 
 /*
@@ -517,15 +517,15 @@ u32_t umask(u32_t mode)
  */
 int ftruncate(int fd, loff_t length)
 {
-	struct file_t * fp;
+    struct file_t * fp;
 
-	if(fd < 0)
-		return -1;
+    if(fd < 0)
+        return -1;
 
-	if((fp = get_fp(fd)) == NULL)
-		return -1;
+    if((fp = get_fp(fd)) == NULL)
+        return -1;
 
-	return sys_ftruncate(fp, length);
+    return sys_ftruncate(fp, length);
 }
 
 /*
@@ -533,53 +533,53 @@ int ftruncate(int fd, loff_t length)
  */
 int truncate(const char * path, loff_t length)
 {
-	char buf[MAX_PATH];
-	int err;
+    char buf[MAX_PATH];
+    int err;
 
-	if((err = vfs_path_conv(path, buf)) !=0 )
-		return err;
+    if((err = vfs_path_conv(path, buf)) !=0 )
+        return err;
 
-	return sys_truncate(buf, length);
+    return sys_truncate(buf, length);
 }
 
 ssize_t readv(int fd, const struct iovec * iov, int iovcnt)
 {
-	ssize_t count = 0;
-	ssize_t bytes;
+    ssize_t count = 0;
+    ssize_t bytes;
 
-	while(iovcnt-- > 0)
-	{
-		bytes = read(fd, iov->iov_base, iov->iov_len);
-		if(bytes < 0)
-			return (-1);
+    while(iovcnt-- > 0)
+    {
+        bytes = read(fd, iov->iov_base, iov->iov_len);
+        if(bytes < 0)
+            return (-1);
 
-		count += bytes;
-		if (bytes != iov->iov_len)
-			break;
+        count += bytes;
+        if (bytes != iov->iov_len)
+            break;
 
-		iov++;
-	}
+        iov++;
+    }
 
-	return (count);
+    return (count);
 }
 
 ssize_t writev(int fd, const struct iovec * iov, int iovcnt)
 {
-	ssize_t count = 0;
-	ssize_t bytes;
+    ssize_t count = 0;
+    ssize_t bytes;
 
-	while(iovcnt-- > 0)
-	{
-		bytes = write(fd, iov->iov_base, iov->iov_len);
-		if (bytes < 0)
-			return (-1);
+    while(iovcnt-- > 0)
+    {
+        bytes = write(fd, iov->iov_base, iov->iov_len);
+        if (bytes < 0)
+            return (-1);
 
-		count += bytes;
-		if (bytes != iov->iov_len)
-			break;
+        count += bytes;
+        if (bytes != iov->iov_len)
+            break;
 
-		iov++;
-	}
+        iov++;
+    }
 
-	return (count);
+    return (count);
 }

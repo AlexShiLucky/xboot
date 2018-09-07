@@ -8,42 +8,42 @@ extern "C" {
 #include <xboot.h>
 
 enum {
-	I2C_M_TEN			= 0x0010,
-	I2C_M_RD			= 0x0001,
-	I2C_M_STOP			= 0x8000,
-	I2C_M_NOSTART		= 0x4000,
-	I2C_M_REV_DIR_ADDR	= 0x2000,
-	I2C_M_IGNORE_NAK	= 0x1000,
-	I2C_M_NO_RD_ACK		= 0x0800,
-	I2C_M_RECV_LEN		= 0x0400,
+    I2C_M_TEN           = 0x0010,
+    I2C_M_RD            = 0x0001,
+    I2C_M_STOP          = 0x8000,
+    I2C_M_NOSTART       = 0x4000,
+    I2C_M_REV_DIR_ADDR  = 0x2000,
+    I2C_M_IGNORE_NAK    = 0x1000,
+    I2C_M_NO_RD_ACK     = 0x0800,
+    I2C_M_RECV_LEN      = 0x0400,
 };
 
 /* i2c消息结构 */
 struct i2c_msg_t {
-	int addr;
-	int flags;
-	int len;
-	void * buf;
+    int addr;
+    int flags;
+    int len;
+    void * buf;
 };
 
 /* i2c总线结构 */
 struct i2c_t
 {
-	/* The i2c bus name */
-	char * name;
+    /* The i2c bus name */
+    char * name;
 
-	/* Master xfer */
-	int (*xfer)(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num);
+    /* Master xfer */
+    int (*xfer)(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 /* i2c设备结构 */
 struct i2c_device_t {
-	struct i2c_t * i2c;
-	int addr;
-	int flags;
+    struct i2c_t * i2c;
+    int addr;
+    int flags;
 };
 
 struct i2c_t * search_i2c(const char * name);

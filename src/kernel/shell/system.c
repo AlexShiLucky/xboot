@@ -35,52 +35,52 @@
 /* 解析并执行命令行 */
 int system(const char * cmdline)
 {
-	struct command_t * cmd;
-	char **args;
-	char *p, *buf, *pos;
-	size_t len;
-	int n, ret;
+    struct command_t * cmd;
+    char **args;
+    char *p, *buf, *pos;
+    size_t len;
+    int n, ret;
 
-	if(!cmdline)
-		return 0;
+    if(!cmdline)
+        return 0;
 
-	len = strlen(cmdline);
-	buf = malloc(len + 2);
-	if(!buf)
-		return 0;
-	memcpy(buf, cmdline, len);
-	memcpy(buf + len, " ", 2);
+    len = strlen(cmdline);
+    buf = malloc(len + 2);
+    if(!buf)
+        return 0;
+    memcpy(buf, cmdline, len);
+    memcpy(buf + len, " ", 2);
 
-	p = buf;
-	while(*p)
-	{
-		if(parser(p, &n, &args, &pos))
-		{
-			if(n > 0)
-			{
-				if((cmd = search_command(args[0])))     // if中(())消除警告
-					ret = cmd->exec(n, args);           // 找到命令执行命令
-				else
-					ret = vmexec(n, args);              // 未找到命令执行虚拟机
-				if((ret < 0) && pos)
-				{
-			    	printf(" when exec \'%s\' return an error code (%ld).\r\n", args[0], ret);
-			    	free(args[0]);
-			    	free(args);
-			    	break;
-				}
-    		}
-			free(args[0]);
-			free(args);
-    	}
+    p = buf;
+    while(*p)
+    {
+        if(parser(p, &n, &args, &pos))
+        {
+            if(n > 0)
+            {
+                if((cmd = search_command(args[0])))     // if中(())消除警告
+                    ret = cmd->exec(n, args);           // 找到命令执行命令
+                else
+                    ret = vmexec(n, args);              // 未找到命令执行虚拟机
+                if((ret < 0) && pos)
+                {
+                    printf(" when exec \'%s\' return an error code (%ld).\r\n", args[0], ret);
+                    free(args[0]);
+                    free(args);
+                    break;
+                }
+            }
+            free(args[0]);
+            free(args);
+        }
 
-		if(!pos)
-			*p = 0;
-		else
-			p = pos;
+        if(!pos)
+            *p = 0;
+        else
+            p = pos;
     }
 
-	free(buf);
-	return 1;
+    free(buf);
+    return 1;
 }
 EXPORT_SYMBOL(system);

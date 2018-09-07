@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributors(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_MEMPOOL_PRIVATE_H
@@ -49,8 +49,8 @@ typedef struct _cairo_mempool cairo_mempool_t;
 struct _cairo_mempool {
     char *base;
     struct _cairo_memblock {
-	int bits;
-	cairo_list_t link;
+    int bits;
+    cairo_list_t link;
     } *blocks;
     cairo_list_t free[32];
     unsigned char *map;
@@ -66,10 +66,10 @@ struct _cairo_mempool {
 
 cairo_private cairo_status_t
 _cairo_mempool_init (cairo_mempool_t *pool,
-		     void *base,
-		     size_t bytes,
-		     int min_bits,
-		     int num_sizes);
+             void *base,
+             size_t bytes,
+             int min_bits,
+             int num_sizes);
 
 cairo_private void *
 _cairo_mempool_alloc (cairo_mempool_t *pi, size_t bytes);

@@ -6,8 +6,8 @@ local c = 200
 local l = 100
 
 for i = 1, 100, 1 do
-	for h = 0, 768, 25 do
-		cled:hclColor(1, h, c, l)
-		cled:refresh()
-	end
+  for h = 0, 768, 25 do
+    cled:hclColor(1, h, c, l)
+    cled:refresh()
+  end
 end

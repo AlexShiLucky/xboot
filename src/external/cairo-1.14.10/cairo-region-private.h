@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Owen Taylor <otaylor@redhat.com>
+ *  Owen Taylor <otaylor@redhat.com>
  *      Vladimir Vukicevic <vladimir@pobox.com>
  *      Søren Sandmann <sandmann@daimi.au.dk>
  */
@@ -61,7 +61,7 @@ _cairo_region_init (cairo_region_t *region);
 
 cairo_private void
 _cairo_region_init_rectangle (cairo_region_t *region,
-			      const cairo_rectangle_int_t *rectangle);
+                  const cairo_rectangle_int_t *rectangle);
 
 cairo_private void
 _cairo_region_fini (cairo_region_t *region);

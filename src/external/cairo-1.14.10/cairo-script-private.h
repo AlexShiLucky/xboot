@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Chris Wilson
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_SCRIPT_PRIVATE_H
@@ -50,7 +50,7 @@ _cairo_script_context_create_internal (cairo_output_stream_t *stream);
 
 cairo_private void
 _cairo_script_context_attach_snapshots (cairo_device_t *device,
-					cairo_bool_t enable);
+                    cairo_bool_t enable);
 
 slim_hidden_proto (cairo_script_surface_create);
 

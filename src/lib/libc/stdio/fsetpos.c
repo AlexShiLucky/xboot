@@ -6,6 +6,6 @@
 
 int fsetpos(FILE * f, const fpos_t * pos)
 {
-	return fseek(f, *pos, SEEK_SET);
+    return fseek(f, *pos, SEEK_SET);
 }
 EXPORT_SYMBOL(fsetpos);

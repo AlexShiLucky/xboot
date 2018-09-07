@@ -9,23 +9,23 @@ extern "C" {
 
 struct uart_t
 {
-	/* The uart name */
-	char * name;
+    /* The uart name */
+    char * name;
 
-	/* Set uart param */
-	bool_t (*set)(struct uart_t * uart, int baud, int data, int parity, int stop);
+    /* Set uart param */
+    bool_t (*set)(struct uart_t * uart, int baud, int data, int parity, int stop);
 
-	/* Get uart param */
-	bool_t (*get)(struct uart_t * uart, int * baud, int * data, int * parity, int * stop);
+    /* Get uart param */
+    bool_t (*get)(struct uart_t * uart, int * baud, int * data, int * parity, int * stop);
 
-	/* Read uart */
-	ssize_t (*read)(struct uart_t * uart, u8_t * buf, size_t count);
+    /* Read uart */
+    ssize_t (*read)(struct uart_t * uart, u8_t * buf, size_t count);
 
-	/* Write uart */
-	ssize_t (*write)(struct uart_t * uart, const u8_t * buf, size_t count);
+    /* Write uart */
+    ssize_t (*write)(struct uart_t * uart, const u8_t * buf, size_t count);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct uart_t * search_uart(const char * name);

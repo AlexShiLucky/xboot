@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Adrian Johnson.
  *
  * Contributor(s):
- *	Adrian Johnson <ajohnson@redneon.com>
+ *  Adrian Johnson <ajohnson@redneon.com>
  */
 
 #ifndef CAIRO_PDF_SHADING_H
@@ -67,7 +67,7 @@ typedef struct _cairo_pdf_shading {
  **/
 cairo_private cairo_status_t
 _cairo_pdf_shading_init_color (cairo_pdf_shading_t        *shading,
-			       const cairo_mesh_pattern_t *pattern);
+                   const cairo_mesh_pattern_t *pattern);
 
 
 /**
@@ -83,7 +83,7 @@ _cairo_pdf_shading_init_color (cairo_pdf_shading_t        *shading,
  **/
 cairo_private cairo_status_t
 _cairo_pdf_shading_init_alpha (cairo_pdf_shading_t        *shading,
-			       const cairo_mesh_pattern_t *pattern);
+                   const cairo_mesh_pattern_t *pattern);
 
 /**
  * _cairo_pdf_shading_fini:

@@ -303,47 +303,47 @@ static const double tbl[TBLSIZE * 2] = {
  */
 double exp2(double x)
 {
-	double_t r, t, z;
-	uint32_t ix, i0;
-	union {double f; uint64_t i;} u = {x};
-	union {uint32_t u; int32_t i;} k;
+    double_t r, t, z;
+    uint32_t ix, i0;
+    union {double f; uint64_t i;} u = {x};
+    union {uint32_t u; int32_t i;} k;
 
-	/* Filter out exceptional cases. */
-	ix = u.i>>32 & 0x7fffffff;
-	if (ix >= 0x408ff000) {  /* |x| >= 1022 or nan */
-		if (ix >= 0x40900000 && u.i>>63 == 0) {  /* x >= 1024 or nan */
-			/* overflow */
-			x *= 0x1p1023;
-			return x;
-		}
-		if (ix >= 0x7ff00000)  /* -inf or -nan */
-			return -1/x;
-		if (u.i>>63) {  /* x <= -1022 */
-			/* underflow */
-			if (x <= -1075 || x - 0x1p52 + 0x1p52 != x)
-				FORCE_EVAL((float)(-0x1p-149/x));
-			if (x <= -1075)
-				return 0;
-		}
-	} else if (ix < 0x3c900000) {  /* |x| < 0x1p-54 */
-		return 1.0 + x;
-	}
+    /* Filter out exceptional cases. */
+    ix = u.i>>32 & 0x7fffffff;
+    if (ix >= 0x408ff000) {  /* |x| >= 1022 or nan */
+        if (ix >= 0x40900000 && u.i>>63 == 0) {  /* x >= 1024 or nan */
+            /* overflow */
+            x *= 0x1p1023;
+            return x;
+        }
+        if (ix >= 0x7ff00000)  /* -inf or -nan */
+            return -1/x;
+        if (u.i>>63) {  /* x <= -1022 */
+            /* underflow */
+            if (x <= -1075 || x - 0x1p52 + 0x1p52 != x)
+                FORCE_EVAL((float)(-0x1p-149/x));
+            if (x <= -1075)
+                return 0;
+        }
+    } else if (ix < 0x3c900000) {  /* |x| < 0x1p-54 */
+        return 1.0 + x;
+    }
 
-	/* Reduce x, computing z, i0, and k. */
-	u.f = x + redux;
-	i0 = u.i;
-	i0 += TBLSIZE / 2;
-	k.u = i0 / TBLSIZE * TBLSIZE;
-	k.i /= TBLSIZE;
-	i0 %= TBLSIZE;
-	u.f -= redux;
-	z = x - u.f;
+    /* Reduce x, computing z, i0, and k. */
+    u.f = x + redux;
+    i0 = u.i;
+    i0 += TBLSIZE / 2;
+    k.u = i0 / TBLSIZE * TBLSIZE;
+    k.i /= TBLSIZE;
+    i0 %= TBLSIZE;
+    u.f -= redux;
+    z = x - u.f;
 
-	/* Compute r = exp2(y) = exp2t[i0] * p(z - eps[i]). */
-	t = tbl[2*i0];       /* exp2t[i0] */
-	z -= tbl[2*i0 + 1];  /* eps[i0]   */
-	r = t + t * z * (P1 + z * (P2 + z * (P3 + z * (P4 + z * P5))));
+    /* Compute r = exp2(y) = exp2t[i0] * p(z - eps[i]). */
+    t = tbl[2*i0];       /* exp2t[i0] */
+    z -= tbl[2*i0 + 1];  /* eps[i0]   */
+    r = t + t * z * (P1 + z * (P2 + z * (P3 + z * (P4 + z * P5))));
 
-	return scalbn(r, k.i);
+    return scalbn(r, k.i);
 }
 EXPORT_SYMBOL(exp2);

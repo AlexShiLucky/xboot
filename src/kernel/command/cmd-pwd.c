@@ -30,38 +30,38 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    pwd\r\n");
+    printf("usage:\r\n");
+    printf("    pwd\r\n");
 }
 
 static int do_pwd(int argc, char ** argv)
 {
-	char cwd[MAX_PATH];
+    char cwd[MAX_PATH];
 
-	if(getcwd(cwd, sizeof(cwd)))
-	{
-		printf("%s\r\n", cwd);
-		return 0;
-	}
+    if(getcwd(cwd, sizeof(cwd)))
+    {
+        printf("%s\r\n", cwd);
+        return 0;
+    }
 
-	return -1;
+    return -1;
 }
 
 static struct command_t cmd_pwd = {
-	.name	= "pwd",
-	.desc	= "print the current working directory",
-	.usage	= usage,
-	.exec	= do_pwd,
+    .name   = "pwd",
+    .desc   = "print the current working directory",
+    .usage  = usage,
+    .exec   = do_pwd,
 };
 
 static __init void pwd_cmd_init(void)
 {
-	register_command(&cmd_pwd);
+    register_command(&cmd_pwd);
 }
 
 static __exit void pwd_cmd_exit(void)
 {
-	unregister_command(&cmd_pwd);
+    unregister_command(&cmd_pwd);
 }
 
 command_initcall(pwd_cmd_init);

@@ -43,8 +43,8 @@ CAIRO_BEGIN_DECLS
 
 cairo_private int
 cairo_lines_compare_at_y(const cairo_line_t *a,
-			 const cairo_line_t *b,
-			 int y);
+             const cairo_line_t *b,
+             int y);
 
 CAIRO_END_DECLS
 

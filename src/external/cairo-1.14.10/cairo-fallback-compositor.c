@@ -34,9 +34,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  *      Joonas Pihlaja <jpihlaja@cc.helsinki.fi>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -48,8 +48,8 @@
 /* high-level compositor interface */
 
 static cairo_int_status_t
-_cairo_fallback_compositor_paint (const cairo_compositor_t	*_compositor,
-				  cairo_composite_rectangles_t	*extents)
+_cairo_fallback_compositor_paint (const cairo_compositor_t  *_compositor,
+                  cairo_composite_rectangles_t  *extents)
 {
     cairo_image_surface_t *image;
     cairo_int_status_t status;
@@ -59,18 +59,18 @@ _cairo_fallback_compositor_paint (const cairo_compositor_t	*_compositor,
     image = _cairo_surface_map_to_image (extents->surface, &extents->unbounded);
 
     status = _cairo_surface_offset_paint (&image->base,
-					  extents->unbounded.x,
-					  extents->unbounded.y,
-					  extents->op,
-					  &extents->source_pattern.base,
-					  extents->clip);
+                      extents->unbounded.x,
+                      extents->unbounded.y,
+                      extents->op,
+                      &extents->source_pattern.base,
+                      extents->clip);
 
     return _cairo_surface_unmap_image (extents->surface, image);
 }
 
 static cairo_int_status_t
-_cairo_fallback_compositor_mask (const cairo_compositor_t	*_compositor,
-				 cairo_composite_rectangles_t	*extents)
+_cairo_fallback_compositor_mask (const cairo_compositor_t   *_compositor,
+                 cairo_composite_rectangles_t   *extents)
 {
     cairo_image_surface_t *image;
     cairo_int_status_t status;
@@ -80,25 +80,25 @@ _cairo_fallback_compositor_mask (const cairo_compositor_t	*_compositor,
     image = _cairo_surface_map_to_image (extents->surface, &extents->unbounded);
 
     status = _cairo_surface_offset_mask (&image->base,
-					 extents->unbounded.x,
-					 extents->unbounded.y,
-					 extents->op,
-					 &extents->source_pattern.base,
-					 &extents->mask_pattern.base,
-					 extents->clip);
+                     extents->unbounded.x,
+                     extents->unbounded.y,
+                     extents->op,
+                     &extents->source_pattern.base,
+                     &extents->mask_pattern.base,
+                     extents->clip);
 
     return _cairo_surface_unmap_image (extents->surface, image);
 }
 
 static cairo_int_status_t
-_cairo_fallback_compositor_stroke (const cairo_compositor_t	*_compositor,
-				   cairo_composite_rectangles_t *extents,
-				   const cairo_path_fixed_t	*path,
-				   const cairo_stroke_style_t	*style,
-				   const cairo_matrix_t		*ctm,
-				   const cairo_matrix_t		*ctm_inverse,
-				   double			 tolerance,
-				   cairo_antialias_t		 antialias)
+_cairo_fallback_compositor_stroke (const cairo_compositor_t *_compositor,
+                   cairo_composite_rectangles_t *extents,
+                   const cairo_path_fixed_t *path,
+                   const cairo_stroke_style_t   *style,
+                   const cairo_matrix_t     *ctm,
+                   const cairo_matrix_t     *ctm_inverse,
+                   double            tolerance,
+                   cairo_antialias_t         antialias)
 {
     cairo_image_surface_t *image;
     cairo_int_status_t status;
@@ -108,26 +108,26 @@ _cairo_fallback_compositor_stroke (const cairo_compositor_t	*_compositor,
     image = _cairo_surface_map_to_image (extents->surface, &extents->unbounded);
 
     status = _cairo_surface_offset_stroke (&image->base,
-					   extents->unbounded.x,
-					   extents->unbounded.y,
-					   extents->op,
-					   &extents->source_pattern.base,
-					   path, style,
-					   ctm, ctm_inverse,
-					   tolerance,
-					   antialias,
-					   extents->clip);
+                       extents->unbounded.x,
+                       extents->unbounded.y,
+                       extents->op,
+                       &extents->source_pattern.base,
+                       path, style,
+                       ctm, ctm_inverse,
+                       tolerance,
+                       antialias,
+                       extents->clip);
 
     return _cairo_surface_unmap_image (extents->surface, image);
 }
 
 static cairo_int_status_t
-_cairo_fallback_compositor_fill (const cairo_compositor_t	*_compositor,
-				 cairo_composite_rectangles_t *extents,
-				 const cairo_path_fixed_t	*path,
-				 cairo_fill_rule_t		 fill_rule,
-				 double				 tolerance,
-				 cairo_antialias_t		 antialias)
+_cairo_fallback_compositor_fill (const cairo_compositor_t   *_compositor,
+                 cairo_composite_rectangles_t *extents,
+                 const cairo_path_fixed_t   *path,
+                 cairo_fill_rule_t       fill_rule,
+                 double              tolerance,
+                 cairo_antialias_t       antialias)
 {
     cairo_image_surface_t *image;
     cairo_int_status_t status;
@@ -137,24 +137,24 @@ _cairo_fallback_compositor_fill (const cairo_compositor_t	*_compositor,
     image = _cairo_surface_map_to_image (extents->surface, &extents->unbounded);
 
     status = _cairo_surface_offset_fill (&image->base,
-					 extents->unbounded.x,
-					 extents->unbounded.y,
-					 extents->op,
-					 &extents->source_pattern.base,
-					 path,
-					 fill_rule, tolerance, antialias,
-					 extents->clip);
+                     extents->unbounded.x,
+                     extents->unbounded.y,
+                     extents->op,
+                     &extents->source_pattern.base,
+                     path,
+                     fill_rule, tolerance, antialias,
+                     extents->clip);
 
     return _cairo_surface_unmap_image (extents->surface, image);
 }
 
 static cairo_int_status_t
-_cairo_fallback_compositor_glyphs (const cairo_compositor_t	*_compositor,
-				   cairo_composite_rectangles_t *extents,
-				   cairo_scaled_font_t		*scaled_font,
-				   cairo_glyph_t		*glyphs,
-				   int				 num_glyphs,
-				   cairo_bool_t			 overlap)
+_cairo_fallback_compositor_glyphs (const cairo_compositor_t *_compositor,
+                   cairo_composite_rectangles_t *extents,
+                   cairo_scaled_font_t      *scaled_font,
+                   cairo_glyph_t        *glyphs,
+                   int               num_glyphs,
+                   cairo_bool_t          overlap)
 {
     cairo_image_surface_t *image;
     cairo_int_status_t status;
@@ -164,12 +164,12 @@ _cairo_fallback_compositor_glyphs (const cairo_compositor_t	*_compositor,
     image = _cairo_surface_map_to_image (extents->surface, &extents->unbounded);
 
     status = _cairo_surface_offset_glyphs (&image->base,
-					   extents->unbounded.x,
-					   extents->unbounded.y,
-					   extents->op,
-					   &extents->source_pattern.base,
-					   scaled_font, glyphs, num_glyphs,
-					   extents->clip);
+                       extents->unbounded.x,
+                       extents->unbounded.y,
+                       extents->op,
+                       &extents->source_pattern.base,
+                       scaled_font, glyphs, num_glyphs,
+                       extents->clip);
 
     return _cairo_surface_unmap_image (extents->surface, image);
 }

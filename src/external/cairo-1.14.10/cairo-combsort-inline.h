@@ -29,7 +29,7 @@
  * The Initial Developer of the Original Code is Chris Wilson
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 /* This fragment implements a comb sort (specifically combsort11) */
@@ -58,14 +58,14 @@ NAME (TYPE *base, unsigned int nmemb) \
       gap = _cairo_combsort_newgap (gap); \
       swapped = gap > 1; \
       for (i = 0; i < nmemb-gap ; i++) { \
-	  j = i + gap; \
-	  if (CMP (base[i], base[j]) > 0 ) { \
-	      TYPE tmp; \
-	      tmp = base[i]; \
-	      base[i] = base[j]; \
-	      base[j] = tmp; \
-	      swapped = 1; \
-	  } \
+      j = i + gap; \
+      if (CMP (base[i], base[j]) > 0 ) { \
+          TYPE tmp; \
+          tmp = base[i]; \
+          base[i] = base[j]; \
+          base[j] = tmp; \
+          swapped = 1; \
+      } \
       } \
   } while (swapped); \
 }
@@ -81,14 +81,14 @@ NAME (TYPE *base, unsigned int nmemb, void *data) \
       gap = _cairo_combsort_newgap (gap); \
       swapped = gap > 1; \
       for (i = 0; i < nmemb-gap ; i++) { \
-	  j = i + gap; \
-	  if (CMP (base[i], base[j], data) > 0 ) { \
-	      TYPE tmp; \
-	      tmp = base[i]; \
-	      base[i] = base[j]; \
-	      base[j] = tmp; \
-	      swapped = 1; \
-	  } \
+      j = i + gap; \
+      if (CMP (base[i], base[j], data) > 0 ) { \
+          TYPE tmp; \
+          tmp = base[i]; \
+          base[i] = base[j]; \
+          base[j] = tmp; \
+          swapped = 1; \
+      } \
       } \
   } while (swapped); \
 }

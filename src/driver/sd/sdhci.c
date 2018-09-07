@@ -32,89 +32,89 @@
 
 struct sdhci_t * search_sdhci(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_SDHCI);
-	if(!dev)
-		return NULL;
-	return (struct sdhci_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_SDHCI);
+    if(!dev)
+        return NULL;
+    return (struct sdhci_t *)dev->priv;
 }
 
 bool_t register_sdhci(struct device_t ** device, struct sdhci_t * sdhci)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!sdhci || !sdhci->name)
-		return FALSE;
+    if(!sdhci || !sdhci->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(sdhci->name);
-	dev->type = DEVICE_TYPE_SDHCI;
-	dev->priv = sdhci;
-	dev->kobj = kobj_alloc_directory(dev->name);
+    dev->name = strdup(sdhci->name);
+    dev->type = DEVICE_TYPE_SDHCI;
+    dev->priv = sdhci;
+    dev->kobj = kobj_alloc_directory(dev->name);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
-	sdhci->sdcard = sdcard_probe(sdhci);
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
+    sdhci->sdcard = sdcard_probe(sdhci);
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 bool_t unregister_sdhci(struct sdhci_t * sdhci)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!sdhci || !sdhci->name)
-		return FALSE;
+    if(!sdhci || !sdhci->name)
+        return FALSE;
 
-	dev = search_device(sdhci->name, DEVICE_TYPE_SDHCI);
-	if(!dev)
-		return FALSE;
-	sdcard_remove(sdhci->sdcard);
+    dev = search_device(sdhci->name, DEVICE_TYPE_SDHCI);
+    if(!dev)
+        return FALSE;
+    sdcard_remove(sdhci->sdcard);
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 bool_t sdhci_detect(struct sdhci_t * sdhci)
 {
-	if(sdhci && sdhci->detect)
-		return sdhci->detect(sdhci);
-	return FALSE;
+    if(sdhci && sdhci->detect)
+        return sdhci->detect(sdhci);
+    return FALSE;
 }
 
 bool_t sdhci_set_width(struct sdhci_t * sdhci, u32_t width)
 {
-	if(sdhci && sdhci->setwidth)
-		return sdhci->setwidth(sdhci, width);
-	return FALSE;
+    if(sdhci && sdhci->setwidth)
+        return sdhci->setwidth(sdhci, width);
+    return FALSE;
 }
 
 bool_t sdhci_set_clock(struct sdhci_t * sdhci, u32_t clock)
 {
-	if(sdhci && sdhci->setclock)
-		return sdhci->setclock(sdhci, (clock <= sdhci->clock) ? clock : sdhci->clock);
-	return FALSE;
+    if(sdhci && sdhci->setclock)
+        return sdhci->setclock(sdhci, (clock <= sdhci->clock) ? clock : sdhci->clock);
+    return FALSE;
 }
 
 bool_t sdhci_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
-	if(sdhci && sdhci->transfer)
-		return sdhci->transfer(sdhci, cmd, dat);
-	return FALSE;
+    if(sdhci && sdhci->transfer)
+        return sdhci->transfer(sdhci, cmd, dat);
+    return FALSE;
 }

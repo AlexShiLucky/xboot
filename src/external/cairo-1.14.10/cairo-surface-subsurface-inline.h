@@ -46,7 +46,7 @@ _cairo_surface_subsurface_get_target (cairo_surface_t *surface)
 
 static inline void
 _cairo_surface_subsurface_offset (cairo_surface_t *surface,
-				  int *x, int *y)
+                  int *x, int *y)
 {
     cairo_surface_subsurface_t *ss = (cairo_surface_subsurface_t *) surface;
     *x += ss->extents.x;
@@ -55,7 +55,7 @@ _cairo_surface_subsurface_offset (cairo_surface_t *surface,
 
 static inline cairo_surface_t *
 _cairo_surface_subsurface_get_target_with_offset (cairo_surface_t *surface,
-						  int *x, int *y)
+                          int *x, int *y)
 {
     cairo_surface_subsurface_t *ss = (cairo_surface_subsurface_t *) surface;
     *x += ss->extents.x;

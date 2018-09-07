@@ -30,45 +30,45 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    write <string> <file>\r\n");
+    printf("usage:\r\n");
+    printf("    write <string> <file>\r\n");
 }
 
 static int do_write(int argc, char ** argv)
 {
-	int fd;
-	ssize_t ret;
+    int fd;
+    ssize_t ret;
 
-	if(argc != 3)
-	{
-		usage();
-		return -1;
-	}
+    if(argc != 3)
+    {
+        usage();
+        return -1;
+    }
 
-	fd = open(argv[2], O_WRONLY | O_CREAT, (S_IRUSR|S_IWUSR));
-	if(fd < 0)
-		return -1;
+    fd = open(argv[2], O_WRONLY | O_CREAT, (S_IRUSR|S_IWUSR));
+    if(fd < 0)
+        return -1;
 
-	ret = write(fd, argv[1], strlen(argv[1]));
-	close(fd);
-	return ret < 0 ? -1 : 0;
+    ret = write(fd, argv[1], strlen(argv[1]));
+    close(fd);
+    return ret < 0 ? -1 : 0;
 }
 
 static struct command_t cmd_write = {
-	.name	= "write",
-	.desc	= "write contents to a file",
-	.usage	= usage,
-	.exec	= do_write,
+    .name   = "write",
+    .desc   = "write contents to a file",
+    .usage  = usage,
+    .exec   = do_write,
 };
 
 static __init void write_cmd_init(void)
 {
-	register_command(&cmd_write);
+    register_command(&cmd_write);
 }
 
 static __exit void write_cmd_exit(void)
 {
-	unregister_command(&cmd_write);
+    unregister_command(&cmd_write);
 }
 
 command_initcall(write_cmd_init);

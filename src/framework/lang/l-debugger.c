@@ -297,7 +297,7 @@ static const char debugger_lua[] =
 /* Debugger代码块调用入口 */
 int luaopen_debugger(lua_State * L)
 {
-	if(luaL_loadbuffer(L, debugger_lua, sizeof(debugger_lua)-1, "Debugger.lua") == LUA_OK)
-		lua_call(L, 0, 1);
-	return 1;
+    if(luaL_loadbuffer(L, debugger_lua, sizeof(debugger_lua)-1, "Debugger.lua") == LUA_OK)
+        lua_call(L, 0, 1);
+    return 1;
 }

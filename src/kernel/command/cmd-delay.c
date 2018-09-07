@@ -30,36 +30,36 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    delay [millisecond]\r\n");
+    printf("usage:\r\n");
+    printf("    delay [millisecond]\r\n");
 }
 
 static int do_delay(int argc, char ** argv)
 {
-	u32_t ms = 1000;
+    u32_t ms = 1000;
 
-	if(argc > 1)
-		ms = strtoul(argv[1], NULL, 0);
-	mdelay(ms);
+    if(argc > 1)
+        ms = strtoul(argv[1], NULL, 0);
+    mdelay(ms);
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_delay = {
-	.name	= "delay",
-	.desc	= "delay for a specified time",
-	.usage	= usage,
-	.exec	= do_delay,
+    .name   = "delay",
+    .desc   = "delay for a specified time",
+    .usage  = usage,
+    .exec   = do_delay,
 };
 
 static __init void delay_cmd_init(void)
 {
-	register_command(&cmd_delay);
+    register_command(&cmd_delay);
 }
 
 static __exit void delay_cmd_exit(void)
 {
-	unregister_command(&cmd_delay);
+    unregister_command(&cmd_delay);
 }
 
 command_initcall(delay_cmd_init);

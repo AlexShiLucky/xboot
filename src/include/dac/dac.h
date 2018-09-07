@@ -9,13 +9,13 @@ extern "C" {
 
 struct dac_t
 {
-	char * name;
-	int vreference;
-	int resolution;
-	int nchannel;
+    char * name;
+    int vreference;
+    int resolution;
+    int nchannel;
 
-	void (*write)(struct dac_t * dac, int channel, u32_t value);
-	void * priv;
+    void (*write)(struct dac_t * dac, int channel, u32_t value);
+    void * priv;
 };
 
 struct dac_t * search_dac(const char * name);

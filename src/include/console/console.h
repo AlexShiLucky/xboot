@@ -9,17 +9,17 @@ extern "C" {
 
 struct console_t
 {
-	/* The console name */
-	char * name;
+    /* The console name */
+    char * name;
 
-	/* Read console */
-	ssize_t (*read)(struct console_t * console, unsigned char * buf, size_t count);
+    /* Read console */
+    ssize_t (*read)(struct console_t * console, unsigned char * buf, size_t count);
 
-	/* Write console */
-	ssize_t (*write)(struct console_t * console, const unsigned char * buf, size_t count);
+    /* Write console */
+    ssize_t (*write)(struct console_t * console, const unsigned char * buf, size_t count);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct console_t * search_console(const char * name);

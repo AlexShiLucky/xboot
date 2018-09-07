@@ -9,10 +9,10 @@ extern "C" {
 
 struct gmeter_t
 {
-	char * name;
+    char * name;
 
-	bool_t (*get)(struct gmeter_t * g, int * x, int * y, int * z);
-	void * priv;
+    bool_t (*get)(struct gmeter_t * g, int * x, int * y, int * z);
+    void * priv;
 };
 
 struct gmeter_t * search_gmeter(const char * name);

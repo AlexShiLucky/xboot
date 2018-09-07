@@ -31,7 +31,7 @@
  * California.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_TRISTRIP_PRIVATE_H
@@ -61,28 +61,28 @@ cairo_private void
 _cairo_tristrip_init (cairo_tristrip_t *strip);
 
 cairo_private void
-_cairo_tristrip_limit (cairo_tristrip_t	*strip,
-		       const cairo_box_t	*limits,
-		       int			 num_limits);
+_cairo_tristrip_limit (cairo_tristrip_t *strip,
+               const cairo_box_t    *limits,
+               int           num_limits);
 
 cairo_private void
 _cairo_tristrip_init_with_clip (cairo_tristrip_t *strip,
-				const cairo_clip_t *clip);
+                const cairo_clip_t *clip);
 
 cairo_private void
 _cairo_tristrip_translate (cairo_tristrip_t *strip, int x, int y);
 
 cairo_private void
 _cairo_tristrip_move_to (cairo_tristrip_t *strip,
-			 const cairo_point_t *point);
+             const cairo_point_t *point);
 
 cairo_private void
 _cairo_tristrip_add_point (cairo_tristrip_t *strip,
-			   const cairo_point_t *point);
+               const cairo_point_t *point);
 
 cairo_private void
 _cairo_tristrip_extents (const cairo_tristrip_t *strip,
-			 cairo_box_t         *extents);
+             cairo_box_t         *extents);
 
 cairo_private void
 _cairo_tristrip_fini (cairo_tristrip_t *strip);

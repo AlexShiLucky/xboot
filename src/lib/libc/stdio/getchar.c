@@ -6,6 +6,6 @@
 
 int getchar(void)
 {
-	return fgetc(stdin);
+    return fgetc(stdin);
 }
 EXPORT_SYMBOL(getchar);

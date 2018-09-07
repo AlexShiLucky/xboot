@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-#define REALVIEW_GPIO0(x)	(x)
-#define REALVIEW_GPIO1(x)	(x + 8)
-#define REALVIEW_GPIO2(x)	(x + 16)
+#define REALVIEW_GPIO0(x)   (x)
+#define REALVIEW_GPIO1(x)   (x + 8)
+#define REALVIEW_GPIO2(x)   (x + 16)
 
 #ifdef __cplusplus
 }

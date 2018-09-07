@@ -30,55 +30,55 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    rm [OPTION] FILE...\r\n");
+    printf("usage:\r\n");
+    printf("    rm [OPTION] FILE...\r\n");
 }
 
 static int do_rm(int argc, char ** argv)
 {
-	s32_t i;
-	s32_t ret;
-	struct stat st;
+    s32_t i;
+    s32_t ret;
+    struct stat st;
 
-	if(argc < 2)
-	{
-		usage();
-		return -1;
-	}
+    if(argc < 2)
+    {
+        usage();
+        return -1;
+    }
 
-	for(i = 1; i < argc; i++)
-	{
-	    if(stat((const char*)argv[i], &st) == 0)
-	    {
-	        if(S_ISDIR(st.st_mode))
-	            ret = rmdir((const char*)argv[i]);
-	        else
-	            ret = unlink((const char*)argv[i]);
-			if(ret != 0)
-				printf("rm: cannot remove %s: No such file or directory\r\n", argv[i]);
-	    }
-	    else
-	    	printf("rm: cannot stat file or directory %s\r\n", argv[i]);
-	}
+    for(i = 1; i < argc; i++)
+    {
+        if(stat((const char*)argv[i], &st) == 0)
+        {
+            if(S_ISDIR(st.st_mode))
+                ret = rmdir((const char*)argv[i]);
+            else
+                ret = unlink((const char*)argv[i]);
+            if(ret != 0)
+                printf("rm: cannot remove %s: No such file or directory\r\n", argv[i]);
+        }
+        else
+            printf("rm: cannot stat file or directory %s\r\n", argv[i]);
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_rm = {
-	.name	= "rm",
-	.desc	= "remove files or directories",
-	.usage	= usage,
-	.exec	= do_rm,
+    .name   = "rm",
+    .desc   = "remove files or directories",
+    .usage  = usage,
+    .exec   = do_rm,
 };
 
 static __init void rm_cmd_init(void)
 {
-	register_command(&cmd_rm);
+    register_command(&cmd_rm);
 }
 
 static __exit void rm_cmd_exit(void)
 {
-	unregister_command(&cmd_rm);
+    unregister_command(&cmd_rm);
 }
 
 command_initcall(rm_cmd_init);

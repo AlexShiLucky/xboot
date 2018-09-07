@@ -32,8 +32,8 @@
  * California.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
- *	Andrea Canciani <ranma42@gmail.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
+ *  Andrea Canciani <ranma42@gmail.com>
  */
 
 #ifndef CAIRO_ATOMIC_PRIVATE_H
@@ -97,8 +97,8 @@ typedef long long cairo_atomic_intptr_t;
 
 static cairo_always_inline cairo_bool_t
 _cairo_atomic_int_cmpxchg_impl(cairo_atomic_int_t *x,
-			       cairo_atomic_int_t oldv,
-			       cairo_atomic_int_t newv)
+                   cairo_atomic_int_t oldv,
+                   cairo_atomic_int_t newv)
 {
     cairo_atomic_int_t expected = oldv;
     return __atomic_compare_exchange_n(x, &expected, newv, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
@@ -109,8 +109,8 @@ _cairo_atomic_int_cmpxchg_impl(cairo_atomic_int_t *x,
 
 static cairo_always_inline cairo_atomic_int_t
 _cairo_atomic_int_cmpxchg_return_old_impl(cairo_atomic_int_t *x,
-					  cairo_atomic_int_t oldv,
-					  cairo_atomic_int_t newv)
+                      cairo_atomic_int_t oldv,
+                      cairo_atomic_int_t newv)
 {
     cairo_atomic_int_t expected = oldv;
     (void) __atomic_compare_exchange_n(x, &expected, newv, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);

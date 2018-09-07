@@ -31,7 +31,7 @@
  * California.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_FREED_POOL_H
@@ -83,12 +83,12 @@ _freed_pool_get (freed_pool_t *pool)
 
     i = pool->top - 1;
     if (i < 0)
-	i = 0;
+    i = 0;
 
     ptr = _atomic_fetch (&pool->pool[i]);
     if (likely (ptr != NULL)) {
-	pool->top = i;
-	return ptr;
+    pool->top = i;
+    return ptr;
     }
 
     /* either empty or contended */
@@ -105,10 +105,10 @@ _freed_pool_put (freed_pool_t *pool, void *ptr)
 
     i = pool->top;
     if (likely (i < ARRAY_LENGTH (pool->pool) &&
-		_atomic_store (&pool->pool[i], ptr)))
+        _atomic_store (&pool->pool[i], ptr)))
     {
-	pool->top = i + 1;
-	return;
+    pool->top = i + 1;
+    return;
     }
 
     /* either full or contended */

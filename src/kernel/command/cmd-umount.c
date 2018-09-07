@@ -30,42 +30,42 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    umount <dir>\r\n");
+    printf("usage:\r\n");
+    printf("    umount <dir>\r\n");
 }
 
 static int do_umount(int argc, char ** argv)
 {
-	if(argc != 2)
-	{
-		usage();
-		return -1;
-	}
+    if(argc != 2)
+    {
+        usage();
+        return -1;
+    }
 
-	if(umount(argv[1]) != 0)
-	{
-		printf("umount '%s' fail\r\n", argv[1]);
-		return -1;
-	}
+    if(umount(argv[1]) != 0)
+    {
+        printf("umount '%s' fail\r\n", argv[1]);
+        return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_umount = {
-	.name	= "umount",
-	.desc	= "unmount a file system",
-	.usage	= usage,
-	.exec	= do_umount,
+    .name   = "umount",
+    .desc   = "unmount a file system",
+    .usage  = usage,
+    .exec   = do_umount,
 };
 
 static __init void umount_cmd_init(void)
 {
-	register_command(&cmd_umount);
+    register_command(&cmd_umount);
 }
 
 static __exit void umount_cmd_exit(void)
 {
-	unregister_command(&cmd_umount);
+    unregister_command(&cmd_umount);
 }
 
 command_initcall(umount_cmd_init);

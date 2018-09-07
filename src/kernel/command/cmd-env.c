@@ -30,52 +30,52 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    env [name=value] ...\r\n");
+    printf("usage:\r\n");
+    printf("    env [name=value] ...\r\n");
 }
 
 static int do_env(int argc, char ** argv)
 {
-	struct environ_t * environ = &(runtime_get()->__environ);
-	struct environ_t * p;
-	int i;
+    struct environ_t * environ = &(runtime_get()->__environ);
+    struct environ_t * p;
+    int i;
 
-	for(i = 1; i < argc; i++)
-	{
-		if(strchr(argv[i], '='))
-		{
-			putenv(argv[i]);
-		}
-		else
-		{
-			usage();
-			return -1;
-		}
-	}
+    for(i = 1; i < argc; i++)
+    {
+        if(strchr(argv[i], '='))
+        {
+            putenv(argv[i]);
+        }
+        else
+        {
+            usage();
+            return -1;
+        }
+    }
 
-	for(p = environ->next; p != environ; p = p->next)
-	{
-		printf(" %s\r\n", p->content);
-	}
+    for(p = environ->next; p != environ; p = p->next)
+    {
+        printf(" %s\r\n", p->content);
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_env = {
-	.name	= "env",
-	.desc	= "display environment variable",
-	.usage	= usage,
-	.exec	= do_env,
+    .name   = "env",
+    .desc   = "display environment variable",
+    .usage  = usage,
+    .exec   = do_env,
 };
 
 static __init void env_cmd_init(void)
 {
-	register_command(&cmd_env);
+    register_command(&cmd_env);
 }
 
 static __exit void env_cmd_exit(void)
 {
-	unregister_command(&cmd_env);
+    unregister_command(&cmd_env);
 }
 
 command_initcall(env_cmd_init);

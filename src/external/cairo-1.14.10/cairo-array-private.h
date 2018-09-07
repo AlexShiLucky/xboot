@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_ARRAY_PRIVATE_H
@@ -61,14 +61,14 @@ cairo_private cairo_status_t
 _cairo_array_append (cairo_array_t *array, const void *element);
 
 cairo_private cairo_status_t
-_cairo_array_append_multiple (cairo_array_t	*array,
-			      const void	*elements,
-			      unsigned int	 num_elements);
+_cairo_array_append_multiple (cairo_array_t *array,
+                  const void    *elements,
+                  unsigned int   num_elements);
 
 cairo_private cairo_status_t
-_cairo_array_allocate (cairo_array_t	 *array,
-		       unsigned int	  num_elements,
-		       void		**elements);
+_cairo_array_allocate (cairo_array_t     *array,
+               unsigned int   num_elements,
+               void     **elements);
 
 cairo_private void *
 _cairo_array_index (cairo_array_t *array, unsigned int index);

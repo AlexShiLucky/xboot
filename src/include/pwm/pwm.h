@@ -9,18 +9,18 @@ extern "C" {
 
 struct pwm_t
 {
-	char * name;
+    char * name;
 
-	int __enable;
-	int __duty;
-	int __period;
-	int __polarity;
+    int __enable;
+    int __duty;
+    int __period;
+    int __polarity;
 
-	void (*config)(struct pwm_t * pwm, int duty, int period, int polarity);
-	void (*enable)(struct pwm_t * pwm);
-	void (*disable)(struct pwm_t * pwm);
+    void (*config)(struct pwm_t * pwm, int duty, int period, int polarity);
+    void (*enable)(struct pwm_t * pwm);
+    void (*disable)(struct pwm_t * pwm);
 
-	void * priv;
+    void * priv;
 };
 
 struct pwm_t * search_pwm(const char * name);

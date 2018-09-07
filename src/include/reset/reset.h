@@ -9,14 +9,14 @@ extern "C" {
 
 struct resetchip_t
 {
-	char * name;
-	int base;
-	int nreset;
+    char * name;
+    int base;
+    int nreset;
 
-	void (*assert)(struct resetchip_t * chip, int offset);
-	void (*deassert)(struct resetchip_t * chip, int offset);
+    void (*assert)(struct resetchip_t * chip, int offset);
+    void (*deassert)(struct resetchip_t * chip, int offset);
 
-	void * priv;
+    void * priv;
 };
 
 struct resetchip_t * search_resetchip(int rst);

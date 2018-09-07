@@ -9,33 +9,33 @@ extern "C" {
 #include <sd/mmc.h>
 
 struct sdhci_cmd_t {
-	u32_t cmdidx;
-	u32_t cmdarg;
-	u32_t resptype;
-	u32_t response[4];
+    u32_t cmdidx;
+    u32_t cmdarg;
+    u32_t resptype;
+    u32_t response[4];
 };
 
 struct sdhci_data_t {
-	u8_t * buf;
-	u32_t flag;
-	u32_t blksz;
-	u32_t blkcnt;
+    u8_t * buf;
+    u32_t flag;
+    u32_t blksz;
+    u32_t blkcnt;
 };
 
 struct sdhci_t
 {
-	char * name;
-	u32_t voltages;
-	u32_t width;
-	u32_t clock;
-	bool_t removeable;
-	void * sdcard;
+    char * name;
+    u32_t voltages;
+    u32_t width;
+    u32_t clock;
+    bool_t removeable;
+    void * sdcard;
 
-	bool_t (*detect)(struct sdhci_t * sdhci);
-	bool_t (*setwidth)(struct sdhci_t * sdhci, u32_t width);
-	bool_t (*setclock)(struct sdhci_t * sdhci, u32_t clock);
-	bool_t (*transfer)(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat);
-	void * priv;
+    bool_t (*detect)(struct sdhci_t * sdhci);
+    bool_t (*setwidth)(struct sdhci_t * sdhci, u32_t width);
+    bool_t (*setclock)(struct sdhci_t * sdhci, u32_t clock);
+    bool_t (*transfer)(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat);
+    void * priv;
 };
 
 struct sdhci_t * search_sdhci(const char * name);

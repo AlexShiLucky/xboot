@@ -30,31 +30,31 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    shutdown\r\n");
+    printf("usage:\r\n");
+    printf("    shutdown\r\n");
 }
 
 static int do_shutdown(int argc, char ** argv)
 {
-	machine_shutdown();
-	return 0;
+    machine_shutdown();
+    return 0;
 }
 
 static struct command_t cmd_shutdown = {
-	.name	= "shutdown",
-	.desc	= "shutdown the target system",
-	.usage	= usage,
-	.exec	= do_shutdown,
+    .name   = "shutdown",
+    .desc   = "shutdown the target system",
+    .usage  = usage,
+    .exec   = do_shutdown,
 };
 
 static __init void shutdown_cmd_init(void)
 {
-	register_command(&cmd_shutdown);
+    register_command(&cmd_shutdown);
 }
 
 static __exit void shutdown_cmd_exit(void)
 {
-	unregister_command(&cmd_shutdown);
+    unregister_command(&cmd_shutdown);
 }
 
 command_initcall(shutdown_cmd_init);

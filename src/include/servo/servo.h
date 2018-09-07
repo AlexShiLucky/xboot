@@ -9,12 +9,12 @@ extern "C" {
 
 struct servo_t
 {
-	char * name;
+    char * name;
 
-	void (*enable)(struct servo_t * m);
-	void (*disable)(struct servo_t * m);
-	void (*set)(struct servo_t * m, int angle);
-	void * priv;
+    void (*enable)(struct servo_t * m);
+    void (*disable)(struct servo_t * m);
+    void (*set)(struct servo_t * m, int angle);
+    void * priv;
 };
 
 struct servo_t * search_servo(const char * name);

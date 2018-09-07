@@ -6,6 +6,6 @@
 
 void exit(int code)
 {
-	while(1);
+    while(1);
 }
 EXPORT_SYMBOL(exit);

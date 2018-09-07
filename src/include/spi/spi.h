@@ -9,40 +9,40 @@ extern "C" {
 
 /* spi消息结构 */
 struct spi_msg_t {
-	void * txbuf;
-	void * rxbuf;
-	int len;
-	int mode;
-	int bits;
-	int speed;
+    void * txbuf;
+    void * rxbuf;
+    int len;
+    int mode;
+    int bits;
+    int speed;
 };
 
 /* spi总线结构 */
 struct spi_t
 {
-	/* The spi bus name */
-	char * name;
+    /* The spi bus name */
+    char * name;
 
-	/* Master transfer */
-	int (*transfer)(struct spi_t * spi, struct spi_msg_t * msgs);
+    /* Master transfer */
+    int (*transfer)(struct spi_t * spi, struct spi_msg_t * msgs);
 
-	/* Activate chip select */
-	void (*select)(struct spi_t * spi, int cs);
+    /* Activate chip select */
+    void (*select)(struct spi_t * spi, int cs);
 
-	/* Dectivate chip select */
-	void (*deselect)(struct spi_t * spi, int cs);
+    /* Dectivate chip select */
+    void (*deselect)(struct spi_t * spi, int cs);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 /* spi设备结构 */
 struct spi_device_t {
-	struct spi_t * spi;
-	int cs;
-	int mode;
-	int bits;
-	int speed;
+    struct spi_t * spi;
+    int cs;
+    int mode;
+    int bits;
+    int speed;
 };
 
 struct spi_t * search_spi(const char * name);

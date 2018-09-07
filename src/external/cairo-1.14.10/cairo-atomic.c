@@ -28,7 +28,7 @@
  * The Original Code is the cairo graphics library.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -38,8 +38,8 @@
 
 #ifdef HAS_ATOMIC_OPS
 COMPILE_TIME_ASSERT(sizeof(void*) == sizeof(int) ||
-		    sizeof(void*) == sizeof(long) ||
-		    sizeof(void*) == sizeof(long long));
+            sizeof(void*) == sizeof(long) ||
+            sizeof(void*) == sizeof(long long));
 #else
 void
 _cairo_atomic_int_inc (cairo_atomic_intptr_t *x)
@@ -69,7 +69,7 @@ _cairo_atomic_int_cmpxchg_return_old_impl (cairo_atomic_intptr_t *x, cairo_atomi
     CAIRO_MUTEX_LOCK (_cairo_atomic_mutex);
     ret = *x;
     if (ret == oldv)
-	*x = newv;
+    *x = newv;
     CAIRO_MUTEX_UNLOCK (_cairo_atomic_mutex);
 
     return ret;
@@ -83,7 +83,7 @@ _cairo_atomic_ptr_cmpxchg_return_old_impl (void **x, void *oldv, void *newv)
     CAIRO_MUTEX_LOCK (_cairo_atomic_mutex);
     ret = *x;
     if (ret == oldv)
-	*x = newv;
+    *x = newv;
     CAIRO_MUTEX_UNLOCK (_cairo_atomic_mutex);
 
     return ret;

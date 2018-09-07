@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@redhat.com>
+ *  Carl D. Worth <cworth@redhat.com>
  */
 
 #ifndef CAIRO_PATTERN_INLINE_H
@@ -44,10 +44,10 @@ CAIRO_BEGIN_DECLS
 
 static inline void
 _cairo_pattern_add_observer (cairo_pattern_t *pattern,
-			     cairo_pattern_observer_t *observer,
-			     void (*func) (cairo_pattern_observer_t *,
-					   cairo_pattern_t *,
-					   unsigned int))
+                 cairo_pattern_observer_t *observer,
+                 void (*func) (cairo_pattern_observer_t *,
+                       cairo_pattern_t *,
+                       unsigned int))
 {
     observer->notify = func;
     cairo_list_add (&observer->link, &pattern->observers);
@@ -55,7 +55,7 @@ _cairo_pattern_add_observer (cairo_pattern_t *pattern,
 
 static inline cairo_surface_t *
 _cairo_pattern_get_source (const cairo_surface_pattern_t *pattern,
-			   cairo_rectangle_int_t *extents)
+               cairo_rectangle_int_t *extents)
 {
     return _cairo_surface_get_source (pattern->surface, extents);
 }

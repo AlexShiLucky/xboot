@@ -32,90 +32,90 @@
 /* 读取加速度计设备信息加速度 */
 static ssize_t gmeter_read_acceleration(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct gmeter_t * g = (struct gmeter_t *)kobj->priv;
-	int x = 0, y = 0, z = 0;
-	gmeter_get_acceleration(g, &x, &y, &z);
-	return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] m/s^2", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
+    struct gmeter_t * g = (struct gmeter_t *)kobj->priv;
+    int x = 0, y = 0, z = 0;
+    gmeter_get_acceleration(g, &x, &y, &z);
+    return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] m/s^2", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
 }
 
 /* 根据名称搜索一个加速度计设备 */
 struct gmeter_t * search_gmeter(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_GMETER);
-	if(!dev)
-		return NULL;
-	return (struct gmeter_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_GMETER);
+    if(!dev)
+        return NULL;
+    return (struct gmeter_t *)dev->priv;
 }
 
 /* 搜索第一个加速度计设备 */
 struct gmeter_t * search_first_gmeter(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_GMETER);
-	if(!dev)
-		return NULL;
-	return (struct gmeter_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_GMETER);
+    if(!dev)
+        return NULL;
+    return (struct gmeter_t *)dev->priv;
 }
 
 /* 注册一个加速度计设备 */
 bool_t register_gmeter(struct device_t ** device,struct gmeter_t * g)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!g || !g->name)
-		return FALSE;
+    if(!g || !g->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(g->name);
-	dev->type = DEVICE_TYPE_GMETER;
-	dev->priv = g;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "acceleration", gmeter_read_acceleration, NULL, g);
+    dev->name = strdup(g->name);
+    dev->type = DEVICE_TYPE_GMETER;
+    dev->priv = g;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "acceleration", gmeter_read_acceleration, NULL, g);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个加速度计设备 */
 bool_t unregister_gmeter(struct gmeter_t * g)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!g || !g->name)
-		return FALSE;
+    if(!g || !g->name)
+        return FALSE;
 
-	dev = search_device(g->name, DEVICE_TYPE_GMETER);
-	if(!dev)
-		return FALSE;
+    dev = search_device(g->name, DEVICE_TYPE_GMETER);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 读取加速度计设备加速度 */
 bool_t gmeter_get_acceleration(struct gmeter_t * g, int * x, int * y, int * z)
 {
-	if(g && g->get)
-		return g->get(g, x, y, z);
-	return FALSE;
+    if(g && g->get)
+        return g->get(g, x, y, z);
+    return FALSE;
 }

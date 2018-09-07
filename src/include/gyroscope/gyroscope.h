@@ -9,10 +9,10 @@ extern "C" {
 
 struct gyroscope_t
 {
-	char * name;
+    char * name;
 
-	bool_t (*get)(struct gyroscope_t * g, int * x, int * y, int * z);
-	void * priv;
+    bool_t (*get)(struct gyroscope_t * g, int * x, int * y, int * z);
+    void * priv;
 };
 
 struct gyroscope_t * search_gyroscope(const char * name);

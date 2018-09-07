@@ -30,90 +30,90 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    cat <file> ...\r\n");
+    printf("usage:\r\n");
+    printf("    cat <file> ...\r\n");
 }
 
 static int cat_file(const char * filename)
 {
     struct stat st;
-	char * buf;
+    char * buf;
     ssize_t i, n;
     int fd;
 
-	if(stat(filename, &st) != 0)
-	{
-		printf("cat: %s: No such file or directory\r\n", filename);
-		return -1;
-	}
+    if(stat(filename, &st) != 0)
+    {
+        printf("cat: %s: No such file or directory\r\n", filename);
+        return -1;
+    }
 
-	if(S_ISDIR(st.st_mode))
-	{
-		printf("cat: %s: Is a directory\r\n", filename);
-		return -1;
-	}
+    if(S_ISDIR(st.st_mode))
+    {
+        printf("cat: %s: Is a directory\r\n", filename);
+        return -1;
+    }
 
-	fd = open(filename, O_RDONLY, (S_IRUSR|S_IRGRP|S_IROTH));
-	if(fd < 0)
-	{
-		printf("cat: %s: Can not open\r\n", filename);
-		return -1;
-	}
+    fd = open(filename, O_RDONLY, (S_IRUSR|S_IRGRP|S_IROTH));
+    if(fd < 0)
+    {
+        printf("cat: %s: Can not open\r\n", filename);
+        return -1;
+    }
 
-	buf = malloc(SZ_512K);
-	if(!buf)
-	{
-		printf("cat: Can not alloc memory\r\n");
-		close(fd);
-		return -1;
-	}
+    buf = malloc(SZ_512K);
+    if(!buf)
+    {
+        printf("cat: Can not alloc memory\r\n");
+        close(fd);
+        return -1;
+    }
 
-	while((n = read(fd, buf, sizeof(buf))) > 0)
-	{
-		for(i = 0; i < n; i++)
-			putchar(buf[i]);
-	}
-	printf("\r\n");
+    while((n = read(fd, buf, sizeof(buf))) > 0)
+    {
+        for(i = 0; i < n; i++)
+            putchar(buf[i]);
+    }
+    printf("\r\n");
 
-	free(buf);
-	close(fd);
+    free(buf);
+    close(fd);
 
-	return 0;
+    return 0;
 }
 
 static int do_cat(int argc, char ** argv)
 {
-	int i;
+    int i;
 
-	if(argc == 1)
-	{
-		usage();
-		return -1;
-	}
+    if(argc == 1)
+    {
+        usage();
+        return -1;
+    }
 
-	for(i = 1; i < argc; i++)
-	{
-		if(cat_file(argv[i]) != 0)
-			return -1;
-	}
-	return 0;
+    for(i = 1; i < argc; i++)
+    {
+        if(cat_file(argv[i]) != 0)
+            return -1;
+    }
+    return 0;
 }
 
 static struct command_t cmd_cat = {
-	.name	= "cat",
-	.desc	= "show the contents of a file",
-	.usage	= usage,
-	.exec	= do_cat,
+    .name   = "cat",
+    .desc   = "show the contents of a file",
+    .usage  = usage,
+    .exec   = do_cat,
 };
 
 static __init void cat_cmd_init(void)
 {
-	register_command(&cmd_cat);
+    register_command(&cmd_cat);
 }
 
 static __exit void cat_cmd_exit(void)
 {
-	unregister_command(&cmd_cat);
+    unregister_command(&cmd_cat);
 }
 
 command_initcall(cat_cmd_init);

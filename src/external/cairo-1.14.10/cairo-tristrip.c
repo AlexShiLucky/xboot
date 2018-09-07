@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Chris Wilson
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilsonc.co.uk>
+ *  Chris Wilson <chris@chris-wilsonc.co.uk>
  */
 
 #include "cairoint.h"
@@ -56,16 +56,16 @@ void
 _cairo_tristrip_fini (cairo_tristrip_t *strip)
 {
     if (strip->points != strip->points_embedded)
-	free (strip->points);
+    free (strip->points);
 
     VG (VALGRIND_MAKE_MEM_NOACCESS (strip, sizeof (cairo_tristrip_t)));
 }
 
 
 void
-_cairo_tristrip_limit (cairo_tristrip_t	*strip,
-		       const cairo_box_t	*limits,
-		       int			 num_limits)
+_cairo_tristrip_limit (cairo_tristrip_t *strip,
+               const cairo_box_t    *limits,
+               int           num_limits)
 {
     strip->limits = limits;
     strip->num_limits = num_limits;
@@ -73,11 +73,11 @@ _cairo_tristrip_limit (cairo_tristrip_t	*strip,
 
 void
 _cairo_tristrip_init_with_clip (cairo_tristrip_t *strip,
-				const cairo_clip_t *clip)
+                const cairo_clip_t *clip)
 {
     _cairo_tristrip_init (strip);
     if (clip)
-	_cairo_tristrip_limit (strip, clip->boxes, clip->num_boxes);
+    _cairo_tristrip_limit (strip, clip->boxes, clip->num_boxes);
 }
 
 /* make room for at least one more trap */
@@ -88,22 +88,22 @@ _cairo_tristrip_grow (cairo_tristrip_t *strip)
     int new_size = 4 * strip->size_points;
 
     if (CAIRO_INJECT_FAULT ()) {
-	strip->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-	return FALSE;
+    strip->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return FALSE;
     }
 
     if (strip->points == strip->points_embedded) {
-	points = _cairo_malloc_ab (new_size, sizeof (cairo_point_t));
-	if (points != NULL)
-	    memcpy (points, strip->points, sizeof (strip->points_embedded));
+    points = _cairo_malloc_ab (new_size, sizeof (cairo_point_t));
+    if (points != NULL)
+        memcpy (points, strip->points, sizeof (strip->points_embedded));
     } else {
-	points = _cairo_realloc_ab (strip->points,
-	                               new_size, sizeof (cairo_trapezoid_t));
+    points = _cairo_realloc_ab (strip->points,
+                                   new_size, sizeof (cairo_trapezoid_t));
     }
 
     if (unlikely (points == NULL)) {
-	strip->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-	return FALSE;
+    strip->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return FALSE;
     }
 
     strip->points = points;
@@ -113,11 +113,11 @@ _cairo_tristrip_grow (cairo_tristrip_t *strip)
 
 void
 _cairo_tristrip_add_point (cairo_tristrip_t *strip,
-			   const cairo_point_t *p)
+               const cairo_point_t *p)
 {
     if (unlikely (strip->num_points == strip->size_points)) {
-	if (unlikely (! _cairo_tristrip_grow (strip)))
-	    return;
+    if (unlikely (! _cairo_tristrip_grow (strip)))
+        return;
     }
 
     strip->points[strip->num_points++] = *p;
@@ -127,10 +127,10 @@ _cairo_tristrip_add_point (cairo_tristrip_t *strip,
  * next point inserted must also be @p. */
 void
 _cairo_tristrip_move_to (cairo_tristrip_t *strip,
-			 const cairo_point_t *p)
+             const cairo_point_t *p)
 {
     if (strip->num_points == 0)
-	return;
+    return;
 
     _cairo_tristrip_add_point (strip, &strip->points[strip->num_points-1]);
     _cairo_tristrip_add_point (strip, p);
@@ -151,35 +151,35 @@ _cairo_tristrip_translate (cairo_tristrip_t *strip, int x, int y)
     yoff = _cairo_fixed_from_int (y);
 
     for (i = 0, p = strip->points; i < strip->num_points; i++, p++) {
-	p->x += xoff;
-	p->y += yoff;
+    p->x += xoff;
+    p->y += yoff;
     }
 }
 
 void
 _cairo_tristrip_extents (const cairo_tristrip_t *strip,
-			 cairo_box_t *extents)
+             cairo_box_t *extents)
 {
     int i;
 
     if (strip->num_points == 0) {
-	extents->p1.x = extents->p1.y = 0;
-	extents->p2.x = extents->p2.y = 0;
-	return;
+    extents->p1.x = extents->p1.y = 0;
+    extents->p2.x = extents->p2.y = 0;
+    return;
     }
 
     extents->p2 = extents->p1 = strip->points[0];
     for (i = 1; i < strip->num_points; i++) {
-	const cairo_point_t *p =  &strip->points[i];
+    const cairo_point_t *p =  &strip->points[i];
 
-	if (p->x < extents->p1.x)
-	    extents->p1.x = p->x;
-	else if (p->x > extents->p2.x)
-	    extents->p2.x = p->x;
+    if (p->x < extents->p1.x)
+        extents->p1.x = p->x;
+    else if (p->x > extents->p2.x)
+        extents->p2.x = p->x;
 
-	if (p->y < extents->p1.y)
-	    extents->p1.y = p->y;
-	else if (p->y > extents->p2.y)
-	    extents->p2.y = p->y;
+    if (p->y < extents->p1.y)
+        extents->p1.y = p->y;
+    else if (p->y > extents->p2.y)
+        extents->p2.y = p->y;
     }
 }

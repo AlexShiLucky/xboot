@@ -28,7 +28,7 @@
  * The Original Code is the cairo graphics library.
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -55,7 +55,7 @@ _cairo_boxes_init (cairo_boxes_t *boxes)
 
 void
 _cairo_boxes_init_from_rectangle (cairo_boxes_t *boxes,
-				  int x, int y, int w, int h)
+                  int x, int y, int w, int h)
 {
     _cairo_boxes_init (boxes);
 
@@ -65,17 +65,17 @@ _cairo_boxes_init_from_rectangle (cairo_boxes_t *boxes,
 
 void
 _cairo_boxes_init_with_clip (cairo_boxes_t *boxes,
-			     cairo_clip_t *clip)
+                 cairo_clip_t *clip)
 {
     _cairo_boxes_init (boxes);
     if (clip)
-	_cairo_boxes_limit (boxes, clip->boxes, clip->num_boxes);
+    _cairo_boxes_limit (boxes, clip->boxes, clip->num_boxes);
 }
 
 void
 _cairo_boxes_init_for_array (cairo_boxes_t *boxes,
-			     cairo_box_t *array,
-			     int num_boxes)
+                 cairo_box_t *array,
+                 int num_boxes)
 {
     int n;
 
@@ -90,22 +90,22 @@ _cairo_boxes_init_for_array (cairo_boxes_t *boxes,
     boxes->chunks.count = num_boxes;
 
     for (n = 0; n < num_boxes; n++) {
-	if (! _cairo_fixed_is_integer (array[n].p1.x) ||
-	    ! _cairo_fixed_is_integer (array[n].p1.y) ||
-	    ! _cairo_fixed_is_integer (array[n].p2.x) ||
-	    ! _cairo_fixed_is_integer (array[n].p2.y))
-	{
-	    break;
-	}
+    if (! _cairo_fixed_is_integer (array[n].p1.x) ||
+        ! _cairo_fixed_is_integer (array[n].p1.y) ||
+        ! _cairo_fixed_is_integer (array[n].p2.x) ||
+        ! _cairo_fixed_is_integer (array[n].p2.y))
+    {
+        break;
+    }
     }
 
     boxes->is_pixel_aligned = n == num_boxes;
 }
 
 void
-_cairo_boxes_limit (cairo_boxes_t	*boxes,
-		    const cairo_box_t	*limits,
-		    int			 num_limits)
+_cairo_boxes_limit (cairo_boxes_t   *boxes,
+            const cairo_box_t   *limits,
+            int          num_limits)
 {
     int n;
 
@@ -113,153 +113,153 @@ _cairo_boxes_limit (cairo_boxes_t	*boxes,
     boxes->num_limits = num_limits;
 
     if (boxes->num_limits) {
-	boxes->limit = limits[0];
-	for (n = 1; n < num_limits; n++) {
-	    if (limits[n].p1.x < boxes->limit.p1.x)
-		boxes->limit.p1.x = limits[n].p1.x;
+    boxes->limit = limits[0];
+    for (n = 1; n < num_limits; n++) {
+        if (limits[n].p1.x < boxes->limit.p1.x)
+        boxes->limit.p1.x = limits[n].p1.x;
 
-	    if (limits[n].p1.y < boxes->limit.p1.y)
-		boxes->limit.p1.y = limits[n].p1.y;
+        if (limits[n].p1.y < boxes->limit.p1.y)
+        boxes->limit.p1.y = limits[n].p1.y;
 
-	    if (limits[n].p2.x > boxes->limit.p2.x)
-		boxes->limit.p2.x = limits[n].p2.x;
+        if (limits[n].p2.x > boxes->limit.p2.x)
+        boxes->limit.p2.x = limits[n].p2.x;
 
-	    if (limits[n].p2.y > boxes->limit.p2.y)
-		boxes->limit.p2.y = limits[n].p2.y;
-	}
+        if (limits[n].p2.y > boxes->limit.p2.y)
+        boxes->limit.p2.y = limits[n].p2.y;
+    }
     }
 }
 
 static void
 _cairo_boxes_add_internal (cairo_boxes_t *boxes,
-			   const cairo_box_t *box)
+               const cairo_box_t *box)
 {
     struct _cairo_boxes_chunk *chunk;
 
     if (unlikely (boxes->status))
-	return;
+    return;
 
     chunk = boxes->tail;
     if (unlikely (chunk->count == chunk->size)) {
-	int size;
+    int size;
 
-	size = chunk->size * 2;
-	chunk->next = _cairo_malloc_ab_plus_c (size,
-					       sizeof (cairo_box_t),
-					       sizeof (struct _cairo_boxes_chunk));
+    size = chunk->size * 2;
+    chunk->next = _cairo_malloc_ab_plus_c (size,
+                           sizeof (cairo_box_t),
+                           sizeof (struct _cairo_boxes_chunk));
 
-	if (unlikely (chunk->next == NULL)) {
-	    boxes->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-	    return;
-	}
+    if (unlikely (chunk->next == NULL)) {
+        boxes->status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+        return;
+    }
 
-	chunk = chunk->next;
-	boxes->tail = chunk;
+    chunk = chunk->next;
+    boxes->tail = chunk;
 
-	chunk->next = NULL;
-	chunk->count = 0;
-	chunk->size = size;
-	chunk->base = (cairo_box_t *) (chunk + 1);
+    chunk->next = NULL;
+    chunk->count = 0;
+    chunk->size = size;
+    chunk->base = (cairo_box_t *) (chunk + 1);
     }
 
     chunk->base[chunk->count++] = *box;
     boxes->num_boxes++;
 
     if (boxes->is_pixel_aligned)
-	boxes->is_pixel_aligned = _cairo_box_is_pixel_aligned (box);
+    boxes->is_pixel_aligned = _cairo_box_is_pixel_aligned (box);
 }
 
 cairo_status_t
 _cairo_boxes_add (cairo_boxes_t *boxes,
-		  cairo_antialias_t antialias,
-		  const cairo_box_t *box)
+          cairo_antialias_t antialias,
+          const cairo_box_t *box)
 {
     cairo_box_t b;
 
     if (antialias == CAIRO_ANTIALIAS_NONE) {
-	b.p1.x = _cairo_fixed_round_down (box->p1.x);
-	b.p1.y = _cairo_fixed_round_down (box->p1.y);
-	b.p2.x = _cairo_fixed_round_down (box->p2.x);
-	b.p2.y = _cairo_fixed_round_down (box->p2.y);
-	box = &b;
+    b.p1.x = _cairo_fixed_round_down (box->p1.x);
+    b.p1.y = _cairo_fixed_round_down (box->p1.y);
+    b.p2.x = _cairo_fixed_round_down (box->p2.x);
+    b.p2.y = _cairo_fixed_round_down (box->p2.y);
+    box = &b;
     }
 
     if (box->p1.y == box->p2.y)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (box->p1.x == box->p2.x)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     if (boxes->num_limits) {
-	cairo_point_t p1, p2;
-	cairo_bool_t reversed = FALSE;
-	int n;
+    cairo_point_t p1, p2;
+    cairo_bool_t reversed = FALSE;
+    int n;
 
-	/* support counter-clockwise winding for rectangular tessellation */
-	if (box->p1.x < box->p2.x) {
-	    p1.x = box->p1.x;
-	    p2.x = box->p2.x;
-	} else {
-	    p2.x = box->p1.x;
-	    p1.x = box->p2.x;
-	    reversed = ! reversed;
-	}
-
-	if (p1.x >= boxes->limit.p2.x || p2.x <= boxes->limit.p1.x)
-	    return CAIRO_STATUS_SUCCESS;
-
-	if (box->p1.y < box->p2.y) {
-	    p1.y = box->p1.y;
-	    p2.y = box->p2.y;
-	} else {
-	    p2.y = box->p1.y;
-	    p1.y = box->p2.y;
-	    reversed = ! reversed;
-	}
-
-	if (p1.y >= boxes->limit.p2.y || p2.y <= boxes->limit.p1.y)
-	    return CAIRO_STATUS_SUCCESS;
-
-	for (n = 0; n < boxes->num_limits; n++) {
-	    const cairo_box_t *limits = &boxes->limits[n];
-	    cairo_box_t _box;
-	    cairo_point_t _p1, _p2;
-
-	    if (p1.x >= limits->p2.x || p2.x <= limits->p1.x)
-		continue;
-	    if (p1.y >= limits->p2.y || p2.y <= limits->p1.y)
-		continue;
-
-	    /* Otherwise, clip the box to the limits. */
-	    _p1 = p1;
-	    if (_p1.x < limits->p1.x)
-		_p1.x = limits->p1.x;
-	    if (_p1.y < limits->p1.y)
-		_p1.y = limits->p1.y;
-
-	    _p2 = p2;
-	    if (_p2.x > limits->p2.x)
-		_p2.x = limits->p2.x;
-	    if (_p2.y > limits->p2.y)
-		_p2.y = limits->p2.y;
-
-	    if (_p2.y <= _p1.y || _p2.x <= _p1.x)
-		continue;
-
-	    _box.p1.y = _p1.y;
-	    _box.p2.y = _p2.y;
-	    if (reversed) {
-		_box.p1.x = _p2.x;
-		_box.p2.x = _p1.x;
-	    } else {
-		_box.p1.x = _p1.x;
-		_box.p2.x = _p2.x;
-	    }
-
-	    _cairo_boxes_add_internal (boxes, &_box);
-	}
+    /* support counter-clockwise winding for rectangular tessellation */
+    if (box->p1.x < box->p2.x) {
+        p1.x = box->p1.x;
+        p2.x = box->p2.x;
     } else {
-	_cairo_boxes_add_internal (boxes, box);
+        p2.x = box->p1.x;
+        p1.x = box->p2.x;
+        reversed = ! reversed;
+    }
+
+    if (p1.x >= boxes->limit.p2.x || p2.x <= boxes->limit.p1.x)
+        return CAIRO_STATUS_SUCCESS;
+
+    if (box->p1.y < box->p2.y) {
+        p1.y = box->p1.y;
+        p2.y = box->p2.y;
+    } else {
+        p2.y = box->p1.y;
+        p1.y = box->p2.y;
+        reversed = ! reversed;
+    }
+
+    if (p1.y >= boxes->limit.p2.y || p2.y <= boxes->limit.p1.y)
+        return CAIRO_STATUS_SUCCESS;
+
+    for (n = 0; n < boxes->num_limits; n++) {
+        const cairo_box_t *limits = &boxes->limits[n];
+        cairo_box_t _box;
+        cairo_point_t _p1, _p2;
+
+        if (p1.x >= limits->p2.x || p2.x <= limits->p1.x)
+        continue;
+        if (p1.y >= limits->p2.y || p2.y <= limits->p1.y)
+        continue;
+
+        /* Otherwise, clip the box to the limits. */
+        _p1 = p1;
+        if (_p1.x < limits->p1.x)
+        _p1.x = limits->p1.x;
+        if (_p1.y < limits->p1.y)
+        _p1.y = limits->p1.y;
+
+        _p2 = p2;
+        if (_p2.x > limits->p2.x)
+        _p2.x = limits->p2.x;
+        if (_p2.y > limits->p2.y)
+        _p2.y = limits->p2.y;
+
+        if (_p2.y <= _p1.y || _p2.x <= _p1.x)
+        continue;
+
+        _box.p1.y = _p1.y;
+        _box.p2.y = _p2.y;
+        if (reversed) {
+        _box.p1.x = _p2.x;
+        _box.p2.x = _p1.x;
+        } else {
+        _box.p1.x = _p1.x;
+        _box.p2.x = _p2.x;
+        }
+
+        _cairo_boxes_add_internal (boxes, &_box);
+    }
+    } else {
+    _cairo_boxes_add_internal (boxes, box);
     }
 
     return boxes->status;
@@ -267,32 +267,32 @@ _cairo_boxes_add (cairo_boxes_t *boxes,
 
 void
 _cairo_boxes_extents (const cairo_boxes_t *boxes,
-		      cairo_box_t *box)
+              cairo_box_t *box)
 {
     const struct _cairo_boxes_chunk *chunk;
     cairo_box_t b;
     int i;
 
     if (boxes->num_boxes == 0) {
-	box->p1.x = box->p1.y = box->p2.x = box->p2.y = 0;
-	return;
+    box->p1.x = box->p1.y = box->p2.x = box->p2.y = 0;
+    return;
     }
 
     b = boxes->chunks.base[0];
     for (chunk = &boxes->chunks; chunk != NULL; chunk = chunk->next) {
-	for (i = 0; i < chunk->count; i++) {
-	    if (chunk->base[i].p1.x < b.p1.x)
-		b.p1.x = chunk->base[i].p1.x;
+    for (i = 0; i < chunk->count; i++) {
+        if (chunk->base[i].p1.x < b.p1.x)
+        b.p1.x = chunk->base[i].p1.x;
 
-	    if (chunk->base[i].p1.y < b.p1.y)
-		b.p1.y = chunk->base[i].p1.y;
+        if (chunk->base[i].p1.y < b.p1.y)
+        b.p1.y = chunk->base[i].p1.y;
 
-	    if (chunk->base[i].p2.x > b.p2.x)
-		b.p2.x = chunk->base[i].p2.x;
+        if (chunk->base[i].p2.x > b.p2.x)
+        b.p2.x = chunk->base[i].p2.x;
 
-	    if (chunk->base[i].p2.y > b.p2.y)
-		b.p2.y = chunk->base[i].p2.y;
-	}
+        if (chunk->base[i].p2.y > b.p2.y)
+        b.p2.y = chunk->base[i].p2.y;
+    }
     }
     *box = b;
 }
@@ -303,8 +303,8 @@ _cairo_boxes_clear (cairo_boxes_t *boxes)
     struct _cairo_boxes_chunk *chunk, *next;
 
     for (chunk = boxes->chunks.next; chunk != NULL; chunk = next) {
-	next = chunk->next;
-	free (chunk);
+    next = chunk->next;
+    free (chunk);
     }
 
     boxes->tail = &boxes->chunks;
@@ -319,8 +319,8 @@ _cairo_boxes_clear (cairo_boxes_t *boxes)
 
 cairo_box_t *
 _cairo_boxes_to_array (const cairo_boxes_t *boxes,
-		       int *num_boxes,
-		       cairo_bool_t force_allocation)
+               int *num_boxes,
+               cairo_bool_t force_allocation)
 {
     const struct _cairo_boxes_chunk *chunk;
     cairo_box_t *box;
@@ -328,18 +328,18 @@ _cairo_boxes_to_array (const cairo_boxes_t *boxes,
 
     *num_boxes = boxes->num_boxes;
     if (boxes->chunks.next == NULL && ! force_allocation)
-	    return boxes->chunks.base;
+        return boxes->chunks.base;
 
     box = _cairo_malloc_ab (boxes->num_boxes, sizeof (cairo_box_t));
     if (box == NULL) {
-	_cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
-	return NULL;
+    _cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
+    return NULL;
     }
 
     j = 0;
     for (chunk = &boxes->chunks; chunk != NULL; chunk = chunk->next) {
-	for (i = 0; i < chunk->count; i++)
-	    box[j++] = chunk->base[i];
+    for (i = 0; i < chunk->count; i++)
+        box[j++] = chunk->base[i];
     }
 
     return box;
@@ -351,23 +351,23 @@ _cairo_boxes_fini (cairo_boxes_t *boxes)
     struct _cairo_boxes_chunk *chunk, *next;
 
     for (chunk = boxes->chunks.next; chunk != NULL; chunk = next) {
-	next = chunk->next;
-	free (chunk);
+    next = chunk->next;
+    free (chunk);
     }
 }
 
 cairo_bool_t
 _cairo_boxes_for_each_box (cairo_boxes_t *boxes,
-			   cairo_bool_t (*func) (cairo_box_t *box, void *data),
-			   void *data)
+               cairo_bool_t (*func) (cairo_box_t *box, void *data),
+               void *data)
 {
     struct _cairo_boxes_chunk *chunk;
     int i;
 
     for (chunk = &boxes->chunks; chunk != NULL; chunk = chunk->next) {
-	for (i = 0; i < chunk->count; i++)
-	    if (! func (&chunk->base[i], data))
-		return FALSE;
+    for (i = 0; i < chunk->count; i++)
+        if (! func (&chunk->base[i], data))
+        return FALSE;
     }
 
     return TRUE;
@@ -380,33 +380,33 @@ struct cairo_box_renderer {
 
 static cairo_status_t
 span_to_boxes (void *abstract_renderer, int y, int h,
-	       const cairo_half_open_span_t *spans, unsigned num_spans)
+           const cairo_half_open_span_t *spans, unsigned num_spans)
 {
     struct cairo_box_renderer *r = abstract_renderer;
     cairo_status_t status = CAIRO_STATUS_SUCCESS;
     cairo_box_t box;
 
     if (num_spans == 0)
-	return CAIRO_STATUS_SUCCESS;
+    return CAIRO_STATUS_SUCCESS;
 
     box.p1.y = _cairo_fixed_from_int (y);
     box.p2.y = _cairo_fixed_from_int (y + h);
     do {
-	if (spans[0].coverage) {
-	    box.p1.x = _cairo_fixed_from_int(spans[0].x);
-	    box.p2.x = _cairo_fixed_from_int(spans[1].x);
-	    status = _cairo_boxes_add (r->boxes, CAIRO_ANTIALIAS_DEFAULT, &box);
-	}
-	spans++;
+    if (spans[0].coverage) {
+        box.p1.x = _cairo_fixed_from_int(spans[0].x);
+        box.p2.x = _cairo_fixed_from_int(spans[1].x);
+        status = _cairo_boxes_add (r->boxes, CAIRO_ANTIALIAS_DEFAULT, &box);
+    }
+    spans++;
     } while (--num_spans > 1 && status == CAIRO_STATUS_SUCCESS);
 
     return status;
 }
 
 cairo_status_t
-_cairo_rasterise_polygon_to_boxes (cairo_polygon_t			*polygon,
-				   cairo_fill_rule_t			 fill_rule,
-				   cairo_boxes_t *boxes)
+_cairo_rasterise_polygon_to_boxes (cairo_polygon_t          *polygon,
+                   cairo_fill_rule_t             fill_rule,
+                   cairo_boxes_t *boxes)
 {
     struct cairo_box_renderer renderer;
     cairo_scan_converter_t *converter;
@@ -417,12 +417,12 @@ _cairo_rasterise_polygon_to_boxes (cairo_polygon_t			*polygon,
 
     _cairo_box_round_to_rectangle (&polygon->extents, &r);
     converter = _cairo_mono_scan_converter_create (r.x, r.y,
-						   r.x + r.width,
-						   r.y + r.height,
-						   fill_rule);
+                           r.x + r.width,
+                           r.y + r.height,
+                           fill_rule);
     status = _cairo_mono_scan_converter_add_polygon (converter, polygon);
     if (unlikely (status))
-	goto cleanup_converter;
+    goto cleanup_converter;
 
     renderer.boxes = boxes;
     renderer.base.render_rows = span_to_boxes;
@@ -442,19 +442,19 @@ _cairo_debug_print_boxes (FILE *stream, const cairo_boxes_t *boxes)
 
     _cairo_boxes_extents (boxes, &extents);
     fprintf (stream, "boxes x %d: (%f, %f) x (%f, %f)\n",
-	     boxes->num_boxes,
-	     _cairo_fixed_to_double (extents.p1.x),
-	     _cairo_fixed_to_double (extents.p1.y),
-	     _cairo_fixed_to_double (extents.p2.x),
-	     _cairo_fixed_to_double (extents.p2.y));
+         boxes->num_boxes,
+         _cairo_fixed_to_double (extents.p1.x),
+         _cairo_fixed_to_double (extents.p1.y),
+         _cairo_fixed_to_double (extents.p2.x),
+         _cairo_fixed_to_double (extents.p2.y));
 
     for (chunk = &boxes->chunks; chunk != NULL; chunk = chunk->next) {
-	for (i = 0; i < chunk->count; i++) {
-	    fprintf (stderr, "  box[%d]: (%f, %f), (%f, %f)\n", i,
-		     _cairo_fixed_to_double (chunk->base[i].p1.x),
-		     _cairo_fixed_to_double (chunk->base[i].p1.y),
-		     _cairo_fixed_to_double (chunk->base[i].p2.x),
-		     _cairo_fixed_to_double (chunk->base[i].p2.y));
-	}
+    for (i = 0; i < chunk->count; i++) {
+        fprintf (stderr, "  box[%d]: (%f, %f), (%f, %f)\n", i,
+             _cairo_fixed_to_double (chunk->base[i].p1.x),
+             _cairo_fixed_to_double (chunk->base[i].p1.y),
+             _cairo_fixed_to_double (chunk->base[i].p2.x),
+             _cairo_fixed_to_double (chunk->base[i].p2.y));
+    }
     }
 }

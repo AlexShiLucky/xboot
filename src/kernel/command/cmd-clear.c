@@ -30,31 +30,31 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    clear\r\n");
+    printf("usage:\r\n");
+    printf("    clear\r\n");
 }
 
 static int do_clear(int argc, char ** argv)
 {
-	printf("\033[2J");
-	return 0;
+    printf("\033[2J");
+    return 0;
 }
 
 static struct command_t cmd_clear = {
-	.name	= "clear",
-	.desc	= "clear the terminal screen",
-	.usage	= usage,
-	.exec	= do_clear,
+    .name   = "clear",
+    .desc   = "clear the terminal screen",
+    .usage  = usage,
+    .exec   = do_clear,
 };
 
 static __init void clear_cmd_init(void)
 {
-	register_command(&cmd_clear);
+    register_command(&cmd_clear);
 }
 
 static __exit void clear_cmd_exit(void)
 {
-	unregister_command(&cmd_clear);
+    unregister_command(&cmd_clear);
 }
 
 command_initcall(clear_cmd_init);

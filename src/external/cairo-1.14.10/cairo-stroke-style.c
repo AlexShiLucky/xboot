@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Carl Worth <cworth@cworth.org>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -53,10 +53,10 @@ _cairo_stroke_style_init (cairo_stroke_style_t *style)
 
 cairo_status_t
 _cairo_stroke_style_init_copy (cairo_stroke_style_t *style,
-			       const cairo_stroke_style_t *other)
+                   const cairo_stroke_style_t *other)
 {
     if (CAIRO_INJECT_FAULT ())
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     VG (VALGRIND_MAKE_MEM_UNDEFINED (style, sizeof (cairo_stroke_style_t)));
 
@@ -68,14 +68,14 @@ _cairo_stroke_style_init_copy (cairo_stroke_style_t *style,
     style->num_dashes = other->num_dashes;
 
     if (other->dash == NULL) {
-	style->dash = NULL;
+    style->dash = NULL;
     } else {
-	style->dash = _cairo_malloc_ab (style->num_dashes, sizeof (double));
-	if (unlikely (style->dash == NULL))
-	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    style->dash = _cairo_malloc_ab (style->num_dashes, sizeof (double));
+    if (unlikely (style->dash == NULL))
+        return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
-	memcpy (style->dash, other->dash,
-		style->num_dashes * sizeof (double));
+    memcpy (style->dash, other->dash,
+        style->num_dashes * sizeof (double));
     }
 
     style->dash_offset = other->dash_offset;
@@ -101,69 +101,69 @@ _cairo_stroke_style_fini (cairo_stroke_style_t *style)
  */
 void
 _cairo_stroke_style_max_distance_from_path (const cairo_stroke_style_t *style,
-					    const cairo_path_fixed_t *path,
+                        const cairo_path_fixed_t *path,
                                             const cairo_matrix_t *ctm,
                                             double *dx, double *dy)
 {
     double style_expansion = 0.5;
 
     if (style->line_cap == CAIRO_LINE_CAP_SQUARE)
-	style_expansion = M_SQRT1_2;
+    style_expansion = M_SQRT1_2;
 
     if (style->line_join == CAIRO_LINE_JOIN_MITER &&
-	! path->stroke_is_rectilinear &&
-	style_expansion < M_SQRT2 * style->miter_limit)
+    ! path->stroke_is_rectilinear &&
+    style_expansion < M_SQRT2 * style->miter_limit)
     {
-	style_expansion = M_SQRT2 * style->miter_limit;
+    style_expansion = M_SQRT2 * style->miter_limit;
     }
 
     style_expansion *= style->line_width;
 
     if (_cairo_matrix_has_unity_scale (ctm)) {
-	*dx = *dy = style_expansion;
+    *dx = *dy = style_expansion;
     } else {
-	*dx = style_expansion * hypot (ctm->xx, ctm->xy);
-	*dy = style_expansion * hypot (ctm->yy, ctm->yx);
+    *dx = style_expansion * hypot (ctm->xx, ctm->xy);
+    *dy = style_expansion * hypot (ctm->yy, ctm->yx);
     }
 }
 
 void
 _cairo_stroke_style_max_line_distance_from_path (const cairo_stroke_style_t *style,
-						 const cairo_path_fixed_t *path,
-						 const cairo_matrix_t *ctm,
-						 double *dx, double *dy)
+                         const cairo_path_fixed_t *path,
+                         const cairo_matrix_t *ctm,
+                         double *dx, double *dy)
 {
     double style_expansion = 0.5 * style->line_width;
     if (_cairo_matrix_has_unity_scale (ctm)) {
-	*dx = *dy = style_expansion;
+    *dx = *dy = style_expansion;
     } else {
-	*dx = style_expansion * hypot (ctm->xx, ctm->xy);
-	*dy = style_expansion * hypot (ctm->yy, ctm->yx);
+    *dx = style_expansion * hypot (ctm->xx, ctm->xy);
+    *dy = style_expansion * hypot (ctm->yy, ctm->yx);
     }
 }
 
 void
 _cairo_stroke_style_max_join_distance_from_path (const cairo_stroke_style_t *style,
-						 const cairo_path_fixed_t *path,
-						 const cairo_matrix_t *ctm,
-						 double *dx, double *dy)
+                         const cairo_path_fixed_t *path,
+                         const cairo_matrix_t *ctm,
+                         double *dx, double *dy)
 {
     double style_expansion = 0.5;
 
     if (style->line_join == CAIRO_LINE_JOIN_MITER &&
-	! path->stroke_is_rectilinear &&
-	style_expansion < M_SQRT2 * style->miter_limit)
+    ! path->stroke_is_rectilinear &&
+    style_expansion < M_SQRT2 * style->miter_limit)
     {
-	style_expansion = M_SQRT2 * style->miter_limit;
+    style_expansion = M_SQRT2 * style->miter_limit;
     }
 
     style_expansion *= style->line_width;
 
     if (_cairo_matrix_has_unity_scale (ctm)) {
-	*dx = *dy = style_expansion;
+    *dx = *dy = style_expansion;
     } else {
-	*dx = style_expansion * hypot (ctm->xx, ctm->xy);
-	*dy = style_expansion * hypot (ctm->yy, ctm->yx);
+    *dx = style_expansion * hypot (ctm->xx, ctm->xy);
+    *dy = style_expansion * hypot (ctm->yy, ctm->yx);
     }
 }
 /*
@@ -178,10 +178,10 @@ _cairo_stroke_style_dash_period (const cairo_stroke_style_t *style)
 
     period = 0.0;
     for (i = 0; i < style->num_dashes; i++)
-	period += style->dash[i];
+    period += style->dash[i];
 
     if (style->num_dashes & 1)
-	period *= 2.0;
+    period *= 2.0;
 
     return period;
 }
@@ -229,14 +229,14 @@ _cairo_stroke_style_dash_stroked (const cairo_stroke_style_t *style)
     stroked = 0.0;
     if (style->num_dashes & 1) {
         /* Each dash element is used both as on and as off. The order in which they are summed is
-	 * irrelevant, so sum the coverage of one dash element, taken both on and off at each iteration */
-	for (i = 0; i < style->num_dashes; i++)
-	    stroked += style->dash[i] + cap_scale * MIN (style->dash[i], style->line_width);
+     * irrelevant, so sum the coverage of one dash element, taken both on and off at each iteration */
+    for (i = 0; i < style->num_dashes; i++)
+        stroked += style->dash[i] + cap_scale * MIN (style->dash[i], style->line_width);
     } else {
         /* Even (0, 2, ...) dashes are on and simply counted for the coverage, odd dashes are off, thus
-	 * their coverage is approximated based on the area covered by the caps of adjacent on dases. */
-	for (i = 0; i + 1 < style->num_dashes; i += 2)
-	    stroked += style->dash[i] + cap_scale * MIN (style->dash[i+1], style->line_width);
+     * their coverage is approximated based on the area covered by the caps of adjacent on dases. */
+    for (i = 0; i + 1 < style->num_dashes; i += 2)
+        stroked += style->dash[i] + cap_scale * MIN (style->dash[i+1], style->line_width);
     }
 
     return stroked;
@@ -250,8 +250,8 @@ _cairo_stroke_style_dash_stroked (const cairo_stroke_style_t *style)
  */
 cairo_bool_t
 _cairo_stroke_style_dash_can_approximate (const cairo_stroke_style_t *style,
-					  const cairo_matrix_t *ctm,
-					  double tolerance)
+                      const cairo_matrix_t *ctm,
+                      double tolerance)
 {
     double period;
 
@@ -268,11 +268,11 @@ _cairo_stroke_style_dash_can_approximate (const cairo_stroke_style_t *style,
  */
 void
 _cairo_stroke_style_dash_approximate (const cairo_stroke_style_t *style,
-				      const cairo_matrix_t *ctm,
-				      double tolerance,
-				      double *dash_offset,
-				      double *dashes,
-				      unsigned int *num_dashes)
+                      const cairo_matrix_t *ctm,
+                      double tolerance,
+                      double *dash_offset,
+                      double *dashes,
+                      unsigned int *num_dashes)
 {
     double coverage, scale, offset;
     cairo_bool_t on = TRUE;
@@ -287,10 +287,10 @@ _cairo_stroke_style_dash_approximate (const cairo_stroke_style_t *style,
      * segment shrinks to zero it will be skipped over. */
     offset = style->dash_offset;
     while (offset > 0.0 && offset >= style->dash[i]) {
-	offset -= style->dash[i];
-	on = !on;
-	if (++i == style->num_dashes)
-	    i = 0;
+    offset -= style->dash[i];
+    on = !on;
+    if (++i == style->num_dashes)
+        i = 0;
     }
 
     *num_dashes = 2;
@@ -303,19 +303,19 @@ _cairo_stroke_style_dash_approximate (const cairo_stroke_style_t *style,
      *                  = MIN (dashes[0] + cap_scale * (scale - dashes[0]),
      *                         dashes[0] + cap_scale * line_width) = 
      *                  = MIN (dashes[0] * (1 - cap_scale) + cap_scale * scale,
-     *	                       dashes[0] + cap_scale * line_width)
+     *                         dashes[0] + cap_scale * line_width)
      *
      * Solving both cases we get:
      *   dashes[0] = scale * (coverage - cap_scale) / (1 - cap_scale)
-     *	  when scale - dashes[0] <= line_width
-     *	dashes[0] = scale * coverage - cap_scale * line_width
-     *	  when scale - dashes[0] > line_width.
+     *    when scale - dashes[0] <= line_width
+     *  dashes[0] = scale * coverage - cap_scale * line_width
+     *    when scale - dashes[0] > line_width.
      *
      * Comparing the two cases we get:
      *   second > first
      *   second > scale * (coverage - cap_scale) / (1 - cap_scale)
      *   second - cap_scale * second - scale * coverage + scale * cap_scale > 0
-     * 	 (scale * coverage - cap_scale * line_width) - cap_scale * second - scale * coverage + scale * cap_scale > 0
+     *   (scale * coverage - cap_scale * line_width) - cap_scale * second - scale * coverage + scale * cap_scale > 0
      *   - line_width - second + scale > 0
      *   scale - second > line_width
      * which is the condition for the second solution to be the valid one.
@@ -325,27 +325,27 @@ _cairo_stroke_style_dash_approximate (const cairo_stroke_style_t *style,
     switch (style->line_cap) {
     default:
         ASSERT_NOT_REACHED;
-	dashes[0] = 0.0;
-	break;
+    dashes[0] = 0.0;
+    break;
 
     case CAIRO_LINE_CAP_BUTT:
         /* Simplified formula (substituting 0 for cap_scale): */
         dashes[0] = scale * coverage;
-	break;
+    break;
 
     case CAIRO_LINE_CAP_ROUND:
         dashes[0] = MAX(scale * (coverage - ROUND_MINSQ_APPROXIMATION) / (1.0 - ROUND_MINSQ_APPROXIMATION),
-			scale * coverage - ROUND_MINSQ_APPROXIMATION * style->line_width);
-	break;
+            scale * coverage - ROUND_MINSQ_APPROXIMATION * style->line_width);
+    break;
 
     case CAIRO_LINE_CAP_SQUARE:
         /*
-	 * Special attention is needed to handle the case cap_scale == 1 (since the first solution
-	 * is either indeterminate or -inf in this case). Since dash lengths are always >=0, using
-	 * 0 as first solution always leads to the correct solution.
-	 */
+     * Special attention is needed to handle the case cap_scale == 1 (since the first solution
+     * is either indeterminate or -inf in this case). Since dash lengths are always >=0, using
+     * 0 as first solution always leads to the correct solution.
+     */
         dashes[0] = MAX(0.0, scale * coverage - style->line_width);
-	break;
+    break;
     }
 
     dashes[1] = scale - dashes[0];

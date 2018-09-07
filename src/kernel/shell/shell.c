@@ -32,18 +32,18 @@
 
 void run_shell(void)
 {
-	char * p;
-	char cwd[256];
-	char prompt[256];
+    char * p;
+    char cwd[256];
+    char prompt[256];
 
     /* 获取当前工作路径 */
-	getcwd(cwd, sizeof(cwd));
+    getcwd(cwd, sizeof(cwd));
     /* 输出提示符和当前路径 */
-	sprintf(prompt, "xboot: %s$ ", cwd);
+    sprintf(prompt, "xboot: %s$ ", cwd);
 
     /* 输出提示符,并获取一行输入 */
-	p = readline(prompt);
+    p = readline(prompt);
     /* 执行命令行 */
-	system(p);
-	free(p);
+    system(p);
+    free(p);
 }

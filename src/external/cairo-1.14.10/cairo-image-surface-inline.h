@@ -32,7 +32,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_IMAGE_SURFACE_INLINE_H
@@ -51,7 +51,7 @@ _cairo_image_surface_create_in_error (cairo_status_t status)
 
 static inline void
 _cairo_image_surface_set_parent (cairo_image_surface_t *image,
-				 cairo_surface_t *parent)
+                 cairo_surface_t *parent)
 {
     image->parent = parent;
 }

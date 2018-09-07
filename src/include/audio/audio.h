@@ -11,23 +11,23 @@ typedef int (*audio_callback_t)(void * data, void * buf, int count);
 
 struct audio_t
 {
-	/* The audio name */
-	char * name;
+    /* The audio name */
+    char * name;
 
-	/* Audio playback start */
-	void (*playback_start)(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data);
+    /* Audio playback start */
+    void (*playback_start)(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data);
 
-	/* Audio playback stop */
-	void (*playback_stop)(struct audio_t * audio);
+    /* Audio playback stop */
+    void (*playback_stop)(struct audio_t * audio);
 
-	/* Audio capture start */
-	void (*capture_start)(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data);
+    /* Audio capture start */
+    void (*capture_start)(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data);
 
-	/* Audio capture stop */
-	void (*capture_stop)(struct audio_t * audio);
+    /* Audio capture stop */
+    void (*capture_stop)(struct audio_t * audio);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct audio_t * search_audio(const char * name);

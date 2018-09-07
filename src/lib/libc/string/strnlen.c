@@ -10,9 +10,9 @@
  */
 size_t strnlen(const char * s, size_t n)
 {
-	const char * sc;
+    const char * sc;
 
-	for (sc = s; n-- && *sc != '\0'; ++sc);
-	return sc - s;
+    for (sc = s; n-- && *sc != '\0'; ++sc);
+    return sc - s;
 }
 EXPORT_SYMBOL(strnlen);

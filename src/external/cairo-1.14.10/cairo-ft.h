@@ -31,7 +31,7 @@
  *
  * Contributor(s):
  *      Graydon Hoare <graydon@redhat.com>
- *	Owen Taylor <otaylor@redhat.com>
+ *  Owen Taylor <otaylor@redhat.com>
  */
 
 #ifndef CAIRO_FT_H
@@ -54,7 +54,7 @@ CAIRO_BEGIN_DECLS
 
 cairo_public cairo_font_face_t *
 cairo_ft_font_face_create_for_ft_face (FT_Face         face,
-				       int             load_flags);
+                       int             load_flags);
 
 /**
  * cairo_ft_synthesize_t:
@@ -82,11 +82,11 @@ typedef enum {
 
 cairo_public void
 cairo_ft_font_face_set_synthesize (cairo_font_face_t *font_face,
-				   unsigned int synth_flags);
+                   unsigned int synth_flags);
 
 cairo_public void
 cairo_ft_font_face_unset_synthesize (cairo_font_face_t *font_face,
-				     unsigned int synth_flags);
+                     unsigned int synth_flags);
 
 cairo_public unsigned int
 cairo_ft_font_face_get_synthesize (cairo_font_face_t *font_face);
@@ -105,7 +105,7 @@ cairo_ft_font_face_create_for_pattern (FcPattern *pattern);
 
 cairo_public void
 cairo_ft_font_options_substitute (const cairo_font_options_t *options,
-				  FcPattern                  *pattern);
+                  FcPattern                  *pattern);
 
 #endif
 

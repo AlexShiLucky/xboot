@@ -31,7 +31,7 @@
  * The Initial Developer of the Original Code is Intel Corporation
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #include "cairoint.h"
@@ -44,9 +44,9 @@ _cairo_observers_notify (cairo_list_t *observers, void *arg)
     cairo_observer_t *obs, *next;
 
     cairo_list_foreach_entry_safe (obs, next,
-				   cairo_observer_t,
-				   observers, link)
+                   cairo_observer_t,
+                   observers, link)
     {
-	obs->callback (obs, arg);
+    obs->callback (obs, arg);
     }
 }

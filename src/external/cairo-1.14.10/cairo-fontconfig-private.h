@@ -33,7 +33,7 @@
  *
  * Contributor(s):
  *      Graydon Hoare <graydon@redhat.com>
- *	Owen Taylor <otaylor@redhat.com>
+ *  Owen Taylor <otaylor@redhat.com>
  *      Keith Packard <keithp@keithp.com>
  *      Carl Worth <cworth@cworth.org>
  *      Chris Wilson <chris@chris-wilson.co.uk>
@@ -51,12 +51,12 @@
 
 /* sub-pixel order */
 #ifndef FC_RGBA_UNKNOWN
-#define FC_RGBA_UNKNOWN	    0
-#define FC_RGBA_RGB	    1
-#define FC_RGBA_BGR	    2
-#define FC_RGBA_VRGB	    3
-#define FC_RGBA_VBGR	    4
-#define FC_RGBA_NONE	    5
+#define FC_RGBA_UNKNOWN     0
+#define FC_RGBA_RGB     1
+#define FC_RGBA_BGR     2
+#define FC_RGBA_VRGB        3
+#define FC_RGBA_VBGR        4
+#define FC_RGBA_NONE        5
 #endif
 
 /* hinting style */
@@ -69,10 +69,10 @@
 
 /* LCD filter */
 #ifndef FC_LCD_NONE
-#define FC_LCD_NONE	    0
-#define FC_LCD_DEFAULT	    1
-#define FC_LCD_LIGHT	    2
-#define FC_LCD_LEGACY	    3
+#define FC_LCD_NONE     0
+#define FC_LCD_DEFAULT      1
+#define FC_LCD_LIGHT        2
+#define FC_LCD_LEGACY       3
 #endif
 
 #endif /* _CAIRO_FONTCONFIG_PRIVATE_H */

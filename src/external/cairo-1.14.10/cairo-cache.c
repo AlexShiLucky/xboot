@@ -32,8 +32,8 @@
  *
  * Contributor(s):
  *      Keith Packard <keithp@keithp.com>
- *	Graydon Hoare <graydon@redhat.com>
- *	Carl Worth <cworth@cworth.org>
+ *  Graydon Hoare <graydon@redhat.com>
+ *  Carl Worth <cworth@cworth.org>
  */
 
 #include "cairoint.h"
@@ -41,7 +41,7 @@
 
 static void
 _cairo_cache_shrink_to_accommodate (cairo_cache_t *cache,
-				    unsigned long  additional);
+                    unsigned long  additional);
 
 static cairo_bool_t
 _cairo_cache_entry_is_non_zero (const void *entry)
@@ -86,18 +86,18 @@ _cairo_cache_entry_is_non_zero (const void *entry)
  * entries will occur.
  **/
 cairo_status_t
-_cairo_cache_init (cairo_cache_t		*cache,
-		   cairo_cache_keys_equal_func_t keys_equal,
-		   cairo_cache_predicate_func_t  predicate,
-		   cairo_destroy_func_t		 entry_destroy,
-		   unsigned long		 max_size)
+_cairo_cache_init (cairo_cache_t        *cache,
+           cairo_cache_keys_equal_func_t keys_equal,
+           cairo_cache_predicate_func_t  predicate,
+           cairo_destroy_func_t      entry_destroy,
+           unsigned long         max_size)
 {
     cache->hash_table = _cairo_hash_table_create (keys_equal);
     if (unlikely (cache->hash_table == NULL))
-	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
     if (predicate == NULL)
-	predicate = _cairo_cache_entry_is_non_zero;
+    predicate = _cairo_cache_entry_is_non_zero;
     cache->predicate = predicate;
     cache->entry_destroy = entry_destroy;
 
@@ -128,8 +128,8 @@ void
 _cairo_cache_fini (cairo_cache_t *cache)
 {
     _cairo_hash_table_foreach (cache->hash_table,
-			       _cairo_cache_pluck,
-			       cache);
+                   _cairo_cache_pluck,
+                   cache);
     assert (cache->size == 0);
     _cairo_hash_table_destroy (cache->hash_table);
 }
@@ -176,7 +176,7 @@ _cairo_cache_thaw (cairo_cache_t *cache)
     assert (cache->freeze_count > 0);
 
     if (--cache->freeze_count == 0)
-	_cairo_cache_shrink_to_accommodate (cache, 0);
+    _cairo_cache_shrink_to_accommodate (cache, 0);
 }
 
 /**
@@ -194,11 +194,11 @@ _cairo_cache_thaw (cairo_cache_t *cache)
  * which case *entry_return will be %NULL).
  **/
 void *
-_cairo_cache_lookup (cairo_cache_t	  *cache,
-		     cairo_cache_entry_t  *key)
+_cairo_cache_lookup (cairo_cache_t    *cache,
+             cairo_cache_entry_t  *key)
 {
     return _cairo_hash_table_lookup (cache->hash_table,
-				     (cairo_hash_entry_t *) key);
+                     (cairo_hash_entry_t *) key);
 }
 
 /**
@@ -216,9 +216,9 @@ _cairo_cache_remove_random (cairo_cache_t *cache)
     cairo_cache_entry_t *entry;
 
     entry = _cairo_hash_table_random_entry (cache->hash_table,
-					    cache->predicate);
+                        cache->predicate);
     if (unlikely (entry == NULL))
-	return FALSE;
+    return FALSE;
 
     _cairo_cache_remove (cache, entry);
 
@@ -237,11 +237,11 @@ _cairo_cache_remove_random (cairo_cache_t *cache)
  **/
 static void
 _cairo_cache_shrink_to_accommodate (cairo_cache_t *cache,
-				    unsigned long  additional)
+                    unsigned long  additional)
 {
     while (cache->size + additional > cache->max_size) {
-	if (! _cairo_cache_remove_random (cache))
-	    return;
+    if (! _cairo_cache_remove_random (cache))
+        return;
     }
 }
 
@@ -258,18 +258,18 @@ _cairo_cache_shrink_to_accommodate (cairo_cache_t *cache,
  * %CAIRO_STATUS_NO_MEMORY if insufficient memory is available.
  **/
 cairo_status_t
-_cairo_cache_insert (cairo_cache_t	 *cache,
-		     cairo_cache_entry_t *entry)
+_cairo_cache_insert (cairo_cache_t   *cache,
+             cairo_cache_entry_t *entry)
 {
     cairo_status_t status;
 
     if (entry->size && ! cache->freeze_count)
-	_cairo_cache_shrink_to_accommodate (cache, entry->size);
+    _cairo_cache_shrink_to_accommodate (cache, entry->size);
 
     status = _cairo_hash_table_insert (cache->hash_table,
-				       (cairo_hash_entry_t *) entry);
+                       (cairo_hash_entry_t *) entry);
     if (unlikely (status))
-	return status;
+    return status;
 
     cache->size += entry->size;
 
@@ -284,16 +284,16 @@ _cairo_cache_insert (cairo_cache_t	 *cache,
  * Remove an existing entry from the cache.
  **/
 void
-_cairo_cache_remove (cairo_cache_t	 *cache,
-		     cairo_cache_entry_t *entry)
+_cairo_cache_remove (cairo_cache_t   *cache,
+             cairo_cache_entry_t *entry)
 {
     cache->size -= entry->size;
 
     _cairo_hash_table_remove (cache->hash_table,
-			      (cairo_hash_entry_t *) entry);
+                  (cairo_hash_entry_t *) entry);
 
     if (cache->entry_destroy)
-	cache->entry_destroy (entry);
+    cache->entry_destroy (entry);
 }
 
 /**
@@ -306,13 +306,13 @@ _cairo_cache_remove (cairo_cache_t	 *cache,
  * non-specified order.
  **/
 void
-_cairo_cache_foreach (cairo_cache_t		      *cache,
-		      cairo_cache_callback_func_t      cache_callback,
-		      void			      *closure)
+_cairo_cache_foreach (cairo_cache_t           *cache,
+              cairo_cache_callback_func_t      cache_callback,
+              void                *closure)
 {
     _cairo_hash_table_foreach (cache->hash_table,
-			       cache_callback,
-			       closure);
+                   cache_callback,
+                   closure);
 }
 
 unsigned long
@@ -321,18 +321,18 @@ _cairo_hash_string (const char *c)
     /* This is the djb2 hash. */
     unsigned long hash = _CAIRO_HASH_INIT_VALUE;
     while (c && *c)
-	hash = ((hash << 5) + hash) + *c++;
+    hash = ((hash << 5) + hash) + *c++;
     return hash;
 }
 
 unsigned long
 _cairo_hash_bytes (unsigned long hash,
-		   const void *ptr,
-		   unsigned int length)
+           const void *ptr,
+           unsigned int length)
 {
     const uint8_t *bytes = ptr;
     /* This is the djb2 hash. */
     while (length--)
-	hash = ((hash << 5) + hash) + *bytes++;
+    hash = ((hash << 5) + hash) + *bytes++;
     return hash;
 }

@@ -33,7 +33,7 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
+ *  Carl D. Worth <cworth@cworth.org>
  */
 
 #ifndef CAIRO_TYPES_PRIVATE_H
@@ -121,15 +121,15 @@ struct _cairo_observer {
  * unsigned long as the first parameter. The easiest way to get this
  * is to use:
  *
- * 	typedef _my_entry {
- *	    cairo_hash_entry_t base;
- *	    ... Remainder of key and value fields here ..
- *	} my_entry_t;
+ *  typedef _my_entry {
+ *      cairo_hash_entry_t base;
+ *      ... Remainder of key and value fields here ..
+ *  } my_entry_t;
  *
  * which then allows a pointer to my_entry_t to be passed to any of
  * the #cairo_hash_table_t functions as follows without requiring a cast:
  *
- *	_cairo_hash_table_insert (hash_table, &my_entry->base);
+ *  _cairo_hash_table_insert (hash_table, &my_entry->base);
  *
  * IMPORTANT: The caller is responsible for initializing
  * my_entry->base.hash with a hash code derived from the key. The
@@ -239,9 +239,9 @@ struct _cairo_color_stop {
 };
 
 typedef enum _cairo_paginated_mode {
-    CAIRO_PAGINATED_MODE_ANALYZE,	/* analyze page regions */
-    CAIRO_PAGINATED_MODE_RENDER,	/* render page contents */
-    CAIRO_PAGINATED_MODE_FALLBACK	/* paint fallback images */
+    CAIRO_PAGINATED_MODE_ANALYZE,   /* analyze page regions */
+    CAIRO_PAGINATED_MODE_RENDER,    /* render page contents */
+    CAIRO_PAGINATED_MODE_FALLBACK   /* paint fallback images */
 } cairo_paginated_mode_t;
 
 typedef enum _cairo_internal_surface_type {
@@ -331,8 +331,8 @@ typedef struct _cairo_polygon {
 
 typedef cairo_warn cairo_status_t
 (*cairo_spline_add_point_func_t) (void *closure,
-				  const cairo_point_t *point,
-				  const cairo_slope_t *tangent);
+                  const cairo_point_t *point,
+                  const cairo_slope_t *tangent);
 
 typedef struct _cairo_spline_knots {
     cairo_point_t a, b, c, d;
@@ -368,13 +368,13 @@ typedef struct _cairo_pen {
 } cairo_pen_t;
 
 typedef struct _cairo_stroke_style {
-    double		 line_width;
-    cairo_line_cap_t	 line_cap;
-    cairo_line_join_t	 line_join;
-    double		 miter_limit;
-    double		*dash;
-    unsigned int	 num_dashes;
-    double		 dash_offset;
+    double       line_width;
+    cairo_line_cap_t     line_cap;
+    cairo_line_join_t    line_join;
+    double       miter_limit;
+    double      *dash;
+    unsigned int     num_dashes;
+    double       dash_offset;
 } cairo_stroke_style_t;
 
 typedef struct _cairo_format_masks {
@@ -420,9 +420,9 @@ struct _cairo_mime_data {
  * glyph cache.
  */
 typedef struct _cairo_unscaled_font {
-    cairo_hash_entry_t			 hash_entry;
-    cairo_reference_count_t		 ref_count;
-    const cairo_unscaled_font_backend_t	*backend;
+    cairo_hash_entry_t           hash_entry;
+    cairo_reference_count_t      ref_count;
+    const cairo_unscaled_font_backend_t *backend;
 } cairo_unscaled_font_t;
 CAIRO_END_DECLS
 

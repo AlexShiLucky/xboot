@@ -30,7 +30,7 @@
  * The Initial Developer of the Original Code is Chris Wilson
  *
  * Contributor(s):
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_DAMAGE_PRIVATE_H
@@ -48,10 +48,10 @@ struct _cairo_damage {
 
     int dirty, remain;
     struct _cairo_damage_chunk {
-	struct _cairo_damage_chunk *next;
-	cairo_box_t *base;
-	int count;
-	int size;
+    struct _cairo_damage_chunk *next;
+    cairo_box_t *base;
+    int count;
+    int size;
     } chunks, *tail;
     cairo_box_t boxes[32];
 };
@@ -64,15 +64,15 @@ _cairo_damage_create_in_error (cairo_status_t status);
 
 cairo_private cairo_damage_t *
 _cairo_damage_add_box (cairo_damage_t *damage,
-		       const cairo_box_t *box);
+               const cairo_box_t *box);
 
 cairo_private cairo_damage_t *
 _cairo_damage_add_rectangle (cairo_damage_t *damage,
-			     const cairo_rectangle_int_t *rect);
+                 const cairo_rectangle_int_t *rect);
 
 cairo_private cairo_damage_t *
 _cairo_damage_add_region (cairo_damage_t *damage,
-			  const cairo_region_t *region);
+              const cairo_region_t *region);
 
 cairo_private cairo_damage_t *
 _cairo_damage_reduce (cairo_damage_t *damage);

@@ -13,11 +13,11 @@ extern "C" {
  */
 struct filesystem_t
 {
-	/* filesystem name */
-	const char * name;
+    /* filesystem name */
+    const char * name;
 
-	/* pointer to vfs operation */
-	struct vfsops_t * vfsops;
+    /* pointer to vfs operation */
+    struct vfsops_t * vfsops;
 };
 
 /*
@@ -25,8 +25,8 @@ struct filesystem_t
  */
 struct fs_list
 {
-	struct filesystem_t * fs;
-	struct list_head entry;
+    struct filesystem_t * fs;
+    struct list_head entry;
 };
 
 bool_t filesystem_register(struct filesystem_t * fs);

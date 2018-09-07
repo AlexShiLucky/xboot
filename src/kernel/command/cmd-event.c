@@ -32,95 +32,95 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    event\r\n");
+    printf("usage:\r\n");
+    printf("    event\r\n");
 }
 
 static int do_event(int argc, char ** argv)
 {
-	struct input_t * input;
-	struct event_t e;
+    struct input_t * input;
+    struct event_t e;
 
-	while(1)
-	{
-		if(pump_event(runtime_get()->__event_base, &e))
-		{
-			input = (struct input_t *)(e.device);
+    while(1)
+    {
+        if(pump_event(runtime_get()->__event_base, &e))
+        {
+            input = (struct input_t *)(e.device);
 
-			switch(e.type)
-			{
-			case EVENT_TYPE_KEY_DOWN:
-				printf("[%s]: [KeyDown] [%d]\r\n", input->name, e.e.key_down.key);
-				break;
+            switch(e.type)
+            {
+            case EVENT_TYPE_KEY_DOWN:
+                printf("[%s]: [KeyDown] [%d]\r\n", input->name, e.e.key_down.key);
+                break;
 
-			case EVENT_TYPE_KEY_UP:
-				printf("[%s]: [KeyUp] [%d]\r\n", input->name, e.e.key_up.key);
-				break;
+            case EVENT_TYPE_KEY_UP:
+                printf("[%s]: [KeyUp] [%d]\r\n", input->name, e.e.key_up.key);
+                break;
 
-			case EVENT_TYPE_ROTARY_TURN:
-				printf("[%s]: [RotaryTurn] [%d]\r\n", input->name, e.e.rotary_turn.v);
-				break;
+            case EVENT_TYPE_ROTARY_TURN:
+                printf("[%s]: [RotaryTurn] [%d]\r\n", input->name, e.e.rotary_turn.v);
+                break;
 
-			case EVENT_TYPE_ROTARY_SWITCH:
-				printf("[%s]: [RotarySwitch] [%d]\r\n", input->name, e.e.rotary_switch.v);
-				break;
+            case EVENT_TYPE_ROTARY_SWITCH:
+                printf("[%s]: [RotarySwitch] [%d]\r\n", input->name, e.e.rotary_switch.v);
+                break;
 
-			case EVENT_TYPE_MOUSE_DOWN:
-				printf("[%s]: [MouseDown] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_down.x, e.e.mouse_down.y, e.e.mouse_down.button);
-				break;
+            case EVENT_TYPE_MOUSE_DOWN:
+                printf("[%s]: [MouseDown] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_down.x, e.e.mouse_down.y, e.e.mouse_down.button);
+                break;
 
-			case EVENT_TYPE_MOUSE_MOVE:
-				printf("[%s]: [MouseMove] [%d][%d]\r\n", input->name, e.e.mouse_move.x, e.e.mouse_move.y);
-				break;
+            case EVENT_TYPE_MOUSE_MOVE:
+                printf("[%s]: [MouseMove] [%d][%d]\r\n", input->name, e.e.mouse_move.x, e.e.mouse_move.y);
+                break;
 
-			case EVENT_TYPE_MOUSE_UP:
-				printf("[%s]: [MouseUp] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_up.x, e.e.mouse_up.y, e.e.mouse_up.button);
-				break;
+            case EVENT_TYPE_MOUSE_UP:
+                printf("[%s]: [MouseUp] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_up.x, e.e.mouse_up.y, e.e.mouse_up.button);
+                break;
 
-			case EVENT_TYPE_MOUSE_WHEEL:
-				printf("[%s]: [MouseWheel] [%d][%d]\r\n", input->name, e.e.mouse_wheel.dx, e.e.mouse_wheel.dy);
-				break;
+            case EVENT_TYPE_MOUSE_WHEEL:
+                printf("[%s]: [MouseWheel] [%d][%d]\r\n", input->name, e.e.mouse_wheel.dx, e.e.mouse_wheel.dy);
+                break;
 
-			case EVENT_TYPE_TOUCH_BEGIN:
-				printf("[%s]: [TouchBegin] [%d][%d][%d]\r\n", input->name, e.e.touch_begin.x, e.e.touch_begin.y, e.e.touch_begin.id);
-				break;
+            case EVENT_TYPE_TOUCH_BEGIN:
+                printf("[%s]: [TouchBegin] [%d][%d][%d]\r\n", input->name, e.e.touch_begin.x, e.e.touch_begin.y, e.e.touch_begin.id);
+                break;
 
-			case EVENT_TYPE_TOUCH_MOVE:
-				printf("[%s]: [TouchMove] [%d][%d][%d]\r\n", input->name, e.e.touch_move.x, e.e.touch_move.y, e.e.touch_move.id);
-				break;
+            case EVENT_TYPE_TOUCH_MOVE:
+                printf("[%s]: [TouchMove] [%d][%d][%d]\r\n", input->name, e.e.touch_move.x, e.e.touch_move.y, e.e.touch_move.id);
+                break;
 
-			case EVENT_TYPE_TOUCH_END:
-				printf("[%s]: [TouchEnd] [%d][%d][%d]\r\n", input->name, e.e.touch_end.x, e.e.touch_end.y, e.e.touch_end.id);
-				break;
+            case EVENT_TYPE_TOUCH_END:
+                printf("[%s]: [TouchEnd] [%d][%d][%d]\r\n", input->name, e.e.touch_end.x, e.e.touch_end.y, e.e.touch_end.id);
+                break;
 
-			default:
-				printf("[%s]: [Unkown]\r\n", input->name);
-				break;
-			}
-		}
+            default:
+                printf("[%s]: [Unkown]\r\n", input->name);
+                break;
+            }
+        }
 
-		if(ctrlc())
-			return -1;
-	}
+        if(ctrlc())
+            return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_event = {
-	.name	= "event",
-	.desc	= "show all of input events",
-	.usage	= usage,
-	.exec	= do_event,
+    .name   = "event",
+    .desc   = "show all of input events",
+    .usage  = usage,
+    .exec   = do_event,
 };
 
 static __init void event_cmd_init(void)
 {
-	register_command(&cmd_event);
+    register_command(&cmd_event);
 }
 
 static __exit void event_cmd_exit(void)
 {
-	unregister_command(&cmd_event);
+    unregister_command(&cmd_event);
 }
 
 command_initcall(event_cmd_init);

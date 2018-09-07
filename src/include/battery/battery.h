@@ -8,45 +8,45 @@ extern "C" {
 #include <xboot.h>
 
 enum power_supply_t {
-	POWER_SUPPLAY_BATTERY		= 0,
-	POWER_SUPPLAY_AC			= 1,
-	POWER_SUPPLAY_USB			= 2,
-	POWER_SUPPLAY_WIRELESS		= 3,
+    POWER_SUPPLAY_BATTERY       = 0,
+    POWER_SUPPLAY_AC            = 1,
+    POWER_SUPPLAY_USB           = 2,
+    POWER_SUPPLAY_WIRELESS      = 3,
 };
 
 enum battery_status_t {
-	BATTERY_STATUS_DISCHARGING	= 0,
-	BATTERY_STATUS_CHARGING		= 1,
-	BATTERY_STATUS_EMPTY		= 2,
-	BATTERY_STATUS_FULL			= 3,
+    BATTERY_STATUS_DISCHARGING  = 0,
+    BATTERY_STATUS_CHARGING     = 1,
+    BATTERY_STATUS_EMPTY        = 2,
+    BATTERY_STATUS_FULL         = 3,
 };
 
 enum battery_health_t {
-	BATTERY_HEALTH_GOOD			= 0,
-	BATTERY_HEALTH_DEAD			= 1,
-	BATTERY_HEALTH_OVERHEAT		= 2,
-	BATTERY_HEALTH_OVERVOLTAGE	= 3,
+    BATTERY_HEALTH_GOOD         = 0,
+    BATTERY_HEALTH_DEAD         = 1,
+    BATTERY_HEALTH_OVERHEAT     = 2,
+    BATTERY_HEALTH_OVERVOLTAGE  = 3,
 };
 
 struct battery_info_t {
-	enum power_supply_t supply;
-	enum battery_status_t status;
-	enum battery_health_t health;
-	int design_capacity;	/* mAh */
-	int design_voltage;		/* mV */
-	int voltage;			/* mV */
-	int current;			/* mA */
-	int temperature;		/* 0.001°C */
-	int cycle;				/* cycle count */
-	int level;				/* Percentage */
+    enum power_supply_t supply;
+    enum battery_status_t status;
+    enum battery_health_t health;
+    int design_capacity;    /* mAh */
+    int design_voltage;     /* mV */
+    int voltage;            /* mV */
+    int current;            /* mA */
+    int temperature;        /* 0.001°C */
+    int cycle;              /* cycle count */
+    int level;              /* Percentage */
 };
 
 struct battery_t
 {
-	char * name;
+    char * name;
 
-	bool_t (*update)(struct battery_t * bat, struct battery_info_t * info);
-	void * priv;
+    bool_t (*update)(struct battery_t * bat, struct battery_info_t * info);
+    void * priv;
 };
 
 struct battery_t * search_battery(const char * name);

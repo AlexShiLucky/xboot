@@ -7,12 +7,12 @@
 
 static void * __memset(void * s, int c, size_t n)
 {
-	char * xs = s;
+    char * xs = s;
 
-	while (n--)
-		*xs++ = c;
+    while (n--)
+        *xs++ = c;
 
-	return s;
+    return s;
 }
 
 /*

@@ -9,8 +9,8 @@ extern "C" {
 
 struct sound_list_t
 {
-	struct sound_t * snd;
-	struct list_head entry;
+    struct sound_t * snd;
+    struct list_head entry;
 };
 
 extern struct sound_list_t __sound_pool;

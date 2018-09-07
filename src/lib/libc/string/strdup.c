@@ -12,15 +12,15 @@
  */
 char * strdup(const char * s)
 {
-	char * p;
+    char * p;
 
-	if(!s)
-		return NULL;
+    if(!s)
+        return NULL;
 
-	p = malloc(strlen(s) + 1);
-	if(p)
-		return(strcpy(p, s));
+    p = malloc(strlen(s) + 1);
+    if(p)
+        return(strcpy(p, s));
 
-	return NULL;
+    return NULL;
 }
 EXPORT_SYMBOL(strdup);

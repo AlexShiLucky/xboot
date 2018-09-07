@@ -12,8 +12,8 @@ local M = Class(DisplayObject)
 -- @param texture (Texture) The texture object
 -- @return #DisplayImage
 function M:init(texture)
-	self.super:init()
-	self:setTexture(texture)
+  self.super:init()
+  self:setTexture(texture)
 end
 
 ---
@@ -23,12 +23,12 @@ end
 -- @param self
 -- @param texture (Texture) The texture object
 function M:setTexture(texture)
-	if texture then
-		local w, h = texture:size()
-		self.texture = texture
-		self:setSize(w, h)
-	end
-	return self
+  if texture then
+    local w, h = texture:size()
+    self.texture = texture
+    self:setSize(w, h)
+  end
+  return self
 end
 
 ---
@@ -38,7 +38,7 @@ end
 -- @param self
 -- @return The texture object of display image.
 function M:getTexture()
-	return self.texture
+  return self.texture
 end
 
 ---
@@ -48,8 +48,8 @@ end
 -- @param self
 -- @param display (Display) The context of the screen.
 function M:__draw(display)
-	self:updateTransformMatrix()
-	display:drawTexture(self.object, self.texture)
+  self:updateTransformMatrix()
+  display:drawTexture(self.object, self.texture)
 end
 
 return M

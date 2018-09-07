@@ -31,273 +31,273 @@
 #include <xboot/event.h>
 
 static struct event_base_t __event_base = {
-	.entry = {
-		.next	= &(__event_base.entry),
-		.prev	= &(__event_base.entry),
-	},
+    .entry = {
+        .next   = &(__event_base.entry),
+        .prev   = &(__event_base.entry),
+    },
 };
 static spinlock_t __event_base_lock = SPIN_LOCK_INIT();
 
 /* 申请一个事件块 */
 struct event_base_t * __event_base_alloc(void)
 {
-	struct event_base_t * eb;
-	irq_flags_t flags;
+    struct event_base_t * eb;
+    irq_flags_t flags;
 
-	eb = malloc(sizeof(struct event_base_t));
-	if(!eb)
-		return NULL;
+    eb = malloc(sizeof(struct event_base_t));
+    if(!eb)
+        return NULL;
 
     /* 申请一个事件块中的FIFO */
-	eb->fifo = fifo_alloc(sizeof(struct event_t) * CONFIG_EVENT_FIFO_LENGTH);
-	if(!eb->fifo)
-	{
-		free(eb);
-		return NULL;
-	}
+    eb->fifo = fifo_alloc(sizeof(struct event_t) * CONFIG_EVENT_FIFO_LENGTH);
+    if(!eb->fifo)
+    {
+        free(eb);
+        return NULL;
+    }
 
-	spin_lock_irqsave(&__event_base_lock, flags);
-	list_add_tail(&eb->entry, &(__event_base.entry));
-	spin_unlock_irqrestore(&__event_base_lock, flags);
+    spin_lock_irqsave(&__event_base_lock, flags);
+    list_add_tail(&eb->entry, &(__event_base.entry));
+    spin_unlock_irqrestore(&__event_base_lock, flags);
 
-	return eb;
+    return eb;
 }
 
 /* 释放一个事件快 */
 void __event_base_free(struct event_base_t * eb)
 {
-	struct event_base_t * ebpos, * ebn;
-	irq_flags_t flags;
+    struct event_base_t * ebpos, * ebn;
+    irq_flags_t flags;
 
-	if(!eb)
-		return;
+    if(!eb)
+        return;
 
-	list_for_each_entry_safe(ebpos, ebn, &(__event_base.entry), entry)
-	{
-		if(ebpos == eb)
-		{
-			spin_lock_irqsave(&__event_base_lock, flags);
-			list_del(&(ebpos->entry));
-			spin_unlock_irqrestore(&__event_base_lock, flags);
+    list_for_each_entry_safe(ebpos, ebn, &(__event_base.entry), entry)
+    {
+        if(ebpos == eb)
+        {
+            spin_lock_irqsave(&__event_base_lock, flags);
+            list_del(&(ebpos->entry));
+            spin_unlock_irqrestore(&__event_base_lock, flags);
 
-			if(ebpos->fifo)
-				fifo_free(ebpos->fifo);
-			free(ebpos);
-		}
-	}
+            if(ebpos->fifo)
+                fifo_free(ebpos->fifo);
+            free(ebpos);
+        }
+    }
 }
 
 /* 放入一个事件 */
 void push_event(struct event_t * event)
 {
-	struct event_base_t * pos, * n;
+    struct event_base_t * pos, * n;
 
-	if(!event)
-		return;
+    if(!event)
+        return;
 
-	event->timestamp = ktime_get();
+    event->timestamp = ktime_get();
 
-	list_for_each_entry_safe(pos, n, &(__event_base.entry), entry)
-	{
-		fifo_put(pos->fifo, (u8_t *)event, sizeof(struct event_t));
-	}
+    list_for_each_entry_safe(pos, n, &(__event_base.entry), entry)
+    {
+        fifo_put(pos->fifo, (u8_t *)event, sizeof(struct event_t));
+    }
 }
 
 void push_event_key_down(void * device, u32_t key)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_KEY_DOWN;
-	event.e.key_down.key = key;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_KEY_DOWN;
+    event.e.key_down.key = key;
+    push_event(&event);
 }
 
 void push_event_key_up(void * device, u32_t key)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_KEY_UP;
-	event.e.key_up.key = key;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_KEY_UP;
+    event.e.key_up.key = key;
+    push_event(&event);
 }
 
 void push_event_rotary_turn(void * device, s32_t v)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_ROTARY_TURN;
-	event.e.rotary_turn.v = v;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_ROTARY_TURN;
+    event.e.rotary_turn.v = v;
+    push_event(&event);
 }
 
 void push_event_rotary_switch(void * device, s32_t v)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_ROTARY_SWITCH;
-	event.e.rotary_switch.v = v;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_ROTARY_SWITCH;
+    event.e.rotary_switch.v = v;
+    push_event(&event);
 }
 
 void push_event_mouse_button_down(void * device, s32_t x, s32_t y, u32_t button)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_MOUSE_DOWN;
-	event.e.mouse_down.x = x;
-	event.e.mouse_down.y = y;
-	event.e.mouse_down.button = button;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_MOUSE_DOWN;
+    event.e.mouse_down.x = x;
+    event.e.mouse_down.y = y;
+    event.e.mouse_down.button = button;
+    push_event(&event);
 }
 
 void push_event_mouse_button_up(void * device, s32_t x, s32_t y, u32_t button)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_MOUSE_UP;
-	event.e.mouse_up.x = x;
-	event.e.mouse_up.y = y;
-	event.e.mouse_up.button = button;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_MOUSE_UP;
+    event.e.mouse_up.x = x;
+    event.e.mouse_up.y = y;
+    event.e.mouse_up.button = button;
+    push_event(&event);
 }
 
 void push_event_mouse_move(void * device, s32_t x, s32_t y)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_MOUSE_MOVE;
-	event.e.mouse_move.x = x;
-	event.e.mouse_move.y = y;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_MOUSE_MOVE;
+    event.e.mouse_move.x = x;
+    event.e.mouse_move.y = y;
+    push_event(&event);
 }
 
 void push_event_mouse_wheel(void * device, s32_t dx, s32_t dy)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_MOUSE_WHEEL;
-	event.e.mouse_wheel.dx = dx;
-	event.e.mouse_wheel.dy = dy;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_MOUSE_WHEEL;
+    event.e.mouse_wheel.dx = dx;
+    event.e.mouse_wheel.dy = dy;
+    push_event(&event);
 }
 
 void push_event_touch_begin(void * device, s32_t x, s32_t y, u32_t id)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_TOUCH_BEGIN;
-	event.e.touch_begin.x = x;
-	event.e.touch_begin.y = y;
-	event.e.touch_begin.id = id;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_TOUCH_BEGIN;
+    event.e.touch_begin.x = x;
+    event.e.touch_begin.y = y;
+    event.e.touch_begin.id = id;
+    push_event(&event);
 }
 
 void push_event_touch_move(void * device, s32_t x, s32_t y, u32_t id)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_TOUCH_MOVE;
-	event.e.touch_move.x = x;
-	event.e.touch_move.y = y;
-	event.e.touch_move.id = id;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_TOUCH_MOVE;
+    event.e.touch_move.x = x;
+    event.e.touch_move.y = y;
+    event.e.touch_move.id = id;
+    push_event(&event);
 }
 
 void push_event_touch_end(void * device, s32_t x, s32_t y, u32_t id)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_TOUCH_END;
-	event.e.touch_end.x = x;
-	event.e.touch_end.y = y;
-	event.e.touch_end.id = id;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_TOUCH_END;
+    event.e.touch_end.x = x;
+    event.e.touch_end.y = y;
+    event.e.touch_end.id = id;
+    push_event(&event);
 }
 
 void push_event_joystick_left_stick(void * device, s32_t x, s32_t y)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_LEFTSTICK;
-	event.e.joystick_left_stick.x = x;
-	event.e.joystick_left_stick.y = y;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_LEFTSTICK;
+    event.e.joystick_left_stick.x = x;
+    event.e.joystick_left_stick.y = y;
+    push_event(&event);
 }
 
 void push_event_joystick_right_stick(void * device, s32_t x, s32_t y)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_RIGHTSTICK;
-	event.e.joystick_right_stick.x = x;
-	event.e.joystick_right_stick.y = y;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_RIGHTSTICK;
+    event.e.joystick_right_stick.x = x;
+    event.e.joystick_right_stick.y = y;
+    push_event(&event);
 }
 
 void push_event_joystick_left_trigger(void * device, s32_t v)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_LEFTTRIGGER;
-	event.e.joystick_left_trigger.v = v;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_LEFTTRIGGER;
+    event.e.joystick_left_trigger.v = v;
+    push_event(&event);
 }
 
 void push_event_joystick_right_trigger(void * device, s32_t v)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_RIGHTTRIGGER;
-	event.e.joystick_left_trigger.v = v;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_RIGHTTRIGGER;
+    event.e.joystick_left_trigger.v = v;
+    push_event(&event);
 }
 
 void push_event_joystick_button_down(void * device, u32_t button)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_BUTTONDOWN;
-	event.e.joystick_button_down.button = button;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_BUTTONDOWN;
+    event.e.joystick_button_down.button = button;
+    push_event(&event);
 }
 
 void push_event_joystick_button_up(void * device, u32_t button)
 {
-	struct event_t event;
+    struct event_t event;
 
-	event.device = device;
-	event.type = EVENT_TYPE_JOYSTICK_BUTTONUP;
-	event.e.joystick_button_down.button = button;
-	push_event(&event);
+    event.device = device;
+    event.type = EVENT_TYPE_JOYSTICK_BUTTONUP;
+    event.e.joystick_button_down.button = button;
+    push_event(&event);
 }
 
 bool_t pump_event(struct event_base_t * eb, struct event_t * event)
 {
-	irq_flags_t flags;
-	bool_t ret;
+    irq_flags_t flags;
+    bool_t ret;
 
-	if(!eb || !event)
-		return FALSE;
+    if(!eb || !event)
+        return FALSE;
 
-	spin_lock_irqsave(&__event_base_lock, flags);
-	ret = (fifo_get(eb->fifo, (u8_t *)event, sizeof(struct event_t)) == sizeof(struct event_t));
-	spin_unlock_irqrestore(&__event_base_lock, flags);
+    spin_lock_irqsave(&__event_base_lock, flags);
+    ret = (fifo_get(eb->fifo, (u8_t *)event, sizeof(struct event_t)) == sizeof(struct event_t));
+    spin_unlock_irqrestore(&__event_base_lock, flags);
 
-	return ret;
+    return ret;
 }

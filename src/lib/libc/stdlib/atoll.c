@@ -7,6 +7,6 @@
 
 long long atoll(const char * nptr)
 {
-	return (long long)strtoll(nptr, NULL, 10);
+    return (long long)strtoll(nptr, NULL, 10);
 }
 EXPORT_SYMBOL(atoll);

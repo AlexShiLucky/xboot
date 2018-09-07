@@ -31,165 +31,165 @@
 
 static ssize_t uart_read_baud(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	return sprintf(buf, "%d", baud);
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    return sprintf(buf, "%d", baud);
 }
 
 static ssize_t uart_write_baud(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	uart_set(uart, strtol(buf, NULL, 0), data, parity, stop);
-	return size;
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    uart_set(uart, strtol(buf, NULL, 0), data, parity, stop);
+    return size;
 }
 
 static ssize_t uart_read_data(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	return sprintf(buf, "%d", data);
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    return sprintf(buf, "%d", data);
 }
 
 static ssize_t uart_write_data(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	uart_set(uart, baud, strtol(buf, NULL, 0), parity, stop);
-	return size;
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    uart_set(uart, baud, strtol(buf, NULL, 0), parity, stop);
+    return size;
 }
 
 static ssize_t uart_read_parity(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	return sprintf(buf, "%d", parity);
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    return sprintf(buf, "%d", parity);
 }
 
 static ssize_t uart_write_parity(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	uart_set(uart, baud, data, strtol(buf, NULL, 0), stop);
-	return size;
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    uart_set(uart, baud, data, strtol(buf, NULL, 0), stop);
+    return size;
 }
 
 static ssize_t uart_read_stop(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	return sprintf(buf, "%d", stop);
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    return sprintf(buf, "%d", stop);
 }
 
 static ssize_t uart_write_stop(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct uart_t * uart = (struct uart_t *)kobj->priv;
-	int baud, data, parity, stop;
-	uart_get(uart, &baud, &data, &parity, &stop);
-	uart_set(uart, baud, data, parity, strtol(buf, NULL, 0));
-	return size;
+    struct uart_t * uart = (struct uart_t *)kobj->priv;
+    int baud, data, parity, stop;
+    uart_get(uart, &baud, &data, &parity, &stop);
+    uart_set(uart, baud, data, parity, strtol(buf, NULL, 0));
+    return size;
 }
 
 struct uart_t * search_uart(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_UART);
-	if(!dev)
-		return NULL;
-	return (struct uart_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_UART);
+    if(!dev)
+        return NULL;
+    return (struct uart_t *)dev->priv;
 }
 
 /* 注册一个uart设备 */
 bool_t register_uart(struct device_t ** device, struct uart_t * uart)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!uart || !uart->name)
-		return FALSE;
+    if(!uart || !uart->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(uart->name);
-	dev->type = DEVICE_TYPE_UART;
-	dev->priv = uart;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "baud", uart_read_baud, uart_write_baud, uart);
-	kobj_add_regular(dev->kobj, "data", uart_read_data, uart_write_data, uart);
-	kobj_add_regular(dev->kobj, "parity", uart_read_parity, uart_write_parity, uart);
-	kobj_add_regular(dev->kobj, "stop", uart_read_stop, uart_write_stop, uart);
+    dev->name = strdup(uart->name);
+    dev->type = DEVICE_TYPE_UART;
+    dev->priv = uart;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "baud", uart_read_baud, uart_write_baud, uart);
+    kobj_add_regular(dev->kobj, "data", uart_read_data, uart_write_data, uart);
+    kobj_add_regular(dev->kobj, "parity", uart_read_parity, uart_write_parity, uart);
+    kobj_add_regular(dev->kobj, "stop", uart_read_stop, uart_write_stop, uart);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个uart设备 */
 bool_t unregister_uart(struct uart_t * uart)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!uart || !uart->name)
-		return FALSE;
+    if(!uart || !uart->name)
+        return FALSE;
 
-	dev = search_device(uart->name, DEVICE_TYPE_UART);
-	if(!dev)
-		return FALSE;
+    dev = search_device(uart->name, DEVICE_TYPE_UART);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* uart配置设置 */
 bool_t uart_set(struct uart_t * uart, int baud, int data, int parity, int stop)
 {
-	if(uart && uart->set)
-		return uart->set(uart, baud, data, parity, stop);
-	return FALSE;
+    if(uart && uart->set)
+        return uart->set(uart, baud, data, parity, stop);
+    return FALSE;
 }
 
 /* uart配置获取 */
 bool_t uart_get(struct uart_t * uart, int * baud, int * data, int * parity, int * stop)
 {
-	if(uart && uart->get)
-		return uart->get(uart, baud, data, parity, stop);
-	return FALSE;
+    if(uart && uart->get)
+        return uart->get(uart, baud, data, parity, stop);
+    return FALSE;
 }
 
 /* uart数据读取 */
 ssize_t uart_read(struct uart_t * uart, u8_t * buf, size_t count)
 {
-	if(uart && uart->read)
-		return uart->read(uart, buf, count);
-	return 0;
+    if(uart && uart->read)
+        return uart->read(uart, buf, count);
+    return 0;
 }
 
 /* uart数据写入*/
 ssize_t uart_write(struct uart_t * uart, const u8_t * buf, size_t count)
 {
-	if(uart && uart->write)
-		return uart->write(uart, buf, count);
-	return 0;
+    if(uart && uart->write)
+        return uart->write(uart, buf, count);
+    return 0;
 }

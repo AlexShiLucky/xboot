@@ -8,30 +8,30 @@ extern "C" {
 #include <xboot.h>
 
 enum input_type_t {
-	INPUT_TYPE_KEYBOARD		= 1,
-	INPUT_TYPE_ROTARY		= 2,
-	INPUT_TYPE_MOUSE		= 3,
-	INPUT_TYPE_TOUCHSCREEN	= 4,
-	INPUT_TYPE_JOYSTICK		= 5,
+    INPUT_TYPE_KEYBOARD     = 1,
+    INPUT_TYPE_ROTARY       = 2,
+    INPUT_TYPE_MOUSE        = 3,
+    INPUT_TYPE_TOUCHSCREEN  = 4,
+    INPUT_TYPE_JOYSTICK     = 5,
 };
 
 enum {
-	INPUT_IOCTL_TOUCHSCEEN_SET_CALIBRATION	= 0x00000001,
+    INPUT_IOCTL_TOUCHSCEEN_SET_CALIBRATION  = 0x00000001,
 };
 
 struct input_t
 {
-	/* The input name */
-	char * name;
+    /* The input name */
+    char * name;
 
-	/* Input type */
-	enum input_type_t type;
+    /* Input type */
+    enum input_type_t type;
 
-	/* Ioctl interface */
-	int (*ioctl)(struct input_t * input, int cmd, void * arg);
+    /* Ioctl interface */
+    int (*ioctl)(struct input_t * input, int cmd, void * arg);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct input_t * search_input(const char * name);

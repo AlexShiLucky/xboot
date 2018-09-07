@@ -30,98 +30,98 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    mkdir [-p] DIRECTORY...\r\n\r\n");
+    printf("usage:\r\n");
+    printf("    mkdir [-p] DIRECTORY...\r\n\r\n");
 }
 
 static s32_t build(s8_t * path)
 {
-	struct stat st;
-	s8_t * p;
+    struct stat st;
+    s8_t * p;
 
-	p = path;
-	if(p[0] == '/')
-		++p;
+    p = path;
+    if(p[0] == '/')
+        ++p;
 
-	for( ; ; ++p)
-	{
-		if(p[0] == '\0' || (p[0] == '/' && p[1] == '\0'))
-			break;
-		if(p[0] != '/')
-			continue;
-		*p = '\0';
-		if( stat((const char *)path, &st) != 0 )
-		{
-			if(mkdir((const char *)path, (S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) != 0)
-			{
-				return -1;
-			}
-		}
-		*p = '/';
-	}
-	return 0;
+    for( ; ; ++p)
+    {
+        if(p[0] == '\0' || (p[0] == '/' && p[1] == '\0'))
+            break;
+        if(p[0] != '/')
+            continue;
+        *p = '\0';
+        if( stat((const char *)path, &st) != 0 )
+        {
+            if(mkdir((const char *)path, (S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) != 0)
+            {
+                return -1;
+            }
+        }
+        *p = '/';
+    }
+    return 0;
 }
 
 static int do_mkdir(int argc, char ** argv)
 {
-	s32_t c = 0;
-	s8_t ** v;
-	bool_t pflag = FALSE;
-	s32_t ret = 0;
-	s32_t i;
+    s32_t c = 0;
+    s8_t ** v;
+    bool_t pflag = FALSE;
+    s32_t ret = 0;
+    s32_t i;
 
-	if( (v = malloc(sizeof(s8_t *) * argc)) == NULL)
-		return -1;
+    if( (v = malloc(sizeof(s8_t *) * argc)) == NULL)
+        return -1;
 
-	for(i=1; i<argc; i++)
-	{
-		if( !strcmp((const char *)argv[i], "-p") )
-			pflag = TRUE;
-		else
-			v[c++] = (s8_t *)argv[i];
-	}
+    for(i=1; i<argc; i++)
+    {
+        if( !strcmp((const char *)argv[i], "-p") )
+            pflag = TRUE;
+        else
+            v[c++] = (s8_t *)argv[i];
+    }
 
-	if(c == 0)
-	{
-		printf("usage:\r\n    mkdir [-p] DIRECTORY...\r\n");
-		free(v);
-		return (-1);
-	}
+    if(c == 0)
+    {
+        printf("usage:\r\n    mkdir [-p] DIRECTORY...\r\n");
+        free(v);
+        return (-1);
+    }
 
-	for(i=0; i<c; i++)
-	{
-		if( pflag && build(v[i]) )
-		{
-			ret = -1;
-			continue;
-		}
+    for(i=0; i<c; i++)
+    {
+        if( pflag && build(v[i]) )
+        {
+            ret = -1;
+            continue;
+        }
 
-		if(mkdir((const char*)v[i], (S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) != 0)
-		{
-			ret = -1;
-			printf("mkdir: failed to create directory %s\r\n", v[i]);
-		}
-	}
+        if(mkdir((const char*)v[i], (S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) != 0)
+        {
+            ret = -1;
+            printf("mkdir: failed to create directory %s\r\n", v[i]);
+        }
+    }
 
-	free(v);
-	return ret;
+    free(v);
+    return ret;
 }
 
 static struct command_t cmd_mkdir = {
-	.name	= "mkdir",
-	.desc	= "make directories",
-	.usage	= usage,
-	.exec	= do_mkdir,
+    .name   = "mkdir",
+    .desc   = "make directories",
+    .usage  = usage,
+    .exec   = do_mkdir,
 };
 
 static __init void mkdir_cmd_init(void)
 {
-	register_command(&cmd_mkdir);
+    register_command(&cmd_mkdir);
 }
 
 static __exit void mkdir_cmd_exit(void)
 {
-	unregister_command(&cmd_mkdir);
+    unregister_command(&cmd_mkdir);
 }
 
 command_initcall(mkdir_cmd_init);

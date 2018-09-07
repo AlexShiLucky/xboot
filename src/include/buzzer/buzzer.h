@@ -9,20 +9,20 @@ extern "C" {
 
 struct buzzer_t
 {
-	/* The buzzer name */
-	char * name;
+    /* The buzzer name */
+    char * name;
 
-	/* Set buzzer's frequency */
-	void (*set)(struct buzzer_t * buzzer, int frequency);
+    /* Set buzzer's frequency */
+    void (*set)(struct buzzer_t * buzzer, int frequency);
 
-	/* Get buzzer's frequency */
-	int (*get)(struct buzzer_t * buzzer);
+    /* Get buzzer's frequency */
+    int (*get)(struct buzzer_t * buzzer);
 
-	/* Buzzer beep in with queue, all zero means clear and stop */
-	void (*beep)(struct buzzer_t * buzzer, int frequency, int millisecond);
+    /* Buzzer beep in with queue, all zero means clear and stop */
+    void (*beep)(struct buzzer_t * buzzer, int frequency, int millisecond);
 
-	/* Private data */
-	void * priv;
+    /* Private data */
+    void * priv;
 };
 
 struct buzzer_t * search_buzzer(const char * name);

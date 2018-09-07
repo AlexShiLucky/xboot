@@ -33,9 +33,9 @@
  * California.
  *
  * Contributor(s):
- *	Carl D. Worth <cworth@cworth.org>
- *	Mathias Hasselmann <mathias.hasselmann@gmx.de>
- *	Behdad Esfahbod <behdad@behdad.org>
+ *  Carl D. Worth <cworth@cworth.org>
+ *  Mathias Hasselmann <mathias.hasselmann@gmx.de>
+ *  Behdad Esfahbod <behdad@behdad.org>
  */
 
 #ifndef CAIRO_MUTEX_IMPL_PRIVATE_H
@@ -52,7 +52,7 @@
 #endif
 
 /* A fully qualified no-operation statement */
-#define CAIRO_MUTEX_IMPL_NOOP	do {/*no-op*/} while (0)
+#define CAIRO_MUTEX_IMPL_NOOP   do {/*no-op*/} while (0)
 /* And one that evaluates its argument once */
 #define CAIRO_MUTEX_IMPL_NOOP1(expr)        do { (void)(expr); } while (0)
 /* Note: 'if (expr) {}' is an alternative to '(void)(expr);' that will 'use' the
@@ -75,7 +75,7 @@
  *   running it):
  *
  *   <programlisting>
- *	cairo_mutex_impl_t _cairo_some_mutex;
+ *  cairo_mutex_impl_t _cairo_some_mutex;
  *   </programlisting>
  *
  * - #define %CAIRO_MUTEX_IMPL_<NAME> 1 with suitable name for your platform.  You
@@ -90,7 +90,7 @@
  *   You should be able to compile the following snippet:
  *
  *   <programlisting>
- *	cairo_mutex_impl_t _cairo_some_mutex;
+ *  cairo_mutex_impl_t _cairo_some_mutex;
  *
  *      if (1)
  *          CAIRO_MUTEX_IMPL_LOCK (_cairo_some_mutex);
@@ -104,7 +104,7 @@
  *   you should be able to compile the following snippet:
  *
  *   <programlisting>
- *	cairo_mutex_impl_t _cairo_some_mutex = CAIRO_MUTEX_IMPL_NIL_INITIALIZER;
+ *  cairo_mutex_impl_t _cairo_some_mutex = CAIRO_MUTEX_IMPL_NIL_INITIALIZER;
  *
  *      if (1)
  *          CAIRO_MUTEX_IMPL_LOCK (_cairo_some_mutex);
@@ -118,7 +118,7 @@
  *   you should be able to compile AND RUN the following snippet:
  *
  *   <programlisting>
- *	cairo_mutex_impl_t _cairo_some_mutex = CAIRO_MUTEX_IMPL_NIL_INITIALIZER;
+ *  cairo_mutex_impl_t _cairo_some_mutex = CAIRO_MUTEX_IMPL_NIL_INITIALIZER;
  *
  *      CAIRO_MUTEX_IMPL_INIT (_cairo_some_mutex);
  *

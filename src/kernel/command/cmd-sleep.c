@@ -30,31 +30,31 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    sleep\r\n");
+    printf("usage:\r\n");
+    printf("    sleep\r\n");
 }
 
 static int do_sleep(int argc, char ** argv)
 {
-	machine_sleep();
-	return 0;
+    machine_sleep();
+    return 0;
 }
 
 static struct command_t cmd_sleep = {
-	.name	= "sleep",
-	.desc	= "sleep the target system",
-	.usage	= usage,
-	.exec	= do_sleep,
+    .name   = "sleep",
+    .desc   = "sleep the target system",
+    .usage  = usage,
+    .exec   = do_sleep,
 };
 
 static __init void sleep_cmd_init(void)
 {
-	register_command(&cmd_sleep);
+    register_command(&cmd_sleep);
 }
 
 static __exit void sleep_cmd_exit(void)
 {
-	unregister_command(&cmd_sleep);
+    unregister_command(&cmd_sleep);
 }
 
 command_initcall(sleep_cmd_init);

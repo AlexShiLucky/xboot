@@ -28,44 +28,44 @@
 
 #include <command/command.h>
 
-#if	0
+#if 0
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    cp ...\r\n");
+    printf("usage:\r\n");
+    printf("    cp ...\r\n");
 }
 
 static int do_cp(int argc, char ** argv)
 {
-	//FIXME
-	/*
-	s8_t buf[128];
-	s32_t fd1, fd2;
-	s64_t done, wrote;
+    //FIXME
+    /*
+    s8_t buf[128];
+    s32_t fd1, fd2;
+    s64_t done, wrote;
 
-	if(argc != 3)
-	{
-		printf("usage:\r\n    cp SOURCE DEST\r\n");
-		return -1;
-	}
+    if(argc != 3)
+    {
+        printf("usage:\r\n    cp SOURCE DEST\r\n");
+        return -1;
+    }
 
     if(access((const char *)argv[1], F_OK) != 0)
     {
-    	printf("1\r\n");
+        printf("1\r\n");
     }
 
     if(access((const char *)argv[2], F_OK) != 0)
     {
-    	printf("2\r\n");
+        printf("2\r\n");
     }
 
     fd1 = open((const char *)argv[1], O_RDONLY);
     if(fd1 < 0)
-    	printf("3\r\n");
+        printf("3\r\n");
 
     fd2 = open((const char *)argv[2], O_WRONLY|O_CREAT );
     if( fd2 < 0 )
-    	printf("4\r\n");
+        printf("4\r\n");
 
     for(;;)
     {
@@ -76,30 +76,30 @@ static int do_cp(int argc, char ** argv)
         wrote = write( fd2, buf, done );
 
         if( wrote != done )
-        	break;
+            break;
     }
 
     close( fd1 );
     close( fd2 );
 */
-	return 0;
+    return 0;
 }
 
 static struct command_t cmd_cp = {
-	.name	= "cp",
-	.desc	= "copy file",
-	.usage	= usage,
-	.exec	= do_cp,
+    .name   = "cp",
+    .desc   = "copy file",
+    .usage  = usage,
+    .exec   = do_cp,
 };
 
 static __init void cp_cmd_init(void)
 {
-	register_command(&cmd_cp);
+    register_command(&cmd_cp);
 }
 
 static __exit void cp_cmd_exit(void)
 {
-	unregister_command(&cmd_cp);
+    unregister_command(&cmd_cp);
 }
 
 command_initcall(cp_cmd_init);

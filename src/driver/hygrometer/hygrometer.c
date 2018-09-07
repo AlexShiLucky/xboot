@@ -32,89 +32,89 @@
 /* 读取湿度计设备湿度 */
 static ssize_t hygrometer_read_humidity(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct hygrometer_t * hygrometer = (struct hygrometer_t *)kobj->priv;
-	int humidity = hygrometer_get_humidity(hygrometer);
-	return sprintf(buf, "%d%%", humidity);
+    struct hygrometer_t * hygrometer = (struct hygrometer_t *)kobj->priv;
+    int humidity = hygrometer_get_humidity(hygrometer);
+    return sprintf(buf, "%d%%", humidity);
 }
 
 /* 根据名称搜索一个湿度计设备 */
 struct hygrometer_t * search_hygrometer(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return NULL;
-	return (struct hygrometer_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return NULL;
+    return (struct hygrometer_t *)dev->priv;
 }
 
 /* 搜索第一个湿度计设备 */
 struct hygrometer_t * search_first_hygrometer(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return NULL;
-	return (struct hygrometer_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return NULL;
+    return (struct hygrometer_t *)dev->priv;
 }
 
 /* 注册一个湿度计设备 */
 bool_t register_hygrometer(struct device_t ** device,struct hygrometer_t * hygrometer)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!hygrometer || !hygrometer->name)
-		return FALSE;
+    if(!hygrometer || !hygrometer->name)
+        return FALSE;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return FALSE;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return FALSE;
 
-	dev->name = strdup(hygrometer->name);
-	dev->type = DEVICE_TYPE_THERMOMETER;
-	dev->priv = hygrometer;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "humidity", hygrometer_read_humidity, NULL, hygrometer);
+    dev->name = strdup(hygrometer->name);
+    dev->type = DEVICE_TYPE_THERMOMETER;
+    dev->priv = hygrometer;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "humidity", hygrometer_read_humidity, NULL, hygrometer);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return FALSE;
-	}
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return FALSE;
+    }
 
-	if(device)
-		*device = dev;
-	return TRUE;
+    if(device)
+        *device = dev;
+    return TRUE;
 }
 
 /* 注销一个湿度计设备 */
 bool_t unregister_hygrometer(struct hygrometer_t * hygrometer)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!hygrometer || !hygrometer->name)
-		return FALSE;
+    if(!hygrometer || !hygrometer->name)
+        return FALSE;
 
-	dev = search_device(hygrometer->name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return FALSE;
+    dev = search_device(hygrometer->name, DEVICE_TYPE_THERMOMETER);
+    if(!dev)
+        return FALSE;
 
-	if(!unregister_device(dev))
-		return FALSE;
+    if(!unregister_device(dev))
+        return FALSE;
 
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+    kobj_remove_self(dev->kobj);
+    free(dev->name);
+    free(dev);
+    return TRUE;
 }
 
 /* 读取湿度计设备信息湿度 */
 int hygrometer_get_humidity(struct hygrometer_t * hygrometer)
 {
-	if(hygrometer && hygrometer->get)
-		return hygrometer->get(hygrometer);
-	return 0;
+    if(hygrometer && hygrometer->get)
+        return hygrometer->get(hygrometer);
+    return 0;
 }

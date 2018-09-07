@@ -30,8 +30,8 @@
  * The Initial Developer of the Original Code is Red Hat, Inc.
  *
  * Contributor(s):
- *	Kristian Høgsberg <krh@redhat.com>
- *	Chris Wilson <chris@chris-wilson.co.uk>
+ *  Kristian Høgsberg <krh@redhat.com>
+ *  Chris Wilson <chris@chris-wilson.co.uk>
  */
 
 #ifndef CAIRO_CLIP_INLINE_H
@@ -53,14 +53,14 @@ _cairo_clip_set_all_clipped (cairo_clip_t *clip)
 
 static inline cairo_clip_t *
 _cairo_clip_copy_intersect_rectangle (const cairo_clip_t       *clip,
-				      const cairo_rectangle_int_t *r)
+                      const cairo_rectangle_int_t *r)
 {
     return _cairo_clip_intersect_rectangle (_cairo_clip_copy (clip), r);
 }
 
 static inline cairo_clip_t *
 _cairo_clip_copy_intersect_clip (const cairo_clip_t *clip,
-				 const cairo_clip_t *other)
+                 const cairo_clip_t *other)
 {
     return _cairo_clip_intersect_clip (_cairo_clip_copy (clip), other);
 }

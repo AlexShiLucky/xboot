@@ -62,266 +62,266 @@
  */
 
 enum {
-	UART_DATA	= 0x00,
-	UART_RSR	= 0x04,
-	UART_FR		= 0x18,
-	UART_ILPR	= 0x20,
-	UART_IBRD	= 0x24,
-	UART_FBRD	= 0x28,
-	UART_LCRH	= 0x2c,
-	UART_CR		= 0x30,
-	UART_IFLS	= 0x34,
-	UART_IMSC	= 0x38,
-	UART_RIS	= 0x3c,
-	UART_MIS	= 0x40,
-	UART_ICR	= 0x44,
-	UART_DMACR	= 0x48,
+    UART_DATA   = 0x00,
+    UART_RSR    = 0x04,
+    UART_FR     = 0x18,
+    UART_ILPR   = 0x20,
+    UART_IBRD   = 0x24,
+    UART_FBRD   = 0x28,
+    UART_LCRH   = 0x2c,
+    UART_CR     = 0x30,
+    UART_IFLS   = 0x34,
+    UART_IMSC   = 0x38,
+    UART_RIS    = 0x3c,
+    UART_MIS    = 0x40,
+    UART_ICR    = 0x44,
+    UART_DMACR  = 0x48,
 };
 
 struct uart_pl011_pdata_t {
-	virtual_addr_t virt;
-	char * clk;
-	int txd;
-	int txdcfg;
-	int rxd;
-	int rxdcfg;
-	int baud;
-	int data;
-	int parity;
-	int stop;
+    virtual_addr_t virt;
+    char * clk;
+    int txd;
+    int txdcfg;
+    int rxd;
+    int rxdcfg;
+    int baud;
+    int data;
+    int parity;
+    int stop;
 };
 
 /* uart设备pl011配置设置具体实现 */
 static bool_t uart_pl011_set(struct uart_t * uart, int baud, int data, int parity, int stop)
 {
-	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
-	u32_t divider, remainder, fraction, val;
-	u8_t dreg, preg, sreg;
-	u64_t uclk;
+    struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
+    u32_t divider, remainder, fraction, val;
+    u8_t dreg, preg, sreg;
+    u64_t uclk;
 
-	if(baud < 0)
-		return FALSE;
-	if((data < 5) || (data > 8))
-		return FALSE;
-	if((parity < 0) || (parity > 2))
-		return FALSE;
-	if((stop < 0) || (stop > 2))
-		return FALSE;
+    if(baud < 0)
+        return FALSE;
+    if((data < 5) || (data > 8))
+        return FALSE;
+    if((parity < 0) || (parity > 2))
+        return FALSE;
+    if((stop < 0) || (stop > 2))
+        return FALSE;
 
-	switch(data)
-	{
-	case 5:	/* Data bits = 5 */
-		dreg = 0x0;
-		break;
-	case 6:	/* Data bits = 6 */
-		dreg = 0x1;
-		break;
-	case 7:	/* Data bits = 7 */
-		dreg = 0x2;
-		break;
-	case 8:	/* Data bits = 8 */
-		dreg = 0x3;
-		break;
-	default:
-		return FALSE;
-	}
+    switch(data)
+    {
+    case 5: /* Data bits = 5 */
+        dreg = 0x0;
+        break;
+    case 6: /* Data bits = 6 */
+        dreg = 0x1;
+        break;
+    case 7: /* Data bits = 7 */
+        dreg = 0x2;
+        break;
+    case 8: /* Data bits = 8 */
+        dreg = 0x3;
+        break;
+    default:
+        return FALSE;
+    }
 
-	switch(parity)
-	{
-	case 0:	/* Parity none */
-		preg = 0x0;
-		break;
-	case 1:	/* Parity odd */
-		preg = 0x1;
-		break;
-	case 2:	/* Parity even */
-		preg = 0x3;
-		break;
-	default:
-		return FALSE;
-	}
+    switch(parity)
+    {
+    case 0: /* Parity none */
+        preg = 0x0;
+        break;
+    case 1: /* Parity odd */
+        preg = 0x1;
+        break;
+    case 2: /* Parity even */
+        preg = 0x3;
+        break;
+    default:
+        return FALSE;
+    }
 
-	switch(stop)
-	{
-	case 1:	/* Stop bits = 1 */
-		sreg = 0;
-		break;
-	case 2:	/* Stop bits = 2 */
-		sreg = 1;
-		break;
-	case 0:	/* Stop bits = 1.5 */
-	default:
-		return FALSE;
-	}
+    switch(stop)
+    {
+    case 1: /* Stop bits = 1 */
+        sreg = 0;
+        break;
+    case 2: /* Stop bits = 2 */
+        sreg = 1;
+        break;
+    case 0: /* Stop bits = 1.5 */
+    default:
+        return FALSE;
+    }
 
-	pdat->baud = baud;
-	pdat->data = data;
-	pdat->parity = parity;
-	pdat->stop = stop;
+    pdat->baud = baud;
+    pdat->data = data;
+    pdat->parity = parity;
+    pdat->stop = stop;
 
-	/*
-	 * IBRD = UART_CLK / (16 * BAUD_RATE)
-	 * FBRD = ROUND((64 * MOD(UART_CLK, (16 * BAUD_RATE))) / (16 * BAUD_RATE))
-	 */
-	uclk = clk_get_rate(pdat->clk);
-	divider = uclk / (16 * baud);
-	remainder = uclk % (16 * baud);
-	fraction = (8 * remainder / baud) >> 1;
-	fraction += (8 * remainder / baud) & 1;
+    /*
+     * IBRD = UART_CLK / (16 * BAUD_RATE)
+     * FBRD = ROUND((64 * MOD(UART_CLK, (16 * BAUD_RATE))) / (16 * BAUD_RATE))
+     */
+    uclk = clk_get_rate(pdat->clk);
+    divider = uclk / (16 * baud);
+    remainder = uclk % (16 * baud);
+    fraction = (8 * remainder / baud) >> 1;
+    fraction += (8 * remainder / baud) & 1;
 
-	write32(pdat->virt + UART_IBRD, divider);
-	write32(pdat->virt + UART_FBRD, fraction);
-	val = read32(pdat->virt + UART_LCRH);
-	val &= ~0x6e;
-	val |= (dreg << 5) | (sreg << 3) | (preg << 1);
-	write32(pdat->virt + UART_LCRH, val);
+    write32(pdat->virt + UART_IBRD, divider);
+    write32(pdat->virt + UART_FBRD, fraction);
+    val = read32(pdat->virt + UART_LCRH);
+    val &= ~0x6e;
+    val |= (dreg << 5) | (sreg << 3) | (preg << 1);
+    write32(pdat->virt + UART_LCRH, val);
 
-	return TRUE;
+    return TRUE;
 }
 
 /* uart设备pl011配置读取具体实现 */
 static bool_t uart_pl011_get(struct uart_t * uart, int * baud, int * data, int * parity, int * stop)
 {
-	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
+    struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
 
-	if(baud)
-		*baud = pdat->baud;
-	if(data)
-		*data = pdat->data;
-	if(parity)
-		*parity = pdat->parity;
-	if(stop)
-		*stop = pdat->stop;
-	return TRUE;
+    if(baud)
+        *baud = pdat->baud;
+    if(data)
+        *data = pdat->data;
+    if(parity)
+        *parity = pdat->parity;
+    if(stop)
+        *stop = pdat->stop;
+    return TRUE;
 }
 
 /* uart设备pl011数据读取具体实现 */
 static ssize_t uart_pl011_read(struct uart_t * uart, u8_t * buf, size_t count)
 {
-	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
-	ssize_t i;
+    struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
+    ssize_t i;
 
-	for(i = 0; i < count; i++)
-	{
-		if(!(read8(pdat->virt + UART_FR) & (0x1 << 4)))
-			buf[i] = read8(pdat->virt + UART_DATA);
-		else
-			break;
-	}
-	return i;
+    for(i = 0; i < count; i++)
+    {
+        if(!(read8(pdat->virt + UART_FR) & (0x1 << 4)))
+            buf[i] = read8(pdat->virt + UART_DATA);
+        else
+            break;
+    }
+    return i;
 }
 
 /* uart设备pl011数据写入具体实现 */
 static ssize_t uart_pl011_write(struct uart_t * uart, const u8_t * buf, size_t count)
 {
-	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
-	ssize_t i;
+    struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
+    ssize_t i;
 
-	for(i = 0; i < count; i++)
-	{
-		while((read8(pdat->virt + UART_FR) & (0x1 << 5)));
-		write8(pdat->virt + UART_DATA, buf[i]);
-	}
-	return i;
+    for(i = 0; i < count; i++)
+    {
+        while((read8(pdat->virt + UART_FR) & (0x1 << 5)));
+        write8(pdat->virt + UART_DATA, buf[i]);
+    }
+    return i;
 }
 
 /* uart设备pl011探针具体实现 */
 static struct device_t * uart_pl011_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct uart_pl011_pdata_t * pdat;
-	struct uart_t * uart;
-	struct device_t * dev;
-	virtual_addr_t virt = phys_to_virt(dt_read_address(n));
-	u32_t id = (((read32(virt + 0xfec) & 0xff) << 24) |
-				((read32(virt + 0xfe8) & 0xff) << 16) |
-				((read32(virt + 0xfe4) & 0xff) <<  8) |
-				((read32(virt + 0xfe0) & 0xff) <<  0));
-	char * clk = dt_read_string(n, "clock-name", NULL);
+    struct uart_pl011_pdata_t * pdat;
+    struct uart_t * uart;
+    struct device_t * dev;
+    virtual_addr_t virt = phys_to_virt(dt_read_address(n));
+    u32_t id = (((read32(virt + 0xfec) & 0xff) << 24) |
+                ((read32(virt + 0xfe8) & 0xff) << 16) |
+                ((read32(virt + 0xfe4) & 0xff) <<  8) |
+                ((read32(virt + 0xfe0) & 0xff) <<  0));
+    char * clk = dt_read_string(n, "clock-name", NULL);
 
-	if(((id >> 12) & 0xff) != 0x41 || (id & 0xfff) != 0x011)
-		return NULL;
+    if(((id >> 12) & 0xff) != 0x41 || (id & 0xfff) != 0x011)
+        return NULL;
 
-	if(!search_clk(clk))
-		return NULL;
+    if(!search_clk(clk))
+        return NULL;
 
-	pdat = malloc(sizeof(struct uart_pl011_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct uart_pl011_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	uart = malloc(sizeof(struct uart_t));
-	if(!uart)
-	{
-		free(pdat);
-		return NULL;
-	}
+    uart = malloc(sizeof(struct uart_t));
+    if(!uart)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->virt = virt;
-	pdat->clk = strdup(clk);
-	pdat->txd = dt_read_int(n, "txd-gpio", -1);
-	pdat->txdcfg = dt_read_int(n, "txd-gpio-config", -1);
-	pdat->rxd = dt_read_int(n, "rxd-gpio", -1);
-	pdat->rxdcfg = dt_read_int(n, "rxd-gpio-config", -1);
-	pdat->baud = dt_read_int(n, "baud-rates", 115200);
-	pdat->data = dt_read_int(n, "data-bits", 8);
-	pdat->parity = dt_read_int(n, "parity-bits", 0);
-	pdat->stop = dt_read_int(n, "stop-bits", 1);
+    pdat->virt = virt;
+    pdat->clk = strdup(clk);
+    pdat->txd = dt_read_int(n, "txd-gpio", -1);
+    pdat->txdcfg = dt_read_int(n, "txd-gpio-config", -1);
+    pdat->rxd = dt_read_int(n, "rxd-gpio", -1);
+    pdat->rxdcfg = dt_read_int(n, "rxd-gpio-config", -1);
+    pdat->baud = dt_read_int(n, "baud-rates", 115200);
+    pdat->data = dt_read_int(n, "data-bits", 8);
+    pdat->parity = dt_read_int(n, "parity-bits", 0);
+    pdat->stop = dt_read_int(n, "stop-bits", 1);
 
-	uart->name = alloc_device_name(dt_read_name(n), -1);
-	uart->set = uart_pl011_set;     /* uart设备pl011配置设置具体实现 */
-	uart->get = uart_pl011_get;     /* uart设备pl011配置读取具体实现 */
-	uart->read = uart_pl011_read;   /* uart设备pl011数据读取具体实现 */
-	uart->write = uart_pl011_write; /* uart设备pl011数据写入具体实现 */
-	uart->priv = pdat;
+    uart->name = alloc_device_name(dt_read_name(n), -1);
+    uart->set = uart_pl011_set;     /* uart设备pl011配置设置具体实现 */
+    uart->get = uart_pl011_get;     /* uart设备pl011配置读取具体实现 */
+    uart->read = uart_pl011_read;   /* uart设备pl011数据读取具体实现 */
+    uart->write = uart_pl011_write; /* uart设备pl011数据写入具体实现 */
+    uart->priv = pdat;
 
-	clk_enable(pdat->clk);
-	if(pdat->txd >= 0)
-	{
-		if(pdat->txdcfg >= 0)
-			gpio_set_cfg(pdat->txd, pdat->txdcfg);
-		gpio_set_pull(pdat->txd, GPIO_PULL_UP);
-	}
-	if(pdat->rxd >= 0)
-	{
-		if(pdat->rxdcfg >= 0)
-			gpio_set_cfg(pdat->rxd, pdat->rxdcfg);
-		gpio_set_pull(pdat->rxd, GPIO_PULL_UP);
-	}
-	write32(pdat->virt + UART_LCRH, read32(pdat->virt + UART_LCRH) | (1 << 4));
-	write32(pdat->virt + UART_CR, (1 << 0) | (1 << 8) | (1 << 9));
-	uart_pl011_set(uart, pdat->baud, pdat->data, pdat->parity, pdat->stop);
+    clk_enable(pdat->clk);
+    if(pdat->txd >= 0)
+    {
+        if(pdat->txdcfg >= 0)
+            gpio_set_cfg(pdat->txd, pdat->txdcfg);
+        gpio_set_pull(pdat->txd, GPIO_PULL_UP);
+    }
+    if(pdat->rxd >= 0)
+    {
+        if(pdat->rxdcfg >= 0)
+            gpio_set_cfg(pdat->rxd, pdat->rxdcfg);
+        gpio_set_pull(pdat->rxd, GPIO_PULL_UP);
+    }
+    write32(pdat->virt + UART_LCRH, read32(pdat->virt + UART_LCRH) | (1 << 4));
+    write32(pdat->virt + UART_CR, (1 << 0) | (1 << 8) | (1 << 9));
+    uart_pl011_set(uart, pdat->baud, pdat->data, pdat->parity, pdat->stop);
 
-	if(!register_uart(&dev, uart))
-	{
-		write32(pdat->virt + UART_CR, 0x0);
-		clk_disable(pdat->clk);
-		free(pdat->clk);
+    if(!register_uart(&dev, uart))
+    {
+        write32(pdat->virt + UART_CR, 0x0);
+        clk_disable(pdat->clk);
+        free(pdat->clk);
 
-		free_device_name(uart->name);
-		free(uart->priv);
-		free(uart);
-		return NULL;
-	}
-	dev->driver = drv;
+        free_device_name(uart->name);
+        free(uart->priv);
+        free(uart);
+        return NULL;
+    }
+    dev->driver = drv;
 
-	return dev;
+    return dev;
 }
 
 /* uart设备pl011移除具体实现 */
 static void uart_pl011_remove(struct device_t * dev)
 {
-	struct uart_t * uart = (struct uart_t *)dev->priv;
-	struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
+    struct uart_t * uart = (struct uart_t *)dev->priv;
+    struct uart_pl011_pdata_t * pdat = (struct uart_pl011_pdata_t *)uart->priv;
 
-	if(uart && unregister_uart(uart))
-	{
-		write32(pdat->virt + UART_CR, 0x0);
-		clk_disable(pdat->clk);
-		free(pdat->clk);
+    if(uart && unregister_uart(uart))
+    {
+        write32(pdat->virt + UART_CR, 0x0);
+        clk_disable(pdat->clk);
+        free(pdat->clk);
 
-		free_device_name(uart->name);
-		free(uart->priv);
-		free(uart);
-	}
+        free_device_name(uart->name);
+        free(uart->priv);
+        free(uart);
+    }
 }
 
 /* uart设备pl011挂起具体实现 */
@@ -336,23 +336,23 @@ static void uart_pl011_resume(struct device_t * dev)
 
 /* uart设备pl011驱动控制块 */
 static struct driver_t uart_pl011 = {
-	.name		= "uart-pl011",
-	.probe		= uart_pl011_probe,
-	.remove		= uart_pl011_remove,
-	.suspend	= uart_pl011_suspend,
-	.resume		= uart_pl011_resume,
+    .name       = "uart-pl011",
+    .probe      = uart_pl011_probe,
+    .remove     = uart_pl011_remove,
+    .suspend    = uart_pl011_suspend,
+    .resume     = uart_pl011_resume,
 };
 
 /* uart设备pl001驱动初始化 */
 static __init void uart_pl011_driver_init(void)
 {
-	register_driver(&uart_pl011);
+    register_driver(&uart_pl011);
 }
 
 /* uart设备pl001驱动退出 */
 static __exit void uart_pl011_driver_exit(void)
 {
-	unregister_driver(&uart_pl011);
+    unregister_driver(&uart_pl011);
 }
 
 driver_initcall(uart_pl011_driver_init);

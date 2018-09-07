@@ -30,31 +30,31 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    sync\r\n");
+    printf("usage:\r\n");
+    printf("    sync\r\n");
 }
 
 static int do_sync(int argc, char ** argv)
 {
-	sync();
-	return 0;
+    sync();
+    return 0;
 }
 
 static struct command_t cmd_sync = {
-	.name	= "sync",
-	.desc	= "synchronize cached writes to storage",
-	.usage	= usage,
-	.exec	= do_sync,
+    .name   = "sync",
+    .desc   = "synchronize cached writes to storage",
+    .usage  = usage,
+    .exec   = do_sync,
 };
 
 static __init void sync_cmd_init(void)
 {
-	register_command(&cmd_sync);
+    register_command(&cmd_sync);
 }
 
 static __exit void sync_cmd_exit(void)
 {
-	unregister_command(&cmd_sync);
+    unregister_command(&cmd_sync);
 }
 
 command_initcall(sync_cmd_init);

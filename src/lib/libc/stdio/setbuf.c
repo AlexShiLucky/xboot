@@ -6,6 +6,6 @@
 
 void setbuf(FILE * f, char * buf)
 {
-	setvbuf(f, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
+    setvbuf(f, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
 }
 EXPORT_SYMBOL(setbuf);

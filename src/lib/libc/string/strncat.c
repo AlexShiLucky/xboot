@@ -10,22 +10,22 @@
  */
 char * strncat(char * dest, const char * src, size_t n)
 {
-	char * tmp = dest;
+    char * tmp = dest;
 
-	if (n)
-	{
-		while (*dest)
-			dest++;
-		while ((*dest++ = *src++) != 0)
-		{
-			if (--n == 0)
-			{
-				*dest = '\0';
-				break;
-			}
-		}
-	}
+    if (n)
+    {
+        while (*dest)
+            dest++;
+        while ((*dest++ = *src++) != 0)
+        {
+            if (--n == 0)
+            {
+                *dest = '\0';
+                break;
+            }
+        }
+    }
 
-	return tmp;
+    return tmp;
 }
 EXPORT_SYMBOL(strncat);

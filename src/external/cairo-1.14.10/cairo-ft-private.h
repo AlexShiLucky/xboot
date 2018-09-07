@@ -31,7 +31,7 @@
  *
  * Contributor(s):
  *      Graydon Hoare <graydon@redhat.com>
- *	Owen Taylor <otaylor@redhat.com>
+ *  Owen Taylor <otaylor@redhat.com>
  */
 
 #ifndef CAIRO_FT_PRIVATE_H

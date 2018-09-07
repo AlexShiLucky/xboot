@@ -9,14 +9,14 @@ extern "C" {
 
 struct stepper_t
 {
-	char * name;
+    char * name;
 
-	void (*enable)(struct stepper_t * m);
-	void (*disable)(struct stepper_t * m);
-	void (*move)(struct stepper_t * m, int step, int speed);
-	int (*busying)(struct stepper_t * m);
+    void (*enable)(struct stepper_t * m);
+    void (*disable)(struct stepper_t * m);
+    void (*move)(struct stepper_t * m, int step, int speed);
+    int (*busying)(struct stepper_t * m);
 
-	void * priv;
+    void * priv;
 };
 
 struct stepper_t * search_stepper(const char * name);

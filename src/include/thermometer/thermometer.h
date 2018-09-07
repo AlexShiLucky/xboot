@@ -9,10 +9,10 @@ extern "C" {
 
 struct thermometer_t
 {
-	char * name;
+    char * name;
 
-	int (*get)(struct thermometer_t * thermometer);
-	void * priv;
+    int (*get)(struct thermometer_t * thermometer);
+    void * priv;
 };
 
 struct thermometer_t * search_thermometer(const char * name);

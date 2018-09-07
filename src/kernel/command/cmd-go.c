@@ -30,44 +30,44 @@
 
 static void usage(void)
 {
-	printf("usage:\r\n");
-	printf("    go address [args ...]\r\n");
+    printf("usage:\r\n");
+    printf("    go address [args ...]\r\n");
 }
 
 static int do_go(int argc, char ** argv)
 {
-	void * addr;
-	int ret;
+    void * addr;
+    int ret;
 
-	if(argc < 2)
-	{
-		usage();
-		return -1;
-	}
+    if(argc < 2)
+    {
+        usage();
+        return -1;
+    }
 
-	addr = (void *)strtoul(argv[1], NULL, 0);
-	printf("Starting application at %p ...\r\n", addr);
-	ret = ((int(*)(int, char **))((void *)addr))(--argc, &argv[1]);
-	printf("Application terminated, (ret = %d)\r\n", ret);
+    addr = (void *)strtoul(argv[1], NULL, 0);
+    printf("Starting application at %p ...\r\n", addr);
+    ret = ((int(*)(int, char **))((void *)addr))(--argc, &argv[1]);
+    printf("Application terminated, (ret = %d)\r\n", ret);
 
-	return ret;
+    return ret;
 }
 
 static struct command_t cmd_go = {
-	.name	= "go",
-	.desc	= "start application at address",
-	.usage	= usage,
-	.exec	= do_go,
+    .name   = "go",
+    .desc   = "start application at address",
+    .usage  = usage,
+    .exec   = do_go,
 };
 
 static __init void go_cmd_init(void)
 {
-	register_command(&cmd_go);
+    register_command(&cmd_go);
 }
 
 static __exit void go_cmd_exit(void)
 {
-	unregister_command(&cmd_go);
+    unregister_command(&cmd_go);
 }
 
 command_initcall(go_cmd_init);

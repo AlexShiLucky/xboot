@@ -7,12 +7,12 @@
 
 static void * __memcpy(void * dest, const void * src, size_t len)
 {
-	char * tmp = dest;
-	const char * s = src;
+    char * tmp = dest;
+    const char * s = src;
 
-	while (len--)
-		*tmp++ = *s++;
-	return dest;
+    while (len--)
+        *tmp++ = *s++;
+    return dest;
 }
 
 /*

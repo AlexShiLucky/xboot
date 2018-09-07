@@ -9,15 +9,15 @@ extern "C" {
 
 struct ledstrip_t
 {
-	char * name;
+    char * name;
 
-	void (*set_count)(struct ledstrip_t * strip, int c);
-	int  (*get_count)(struct ledstrip_t * strip);
-	void (*set_color)(struct ledstrip_t * strip, int i, uint32_t color);
-	uint32_t (*get_color)(struct ledstrip_t * strip, int i);
-	void (*refresh)(struct ledstrip_t * strip);
+    void (*set_count)(struct ledstrip_t * strip, int c);
+    int  (*get_count)(struct ledstrip_t * strip);
+    void (*set_color)(struct ledstrip_t * strip, int i, uint32_t color);
+    uint32_t (*get_color)(struct ledstrip_t * strip, int i);
+    void (*refresh)(struct ledstrip_t * strip);
 
-	void * priv;
+    void * priv;
 };
 
 struct ledstrip_t * search_ledstrip(const char * name);

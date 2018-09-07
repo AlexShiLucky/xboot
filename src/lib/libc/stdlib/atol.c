@@ -7,6 +7,6 @@
 
 long atol(const char * nptr)
 {
-	return (long)strtol(nptr, NULL, 10);
+    return (long)strtol(nptr, NULL, 10);
 }
 EXPORT_SYMBOL(atol);

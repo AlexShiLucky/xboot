@@ -50,6 +50,6 @@ struct _cairo_surface_subsurface {
 
 cairo_private void
 _cairo_surface_subsurface_set_snapshot (cairo_surface_t *surface,
-					cairo_surface_t *snapshot);
+                    cairo_surface_t *snapshot);
 
 #endif /* CAIRO_SURFACE_SUBSURFACE_PRIVATE_H */

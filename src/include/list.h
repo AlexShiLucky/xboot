@@ -17,11 +17,12 @@ extern "C" {
  * generate better code by using them directly rather than
  * using the generic single-entry routines.
  */
-
+/* 双向链表结构 */
 struct list_head {
 	struct list_head * next, * prev;
 };
 
+/* 定义双向链表头并初始化宏 */
 #define LIST_HEAD(name) \
 	struct list_head name = { &(name), &(name) }
 
@@ -37,6 +38,7 @@ static inline void init_list_head(struct list_head * list)
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
+/* 在prev和next节点之间添加new节点 */
 static inline void __list_add(struct list_head * new,
 			      struct list_head * prev,
 			      struct list_head * next)
@@ -55,6 +57,7 @@ static inline void __list_add(struct list_head * new,
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
+/* 在head节点后添加一个new节点 */
 static inline void list_add(struct list_head * new, struct list_head * head)
 {
 	__list_add(new, head, head->next);
@@ -68,6 +71,7 @@ static inline void list_add(struct list_head * new, struct list_head * head)
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
+/* 在head节点前添加一个new节点 */
 static inline void list_add_tail(struct list_head * new, struct list_head * head)
 {
 	__list_add(new, head->prev, head);
@@ -80,6 +84,7 @@ static inline void list_add_tail(struct list_head * new, struct list_head * head
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
+/* 删除prev和next节点之间的节点 */
 static inline void __list_del(struct list_head * prev, struct list_head * next)
 {
 	next->prev = prev;
@@ -92,6 +97,7 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
  * Note: list_empty() on entry does not return true after this, the entry is
  * in an undefined state.
  */
+/* 删除一个节点 */
 static inline void __list_del_entry(struct list_head * entry)
 {
 	__list_del(entry->prev, entry->next);
@@ -111,6 +117,7 @@ static inline void list_del(struct list_head *entry)
  *
  * If @old was empty, it will be overwritten.
  */
+/* 将一个old节点替换为new节点 */
 static inline void list_replace(struct list_head * old,
 				struct list_head * new)
 {
@@ -142,6 +149,7 @@ static inline void list_del_init(struct list_head * entry)
  * @list: the entry to move
  * @head: the head that will precede our entry
  */
+/* 将list节点移到head节点后 */
 static inline void list_move(struct list_head * list, struct list_head * head)
 {
 	__list_del_entry(list);
@@ -153,6 +161,7 @@ static inline void list_move(struct list_head * list, struct list_head * head)
  * @list: the entry to move
  * @head: the head that will follow our entry
  */
+/* 将list节点移到head节点前 */
 static inline void list_move_tail(struct list_head * list,
 				  struct list_head * head)
 {
@@ -165,6 +174,7 @@ static inline void list_move_tail(struct list_head * list,
  * @list: the entry to test
  * @head: the head of the list
  */
+/* 测试list节点是否为最后一个节点 */
 static inline int list_is_last(const struct list_head * list,
 				const struct list_head * head)
 {
@@ -175,6 +185,7 @@ static inline int list_is_last(const struct list_head * list,
  * list_empty - tests whether a list is empty
  * @head: the list to test.
  */
+/* 测试链表是否为空链表 */
 static inline int list_empty(const struct list_head * head)
 {
 	return head->next == head;
@@ -193,6 +204,7 @@ static inline int list_empty(const struct list_head * head)
  * to the list entry is list_del_init(). Eg. it cannot be used
  * if another CPU could re-list_add() it.
  */
+/* 仔细测试链表是否为空链表 */
 static inline int list_empty_careful(const struct list_head * head)
 {
 	struct list_head * next = head->next;
@@ -203,6 +215,7 @@ static inline int list_empty_careful(const struct list_head * head)
  * list_rotate_left - rotate the list to the left
  * @head: the head of the list
  */
+/* 链表左旋 */
 static inline void list_rotate_left(struct list_head * head)
 {
 	struct list_head * first;
@@ -218,6 +231,7 @@ static inline void list_rotate_left(struct list_head * head)
  * list_is_singular - tests whether a list has just one entry.
  * @head: the list to test.
  */
+/* 测试链表是否为单节点链表 */
 static inline int list_is_singular(const struct list_head * head)
 {
 	return !list_empty(head) && (head->next == head->prev);
@@ -338,43 +352,47 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * container_of - cast a member of a structure out to the containing structure
- * @ptr:        the pointer to the member.
- * @type:       the type of the container struct this is embedded in.
- * @member:     the name of the member within the struct.
+ * @ptr:        the pointer to the member.(结构体成员指针)
+ * @type:       the type of the container struct this is embedded in.(结构体类型)
+ * @member:     the name of the member within the struct.(结构体中成员)
  *
  */
+/* 根据结构体成员地址获得结构地址 */
 #define container_of(ptr, type, member) ({ \
         const typeof( ((type *)0)->member ) *__mptr = (ptr); \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
 /**
  * list_entry - get the struct for this entry
- * @ptr:	the &struct list_head pointer.
- * @type:	the type of the struct this is embedded in.
- * @member:	the name of the list_head within the struct.
+ * @ptr:	the &struct list_head pointer.(结构体中链表成员指针)
+ * @type:	the type of the struct this is embedded in.(结构体类型)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  */
+/* 根据当前链表成员指针计算当前节点结构地址 */
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
 /**
  * list_first_entry - get the first element from a list
- * @ptr:	the list head to take the element from.
- * @type:	the type of the struct this is embedded in.
- * @member:	the name of the list_head within the struct.
+ * @ptr:	the list head to take the element from.(表头指针)
+ * @type:	the type of the struct this is embedded in.(结构体类型)
+ * @member:	the name of the list_head within the struct.(结构体中的链表成员)
  *
  * Note, that list is expected to be not empty.
  */
+/* 根据链表表头指针计算第一个节点结构体地址 */
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
 
 /**
  * list_last_entry - get the last element from a list
- * @ptr:	the list head to take the element from.
- * @type:	the type of the struct this is embedded in.
- * @member:	the name of the list_head within the struct.
+ * @ptr:	the list head to take the element from.(表头指针)
+ * @type:	the type of the struct this is embedded in.(结构体类型)
+ * @member:	the name of the list_head within the struct.(结构体中的链表成员)
  *
  * Note, that list is expected to be not empty.
  */
+/* 根据链表表头指针计算最后一个节点结构体地址 */
 #define list_last_entry(ptr, type, member) \
 	list_entry((ptr)->prev, type, member)
 
@@ -391,17 +409,19 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_next_entry - get the next element in list
- * @pos:	the type * to cursor
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to cursor(当前结构体指针)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  */
+/* 根据当前结构体节点指针计算下一个结构体节点指针 */
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
 /**
  * list_prev_entry - get the prev element in list
- * @pos:	the type * to cursor
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to cursor(当前结构体指针)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  */
+/* 根据当前结构体节点指针计算前一个结构体节点指针 */
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
 

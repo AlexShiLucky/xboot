@@ -30,6 +30,7 @@
 #include <xboot/module.h>
 #include <shell/ctrlc.h>
 
+/* Ctrl+C检测函数 */
 int ctrlc(void)
 {
 	int ch;

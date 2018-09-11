@@ -10,6 +10,7 @@ extern "C" {
 #include <string.h>
 #include <json.h>
 
+/* 设备树节点结构 */
 struct dtnode_t {
     const char * name;
     physical_addr_t addr;

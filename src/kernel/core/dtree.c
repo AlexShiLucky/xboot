@@ -29,21 +29,25 @@
 #include <xboot.h>
 #include <xboot/dtree.h>
 
+/* 获取设备树节点名称 */
 const char * dt_read_name(struct dtnode_t * n)
 {
 	return n ? n->name : NULL;
 }
 
+/* 获取设备树节点id */
 int dt_read_id(struct dtnode_t * n)
 {
 	return n ? (int)n->addr : 0;
 }
 
+/* 获取设备树节点物理地址 */
 physical_addr_t dt_read_address(struct dtnode_t * n)
 {
 	return n ? n->addr : 0;
 }
 
+/* 读取设备树节点下名称为name的bool值 */
 int dt_read_bool(struct dtnode_t * n, const char * name, int def)
 {
 	struct json_value_t * v;
@@ -64,6 +68,7 @@ int dt_read_bool(struct dtnode_t * n, const char * name, int def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的int值 */
 int dt_read_int(struct dtnode_t * n, const char * name, int def)
 {
 	struct json_value_t * v;
@@ -84,6 +89,7 @@ int dt_read_int(struct dtnode_t * n, const char * name, int def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的long值 */
 long long dt_read_long(struct dtnode_t * n, const char * name, long long def)
 {
 	struct json_value_t * v;
@@ -104,6 +110,7 @@ long long dt_read_long(struct dtnode_t * n, const char * name, long long def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的double值 */
 double dt_read_double(struct dtnode_t * n, const char * name, double def)
 {
 	struct json_value_t * v;
@@ -124,6 +131,7 @@ double dt_read_double(struct dtnode_t * n, const char * name, double def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的string值 */
 char * dt_read_string(struct dtnode_t * n, const char * name, char * def)
 {
 	struct json_value_t * v;
@@ -144,6 +152,7 @@ char * dt_read_string(struct dtnode_t * n, const char * name, char * def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的u8值 */
 u8_t dt_read_u8(struct dtnode_t * n, const char * name, u8_t def)
 {
 	struct json_value_t * v;
@@ -164,6 +173,7 @@ u8_t dt_read_u8(struct dtnode_t * n, const char * name, u8_t def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的u16值 */
 u16_t dt_read_u16(struct dtnode_t * n, const char * name, u16_t def)
 {
 	struct json_value_t * v;
@@ -184,6 +194,7 @@ u16_t dt_read_u16(struct dtnode_t * n, const char * name, u16_t def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的u32值 */
 u32_t dt_read_u32(struct dtnode_t * n, const char * name, u32_t def)
 {
 	struct json_value_t * v;
@@ -204,6 +215,7 @@ u32_t dt_read_u32(struct dtnode_t * n, const char * name, u32_t def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的u64值 */
 u64_t dt_read_u64(struct dtnode_t * n, const char * name, u64_t def)
 {
 	struct json_value_t * v;
@@ -224,6 +236,7 @@ u64_t dt_read_u64(struct dtnode_t * n, const char * name, u64_t def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的object对象 */
 struct dtnode_t * dt_read_object(struct dtnode_t * n, const char * name, struct dtnode_t * o)
 {
 	struct json_value_t * v;
@@ -249,6 +262,7 @@ struct dtnode_t * dt_read_object(struct dtnode_t * n, const char * name, struct 
 	return NULL;
 }
 
+/* 读取设备树节点下名称为name的数组长度 */
 int dt_read_array_length(struct dtnode_t * n, const char * name)
 {
 	struct json_value_t * v;
@@ -269,6 +283,7 @@ int dt_read_array_length(struct dtnode_t * n, const char * name)
 	return 0;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的bool值 */
 int dt_read_array_bool(struct dtnode_t * n, const char * name, int idx, int def)
 {
 	struct json_value_t * v, * e;
@@ -296,6 +311,7 @@ int dt_read_array_bool(struct dtnode_t * n, const char * name, int idx, int def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的int值 */
 int dt_read_array_int(struct dtnode_t * n, const char * name, int idx, int def)
 {
 	struct json_value_t * v, * e;
@@ -323,6 +339,7 @@ int dt_read_array_int(struct dtnode_t * n, const char * name, int idx, int def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的long值 */
 long long dt_read_array_long(struct dtnode_t * n, const char * name, int idx, long long def)
 {
 	struct json_value_t * v, * e;
@@ -350,6 +367,7 @@ long long dt_read_array_long(struct dtnode_t * n, const char * name, int idx, lo
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的double值 */
 double dt_read_array_double(struct dtnode_t * n, const char * name, int idx, double def)
 {
 	struct json_value_t * v, * e;
@@ -377,6 +395,7 @@ double dt_read_array_double(struct dtnode_t * n, const char * name, int idx, dou
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的string值 */
 char * dt_read_array_string(struct dtnode_t * n, const char * name, int idx, char * def)
 {
 	struct json_value_t * v, * e;
@@ -404,6 +423,7 @@ char * dt_read_array_string(struct dtnode_t * n, const char * name, int idx, cha
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的u8值 */
 u8_t dt_read_array_u8(struct dtnode_t * n, const char * name, int idx, u8_t def)
 {
 	struct json_value_t * v, * e;
@@ -431,6 +451,7 @@ u8_t dt_read_array_u8(struct dtnode_t * n, const char * name, int idx, u8_t def)
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的u16值 */
 u16_t dt_read_array_u16(struct dtnode_t * n, const char * name, int idx, u16_t def)
 {
 	struct json_value_t * v, * e;
@@ -458,6 +479,7 @@ u16_t dt_read_array_u16(struct dtnode_t * n, const char * name, int idx, u16_t d
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的u32值 */
 u32_t dt_read_array_u32(struct dtnode_t * n, const char * name, int idx, u32_t def)
 {
 	struct json_value_t * v, * e;
@@ -485,6 +507,7 @@ u32_t dt_read_array_u32(struct dtnode_t * n, const char * name, int idx, u32_t d
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的u64值 */
 u64_t dt_read_array_u64(struct dtnode_t * n, const char * name, int idx, u64_t def)
 {
 	struct json_value_t * v, * e;
@@ -512,6 +535,7 @@ u64_t dt_read_array_u64(struct dtnode_t * n, const char * name, int idx, u64_t d
 	return def;
 }
 
+/* 读取设备树节点下名称为name的数组在索引处idx的object对象 */
 struct dtnode_t * dt_read_array_object(struct dtnode_t * n, const char * name, int idx, struct dtnode_t * o)
 {
 	struct json_value_t * v, * e;

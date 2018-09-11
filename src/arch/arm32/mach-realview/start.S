@@ -25,7 +25,7 @@
  * SOFTWARE.
  *
  */
-
+/* 保存寄存器组宏 */
 .macro save_regs
 	str lr, [sp, #-4]
 	mrs lr, spsr_all
@@ -57,6 +57,7 @@
 	mov r0, sp
 .endm
 
+/* 恢复寄存器组宏 */
 .macro restore_regs
 	mov r12, sp
 	ldr sp, [r12], #4

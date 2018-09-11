@@ -499,18 +499,20 @@ static inline void list_splice_tail_init(struct list_head * list,
  *
  * Prepares a pos entry for use as a start point in list_for_each_entry_continue().
  */
+/* 用于准备一个结构体的首地址，用在list_for_each_entry_contine()中 */
 #define list_prepare_entry(pos, head, member) \
 	((pos) ? : list_entry(head, typeof(*pos), member))
 
 /**
  * list_for_each_entry_continue - continue iteration over list of given type
- * @pos:	the type * to use as a loop cursor.
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Continue to iterate over list of given type, continuing after
  * the current position.
  */
+/* 从当前pos的下一个节点开始继续遍历剩余的链表,不包括pos */
 #define list_for_each_entry_continue(pos, head, member) \
 	for (pos = list_next_entry(pos, member); \
 	     &pos->member != (head); \
@@ -518,13 +520,14 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_for_each_entry_continue_reverse - iterate backwards from the given point
- * @pos:	the type * to use as a loop cursor.
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Start to iterate over list of given type backwards, continuing after
  * the current position.
  */
+/* 从当前的pos的前一个节点开始继续反向遍历剩余的链表,不包括pos */
 #define list_for_each_entry_continue_reverse(pos, head, member) \
 	for (pos = list_prev_entry(pos, member); \
 	     &pos->member != (head); \
@@ -532,12 +535,13 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_for_each_entry_from - iterate over list of given type from the current point
- * @pos:	the type * to use as a loop cursor.
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Iterate over list of given type, continuing from current position.
  */
+/* 从pos开始往后遍历剩余的链表 */
 #define list_for_each_entry_from(pos, head, member) \
 	for (; &pos->member != (head); \
 	     pos = list_next_entry(pos, member))
@@ -545,23 +549,25 @@ static inline void list_splice_tail_init(struct list_head * list,
 /**
  * list_for_each_entry_from_reverse - iterate backwards over list of given type
  *                                    from the current point
- * @pos:	the type * to use as a loop cursor.
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Iterate backwards over list of given type, continuing from current position.
  */
+/* 从pos开始往前遍历剩余的链表 */
 #define list_for_each_entry_from_reverse(pos, head, member) \
 	for (; &pos->member != (head); \
 	     pos = list_prev_entry(pos, member))
 
 /**
  * list_for_each_entry_safe - iterate over list of given type safe against removal of list entry
- * @pos:	the type * to use as a loop cursor.
- * @n:		another type * to use as temporary storage
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @n:		another type * to use as temporary storage(下一个结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  */
+/* 遍历链表,返回type类型的结构体的首地址,并防止因删除链表节点而导致的遍历出错. */
 #define list_for_each_entry_safe(pos, n, head, member) \
 	for (pos = list_first_entry(head, typeof(*pos), member), \
 		n = list_next_entry(pos, member); \
@@ -570,14 +576,15 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_for_each_entry_safe_continue - continue list iteration safe against removal
- * @pos:	the type * to use as a loop cursor.
- * @n:		another type * to use as temporary storage
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @n:		another type * to use as temporary storage(下一个结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Iterate over list of given type, continuing after current point,
  * safe against removal of list entry.
  */
+/* 从pos节点的下一个节点开始遍历剩余的链表,并防止因删除链表节点而导致的遍历出错 */
 #define list_for_each_entry_safe_continue(pos, n, head, member) \
 	for (pos = list_next_entry(pos, member), \
 		n = list_next_entry(pos, member); \
@@ -586,14 +593,16 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_for_each_entry_safe_from - iterate over list from current point safe against removal
- * @pos:	the type * to use as a loop cursor.
- * @n:		another type * to use as temporary storage
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @n:		another type * to use as temporary storage(下一个结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Iterate over list of given type from current point, safe against
  * removal of list entry.
  */
+/* 从pos节点开始继续遍历剩余的链表,并防止因删除链表节点而导致的遍历出错
+其与list_for_each_entry_safe_contine的不同在于在第一次遍历时,pos没有指向它的下一个节点,而是从pos开始遍历 */
 #define list_for_each_entry_safe_from(pos, n, head, member) \
 	for (n = list_next_entry(pos, member); \
 	     &pos->member != (head); \
@@ -601,14 +610,15 @@ static inline void list_splice_tail_init(struct list_head * list,
 
 /**
  * list_for_each_entry_safe_reverse - iterate backwards over list safe against removal
- * @pos:	the type * to use as a loop cursor.
- * @n:		another type * to use as temporary storage
- * @head:	the head for your list.
- * @member:	the name of the list_head within the struct.
+ * @pos:	the type * to use as a loop cursor.(当前结构体指针)
+ * @n:		another type * to use as temporary storage(下一个结构体指针)
+ * @head:	the head for your list.(链表表头)
+ * @member:	the name of the list_head within the struct.(结构体中链表成员)
  *
  * Iterate backwards over list of given type, safe against removal
  * of list entry.
  */
+/* 从pos的前一个节点开始反向遍历一个链表,并防止因删除链表节点而导致的遍历出错 */
 #define list_for_each_entry_safe_reverse(pos, n, head, member) \
 	for (pos = list_last_entry(head, typeof(*pos), member), \
 		n = list_prev_entry(pos, member); \
@@ -627,6 +637,7 @@ static inline void list_splice_tail_init(struct list_head * list,
  * and list_safe_reset_next is called after re-taking the lock and before
  * completing the current iteration of the loop body.
  */
+/* 返回当前pos节点的下一个节点的type结构体首地址 */
 #define list_safe_reset_next(pos, n, member) \
 	n = list_next_entry(pos, member)
 
@@ -636,10 +647,11 @@ static inline void list_splice_tail_init(struct list_head * list,
  * too wasteful.
  * You lose the ability to access the tail in O(1).
  */
+/* 哈希链表头结构 */
 struct hlist_head {
 	struct hlist_node * first;
 };
-
+/* 哈希链表节点结构 */
 struct hlist_node {
 	struct hlist_node * next, ** pprev;
 };

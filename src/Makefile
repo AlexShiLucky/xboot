@@ -7,6 +7,7 @@
 #
 CROSS_COMPILE	?= arm-linux-gnueabihf-
 PLATFORM		?= arm32-realview
+#PLATFORM		?= arm32-rk3288
 
 #
 # Get platform information about ARCH and MACH from PLATFORM variable.

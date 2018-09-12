@@ -101,7 +101,7 @@ bool_t register_disk(struct device_t ** device, struct disk_t * disk)
 	struct partition_t * ppos, * pn;
 	struct block_t * blk;
 	struct disk_block_t * dblk;
-	char name[64];
+	char name[256];
 
 	if(!disk)
 		return FALSE;
@@ -121,6 +121,7 @@ bool_t register_disk(struct device_t ** device, struct disk_t * disk)
 
 	dev->name = strdup(disk->name);
 	dev->type = DEVICE_TYPE_DISK;
+	dev->driver = NULL;
 	dev->priv = (void *)disk;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	list_for_each_entry_safe(ppos, pn, &(disk->part.entry), entry)

@@ -112,6 +112,7 @@ bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 
 	dev->name = strdup(i2c->name);
 	dev->type = DEVICE_TYPE_I2C;
+	dev->driver = NULL;
 	dev->priv = i2c;
     /* 申请一个i2c名称的路径kobj */
 	dev->kobj = kobj_alloc_directory(dev->name);

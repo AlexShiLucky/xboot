@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <proximity/proximity.h>
 
+/* 读取距离数据 */
 static ssize_t proximity_read_distance(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct proximity_t * p = (struct proximity_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t proximity_read_distance(struct kobj_t * kobj, void * buf, size_t 
 	return sprintf(buf, "%dmm", d);
 }
 
+/* 根据名称搜索一个距离传感器设备 */
 struct proximity_t * search_proximity(const char * name)
 {
 	struct device_t * dev;
@@ -46,6 +48,7 @@ struct proximity_t * search_proximity(const char * name)
 	return (struct proximity_t *)dev->priv;
 }
 
+/* 搜索第一个距离传感器设备 */
 struct proximity_t * search_first_proximity(void)
 {
 	struct device_t * dev;
@@ -56,6 +59,7 @@ struct proximity_t * search_first_proximity(void)
 	return (struct proximity_t *)dev->priv;
 }
 
+/* 注册一个距离传感器设备 */
 bool_t register_proximity(struct device_t ** device,struct proximity_t * p)
 {
 	struct device_t * dev;
@@ -87,6 +91,7 @@ bool_t register_proximity(struct device_t ** device,struct proximity_t * p)
 	return TRUE;
 }
 
+/* 注销一个距离传感器设备 */
 bool_t unregister_proximity(struct proximity_t * p)
 {
 	struct device_t * dev;
@@ -107,6 +112,7 @@ bool_t unregister_proximity(struct proximity_t * p)
 	return TRUE;
 }
 
+/* 距离传感器设备距离获取接口调用 */
 int proximity_get_distance(struct proximity_t * p)
 {
 	if(p && p->get)

@@ -12,6 +12,7 @@ extern "C" {
  */
 #define CLOCKSOURCE_MASK(bits)	(u64_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
 
+/* 时钟源设备结构定义 */
 struct clocksource_t
 {
 	struct {

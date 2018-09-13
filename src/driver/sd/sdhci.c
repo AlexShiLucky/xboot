@@ -30,6 +30,7 @@
 #include <sd/sdcard.h>
 #include <sd/sdhci.h>
 
+/* 根据名称搜索一个SDHCI设备 */
 struct sdhci_t * search_sdhci(const char * name)
 {
 	struct device_t * dev;
@@ -40,6 +41,7 @@ struct sdhci_t * search_sdhci(const char * name)
 	return (struct sdhci_t *)dev->priv;
 }
 
+/* 注册一个SDHCI设备 */
 bool_t register_sdhci(struct device_t ** device, struct sdhci_t * sdhci)
 {
 	struct device_t * dev;
@@ -71,6 +73,7 @@ bool_t register_sdhci(struct device_t ** device, struct sdhci_t * sdhci)
 	return TRUE;
 }
 
+/* 注销一个SDHCI设备 */
 bool_t unregister_sdhci(struct sdhci_t * sdhci)
 {
 	struct device_t * dev;
@@ -92,6 +95,7 @@ bool_t unregister_sdhci(struct sdhci_t * sdhci)
 	return TRUE;
 }
 
+/* SDHCI设备检测接口调用 */
 bool_t sdhci_detect(struct sdhci_t * sdhci)
 {
 	if(sdhci && sdhci->detect)
@@ -99,6 +103,7 @@ bool_t sdhci_detect(struct sdhci_t * sdhci)
 	return FALSE;
 }
 
+/* SDHCI设备设置宽度接口调用 */
 bool_t sdhci_set_width(struct sdhci_t * sdhci, u32_t width)
 {
 	if(sdhci && sdhci->setwidth)
@@ -106,6 +111,7 @@ bool_t sdhci_set_width(struct sdhci_t * sdhci, u32_t width)
 	return FALSE;
 }
 
+/* SDHCI设备设置时钟接口调用 */
 bool_t sdhci_set_clock(struct sdhci_t * sdhci, u32_t clock)
 {
 	if(sdhci && sdhci->setclock)
@@ -113,6 +119,7 @@ bool_t sdhci_set_clock(struct sdhci_t * sdhci, u32_t clock)
 	return FALSE;
 }
 
+/* SDHCI设备传输接口调用 */
 bool_t sdhci_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	if(sdhci && sdhci->transfer)

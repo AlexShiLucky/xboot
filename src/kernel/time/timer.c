@@ -30,6 +30,7 @@
 #include <clocksource/clocksource.h>
 #include <time/timer.h>
 
+/* 全局定时器表头 */
 static struct timer_base_t __timer_base = {
 	.head = { NULL },
 	.next = NULL,
@@ -37,17 +38,20 @@ static struct timer_base_t __timer_base = {
 	.lock = SPIN_LOCK_INIT(),
 };
 
+/* 下一个定时器 */
 static inline struct timer_t * next_timer(struct timer_base_t * base)
 {
 	return base->next;
 }
 
+/* 添加一个定时器*/
 static inline int add_timer(struct timer_base_t * base, struct timer_t * timer)
 {
 	struct rb_node ** p = &base->head.rb_node;
 	struct rb_node * parent = NULL;
 	struct timer_t * ptr;
 
+    /* 有效定时器不可被添加 */
 	if(timer->state != TIMER_STATE_INACTIVE)
 		return 0;
 
@@ -70,6 +74,7 @@ static inline int add_timer(struct timer_base_t * base, struct timer_t * timer)
 	return (timer == base->next);
 }
 
+/* 删除一个定时器 */
 static inline int del_timer(struct timer_base_t * base, struct timer_t * timer)
 {
 	int ret = 0;
@@ -90,6 +95,7 @@ static inline int del_timer(struct timer_base_t * base, struct timer_t * timer)
 	return ret;
 }
 
+/* 初始化一个定时器 */
 void timer_init(struct timer_t * timer, int (*function)(struct timer_t *, void *), void * data)
 {
 	if(timer)
@@ -103,6 +109,7 @@ void timer_init(struct timer_t * timer, int (*function)(struct timer_t *, void *
 	}
 }
 
+/* 启动定时器 */
 void timer_start(struct timer_t * timer, ktime_t now, ktime_t interval)
 {
 	struct timer_base_t * base = timer->base;
@@ -125,6 +132,7 @@ void timer_start(struct timer_t * timer, ktime_t now, ktime_t interval)
 	spin_unlock_irqrestore(&base->lock, flags);
 }
 
+/* 以当前时刻开启定时器 */
 void timer_start_now(struct timer_t * timer, ktime_t interval)
 {
 	if(timer)
@@ -164,6 +172,7 @@ void timer_cancel(struct timer_t * timer)
 	spin_unlock_irqrestore(&base->lock, flags);
 }
 
+/* 定时器事件回调处理函数 */
 static void timer_event_handler(struct clockevent_t * ce, void * data)
 {
 	struct timer_base_t * base = (struct timer_base_t *)(data);
@@ -190,6 +199,7 @@ static void timer_event_handler(struct clockevent_t * ce, void * data)
 	spin_unlock_irqrestore(&base->lock, flags);
 }
 
+/* 绑定时钟事件 */
 void timer_bind_clockevent(struct clockevent_t * ce)
 {
 	irq_flags_t flags;

@@ -111,6 +111,7 @@ static int clocksource_keeper_timer_function(struct timer_t * timer, void * data
 	return 1;
 }
 
+/* 根据名称搜索一个时钟源设备 */
 struct clocksource_t * search_clocksource(const char * name)
 {
 	struct device_t * dev;
@@ -121,6 +122,7 @@ struct clocksource_t * search_clocksource(const char * name)
 	return (struct clocksource_t *)dev->priv;
 }
 
+/* 搜索第一个时钟源设备 */
 struct clocksource_t * search_first_clocksource(void)
 {
 	struct device_t * dev;
@@ -131,6 +133,7 @@ struct clocksource_t * search_first_clocksource(void)
 	return (struct clocksource_t *)dev->priv;
 }
 
+/* 注册一个时钟源设备 */
 bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs)
 {
 	struct device_t * dev;
@@ -182,6 +185,7 @@ bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs
 	return TRUE;
 }
 
+/* 注销一个时钟源设备 */
 bool_t unregister_clocksource(struct clocksource_t * cs)
 {
 	struct device_t * dev;

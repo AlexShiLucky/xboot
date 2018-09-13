@@ -7,6 +7,7 @@ extern "C" {
 
 #include <xboot.h>
 
+/* 随机数设备结构定义 */
 struct rng_t
 {
 	/* The rng name */

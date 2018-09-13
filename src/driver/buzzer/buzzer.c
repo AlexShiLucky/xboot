@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <buzzer/buzzer.h>
 
+/* 读取蜂鸣器设备频率 */
 static ssize_t buzzer_read_frequency(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct buzzer_t * buzzer = (struct buzzer_t *)kobj->priv;
@@ -38,6 +39,7 @@ static ssize_t buzzer_read_frequency(struct kobj_t * kobj, void * buf, size_t si
 	return sprintf(buf, "%d", frequency);
 }
 
+/* 写入蜂鸣器设备频率 */
 static ssize_t buzzer_write_frequency(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct buzzer_t * buzzer = (struct buzzer_t *)kobj->priv;
@@ -47,6 +49,7 @@ static ssize_t buzzer_write_frequency(struct kobj_t * kobj, void * buf, size_t s
 	return size;
 }
 
+/* 蜂鸣器设备播放乐曲 */
 static ssize_t buzzer_write_play(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct buzzer_t * buzzer = (struct buzzer_t *)kobj->priv;
@@ -59,6 +62,7 @@ static ssize_t buzzer_write_play(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个蜂鸣器设备 */
 struct buzzer_t * search_buzzer(const char * name)
 {
 	struct device_t * dev;
@@ -69,6 +73,7 @@ struct buzzer_t * search_buzzer(const char * name)
 	return (struct buzzer_t *)dev->priv;
 }
 
+/* 搜索第一个蜂鸣器设备 */
 struct buzzer_t * search_first_buzzer(void)
 {
 	struct device_t * dev;
@@ -79,6 +84,7 @@ struct buzzer_t * search_first_buzzer(void)
 	return (struct buzzer_t *)dev->priv;
 }
 
+/* 注册一个蜂鸣器设备 */
 bool_t register_buzzer(struct device_t ** device, struct buzzer_t * buzzer)
 {
 	struct device_t * dev;
@@ -111,6 +117,7 @@ bool_t register_buzzer(struct device_t ** device, struct buzzer_t * buzzer)
 	return TRUE;
 }
 
+/* 注销一个蜂鸣器设备 */
 bool_t unregister_buzzer(struct buzzer_t * buzzer)
 {
 	struct device_t * dev;
@@ -131,6 +138,7 @@ bool_t unregister_buzzer(struct buzzer_t * buzzer)
 	return TRUE;
 }
 
+/* 蜂鸣器设备频率设置接口调用 */
 void buzzer_set_frequency(struct buzzer_t * buzzer, int frequency)
 {
 	if(buzzer && buzzer->set)
@@ -141,6 +149,7 @@ void buzzer_set_frequency(struct buzzer_t * buzzer, int frequency)
 	}
 }
 
+/* 蜂鸣器设备频率获取接口调用 */
 int buzzer_get_frequency(struct buzzer_t * buzzer)
 {
 	if(buzzer && buzzer->get)
@@ -148,6 +157,7 @@ int buzzer_get_frequency(struct buzzer_t * buzzer)
 	return 0;
 }
 
+/* 蜂鸣器设备额发声接口调用 */
 void buzzer_beep(struct buzzer_t * buzzer, int frequency, int millisecond)
 {
 	if(buzzer && buzzer->beep)
@@ -272,7 +282,7 @@ enum {
 };
 
 /*
- * RTTTL (RingTone Text Transfer Language) is the primary format used to distribute
+ * RTTTL (RingTone Text Transfer Language铃声文本传输语言) is the primary format used to distribute
  * ringtones for Nokia phones. An RTTTL file is a text file, containing the
  * ringtone name, a control section and a section containing a comma separated
  * sequence of ring tone commands. White space must be ignored by any reader
@@ -314,6 +324,7 @@ enum {
  *
  * 			<special-duration> := "." ; Dotted note
  */
+/* 蜂鸣器设备播放RTTTL(铃声文本传输语言) */
 void buzzer_play(struct buzzer_t * buzzer, const char * rtttl)
 {
 	const int notes[] = { 0,

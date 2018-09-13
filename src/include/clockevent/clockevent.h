@@ -7,13 +7,14 @@ extern "C" {
 
 #include <xboot.h>
 
+/* 时钟事件结构定义 */
 struct clockevent_t
 {
-	char * name;
+	char * name;            // 时钟事件设备名称
 	u32_t mult;
 	u32_t shift;
-	u64_t min_delta_ns;
-	u64_t max_delta_ns;
+	u64_t min_delta_ns;     // 最小事件时间间隔ns数
+	u64_t max_delta_ns;     // 最大事件时间间隔ns数
 	void * data;
 	void (*handler)(struct clockevent_t * ce, void * data);
 

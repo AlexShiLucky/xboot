@@ -93,6 +93,7 @@ static ssize_t regulator_write_voltage(struct kobj_t * kobj, void * buf, size_t 
 	return size;
 }
 
+/* 根据名称搜索一个稳压器设备 */
 struct regulator_t * search_regulator(const char * name)
 {
 	struct device_t * dev;
@@ -103,6 +104,7 @@ struct regulator_t * search_regulator(const char * name)
 	return (struct regulator_t *)dev->priv;
 }
 
+/* 注册一个稳压器设备 */
 bool_t register_regulator(struct device_t ** device, struct regulator_t * supply)
 {
 	struct device_t * dev;
@@ -140,6 +142,7 @@ bool_t register_regulator(struct device_t ** device, struct regulator_t * supply
 	return TRUE;
 }
 
+/* 注销一个稳压器设备 */
 bool_t unregister_regulator(struct regulator_t * supply)
 {
 	struct device_t * dev;
@@ -178,6 +181,7 @@ const char * regulator_get_parent(const char * name)
 	return NULL;
 }
 
+/* 稳压器设备enable接口调用 */
 void regulator_enable(const char * name)
 {
 	struct regulator_t * supply = search_regulator(name);
@@ -194,6 +198,7 @@ void regulator_enable(const char * name)
 	supply->count++;
 }
 
+/* 稳压器设备disable接口调用 */
 void regulator_disable(const char * name)
 {
 	struct regulator_t * supply = search_regulator(name);
@@ -214,6 +219,7 @@ void regulator_disable(const char * name)
 	}
 }
 
+/* 稳压器状态读取接口调用 */
 bool_t regulator_status(const char * name)
 {
 	struct regulator_t * supply = search_regulator(name);
@@ -230,6 +236,7 @@ bool_t regulator_status(const char * name)
 	return FALSE;
 }
 
+/* 稳压器设备电压设置接口调用 */
 void regulator_set_voltage(const char * name, int voltage)
 {
 	struct regulator_t * supply = search_regulator(name);
@@ -238,6 +245,7 @@ void regulator_set_voltage(const char * name, int voltage)
 		supply->set_voltage(supply, voltage);
 }
 
+/* 稳压器设备电压获取接口调用 */
 int regulator_get_voltage(const char * name)
 {
 	struct regulator_t * supply = search_regulator(name);

@@ -32,6 +32,7 @@
 extern struct symbol_t __ksymtab_start[];
 extern struct symbol_t __ksymtab_end[];
 
+/* 全局模块链表 */
 static struct list_head __module_list = {
 	.next = &__module_list,
 	.prev = &__module_list,
@@ -40,10 +41,13 @@ static spinlock_t __module_lock = SPIN_LOCK_INIT();
 
 static struct kobj_t * search_class_module_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
-	return kobj_search_directory_with_create(kclass, "module");
+	/* 在class下搜索(创建)module */
+    return kobj_search_directory_with_create(kclass, "module");
 }
 
+/* 读取内核符号表 */
 static ssize_t module_read_ksymtab(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct symbol_t * from = &(*__ksymtab_start);
@@ -61,6 +65,7 @@ static ssize_t module_read_ksymtab(struct kobj_t * kobj, void * buf, size_t size
 	return len;
 }
 
+/* 读取模块符号表 */
 static ssize_t module_read_symtab(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct module_t * m = (struct module_t *)kobj->priv;
@@ -79,6 +84,7 @@ static ssize_t module_read_symtab(struct kobj_t * kobj, void * buf, size_t size)
 	return len;
 }
 
+/* 根据名称搜索一个模块 */
 static struct module_t * search_module(const char * name)
 {
 	struct module_t * pos, * n;
@@ -94,6 +100,7 @@ static struct module_t * search_module(const char * name)
 	return NULL;
 }
 
+/* 搜索范围内符号名称 */
 static struct symbol_t * lookup_symbol_in_range(struct symbol_t * from, struct symbol_t * to, const char * name)
 {
 	struct symbol_t * next;
@@ -112,6 +119,7 @@ static struct symbol_t * lookup_symbol_in_range(struct symbol_t * from, struct s
 	return NULL;
 }
 
+/* 搜索模块符号 */
 static struct symbol_t * lookup_symbol_in_module(struct module_t * m, const char * name)
 {
 	struct symbol_t * from, * to;
@@ -125,6 +133,7 @@ static struct symbol_t * lookup_symbol_in_module(struct module_t * m, const char
 	return lookup_symbol_in_range(from, to, name);
 }
 
+/* 搜索全部符号 */
 static struct symbol_t * lookup_symbol_all(const char * name)
 {
 	struct module_t * pos, * n;
@@ -146,6 +155,7 @@ static struct symbol_t * lookup_symbol_all(const char * name)
 	return NULL;
 }
 
+/* 根据名称获取符号地址 */
 void * __symbol_get(const char * name)
 {
 	struct symbol_t * sym;
@@ -155,6 +165,7 @@ void * __symbol_get(const char * name)
 }
 EXPORT_SYMBOL(__symbol_get);
 
+/* 注册一个模块 */
 bool_t register_module(struct module_t * m)
 {
 	irq_flags_t flags;
@@ -178,6 +189,7 @@ bool_t register_module(struct module_t * m)
 }
 EXPORT_SYMBOL(register_module);
 
+/* 注销一个模块 */
 bool_t unregister_module(struct module_t * m)
 {
 	irq_flags_t flags;
@@ -195,6 +207,7 @@ bool_t unregister_module(struct module_t * m)
 }
 EXPORT_SYMBOL(unregister_module);
 
+/* 模块初始化 */
 static __init void module_init(void)
 {
 	kobj_add_regular(search_class_module_kobj(), "ksymtab", module_read_ksymtab, NULL, NULL);

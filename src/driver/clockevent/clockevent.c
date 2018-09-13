@@ -73,18 +73,21 @@ static ssize_t clockevent_read_frequency(struct kobj_t * kobj, void * buf, size_
 	return sprintf(buf, "%llu", freq);
 }
 
+/* 读取事件最小时间间隔ns */
 static ssize_t clockevent_read_min_delta(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clockevent_t * ce = (struct clockevent_t *)kobj->priv;
 	return sprintf(buf, "%llu.%09llu", ce->min_delta_ns / 1000000000ULL, ce->min_delta_ns % 1000000000ULL);
 }
 
+/* 读取事件最大时间间隔ns */
 static ssize_t clockevent_read_max_delta(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clockevent_t * ce = (struct clockevent_t *)kobj->priv;
 	return sprintf(buf, "%llu.%09llu", ce->max_delta_ns / 1000000000ULL, ce->max_delta_ns % 1000000000ULL);
 }
 
+/* 根据名称搜索一个时钟事件设备 */
 struct clockevent_t * search_clockevent(const char * name)
 {
 	struct device_t * dev;
@@ -95,6 +98,7 @@ struct clockevent_t * search_clockevent(const char * name)
 	return (struct clockevent_t *)dev->priv;
 }
 
+/* 搜索第一个时钟事件设备 */
 struct clockevent_t * search_first_clockevent(void)
 {
 	struct device_t * dev;
@@ -105,6 +109,7 @@ struct clockevent_t * search_first_clockevent(void)
 	return (struct clockevent_t *)dev->priv;
 }
 
+/* 注册一个时钟事件设备 */
 bool_t register_clockevent(struct device_t ** device, struct clockevent_t * ce)
 {
 	struct device_t * dev;
@@ -152,6 +157,7 @@ bool_t register_clockevent(struct device_t ** device, struct clockevent_t * ce)
 	return TRUE;
 }
 
+/* 注销一个时钟事件设备 */
 bool_t unregister_clockevent(struct clockevent_t * ce)
 {
 	struct device_t * dev;
@@ -185,6 +191,7 @@ bool_t unregister_clockevent(struct clockevent_t * ce)
 	return TRUE;
 }
 
+/* 设置时钟事件设备事件回调处理函数 */
 bool_t clockevent_set_event_handler(struct clockevent_t * ce, void (*handler)(struct clockevent_t *, void *), void * data)
 {
 	if(!ce)
@@ -194,6 +201,7 @@ bool_t clockevent_set_event_handler(struct clockevent_t * ce, void (*handler)(st
 	return TRUE;
 }
 
+/* 设置时钟事件设备下一个事件时间 */
 bool_t clockevent_set_event_next(struct clockevent_t * ce, ktime_t now, ktime_t expires)
 {
 	u64_t delta;

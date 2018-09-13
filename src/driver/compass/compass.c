@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <compass/compass.h>
 
+/* 读取罗盘设备偏转 */
 static ssize_t compass_read_offset(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct compass_t * c = (struct compass_t *)kobj->priv;
@@ -37,6 +38,7 @@ static ssize_t compass_read_offset(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "[%d %d %d]", ox, oy, oz);
 }
 
+/* 读取罗盘设备磁场 */
 static ssize_t compass_read_magnetic(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct compass_t * c = (struct compass_t *)kobj->priv;
@@ -45,6 +47,7 @@ static ssize_t compass_read_magnetic(struct kobj_t * kobj, void * buf, size_t si
 	return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] gauss", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
 }
 
+/* 读取罗盘设备指向角度 */
 static ssize_t compass_read_heading(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct compass_t * c = (struct compass_t *)kobj->priv;
@@ -53,6 +56,7 @@ static ssize_t compass_read_heading(struct kobj_t * kobj, void * buf, size_t siz
 	return sprintf(buf, "%d", heading);
 }
 
+/* 根据名称搜索一个罗盘设备 */
 struct compass_t * search_compass(const char * name)
 {
 	struct device_t * dev;
@@ -63,6 +67,7 @@ struct compass_t * search_compass(const char * name)
 	return (struct compass_t *)dev->priv;
 }
 
+/* 搜索第一个 罗盘设备 */
 struct compass_t * search_first_compass(void)
 {
 	struct device_t * dev;
@@ -73,6 +78,7 @@ struct compass_t * search_first_compass(void)
 	return (struct compass_t *)dev->priv;
 }
 
+/* 注册一个罗盘设备 */
 bool_t register_compass(struct device_t ** device,struct compass_t * c)
 {
 	struct device_t * dev;
@@ -106,6 +112,7 @@ bool_t register_compass(struct device_t ** device,struct compass_t * c)
 	return TRUE;
 }
 
+/* 注销一个罗盘设备 */
 bool_t unregister_compass(struct compass_t * c)
 {
 	struct device_t * dev;
@@ -126,6 +133,7 @@ bool_t unregister_compass(struct compass_t * c)
 	return TRUE;
 }
 
+/* 设置罗盘设备偏转 */
 bool_t compass_set_offset(struct compass_t * c, int ox, int oy, int oz)
 {
 	if(!c)
@@ -136,6 +144,7 @@ bool_t compass_set_offset(struct compass_t * c, int ox, int oy, int oz)
 	return TRUE;
 }
 
+/* 获取罗盘设备偏转 */
 bool_t compass_get_offset(struct compass_t * c, int * ox, int * oy, int * oz)
 {
 	if(!c || !ox || !oy || !oz)
@@ -146,6 +155,7 @@ bool_t compass_get_offset(struct compass_t * c, int * ox, int * oy, int * oz)
 	return TRUE;
 }
 
+/* 获取罗盘设备磁场 */
 bool_t compass_get_magnetic(struct compass_t * c, int * x, int * y, int * z)
 {
 	int tx, ty, tz;
@@ -158,6 +168,7 @@ bool_t compass_get_magnetic(struct compass_t * c, int * x, int * y, int * z)
 	return TRUE;
 }
 
+/* 获取罗盘设备指向角度 */
 bool_t compass_get_heading(struct compass_t * c, int * heading, int declination)
 {
 	int x, y, z;

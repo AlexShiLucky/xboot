@@ -85,6 +85,7 @@ INCDIRS		+=	include										\
 SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				arch/$(ARCH)/lib							\
 				arch/$(ARCH)/$(MACH)						\
+				arch/$(ARCH)/$(MACH)/command				\
 				arch/$(ARCH)/$(MACH)/driver					\
 				lib/libc									\
 				lib/libc/charset							\
@@ -285,6 +286,10 @@ X_SFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.S))
 # 搜索源文件路径下的.c文件
 X_CFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.c))
 
+X_SDEPS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o.d))
+X_CDEPS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o.d))
+X_DEPS		:=	$(X_SDEPS) $(X_CDEPS)
+
 # .S生成的目标文件
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
 # .c生成的目标文件
@@ -311,11 +316,11 @@ $(X_NAME) : $(X_OBJS)
 
 $(X_SOBJS) : .obj/%.o : %.S
 	@echo [AS] $<
-	@$(AS) $(X_ASFLAGS) $(X_INCDIRS) -c $< -o $@
+	@$(AS) $(X_ASFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 $(X_COBJS) : .obj/%.o : %.c
 	@echo [CC] $<
-	@$(CC) $(X_CFLAGS) $(X_INCDIRS) -c $< -o $@
+	@$(CC) $(X_CFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 clean : xclean
 	@$(RM) .obj $(X_OUT)
@@ -332,4 +337,5 @@ sinclude $(shell $(MKDIR) $(X_OBJDIRS) $(X_OUT)						\
 			&& $(CP) arch/$(ARCH)/$(MACH)/romdisk .obj				\
 			&& $(CD) .obj/romdisk									\
 			&& $(FIND) . -not -name . | $(CPIO) > ../romdisk.cpio	\
-			&& $(CD) ../..)
+			&& $(CD) ../..)											\
+			$(X_DEPS)

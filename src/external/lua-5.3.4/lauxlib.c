@@ -310,8 +310,10 @@ LUALIB_API int luaL_newmetatable (lua_State *L, const char *tname) {
 
 
 LUALIB_API void luaL_setmetatable (lua_State *L, const char *tname) {
-  luaL_getmetatable(L, tname);
-  lua_setmetatable(L, -2);
+  /* 将注册表中registry.n表压栈 */
+  luaL_getmetatable(L, tname);  // +1
+  /* 将栈顶的表弹出,作为原表 */
+  lua_setmetatable(L, -2);      // -1
 }
 
 

@@ -184,11 +184,16 @@ void luahelper_preload(lua_State * L, const char * name, lua_CFunction f)
 
 void luahelper_create_metatable(lua_State * L, const char * name, const luaL_Reg * funcs)
 {
-	luaL_newmetatable(L, name);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, funcs, 0);
-	lua_pop(L, 1);
+    /* 在注册表中新建一个名称为"name"的元表metatable */
+	luaL_newmetatable(L, name);     // +1
+    /* 把栈顶的表作一个副本压栈 */
+	lua_pushvalue(L, -1);           // +1
+    /* metatable.__index = metatable */
+	lua_setfield(L, -2, "__index"); // -1
+    /* 把函数表funcs中的所有函数注册到栈顶的表metatable中 */
+	luaL_setfuncs(L, funcs, 0);     // 0
+	/* 将原表metatable弹出 */
+	lua_pop(L, 1);                  // -1
 }
 
 void luahelper_create_class(lua_State * L, const char * parent, const luaL_Reg * funcs)

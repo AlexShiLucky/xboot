@@ -132,6 +132,7 @@ LUALIB_API void (luaL_requiref) (lua_State *L, const char *modname,
 #define luaL_dostring(L, s) \
 	(luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
 
+/* 将注册表中名称为n的表registry.n压栈 */
 #define luaL_getmetatable(L,n)	(lua_getfield(L, LUA_REGISTRYINDEX, (n)))
 
 #define luaL_opt(L,f,n,d)	(lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))

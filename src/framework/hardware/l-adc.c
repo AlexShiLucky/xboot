@@ -40,9 +40,11 @@ static int l_adc_new(lua_State * L)
 	lua_pushlightuserdata(L, adc);          // +1
 	/* 将注册表中registry.mt_hardware_adc的原表设为adc设备指针的原表 */
 	luaL_setmetatable(L, MT_HARDWARE_ADC);  // 0
+	/* 返回lightuserdata类型 */
 	return 1;
 }
 
+/* Lua: hardware.adc.list() */
 static int l_adc_list(lua_State * L)
 {
 	struct device_t * pos, * n;
@@ -67,6 +69,7 @@ static const luaL_Reg l_adc[] = {
 	{NULL,	NULL}
 };
 
+/* Lua: name = hardware.adc:__tostring() */
 static int m_adc_tostring(lua_State * L)
 {
     /* 检查函数的第1个参数是否是一个类型为"mt_hardware_adc"的用户数据 */
@@ -75,6 +78,7 @@ static int m_adc_tostring(lua_State * L)
 	return 1;
 }
 
+/* Lua: nchannel = hardware.adc:channels() */
 static int m_adc_channels(lua_State * L)
 {
 	struct adc_t * adc = luaL_checkudata(L, 1, MT_HARDWARE_ADC);
@@ -82,6 +86,7 @@ static int m_adc_channels(lua_State * L)
 	return 1;
 }
 
+/* Lua: rawdata = hardware.adc:readRaw() */
 static int m_adc_read_raw(lua_State * L)
 {
 	struct adc_t * adc = luaL_checkudata(L, 1, MT_HARDWARE_ADC);
@@ -91,6 +96,7 @@ static int m_adc_read_raw(lua_State * L)
 	return 1;
 }
 
+/* Lua: voltage = hardware.adc:readVoltage() */
 static int m_adc_read_voltage(lua_State * L)
 {
 	struct adc_t * adc = luaL_checkudata(L, 1, MT_HARDWARE_ADC);

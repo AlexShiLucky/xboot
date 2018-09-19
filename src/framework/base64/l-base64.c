@@ -32,6 +32,7 @@
 static const char * mtrans = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /* bin -> base64 */
+/* Lua: base64 = builtin.base64.encode(bin) */
 static int base64_encode(lua_State * L)
 {
 	const u8_t *data;
@@ -104,6 +105,7 @@ static int base64_encode(lua_State * L)
 }
 
 /* base64 -> bin */
+/* Lua: bin = builtin.base64.decode(base64)*/
 static int base64_decode(lua_State * L)
 {
 	const char * data;
@@ -151,7 +153,7 @@ static const luaL_Reg l_base64[] = {
 	{ NULL, NULL }
 };
 
-/* 创建builtin.base64 */
+/* 创建表builtin.base64 */
 int luaopen_base64(lua_State * L)
 {
 	luaL_newlib (L, l_base64);

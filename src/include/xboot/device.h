@@ -34,7 +34,7 @@ enum device_type_t {
     DEVICE_TYPE_LEDTRIGGER      = 23,   /*  */
     DEVICE_TYPE_LIGHT           = 24,   /*  */
     DEVICE_TYPE_MOTOR           = 25,   /*  Motor设备 */
-    DEVICE_TYPE_NVMEM           = 26,   /*  */
+    DEVICE_TYPE_NVMEM           = 26,   /* NVMEM设备 */
     DEVICE_TYPE_PRESSURE        = 27,   /* 压力传感器设备 */
     DEVICE_TYPE_PROXIMITY       = 28,   /*  距离传感器设备 */
     DEVICE_TYPE_PWM             = 29,   /* PWM设备 */

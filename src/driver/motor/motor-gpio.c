@@ -30,6 +30,7 @@
 #include <gpio/gpio.h>
 #include <motor/motor.h>
 
+/* GPIO控制Motor私有数据结构 */
 struct motor_gpio_pdata_t {
 	struct timer_t timer;
 	int a;
@@ -45,6 +46,7 @@ struct motor_gpio_pdata_t {
 	int flag;
 };
 
+/* motor设备gpio控制enable具体实现 */
 static void motor_gpio_enable(struct motor_t * m)
 {
 	struct motor_gpio_pdata_t * pdat = (struct motor_gpio_pdata_t *)m->priv;
@@ -52,6 +54,7 @@ static void motor_gpio_enable(struct motor_t * m)
 		gpio_set_value(pdat->e, 1);
 }
 
+/* motor设备gpio控制disable具体实现 */
 static void motor_gpio_disable(struct motor_t * m)
 {
 	struct motor_gpio_pdata_t * pdat = (struct motor_gpio_pdata_t *)m->priv;
@@ -59,6 +62,7 @@ static void motor_gpio_disable(struct motor_t * m)
 		gpio_set_value(pdat->e, 0);
 }
 
+/* motor设备gpio控制转速具体实现 */
 static void motor_gpio_set(struct motor_t * m, int speed)
 {
 	struct motor_gpio_pdata_t * pdat = (struct motor_gpio_pdata_t *)m->priv;
@@ -79,6 +83,7 @@ static void motor_gpio_set(struct motor_t * m, int speed)
 	}
 }
 
+/* motor设备gpio控制定时器回调函数 */
 static int motor_gpio_timer_function(struct timer_t * timer, void * data)
 {
 	struct motor_t * m = (struct motor_t *)(data);
@@ -125,6 +130,7 @@ static int motor_gpio_timer_function(struct timer_t * timer, void * data)
 	return 0;
 }
 
+/* motor设备探针 */
 static struct device_t * motor_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct motor_gpio_pdata_t * pdat;
@@ -206,6 +212,7 @@ static struct device_t * motor_gpio_probe(struct driver_t * drv, struct dtnode_t
 	return dev;
 }
 
+/* motor设备移除 */
 static void motor_gpio_remove(struct device_t * dev)
 {
 	struct motor_t * m = (struct motor_t *)dev->priv;
@@ -221,14 +228,17 @@ static void motor_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* motor设备挂起 */
 static void motor_gpio_suspend(struct device_t * dev)
 {
 }
 
+/* motor设备释放 */
 static void motor_gpio_resume(struct device_t * dev)
 {
 }
 
+/* motor-gpio设备驱动控制块 */
 static struct driver_t motor_gpio = {
 	.name		= "motor-gpio",
 	.probe		= motor_gpio_probe,
@@ -237,11 +247,13 @@ static struct driver_t motor_gpio = {
 	.resume		= motor_gpio_resume,
 };
 
+/* motor-gpio设备驱动初始化 */
 static __init void motor_gpio_driver_init(void)
 {
 	register_driver(&motor_gpio);
 }
 
+/* motor-gpio设备驱动退出 */
 static __exit void motor_gpio_driver_exit(void)
 {
 	unregister_driver(&motor_gpio);

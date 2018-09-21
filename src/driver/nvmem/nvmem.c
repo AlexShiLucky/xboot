@@ -114,6 +114,7 @@ static bool_t nvmem_init_kvdb(struct nvmem_t * m)
 	return TRUE;
 }
 
+/* 注册一个nvmem设备 */
 bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
 {
 	struct device_t * dev;
@@ -152,6 +153,7 @@ bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
 	return TRUE;
 }
 
+/* 注销一个nvmem设备 */
 bool_t unregister_nvmem(struct nvmem_t * m)
 {
 	struct device_t * dev;
@@ -174,6 +176,7 @@ bool_t unregister_nvmem(struct nvmem_t * m)
 	return TRUE;
 }
 
+/* nvmem设备容量读取接口调用 */
 int nvmem_capacity(struct nvmem_t * m)
 {
 	if(m && m->capacity)
@@ -181,6 +184,7 @@ int nvmem_capacity(struct nvmem_t * m)
 	return 0;
 }
 
+/* nvmem设备读取接口调用 */
 int nvmem_read(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	int capacity;
@@ -201,6 +205,7 @@ int nvmem_read(struct nvmem_t * m, void * buf, int offset, int count)
 	return 0;
 }
 
+/* nvmem设备写入接口调用 */
 int nvmem_write(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	int capacity;

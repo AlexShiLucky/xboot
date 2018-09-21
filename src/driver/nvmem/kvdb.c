@@ -28,6 +28,7 @@
 
 #include <nvmem/kvdb.h>
 
+/* key-value记录节点结构 */
 struct record_t
 {
 	struct hlist_node node;
@@ -54,6 +55,7 @@ static char * trim(char * s)
 	return s;
 }
 
+/* 通过key获取hash表头 */
 static struct hlist_head * kvdb_hash(struct kvdb_t * db, const char * key)
 {
 	unsigned char * p = (unsigned char *)key;
@@ -67,6 +69,7 @@ static struct hlist_head * kvdb_hash(struct kvdb_t * db, const char * key)
 	return &db->hash[hash % db->hash_size];
 }
 
+/* 根据key搜索记录节点指针 */
 static struct record_t * kvdb_search_record(struct kvdb_t * db, const char * key)
 {
 	struct record_t * pos;
@@ -83,6 +86,7 @@ static struct record_t * kvdb_search_record(struct kvdb_t * db, const char * key
 	return NULL;
 }
 
+/* 在key-value数据库中添加一条记录 */
 static bool_t kvdb_add_record(struct kvdb_t * db, struct record_t * r)
 {
 	irq_flags_t flags;
@@ -113,6 +117,7 @@ static bool_t kvdb_add_record(struct kvdb_t * db, struct record_t * r)
 	return TRUE;
 }
 
+/* 在key-value数据库中移除一条记录 */
 static bool_t kvdb_remove_record(struct kvdb_t * db, struct record_t * r)
 {
 	irq_flags_t flags;
@@ -141,6 +146,7 @@ static bool_t kvdb_remove_record(struct kvdb_t * db, struct record_t * r)
 	return TRUE;
 }
 
+/* 申请一个给定尺寸的key-value数据库 */
 struct kvdb_t * kvdb_alloc(int size)
 {
 	struct kvdb_t * db;
@@ -173,6 +179,7 @@ struct kvdb_t * kvdb_alloc(int size)
 	return db;
 }
 
+/* 释放一个key-value数据库 */
 void kvdb_free(struct kvdb_t * db)
 {
 	if(db)
@@ -199,6 +206,7 @@ void kvdb_clear(struct kvdb_t * db)
 	}
 }
 
+/* 设置一个key-value */
 void kvdb_set(struct kvdb_t * db, const char * key, const char * value)
 {
 	struct record_t * r;
@@ -225,6 +233,7 @@ void kvdb_set(struct kvdb_t * db, const char * key, const char * value)
 	}
 }
 
+/* 根据key获取value */
 char * kvdb_get(struct kvdb_t * db, const char * key, const char * def)
 {
 	struct record_t * r = kvdb_search_record(db, key);
@@ -233,6 +242,7 @@ char * kvdb_get(struct kvdb_t * db, const char * key, const char * def)
 	return (char *)def;
 }
 
+/* 从字符串中获取key-value */
 void kvdb_from_string(struct kvdb_t * db, char * str)
 {
 	char * p = str;
@@ -255,6 +265,7 @@ void kvdb_from_string(struct kvdb_t * db, char * str)
 	}
 }
 
+/* 将key-value数据库按"key=value;"格式输出字符串 */
 char * kvdb_to_string(struct kvdb_t * db)
 {
 	struct record_t * pos, * n;

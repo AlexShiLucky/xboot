@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <motor/motor.h>
 
+/* motor设备enable写 */
 static ssize_t motor_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct motor_t * m = (struct motor_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t motor_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* motor设备disable写 */
 static ssize_t motor_write_disable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct motor_t * m = (struct motor_t *)kobj->priv;
@@ -43,6 +45,7 @@ static ssize_t motor_write_disable(struct kobj_t * kobj, void * buf, size_t size
 	return size;
 }
 
+/* motor设备转速写 */
 static ssize_t motor_write_speed(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct motor_t * m = (struct motor_t *)kobj->priv;
@@ -50,6 +53,7 @@ static ssize_t motor_write_speed(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个motor设备 */
 struct motor_t * search_motor(const char * name)
 {
 	struct device_t * dev;
@@ -60,6 +64,7 @@ struct motor_t * search_motor(const char * name)
 	return (struct motor_t *)dev->priv;
 }
 
+/* 注册一个motor设备 */
 bool_t register_motor(struct device_t ** device, struct motor_t * m)
 {
 	struct device_t * dev;
@@ -93,6 +98,7 @@ bool_t register_motor(struct device_t ** device, struct motor_t * m)
 	return TRUE;
 }
 
+/* 注销一个motor设备 */
 bool_t unregister_motor(struct motor_t * m)
 {
 	struct device_t * dev;
@@ -113,18 +119,21 @@ bool_t unregister_motor(struct motor_t * m)
 	return TRUE;
 }
 
+/* motor设备enable接口调用 */
 void motor_enable(struct motor_t * m)
 {
 	if(m && m->enable)
 		m->enable(m);
 }
 
+/* motor设备disable接口调用 */
 void motor_disable(struct motor_t * m)
 {
 	if(m && m->disable)
 		m->disable(m);
 }
 
+/* motor设备转速设置接口调用 */
 void motor_set_speed(struct motor_t * m, int speed)
 {
 	if(m && m->set)

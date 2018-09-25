@@ -6,20 +6,14 @@ extern "C" {
 #endif
 
 #if __riscv_xlen == 64
-#define REG_L	ld
-#define REG_S	sd
-#define FREG_L	fld
-#define FREG_S	fsd
-#define SZREG	8
-#define LGREG	3
+#define LREG	ld
+#define SREG	sd
+#define REGSZ	8
 #define RVPTR	.dword
 #elif __riscv_xlen == 32
-#define REG_L	lw
-#define REG_S	sw
-#define FREG_L	flw
-#define FREG_S	fsw
-#define SZREG	4
-#define LGREG	2
+#define LREG	lw
+#define SREG	sw
+#define REGSZ	4
 #define RVPTR	.word
 #endif
 

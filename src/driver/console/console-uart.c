@@ -30,22 +30,26 @@
 #include <uart/uart.h>
 #include <console/console.h>
 
+/* console-uart设备私有数据结构 */
 struct console_uart_pdata_t {
 	struct uart_t * uart;
 };
 
+/* console-uart设备读取 */
 static ssize_t console_uart_read(struct console_t * console, unsigned char * buf, size_t count)
 {
 	struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)console->priv;
 	return pdat->uart->read(pdat->uart, (u8_t *)buf, count);
 }
 
+/* console-uart设备写入 */
 static ssize_t console_uart_write(struct console_t * console, const unsigned char * buf, size_t count)
 {
 	struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)console->priv;
 	return pdat->uart->write(pdat->uart, (const u8_t *)buf, count);
 }
 
+/* console-uart探针 */
 static struct device_t * console_uart_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct console_uart_pdata_t * pdat;
@@ -86,6 +90,7 @@ static struct device_t * console_uart_probe(struct driver_t * drv, struct dtnode
 	return dev;
 }
 
+/* console-uart设备移除 */
 static void console_uart_remove(struct device_t * dev)
 {
 	struct console_t * console = (struct console_t *)dev->priv;
@@ -98,14 +103,17 @@ static void console_uart_remove(struct device_t * dev)
 	}
 }
 
+/* console-uart设备挂起 */
 static void console_uart_suspend(struct device_t * dev)
 {
 }
 
+/* console-uart设备释放 */
 static void console_uart_resume(struct device_t * dev)
 {
 }
 
+/* console-uart设备驱动控制块 */
 static struct driver_t console_uart = {
 	.name		= "console-uart",
 	.probe		= console_uart_probe,
@@ -114,11 +122,13 @@ static struct driver_t console_uart = {
 	.resume		= console_uart_resume,
 };
 
+/* console-uart设备驱动初始化 */
 static __init void console_uart_driver_init(void)
 {
 	register_driver(&console_uart);
 }
 
+/* console-uart设备驱动退出 */
 static __exit void console_uart_driver_exit(void)
 {
 	unregister_driver(&console_uart);

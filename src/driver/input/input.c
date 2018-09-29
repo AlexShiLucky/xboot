@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <input/input.h>
 
+/* 获取输入设备类型 */
 static ssize_t input_read_type(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct input_t * input = (struct input_t *)kobj->priv;
@@ -59,6 +60,7 @@ static ssize_t input_read_type(struct kobj_t * kobj, void * buf, size_t size)
 	return sprintf(buf, "%s", name);
 }
 
+/* 根据名称搜索一个输入设备 */
 struct input_t * search_input(const char * name)
 {
 	struct device_t * dev;
@@ -69,6 +71,7 @@ struct input_t * search_input(const char * name)
 	return (struct input_t *)dev->priv;
 }
 
+/* 注册一个输入设备 */
 bool_t register_input(struct device_t ** device, struct input_t * input)
 {
 	struct device_t * dev;
@@ -100,6 +103,7 @@ bool_t register_input(struct device_t ** device, struct input_t * input)
 	return TRUE;
 }
 
+/* 注销一个输入设备 */
 bool_t unregister_input(struct input_t * input)
 {
 	struct device_t * dev;
@@ -120,6 +124,7 @@ bool_t unregister_input(struct input_t * input)
 	return TRUE;
 }
 
+/* 输入设备io控制接口调用 */
 int input_ioctl(struct input_t * input, int cmd, void * arg)
 {
 	if(input && input->ioctl)

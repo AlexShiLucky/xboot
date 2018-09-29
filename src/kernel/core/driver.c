@@ -159,7 +159,7 @@ bool_t unregister_driver(struct driver_t * drv)
 	return TRUE;
 }
 
-/* 探测设备 */
+/* 探测设备,根据json配置顺序初始化驱动 */
 void probe_device(const char * json, int length)
 {
 	struct driver_t * drv;

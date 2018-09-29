@@ -30,7 +30,7 @@
 #include <mmu.h>
 #include <realview/reg-sysctl.h>
 
-/* »úÆ÷¼ì²â */
+/* æœºå™¨æ£€æµ‹ */
 static int mach_detect(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -49,12 +49,12 @@ static void mach_memmap(struct machine_t * mach)
 	mmu_setup(mach);
 }
 
-/* »úÆ÷¹Ø»ú¾ßÌåÊµÏÖ */
+/* æœºå™¨å…³æœºå…·ä½“å®ç° */
 static void mach_shutdown(struct machine_t * mach)
 {
 }
 
-/* »úÆ÷ÖØÆô¾ßÌåÊµÏÖ */
+/* æœºå™¨é‡å¯å…·ä½“å®ç° */
 static void mach_reboot(struct machine_t * mach)
 {
 	virtual_addr_t virt = phys_to_virt(REALVIEW_SYSCTL_BASE);
@@ -63,17 +63,17 @@ static void mach_reboot(struct machine_t * mach)
 	write32(virt + SYSCTL_RESET, read32(virt + SYSCTL_RESET) | (1 << 2));
 }
 
-/* »úÆ÷Ë¯Ãß¾ßÌåÊµÏÖ */
+/* æœºå™¨ç¡çœ å…·ä½“å®ç° */
 static void mach_sleep(struct machine_t * mach)
 {
 }
 
-/* »úÆ÷ÇåÀí¾ßÌåÊµÏÖ */
+/* æœºå™¨æ¸…ç†å…·ä½“å®ç° */
 static void mach_cleanup(struct machine_t * mach)
 {
 }
 
-/* »úÆ÷logÊä³ö¾ßÌåÊµÏÖ */
+/* æœºå™¨logè¾“å‡ºå…·ä½“å®ç° */
 static void mach_logger(struct machine_t * mach, const char * buf, int count)
 {
 	virtual_addr_t virt = phys_to_virt(0x10009000);
@@ -103,13 +103,13 @@ static void mach_logger(struct machine_t * mach, const char * buf, int count)
 	}
 }
 
-/* »ñÈ¡»úÆ÷Î¨Ò»±êÊ¶·û¾ßÌåÊµÏÖ */
+/* è·å–æœºå™¨å”¯ä¸€æ ‡è¯†ç¬¦å…·ä½“å®ç° */
 static const char * mach_uniqueid(struct machine_t * mach)
 {
 	return NULL;
 }
 
-/* »úÆ÷keygen¾ßÌåÊµÏÖ */
+/* æœºå™¨keygenå…·ä½“å®ç° */
 static int mach_keygen(struct machine_t * mach, const char * msg, void * key)
 {
 	return 0;
@@ -129,17 +129,17 @@ static struct machine_t realview_pb_a8 = {
 	.keygen		= mach_keygen,
 };
 
-/* »úÆ÷³õÊ¼»¯ */
+/* æœºå™¨åˆå§‹åŒ– */
 static __init void realview_pb_a8_machine_init(void)
 {
-    /* ×¢²á»úÆ÷ÅäÖÃ */
+    /* æ³¨å†Œæœºå™¨é…ç½® */
 	register_machine(&realview_pb_a8);
 }
 
-/* »úÆ÷ÍË³ö */
+/* æœºå™¨é€€å‡º */
 static __exit void realview_pb_a8_machine_exit(void)
 {
-    /* ×¢Ïú»úÆ÷ÅäÖÃ */
+    /* æ³¨é”€æœºå™¨é…ç½® */
 	unregister_machine(&realview_pb_a8);
 }
 

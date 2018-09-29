@@ -103,6 +103,7 @@ void push_event(struct event_t * event)
 	}
 }
 
+/* push一个键按下事件 */
 void push_event_key_down(void * device, u32_t key)
 {
 	struct event_t event;
@@ -113,6 +114,7 @@ void push_event_key_down(void * device, u32_t key)
 	push_event(&event);
 }
 
+/* push一个键释放事件 */
 void push_event_key_up(void * device, u32_t key)
 {
 	struct event_t event;

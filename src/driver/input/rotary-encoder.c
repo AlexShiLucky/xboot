@@ -52,6 +52,7 @@
 #include <input/input.h>
 #include <input/keyboard.h>
 
+/* 旋转编码器私有数据结构体 */
 struct rotary_encoder_pdata_t {
 	int a;
 	int acfg;

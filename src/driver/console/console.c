@@ -39,11 +39,13 @@ static ssize_t __console_dummy_write(struct console_t * console, const unsigned 
 	return 0;
 }
 
+/* 默认console设备控制块 */
 static struct console_t __console_dummy = {
 	.name	= "console-dummy",
 	.read	= __console_dummy_read,
 	.write	= __console_dummy_write,
 };
+/* 当前console设备指针 */
 static struct console_t * __console = &__console_dummy;
 static spinlock_t __console_lock = SPIN_LOCK_INIT();
 
@@ -66,6 +68,7 @@ static ssize_t console_write_active(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
+/* 根据名称搜索一个console设备 */
 struct console_t * search_console(const char * name)
 {
 	struct device_t * dev;
@@ -76,6 +79,7 @@ struct console_t * search_console(const char * name)
 	return (struct console_t *)dev->priv;
 }
 
+/* 搜索第一个console设备 */
 struct console_t * search_first_console(void)
 {
 	struct device_t * dev;
@@ -86,6 +90,7 @@ struct console_t * search_first_console(void)
 	return (struct console_t *)dev->priv;
 }
 
+/* 注册一个console设备 */
 bool_t register_console(struct device_t ** device, struct console_t * console)
 {
 	struct device_t * dev;
@@ -125,6 +130,7 @@ bool_t register_console(struct device_t ** device, struct console_t * console)
 	return TRUE;
 }
 
+/* 注销一个console设备 */
 bool_t unregister_console(struct console_t * console)
 {
 	struct device_t * dev;
@@ -157,11 +163,13 @@ bool_t unregister_console(struct console_t * console)
 	return TRUE;
 }
 
+/* 获取当前console设备指针 */
 struct console_t * console_get(void)
 {
 	return __console;
 }
 
+/* 将当前console设备指针改为指定名称的console设备 */
 bool_t console_set(const char * name)
 {
 	struct console_t * c = search_console(name);
@@ -177,6 +185,7 @@ bool_t console_set(const char * name)
 	return FALSE;
 }
 
+/* 当前console设备标准输入 */
 ssize_t console_stdin_read(unsigned char * buf, size_t count)
 {
 	if(__console && __console->read)
@@ -184,6 +193,7 @@ ssize_t console_stdin_read(unsigned char * buf, size_t count)
 	return 0;
 }
 
+/* 当前console设备标准输出 */
 ssize_t console_stdout_write(const unsigned char * buf, size_t count)
 {
 	if(__console && __console->write)
@@ -191,6 +201,7 @@ ssize_t console_stdout_write(const unsigned char * buf, size_t count)
 	return 0;
 }
 
+/* 当前console设备标准错误输出 */
 ssize_t console_stderr_write(const unsigned char * buf, size_t count)
 {
 	if(__console && __console->write)

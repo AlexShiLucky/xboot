@@ -55,10 +55,10 @@ enum device_type_t {
 };
 
 enum {
-    NOTIFIER_DEVICE_ADD,
-    NOTIFIER_DEVICE_REMOVE,
-    NOTIFIER_DEVICE_SUSPEND,
-    NOTIFIER_DEVICE_RESUME,
+    NOTIFIER_DEVICE_ADD,                /* 设备添加 */
+    NOTIFIER_DEVICE_REMOVE,             /* 设备移除 */
+    NOTIFIER_DEVICE_SUSPEND,            /* 设备挂起 */
+    NOTIFIER_DEVICE_RESUME,             /* 设备释放 */
 };
 
 struct driver_t;

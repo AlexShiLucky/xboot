@@ -384,6 +384,7 @@ static void spi_gpio_resume(struct device_t * dev)
 {
 }
 
+/* spi-gpio设备驱动控制块 */
 static struct driver_t spi_gpio = {
 	.name		= "spi-gpio",
 	.probe		= spi_gpio_probe,

@@ -60,6 +60,7 @@
  *   }
  */
 
+/* i2c-gpio设备私有数据结构体 */
 struct i2c_gpio_pdata_t {
 	struct i2c_algo_bit_data_t bdat;
 	int sda;
@@ -72,6 +73,7 @@ struct i2c_gpio_pdata_t {
 	int udelay;
 };
 
+/* 设置SDA方向 */
 static void i2c_gpio_setsda_dir(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;
@@ -81,12 +83,14 @@ static void i2c_gpio_setsda_dir(struct i2c_algo_bit_data_t * bdat, int state)
 		gpio_direction_output(pdat->sda, 0);
 }
 
+/* 设置SDA值 */
 static void i2c_gpio_setsda_val(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;
 	gpio_set_value(pdat->sda, state);
 }
 
+/* 设置SCL方向 */
 static void i2c_gpio_setscl_dir(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;
@@ -96,18 +100,21 @@ static void i2c_gpio_setscl_dir(struct i2c_algo_bit_data_t * bdat, int state)
 		gpio_direction_output(pdat->scl, 0);
 }
 
+/* 设置SCL值 */
 static void i2c_gpio_setscl_val(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;
 	gpio_set_value(pdat->scl, state);
 }
 
+/* 获取SDA值 */
 static int i2c_gpio_getsda(struct i2c_algo_bit_data_t * bdat)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;
 	return gpio_get_value(pdat->sda);
 }
 
+/* 获取SCL值 */
 static int i2c_gpio_getscl(struct i2c_algo_bit_data_t * bdat)
 {
 	struct i2c_gpio_pdata_t * pdat = (struct i2c_gpio_pdata_t *)bdat->priv;

@@ -38,6 +38,7 @@ struct adc_key_t {
 	int keycode;
 };
 
+/* key-adc输入设备私有数据结构 */
 struct key_adc_pdata_t {
 	struct timer_t timer;
 	struct adc_t * adc;
@@ -48,6 +49,7 @@ struct key_adc_pdata_t {
 	int keyold;
 };
 
+/* 读取键码 */
 static int key_adc_get_keycode(struct key_adc_pdata_t * pdat)
 {
 	int voltage;
@@ -62,20 +64,22 @@ static int key_adc_get_keycode(struct key_adc_pdata_t * pdat)
 	return 0;
 }
 
+/* key-adc输入设备定时器回调函数 */
 static int key_adc_timer_function(struct timer_t * timer, void * data)
 {
 	struct input_t * input = (struct input_t *)(data);
 	struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
 	int keynew = key_adc_get_keycode(pdat);
 
+    /* 键值改变 */
 	if(keynew != pdat->keyold)
 	{
-		if(pdat->keyold == 0)
+		if(pdat->keyold == 0)   // 键按下
 		{
 			push_event_key_down(input, keynew);
 			pdat->keyold = keynew;
 		}
-		else if(keynew == 0)
+		else if(keynew == 0)    // 键释放
 		{
 			push_event_key_up(input, pdat->keyold);
 			pdat->keyold = keynew;
@@ -100,6 +104,7 @@ static int key_adc_ioctl(struct input_t * input, int cmd, void * arg)
 	return -1;
 }
 
+/* key-adc输入设备探针 */
 static struct device_t * key_adc_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct key_adc_pdata_t * pdat;
@@ -173,6 +178,7 @@ static struct device_t * key_adc_probe(struct driver_t * drv, struct dtnode_t * 
 	return dev;
 }
 
+/* key-adc输入设备移除 */
 static void key_adc_remove(struct device_t * dev)
 {
 	struct input_t * input = (struct input_t *)dev->priv;
@@ -189,6 +195,7 @@ static void key_adc_remove(struct device_t * dev)
 	}
 }
 
+/* key-adc输入设备挂起 */
 static void key_adc_suspend(struct device_t * dev)
 {
 	struct input_t * input = (struct input_t *)dev->priv;
@@ -197,6 +204,7 @@ static void key_adc_suspend(struct device_t * dev)
 	timer_cancel(&pdat->timer);
 }
 
+/* key-adc输入设备释放 */
 static void key_adc_resume(struct device_t * dev)
 {
 	struct input_t * input = (struct input_t *)dev->priv;
@@ -205,6 +213,7 @@ static void key_adc_resume(struct device_t * dev)
 	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 }
 
+/* key-adc输入设备驱动控制块 */
 static struct driver_t key_adc = {
 	.name		= "key-adc",
 	.probe		= key_adc_probe,
@@ -213,11 +222,13 @@ static struct driver_t key_adc = {
 	.resume		= key_adc_resume,
 };
 
+/* key-adc输入设备驱动初始化 */
 static __init void key_adc_driver_init(void)
 {
 	register_driver(&key_adc);
 }
 
+/* key-adc输入设备驱动退出 */
 static __exit void key_adc_driver_exit(void)
 {
 	unregister_driver(&key_adc);

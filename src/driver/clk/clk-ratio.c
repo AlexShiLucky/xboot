@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <clk/clk.h>
 
+/* ratio-clk设备私有数据结构 */
 struct clk_ratio_pdata_t {
 	virtual_addr_t virt;
 	char * parent;
@@ -36,25 +37,30 @@ struct clk_ratio_pdata_t {
 	int width;
 };
 
+/* ratio-clk设备父clk设置具体实现 */
 static void clk_ratio_set_parent(struct clk_t * clk, const char * pname)
 {
 }
 
+/* ratio-clk设备父clk获取具体实现 */
 static const char * clk_ratio_get_parent(struct clk_t * clk)
 {
 	struct clk_ratio_pdata_t * pdat = (struct clk_ratio_pdata_t *)clk->priv;
 	return pdat->parent;
 }
 
+/* ratio-clk设备使能设置具体实现 */
 static void clk_ratio_set_enable(struct clk_t * clk, bool_t enable)
 {
 }
 
+/* ratio-clk设备使能获取具体实现 */
 static bool_t clk_ratio_get_enable(struct clk_t * clk)
 {
 	return TRUE;
 }
 
+/* ratio-clk设备速率设置具体实现 */
 static void clk_ratio_set_rate(struct clk_t * clk, u64_t prate, u64_t rate)
 {
 	struct clk_ratio_pdata_t * pdat = (struct clk_ratio_pdata_t *)clk->priv;
@@ -75,6 +81,7 @@ static void clk_ratio_set_rate(struct clk_t * clk, u64_t prate, u64_t rate)
 	write32(pdat->virt, val);
 }
 
+/* ratio-clk设备速率获取具体实现 */
 static u64_t clk_ratio_get_rate(struct clk_t * clk, u64_t prate)
 {
 	struct clk_ratio_pdata_t * pdat = (struct clk_ratio_pdata_t *)clk->priv;
@@ -85,6 +92,7 @@ static u64_t clk_ratio_get_rate(struct clk_t * clk, u64_t prate)
 	return prate / (0x1 << div);
 }
 
+/* ratio-clk设备探针 */
 static struct device_t * clk_ratio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct clk_ratio_pdata_t * pdat;
@@ -162,6 +170,7 @@ static struct device_t * clk_ratio_probe(struct driver_t * drv, struct dtnode_t 
 	return dev;
 }
 
+/* ratio-clk设备移除 */
 static void clk_ratio_remove(struct device_t * dev)
 {
 	struct clk_t * clk = (struct clk_t *)dev->priv;
@@ -177,14 +186,17 @@ static void clk_ratio_remove(struct device_t * dev)
 	}
 }
 
+/* ratio-clk设备挂起 */
 static void clk_ratio_suspend(struct device_t * dev)
 {
 }
 
+/* ratio-clk设备释放 */
 static void clk_ratio_resume(struct device_t * dev)
 {
 }
 
+/* ratio-clk设备驱动控制块 */
 static struct driver_t clk_ratio = {
 	.name		= "clk-ratio",
 	.probe		= clk_ratio_probe,
@@ -193,11 +205,13 @@ static struct driver_t clk_ratio = {
 	.resume		= clk_ratio_resume,
 };
 
+/* ratio-clk设备驱动初始化 */
 static __init void clk_ratio_driver_init(void)
 {
 	register_driver(&clk_ratio);
 }
 
+/* ratio-clk设备驱动退出 */
 static __exit void clk_ratio_driver_exit(void)
 {
 	unregister_driver(&clk_ratio);

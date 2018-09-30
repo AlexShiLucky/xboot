@@ -29,38 +29,46 @@
 #include <xboot.h>
 #include <clk/clk.h>
 
+/* fixed-clk设备私有数据结构 */
 struct clk_fixed_pdata_t {
 	u64_t rate;
 };
 
+/* fixed-clk设备父clk设置具体实现 */
 static void clk_fixed_set_parent(struct clk_t * clk, const char * pname)
 {
 }
 
+/* fixed-clk设备父clk获取具体实现 */
 static const char * clk_fixed_get_parent(struct clk_t * clk)
 {
 	return NULL;
 }
 
+/* fixed-clk设备enable设置具体实现 */
 static void clk_fixed_set_enable(struct clk_t * clk, bool_t enable)
 {
 }
 
+/* fixed-clk设备enable获取具体实现 */
 static bool_t clk_fixed_get_enable(struct clk_t * clk)
 {
 	return TRUE;
 }
 
+/* fixed-clk设备速率设置具体实现 */
 static void clk_fixed_set_rate(struct clk_t * clk, u64_t prate, u64_t rate)
 {
 }
 
+/* fixed-clk设备速率获取具体实现 */
 static u64_t clk_fixed_get_rate(struct clk_t * clk, u64_t prate)
 {
 	struct clk_fixed_pdata_t * pdat = (struct clk_fixed_pdata_t *)clk->priv;
 	return pdat->rate;
 }
 
+/* fixed-clk设备探针 */
 static struct device_t * clk_fixed_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct clk_fixed_pdata_t * pdat;
@@ -130,6 +138,7 @@ static struct device_t * clk_fixed_probe(struct driver_t * drv, struct dtnode_t 
 	return dev;
 }
 
+/* fixed-clk设备移除 */
 static void clk_fixed_remove(struct device_t * dev)
 {
 	struct clk_t * clk = (struct clk_t *)dev->priv;
@@ -142,14 +151,17 @@ static void clk_fixed_remove(struct device_t * dev)
 	}
 }
 
+/* fixed-clk设备挂起 */
 static void clk_fixed_suspend(struct device_t * dev)
 {
 }
 
+/* fixed-clk设备释放 */
 static void clk_fixed_resume(struct device_t * dev)
 {
 }
 
+/* fixed-clk设备驱动控制块 */
 static struct driver_t clk_fixed = {
 	.name		= "clk-fixed",
 	.probe		= clk_fixed_probe,
@@ -158,11 +170,13 @@ static struct driver_t clk_fixed = {
 	.resume		= clk_fixed_resume,
 };
 
+/* fixed-clk设备驱动初始化 */
 static __init void clk_fixed_driver_init(void)
 {
 	register_driver(&clk_fixed);
 }
 
+/* fixed-clk设备驱动退出 */
 static __exit void clk_fixed_driver_exit(void)
 {
 	unregister_driver(&clk_fixed);

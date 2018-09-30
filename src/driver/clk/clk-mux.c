@@ -34,6 +34,7 @@ struct clk_mux_parent_t {
 	int value;
 };
 
+/* mux-clk设备私有结构 */
 struct clk_mux_pdata_t {
 	virtual_addr_t virt;
 	struct clk_mux_parent_t * parent;
@@ -42,6 +43,7 @@ struct clk_mux_pdata_t {
 	int width;
 };
 
+/* mux-clk设备父clk设置接口具体实现 */
 static void clk_mux_set_parent(struct clk_t * clk, const char * pname)
 {
 	struct clk_mux_pdata_t * pdat = (struct clk_mux_pdata_t *)clk->priv;
@@ -61,6 +63,7 @@ static void clk_mux_set_parent(struct clk_t * clk, const char * pname)
 	}
 }
 
+/* mux-clk设备父clk获取具体实现 */
 static const char * clk_mux_get_parent(struct clk_t * clk)
 {
 	struct clk_mux_pdata_t * pdat = (struct clk_mux_pdata_t *)clk->priv;
@@ -75,25 +78,29 @@ static const char * clk_mux_get_parent(struct clk_t * clk)
 	return NULL;
 }
 
+/* mux-clk设备使能设置具体实现 */
 static void clk_mux_set_enable(struct clk_t * clk, bool_t enable)
 {
 }
 
+/* mux-clk设备使能获取具体实现 */
 static bool_t clk_mux_get_enable(struct clk_t * clk)
 {
 	return TRUE;
 }
 
+/* mux-clk设备速率设置具体实现 */
 static void clk_mux_set_rate(struct clk_t * clk, u64_t prate, u64_t rate)
 {
 }
 
+/* mux-clk设备速率获取具体实现 */
 static u64_t clk_mux_get_rate(struct clk_t * clk, u64_t prate)
 {
 	return prate;
 }
 
-
+/* mux-clk设备探针 */
 static struct device_t * clk_mux_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct clk_mux_pdata_t * pdat;
@@ -191,6 +198,7 @@ static struct device_t * clk_mux_probe(struct driver_t * drv, struct dtnode_t * 
 	return dev;
 }
 
+/* mux-clk设备移除 */
 static void clk_mux_remove(struct device_t * dev)
 {
 	struct clk_t * clk = (struct clk_t *)dev->priv;
@@ -209,14 +217,17 @@ static void clk_mux_remove(struct device_t * dev)
 	}
 }
 
+/* mux-clk设备挂起 */
 static void clk_mux_suspend(struct device_t * dev)
 {
 }
 
+/* mux-clk设备释放 */
 static void clk_mux_resume(struct device_t * dev)
 {
 }
 
+/* mux-clk设备驱动控制块 */
 static struct driver_t clk_mux = {
 	.name		= "clk-mux",
 	.probe		= clk_mux_probe,
@@ -225,11 +236,13 @@ static struct driver_t clk_mux = {
 	.resume		= clk_mux_resume,
 };
 
+/* mux-clk设备驱动初始化 */
 static __init void clk_mux_driver_init(void)
 {
 	register_driver(&clk_mux);
 }
 
+/* mux-clk设备驱动退出 */
 static __exit void clk_mux_driver_exit(void)
 {
 	unregister_driver(&clk_mux);

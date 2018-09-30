@@ -13,7 +13,7 @@ enum device_type_t {
     DEVICE_TYPE_BATTERY         = 2,    /* 电池设备 */
     DEVICE_TYPE_BLOCK           = 3,    /* 块设备 */
     DEVICE_TYPE_BUZZER          = 4,    /*  蜂鸣器设备 */
-    DEVICE_TYPE_CLK             = 5,    /*  */
+    DEVICE_TYPE_CLK             = 5,    /*  CLK设备 */
     DEVICE_TYPE_CLOCKEVENT      = 6,    /* 时钟事件设备 */
     DEVICE_TYPE_CLOCKSOURCE     = 7,    /* 时钟源设备 */
     DEVICE_TYPE_COMPASS         = 8,    /*  */

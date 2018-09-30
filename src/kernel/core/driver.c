@@ -176,12 +176,18 @@ void probe_device(const char * json, int length)
 		{
 			for(i = 0; i < v->u.object.length; i++)
 			{
+			    /* 获取键 */
 				p = (char *)(v->u.object.values[i].name);
+                /* 截取@前名称部分 */
 				n.name = strsep(&p, "@");
+                /* 获取@后地址部分 */
 				n.addr = p ? strtoull(p, NULL, 0) : 0;
+                /* 获取值 */
 				n.value = (struct json_value_t *)(v->u.object.values[i].value);
 
+                /* 根据名称搜索驱动 */
 				drv = search_driver(n.name);
+                /* 搜索到驱动并且探测设备 */
 				if(drv && (dev = drv->probe(drv, &n)))
 					LOG("Probe device '%s' with %s", dev->name, drv->name);
 				else

@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <clk/clk.h>
 
+/* clk概要读取 */
 static ssize_t clk_read_summary(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clk_t * clk = (struct clk_t *)kobj->priv;
@@ -61,12 +62,14 @@ static ssize_t clk_write_parent(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* clk设备使能状态读取 */
 static ssize_t clk_read_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clk_t * clk = (struct clk_t *)kobj->priv;
 	return sprintf(buf, "%d", clk_status(clk->name) ? 1 : 0);
 }
 
+/* clk设备使能状态写入 */
 static ssize_t clk_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clk_t * clk = (struct clk_t *)kobj->priv;
@@ -78,6 +81,7 @@ static ssize_t clk_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* clk速率读取 */
 static ssize_t clk_read_rate(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clk_t * clk = (struct clk_t *)kobj->priv;
@@ -85,6 +89,7 @@ static ssize_t clk_read_rate(struct kobj_t * kobj, void * buf, size_t size)
 	return sprintf(buf, "%Ld.%06LdMHZ", rate / (u64_t)(1000 * 1000), rate % (u64_t)(1000 * 1000));
 }
 
+/* clk设备速率写入 */
 static ssize_t clk_write_rate(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clk_t * clk = (struct clk_t *)kobj->priv;
@@ -93,6 +98,7 @@ static ssize_t clk_write_rate(struct kobj_t * kobj, void * buf, size_t size)
 	return size;
 }
 
+/* 根据名称搜索一个clk设备 */
 struct clk_t * search_clk(const char * name)
 {
 	struct device_t * dev;
@@ -103,6 +109,7 @@ struct clk_t * search_clk(const char * name)
 	return (struct clk_t *)dev->priv;
 }
 
+/* 注册一个clk设备 */
 bool_t register_clk(struct device_t ** device, struct clk_t * clk)
 {
 	struct device_t * dev;
@@ -140,6 +147,7 @@ bool_t register_clk(struct device_t ** device, struct clk_t * clk)
 	return TRUE;
 }
 
+/* 注销一个clk设备 */
 bool_t unregister_clk(struct clk_t * clk)
 {
 	struct device_t * dev;
@@ -160,6 +168,7 @@ bool_t unregister_clk(struct clk_t * clk)
 	return TRUE;
 }
 
+/* 设置clk设备父clk设置接口调用 */
 void clk_set_parent(const char * name, const char * pname)
 {
 	struct clk_t * clk = search_clk(name);
@@ -169,6 +178,7 @@ void clk_set_parent(const char * name, const char * pname)
 		clk->set_parent(clk, pname);
 }
 
+/* 设置clk设备父clk获取接口调用 */
 const char * clk_get_parent(const char * name)
 {
 	struct clk_t * clk = search_clk(name);
@@ -178,6 +188,7 @@ const char * clk_get_parent(const char * name)
 	return NULL;
 }
 
+/* clk设备enable */
 void clk_enable(const char * name)
 {
 	struct clk_t * clk = search_clk(name);
@@ -194,6 +205,7 @@ void clk_enable(const char * name)
 	clk->count++;
 }
 
+/* clk设备disable */
 void clk_disable(const char * name)
 {
 	struct clk_t * clk = search_clk(name);
@@ -214,6 +226,7 @@ void clk_disable(const char * name)
 	}
 }
 
+/* 查询clk设备状态 */
 bool_t clk_status(const char * name)
 {
 	struct clk_t * clk = search_clk(name);
@@ -230,6 +243,7 @@ bool_t clk_status(const char * name)
 	return FALSE;
 }
 
+/* clk设备速率设置 */
 void clk_set_rate(const char * name, u64_t rate)
 {
 	struct clk_t * clk = search_clk(name);
@@ -247,6 +261,7 @@ void clk_set_rate(const char * name, u64_t rate)
 		clk->set_rate(clk, prate, rate);
 }
 
+/* clk设备速率获取 */
 u64_t clk_get_rate(const char * name)
 {
 	struct clk_t * clk = search_clk(name);

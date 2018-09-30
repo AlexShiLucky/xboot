@@ -32,18 +32,21 @@ static void null_interrupt_function(void * data)
 {
 }
 
+/* irq设备基地址读取 */
 static ssize_t irqchip_read_base(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct irqchip_t * chip = (struct irqchip_t *)kobj->priv;
 	return sprintf(buf, "%d", chip->base);
 }
 
+/* irq设备号读取 */
 static ssize_t irqchip_read_nirq(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct irqchip_t * chip = (struct irqchip_t *)kobj->priv;
 	return sprintf(buf, "%d", chip->nirq);
 }
 
+/* 搜索一个irq设备 */
 static struct irqchip_t * search_irqchip(int irq)
 {
 	struct device_t * pos, * n;
@@ -58,6 +61,7 @@ static struct irqchip_t * search_irqchip(int irq)
 	return NULL;
 }
 
+/* 注册一个irq设备 */
 bool_t register_irqchip(struct device_t ** device, struct irqchip_t * chip)
 {
 	struct device_t * dev;
@@ -103,6 +107,7 @@ bool_t register_irqchip(struct device_t ** device, struct irqchip_t * chip)
 	return TRUE;
 }
 
+/* 注销一个irq设备 */
 bool_t unregister_irqchip(struct irqchip_t * chip)
 {
 	struct device_t * dev;
@@ -137,6 +142,7 @@ bool_t unregister_irqchip(struct irqchip_t * chip)
 	return TRUE;
 }
 
+/* 注册子irq设备 */
 bool_t register_sub_irqchip(struct device_t ** device, int parent, struct irqchip_t * chip)
 {
 	int i;
@@ -163,6 +169,7 @@ bool_t register_sub_irqchip(struct device_t ** device, int parent, struct irqchi
 	return register_irqchip(device, chip);
 }
 
+/* 注销一个子irq设备 */
 bool_t unregister_sub_irqchip(int parent, struct irqchip_t * chip)
 {
 	if(!chip || !chip->name)
@@ -177,11 +184,13 @@ bool_t unregister_sub_irqchip(int parent, struct irqchip_t * chip)
 	return unregister_irqchip(chip);
 }
 
+/* 判断irq设备是否有效 */
 bool_t irq_is_valid(int irq)
 {
 	return search_irqchip(irq) ? TRUE : FALSE;
 }
 
+/* irq请求 */
 bool_t request_irq(int irq, void (*func)(void *), enum irq_type_t type, void * data)
 {
 	struct irqchip_t * chip;
@@ -208,6 +217,7 @@ bool_t request_irq(int irq, void (*func)(void *), enum irq_type_t type, void * d
 	return TRUE;
 }
 
+/* 释放irq */
 bool_t free_irq(int irq)
 {
 	struct irqchip_t * chip;
@@ -231,6 +241,7 @@ bool_t free_irq(int irq)
 	return TRUE;
 }
 
+/* enable irq接口调用 */
 void enable_irq(int irq)
 {
 	struct irqchip_t * chip = search_irqchip(irq);
@@ -239,6 +250,7 @@ void enable_irq(int irq)
 		chip->enable(chip, irq - chip->base);
 }
 
+/* disable irq接口调用 */
 void disable_irq(int irq)
 {
 	struct irqchip_t * chip = search_irqchip(irq);
@@ -247,6 +259,7 @@ void disable_irq(int irq)
 		chip->disable(chip, irq - chip->base);
 }
 
+/* 中断异常处理调度 */
 void interrupt_handle_exception(void * regs)
 {
 	struct device_t * pos, * n;

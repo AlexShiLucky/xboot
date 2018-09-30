@@ -128,6 +128,7 @@ static int i2c_gpio_xfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 	return i2c_algo_bit_xfer(bdat, msgs, num);
 }
 
+/* i2c-gpio探针 */
 static struct device_t * i2c_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct i2c_gpio_pdata_t * pdat;
@@ -215,6 +216,7 @@ static struct device_t * i2c_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	return dev;
 }
 
+/* i2c-gpio移除 */
 static void i2c_gpio_remove(struct device_t * dev)
 {
 	struct i2c_t * i2c = (struct i2c_t *)dev->priv;
@@ -227,14 +229,17 @@ static void i2c_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* i2c-gpio挂起 */
 static void i2c_gpio_suspend(struct device_t * dev)
 {
 }
 
+/* i2c-gpio释放 */
 static void i2c_gpio_resume(struct device_t * dev)
 {
 }
 
+/* i2c-gpio设备驱动控制块 */
 static struct driver_t i2c_gpio = {
 	.name		= "i2c-gpio",
 	.probe		= i2c_gpio_probe,
@@ -243,11 +248,13 @@ static struct driver_t i2c_gpio = {
 	.resume		= i2c_gpio_resume,
 };
 
+/* i2c-gpio驱动初始化 */
 static __init void i2c_gpio_driver_init(void)
 {
 	register_driver(&i2c_gpio);
 }
 
+/* i2c-gpio驱动退出 */
 static __exit void i2c_gpio_driver_exit(void)
 {
 	unregister_driver(&i2c_gpio);

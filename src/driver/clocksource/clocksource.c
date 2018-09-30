@@ -37,6 +37,7 @@ static u64_t __cs_dummy_read(struct clocksource_t * cs)
 	return __cs_dummy_cycle++;
 }
 
+/* 默认时钟源定义 */
 static struct clocksource_t __cs_dummy = {
 	.keeper = {
 		.interval = 35184372083832,
@@ -50,21 +51,25 @@ static struct clocksource_t __cs_dummy = {
 	.shift = 18,
 	.read = __cs_dummy_read,
 };
+/* 当前时钟源指针 */
 static struct clocksource_t * __clocksource = &__cs_dummy;
 static spinlock_t __clocksource_lock = SPIN_LOCK_INIT();
 
+/* 读取时钟源乘数 */
 static ssize_t clocksource_read_mult(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
 	return sprintf(buf, "%u", cs->mult);
 }
 
+/* 读取时钟源除数 */
 static ssize_t clocksource_read_shift(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
 	return sprintf(buf, "%u", cs->shift);
 }
 
+/* 读取时钟源周期 */
 static ssize_t clocksource_read_period(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
@@ -72,6 +77,7 @@ static ssize_t clocksource_read_period(struct kobj_t * kobj, void * buf, size_t 
 	return sprintf(buf, "%llu.%09llu", period / 1000000000ULL, period % 1000000000ULL);
 }
 
+/* 读取时钟源延期 */
 static ssize_t clocksource_read_deferment(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
@@ -79,12 +85,14 @@ static ssize_t clocksource_read_deferment(struct kobj_t * kobj, void * buf, size
 	return sprintf(buf, "%llu.%09llu", max / 1000000000ULL, max % 1000000000ULL);
 }
 
+/* 读取时钟源周期数 */
 static ssize_t clocksource_read_cycle(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
 	return sprintf(buf, "%llu", clocksource_cycle(cs));
 }
 
+/* 读取时钟源时间 */
 static ssize_t clocksource_read_time(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct clocksource_t * cs = (struct clocksource_t *)kobj->priv;
@@ -219,6 +227,7 @@ bool_t unregister_clocksource(struct clocksource_t * cs)
 	return TRUE;
 }
 
+/* 将时钟源转ktime */
 ktime_t clocksource_ktime_get(struct clocksource_t * cs)
 {
 	if(cs)
@@ -226,6 +235,7 @@ ktime_t clocksource_ktime_get(struct clocksource_t * cs)
 	return ns_to_ktime(0);
 }
 
+/* 获取当前ktime */
 ktime_t ktime_get(void)
 {
 	return clocksource_keeper_read(__clocksource);

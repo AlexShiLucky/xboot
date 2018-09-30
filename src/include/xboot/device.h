@@ -17,7 +17,7 @@ enum device_type_t {
     DEVICE_TYPE_CLOCKEVENT      = 6,    /* 时钟事件设备 */
     DEVICE_TYPE_CLOCKSOURCE     = 7,    /* 时钟源设备 */
     DEVICE_TYPE_COMPASS         = 8,    /*  */
-    DEVICE_TYPE_CONSOLE         = 9,    /*  */
+    DEVICE_TYPE_CONSOLE         = 9,    /* 控制台设备 */
     DEVICE_TYPE_DAC             = 10,   /* dac设备 */
     DEVICE_TYPE_DISK            = 11,   /*  */
     DEVICE_TYPE_FRAMEBUFFER     = 12,   /* 帧缓存设备 */
@@ -26,15 +26,15 @@ enum device_type_t {
     DEVICE_TYPE_GYROSCOPE       = 15,   /* 陀螺仪设备 */
     DEVICE_TYPE_HYGROMETER      = 16,   /* 湿度计设备 */
     DEVICE_TYPE_I2C             = 17,   /* i2c设备 */
-    DEVICE_TYPE_INPUT           = 18,   /*  */
-    DEVICE_TYPE_IRQCHIP         = 19,   /*  */
+    DEVICE_TYPE_INPUT           = 18,   /*  输入设备 */
+    DEVICE_TYPE_IRQCHIP         = 19,   /*  IRQ设备 */
     DEVICE_TYPE_LASERSCAN       = 20,   /*  */
     DEVICE_TYPE_LED             = 21,   /*  Led设备 */
     DEVICE_TYPE_LEDSTRIP        = 22,   /*  */
     DEVICE_TYPE_LEDTRIGGER      = 23,   /*  */
     DEVICE_TYPE_LIGHT           = 24,   /*  */
     DEVICE_TYPE_MOTOR           = 25,   /*  Motor设备 */
-    DEVICE_TYPE_NVMEM           = 26,   /* NVMEM设备 */
+    DEVICE_TYPE_NVMEM           = 26,   /* 非易失Memory设备 */
     DEVICE_TYPE_PRESSURE        = 27,   /* 压力传感器设备 */
     DEVICE_TYPE_PROXIMITY       = 28,   /*  距离传感器设备 */
     DEVICE_TYPE_PWM             = 29,   /* PWM设备 */

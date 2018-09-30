@@ -134,16 +134,19 @@ static inline void clocksource_calc_mult_shift(u32_t * mult, u32_t * shift, u32_
 	*shift = sft;
 }
 
+/* 时钟源延期 */
 static inline u64_t clocksource_deferment(struct clocksource_t * cs)
 {
 	return ((u64_t)cs->mask * cs->mult) >> cs->shift;
 }
 
+/* 时钟源周期数 */
 static inline u64_t clocksource_cycle(struct clocksource_t * cs)
 {
 	return cs->read(cs) & cs->mask;
 }
 
+/* 计算时钟源时间差 */
 static inline u64_t clocksource_delta(struct clocksource_t * cs, u64_t last, u64_t now)
 {
 	if(last < now)
@@ -151,11 +154,13 @@ static inline u64_t clocksource_delta(struct clocksource_t * cs, u64_t last, u64
 	return (cs->mask + 1 - last + now) & cs->mask;
 }
 
+/* 将时钟源时间转换成ns */
 static inline u64_t clocksource_delta2ns(struct clocksource_t * cs, u64_t delta)
 {
 	return (delta * cs->mult) >> cs->shift;
 }
 
+/* 时钟源读取 */
 static inline ktime_t clocksource_keeper_read(struct clocksource_t * cs)
 {
 	u64_t now, delta, offset;
@@ -163,8 +168,11 @@ static inline ktime_t clocksource_keeper_read(struct clocksource_t * cs)
 
 	do {
 		seq = read_seqbegin(&cs->keeper.lock);
+        /* 获取当前周期数 */
 		now = clocksource_cycle(cs);
+        /* 计算时间差 */
 		delta = clocksource_delta(cs, cs->keeper.last, now);
+        /* 将周期数转化成纳秒数 */
 		offset = clocksource_delta2ns(cs, delta);
 	} while(read_seqretry(&cs->keeper.lock, seq));
 	return ns_to_ktime(cs->keeper.nsec + offset);

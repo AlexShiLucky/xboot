@@ -8,6 +8,7 @@ extern "C" {
 #include <xboot.h>
 #include <nvmem/kvdb.h>
 
+/* 非易失memory数据结构 */
 struct nvmem_t
 {
 	char * name;

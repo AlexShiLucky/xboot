@@ -154,6 +154,7 @@ static int i2c_inb(struct i2c_algo_bit_data_t * bdat)
 	return indata;
 }
 
+/* 尝试重发地址 */
 static int try_address(struct i2c_algo_bit_data_t * bdat, unsigned char addr, int retries)
 {
 	int i, ret = 0;

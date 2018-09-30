@@ -8,12 +8,12 @@ extern "C" {
 #include <xboot.h>
 
 enum irq_type_t {
-	IRQ_TYPE_NONE			= 0,
-	IRQ_TYPE_LEVEL_LOW		= 1,
-	IRQ_TYPE_LEVEL_HIGH		= 2,
-	IRQ_TYPE_EDGE_FALLING	= 3,
-	IRQ_TYPE_EDGE_RISING	= 4,
-	IRQ_TYPE_EDGE_BOTH		= 5,
+	IRQ_TYPE_NONE			= 0,    /* 无效IRQ类型 */
+	IRQ_TYPE_LEVEL_LOW		= 1,    /* 低电平IRQ类型 */
+	IRQ_TYPE_LEVEL_HIGH		= 2,    /* 高电平IRQ类型 */
+	IRQ_TYPE_EDGE_FALLING	= 3,    /* 下降沿IRQ类型 */
+	IRQ_TYPE_EDGE_RISING	= 4,    /* 上升沿IRQ类型 */
+	IRQ_TYPE_EDGE_BOTH		= 5,    /* 双边沿IRQ类型 */
 };
 
 struct irq_handler_t {

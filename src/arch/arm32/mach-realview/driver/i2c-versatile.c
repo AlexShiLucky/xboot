@@ -45,41 +45,50 @@
  *   }
  */
 
+/* I2C Control */
 #define I2C_CONTROL		(0x00)
+/* I2C Control Set */
 #define I2C_CONTROLS	(0x00)
+/* I2C Control Clear */
 #define I2C_CONTROLC	(0x04)
 #define SCL				(1 << 0)
 #define SDA				(1 << 1)
 
+/* 通用i2c私有数据结构 */
 struct i2c_versatile_pdata_t {
 	virtual_addr_t virt;
 	struct i2c_algo_bit_data_t bdat;
 };
 
+/* i2c-versatile设备SDA设置 */
 static void i2c_versatile_setsda(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
 	write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SDA);
 }
 
+/* i2c-versatile设备SCL设置 */
 static void i2c_versatile_setscl(struct i2c_algo_bit_data_t * bdat, int state)
 {
 	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
 	write32(pdat->virt + (state ? I2C_CONTROLS : I2C_CONTROLC), SCL);
 }
 
+/* i2c-versatile设备SDA获取 */
 static int i2c_versatile_getsda(struct i2c_algo_bit_data_t * bdat)
 {
 	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
 	return !!(read32(pdat->virt + I2C_CONTROL) & SDA);
 }
 
+/* i2c-versatile设备SCL获取 */
 static int i2c_versatile_getscl(struct i2c_algo_bit_data_t * bdat)
 {
 	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)bdat->priv;
 	return !!(read32(pdat->virt + I2C_CONTROL) & SCL);
 }
 
+/* i2c-versatile设备消息传送 */
 static int i2c_versatile_xfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int num)
 {
 	struct i2c_versatile_pdata_t * pdat = (struct i2c_versatile_pdata_t *)i2c->priv;
@@ -87,6 +96,7 @@ static int i2c_versatile_xfer(struct i2c_t * i2c, struct i2c_msg_t * msgs, int n
 	return i2c_algo_bit_xfer(bdat, msgs, num);
 }
 
+/* i2c-versatile设备探针 */
 static struct device_t * i2c_versatile_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct i2c_versatile_pdata_t * pdat;
@@ -132,6 +142,7 @@ static struct device_t * i2c_versatile_probe(struct driver_t * drv, struct dtnod
 	return dev;
 }
 
+/* i2c-versatile设备移除 */
 static void i2c_versatile_remove(struct device_t * dev)
 {
 	struct i2c_t * i2c = (struct i2c_t *)dev->priv;
@@ -144,15 +155,17 @@ static void i2c_versatile_remove(struct device_t * dev)
 	}
 }
 
+/* i2c-versatile设备挂起 */
 static void i2c_versatile_suspend(struct device_t * dev)
 {
 }
 
+/* i2c-versatile设备释放 */
 static void i2c_versatile_resume(struct device_t * dev)
 {
 }
 
-/* 全局i2c驱动控制块 */
+/* i2c-versatile设备驱动控制块 */
 static struct driver_t i2c_versatile = {
 	.name		= "i2c-versatile",
 	.probe		= i2c_versatile_probe,
@@ -161,11 +174,13 @@ static struct driver_t i2c_versatile = {
 	.resume		= i2c_versatile_resume,
 };
 
+/* i2c-versatile设备驱动初始化*/
 static __init void i2c_versatile_driver_init(void)
 {
 	register_driver(&i2c_versatile);
 }
 
+/* i2c-versatile设备驱动退出 */
 static __exit void i2c_versatile_driver_exit(void)
 {
 	unregister_driver(&i2c_versatile);

@@ -29,18 +29,21 @@
 #include <crc32.h>
 #include <nvmem/nvmem.h>
 
+/* 读取非易失memory概要 */
 static ssize_t nvmem_read_summary(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct nvmem_t * m = (struct nvmem_t *)kobj->priv;
 	return kvdb_summary(m->db, buf);
 }
 
+/* 非易失memory容量读取 */
 static ssize_t nvmem_read_capacity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct nvmem_t * m = (struct nvmem_t *)kobj->priv;
 	return sprintf(buf, "%d", nvmem_capacity(m));
 }
 
+/* 根据名称搜索一个非易失memory设备 */
 struct nvmem_t * search_nvmem(const char * name)
 {
 	struct device_t * dev;
@@ -51,6 +54,7 @@ struct nvmem_t * search_nvmem(const char * name)
 	return (struct nvmem_t *)dev->priv;
 }
 
+/* 搜索第一个非易失memory设备 */
 struct nvmem_t * search_first_nvmem(void)
 {
 	struct device_t * dev;
@@ -61,6 +65,7 @@ struct nvmem_t * search_first_nvmem(void)
 	return (struct nvmem_t *)dev->priv;
 }
 
+/* 初始化非易失memory key-value数据库 */
 static bool_t nvmem_init_kvdb(struct nvmem_t * m)
 {
 	uint32_t c, crc = 0;
@@ -114,7 +119,7 @@ static bool_t nvmem_init_kvdb(struct nvmem_t * m)
 	return TRUE;
 }
 
-/* 注册一个nvmem设备 */
+/* 注册一个非易失memory设备 */
 bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
 {
 	struct device_t * dev;
@@ -153,7 +158,7 @@ bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
 	return TRUE;
 }
 
-/* 注销一个nvmem设备 */
+/* 注销一个非易失memory设备 */
 bool_t unregister_nvmem(struct nvmem_t * m)
 {
 	struct device_t * dev;
@@ -176,7 +181,7 @@ bool_t unregister_nvmem(struct nvmem_t * m)
 	return TRUE;
 }
 
-/* nvmem设备容量读取接口调用 */
+/* 非易失memory设备容量读取接口调用 */
 int nvmem_capacity(struct nvmem_t * m)
 {
 	if(m && m->capacity)
@@ -184,7 +189,7 @@ int nvmem_capacity(struct nvmem_t * m)
 	return 0;
 }
 
-/* nvmem设备读取接口调用 */
+/* 非易失memory设备读取接口调用 */
 int nvmem_read(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	int capacity;
@@ -205,7 +210,7 @@ int nvmem_read(struct nvmem_t * m, void * buf, int offset, int count)
 	return 0;
 }
 
-/* nvmem设备写入接口调用 */
+/* 非易失memory设备写入接口调用 */
 int nvmem_write(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	int capacity;
@@ -226,12 +231,14 @@ int nvmem_write(struct nvmem_t * m, void * buf, int offset, int count)
 	return 0;
 }
 
+/* 非易失memory设备设置key-value */
 void nvmem_set(struct nvmem_t * m, const char * key, const char * value)
 {
 	if(m && m->db)
 		kvdb_set(m->db, key, value);
 }
 
+/* 非易失memory设备获取key-value */
 char * nvmem_get(struct nvmem_t * m, const char * key, const char * def)
 {
 	if(m && m->db)
@@ -239,12 +246,14 @@ char * nvmem_get(struct nvmem_t * m, const char * key, const char * def)
 	return (char *)def;
 }
 
+/* 非易失memory设备清理 */
 void nvmem_clear(struct nvmem_t * m)
 {
 	if(m && m->db)
 		return kvdb_clear(m->db);
 }
 
+/* 非易失memory同步 */
 void nvmem_sync(struct nvmem_t * m)
 {
 	uint32_t c = 0;
@@ -254,6 +263,7 @@ void nvmem_sync(struct nvmem_t * m)
 
 	if(m && m->db)
 	{
+	    /* 将key-value数据库转换成字符串 */
 		s = kvdb_to_string(m->db);
 		if(s)
 		{
@@ -262,13 +272,17 @@ void nvmem_sync(struct nvmem_t * m)
 			h[5] = (l >>  8) & 0xff;
 			h[6] = (l >> 16) & 0xff;
 			h[7] = (l >> 24) & 0xff;
+            /* 计算长度CRC */
 			c = crc32_sum(c, (const uint8_t *)(&h[4]), 4);
+            /* 计算长度+内容CRC */
 			c = crc32_sum(c, (const uint8_t *)s, l);
 			h[0] = (c >>  0) & 0xff;
 			h[1] = (c >>  8) & 0xff;
 			h[2] = (c >> 16) & 0xff;
 			h[3] = (c >> 24) & 0xff;
+            /* 将CRC和Length写入保存 */
 			nvmem_write(m, h, 0, 8);
+            /* 将内容写入保存 */
 			nvmem_write(m, s, 8, l);
 			free(s);
 		}

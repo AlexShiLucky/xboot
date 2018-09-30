@@ -287,6 +287,7 @@ char * kvdb_to_string(struct kvdb_t * db)
 	return str;
 }
 
+/* key-value数据库概要 */
 int kvdb_summary(struct kvdb_t * db, void * buf)
 {
 	struct record_t * pos, * n;

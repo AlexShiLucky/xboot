@@ -30,11 +30,13 @@
 #include <i2c/i2c.h>
 #include <nvmem/nvmem.h>
 
+/* i2c设备at24c02私有数据结构 */
 struct i2c_at24c02_pdata_t {
 	struct i2c_device_t * dev;
 	int capacity;
 };
 
+/* at24c02设备指定地址读取一个字节 */
 static bool_t at24c02_read_byte(struct i2c_device_t * dev, uint8_t addr, uint8_t * val)
 {
 	struct i2c_msg_t msgs[2];
@@ -54,6 +56,7 @@ static bool_t at24c02_read_byte(struct i2c_device_t * dev, uint8_t addr, uint8_t
 	return TRUE;
 }
 
+/* at24c02设备指定地址写入一个字节 */
 static bool_t at24c02_write_byte(struct i2c_device_t * dev, uint8_t addr, uint8_t * val)
 {
 	struct i2c_msg_t msg;
@@ -71,12 +74,14 @@ static bool_t at24c02_write_byte(struct i2c_device_t * dev, uint8_t addr, uint8_
 	return TRUE;
 }
 
+/* at24c02设备容量获取 */
 static int i2c_at24c02_capacity(struct nvmem_t * m)
 {
 	struct i2c_at24c02_pdata_t * pdat = (struct i2c_at24c02_pdata_t *)m->priv;
 	return pdat->capacity;
 }
 
+/* at24c02设备读取 */
 static int i2c_at24c02_read(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	struct i2c_at24c02_pdata_t * pdat = (struct i2c_at24c02_pdata_t *)m->priv;
@@ -91,6 +96,7 @@ static int i2c_at24c02_read(struct nvmem_t * m, void * buf, int offset, int coun
 	return i;
 }
 
+/* at24c02设备写入 */
 static int i2c_at24c02_write(struct nvmem_t * m, void * buf, int offset, int count)
 {
 	struct i2c_at24c02_pdata_t * pdat = (struct i2c_at24c02_pdata_t *)m->priv;
@@ -105,6 +111,7 @@ static int i2c_at24c02_write(struct nvmem_t * m, void * buf, int offset, int cou
 	return i;
 }
 
+/* i2c-at24c02设备探针 */
 static struct device_t * i2c_at24c02_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct i2c_at24c02_pdata_t * pdat;
@@ -161,6 +168,7 @@ static struct device_t * i2c_at24c02_probe(struct driver_t * drv, struct dtnode_
 	return dev;
 }
 
+/* i2c-at24c02设备移除 */
 static void i2c_at24c02_remove(struct device_t * dev)
 {
 	struct nvmem_t * m = (struct nvmem_t *)dev->priv;
@@ -176,14 +184,17 @@ static void i2c_at24c02_remove(struct device_t * dev)
 	}
 }
 
+/* i2c-at24c02设备挂起 */
 static void i2c_at24c02_suspend(struct device_t * dev)
 {
 }
 
+/* i2c-at24c02设备释放 */
 static void i2c_at24c02_resume(struct device_t * dev)
 {
 }
 
+/* i2c-at24c02设备驱动控制块 */
 static struct driver_t i2c_at24c02 = {
 	.name		= "i2c-at24c02",
 	.probe		= i2c_at24c02_probe,
@@ -192,11 +203,13 @@ static struct driver_t i2c_at24c02 = {
 	.resume		= i2c_at24c02_resume,
 };
 
+/* i2c-at24c02设备驱动初始化 */
 static __init void i2c_at24c02_driver_init(void)
 {
 	register_driver(&i2c_at24c02);
 }
 
+/* i2c-at24c02设备驱动退出 */
 static __exit void i2c_at24c02_driver_exit(void)
 {
 	unregister_driver(&i2c_at24c02);

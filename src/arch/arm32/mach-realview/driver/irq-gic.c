@@ -52,6 +52,7 @@ enum {
 	DIST_SOFTINT		= 0x1f00,
 };
 
+/* GIC(Generic Interrupt Controller)私有数据结构 */
 struct irq_gic_pdata_t
 {
 	virtual_addr_t virt;
@@ -59,6 +60,7 @@ struct irq_gic_pdata_t
 	int nirq;
 };
 
+/* gic irq enable具体实现 */
 static void irq_gic_enable(struct irqchip_t * chip, int offset)
 {
 	struct irq_gic_pdata_t * pdat = (struct irq_gic_pdata_t *)chip->priv;
@@ -66,6 +68,7 @@ static void irq_gic_enable(struct irqchip_t * chip, int offset)
 	write32(pdat->virt + DIST_ENABLE_SET + (irq / 32) * 4, 1 << (irq % 32));
 }
 
+/* gic irq disable具体实现 */
 static void irq_gic_disable(struct irqchip_t * chip, int offset)
 {
 	struct irq_gic_pdata_t * pdat = (struct irq_gic_pdata_t *)chip->priv;
@@ -77,6 +80,7 @@ static void irq_gic_settype(struct irqchip_t * chip, int offset, enum irq_type_t
 {
 }
 
+/* gic irq调度具体实现 */
 static void irq_gic_dispatch(struct irqchip_t * chip)
 {
 	struct irq_gic_pdata_t * pdat = (struct irq_gic_pdata_t *)chip->priv;
@@ -159,6 +163,7 @@ static void gic_cpu_init(virtual_addr_t virt)
 	write32(virt + CPU_CTRL, 0x1);
 }
 
+/* gic irq探针 */
 static struct device_t * irq_gic_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct irq_gic_pdata_t * pdat;
@@ -213,6 +218,7 @@ static struct device_t * irq_gic_probe(struct driver_t * drv, struct dtnode_t * 
 	return dev;
 }
 
+/* gic irq移除 */
 static void irq_gic_remove(struct device_t * dev)
 {
 	struct irqchip_t * chip = (struct irqchip_t *)dev->priv;
@@ -226,14 +232,17 @@ static void irq_gic_remove(struct device_t * dev)
 	}
 }
 
+/* gic irq挂起 */
 static void irq_gic_suspend(struct device_t * dev)
 {
 }
 
+/* gic irq释放 */
 static void irq_gic_resume(struct device_t * dev)
 {
 }
 
+/* gic irq设备驱动控制块 */
 static struct driver_t irq_gic = {
 	.name		= "irq-gic",
 	.probe		= irq_gic_probe,
@@ -242,11 +251,13 @@ static struct driver_t irq_gic = {
 	.resume		= irq_gic_resume,
 };
 
+/* gic irq设备驱动初始化 */
 static __init void irq_gic_driver_init(void)
 {
 	register_driver(&irq_gic);
 }
 
+/* gic irq设备驱动退出 */
 static __exit void irq_gic_driver_exit(void)
 {
 	unregister_driver(&irq_gic);

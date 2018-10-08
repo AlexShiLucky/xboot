@@ -188,15 +188,15 @@ void probe_device(const char * json, int length, const char * tips)
 
 				if(strcmp(dt_read_string(&n, "status", NULL), "disabled") != 0)
 				{
-                /* 根据名称搜索驱动 */
-				drv = search_driver(n.name);
-                /* 搜索到驱动并且探测设备 */
-				if(drv && (dev = drv->probe(drv, &n)))
-					LOG("Probe device '%s' with %s", dev->name, drv->name);
-				else
-					LOG("Fail to probe device with %s", n.name);
-			}
-		}
+                    /* 根据名称搜索驱动 */
+    				drv = search_driver(n.name);
+                    /* 搜索到驱动并且探测设备 */
+    				if(drv && (dev = drv->probe(drv, &n)))
+    					LOG("Probe device '%s' with %s", dev->name, drv->name);
+    				else
+    					LOG("Fail to probe device with %s", n.name);
+			    }
+		    }
 		}
 		else
 		{

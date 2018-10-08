@@ -12,11 +12,11 @@ PLATFORM		?= arm32-realview
 #
 # Get platform information about ARCH and MACH from PLATFORM variable.
 #
-# ½«PLATFORMÖĞ-Ìæ»»Îª¿Õ¸ñ,È»ºóÅĞ¶Ïµ¥´ÊÊıÊÇ·ñÎª2
+# å°†PLATFORMä¸­-æ›¿æ¢ä¸ºç©ºæ ¼,ç„¶ååˆ¤æ–­å•è¯æ•°æ˜¯å¦ä¸º2
 ifeq ($(words $(subst -, , $(PLATFORM))), 2)
-# ARCHÎªPLATFORMµÄ-Ç°Ò»¸öµ¥´Ê£¬¼´arm32,ËùÒÔARCH=arm32
+# ARCHä¸ºPLATFORMçš„-å‰ä¸€ä¸ªå•è¯ï¼Œå³arm32,æ‰€ä»¥ARCH=arm32
 ARCH		:= $(word 1, $(subst -, , $(PLATFORM)))
-# MACHÎªPLATFORMµÄ-ºóÒ»¸öµ¥´ÊÎªºó×º,¼´realview,ËùÒÔMACH=mach-realview
+# MACHä¸ºPLATFORMçš„-åä¸€ä¸ªå•è¯ä¸ºåç¼€,å³realview,æ‰€ä»¥MACH=mach-realview
 MACH		:= mach-$(word 2, $(subst -, , $(PLATFORM)))
 else
 ARCH		:= x64
@@ -26,11 +26,15 @@ endif
 #
 # System environment variable.
 #
-# ËÑË÷ÏµÍ³Ãû³ÆÊÇ·ñÎªlinux
-ifneq (,$(findstring Linux, $(shell uname -s)))
+# æœç´¢ç³»ç»Ÿåç§°æ˜¯å¦ä¸ºlinux
+ifneq (,$(findstring Linux, $(shell uname -a)))
 HOSTOS		:= linux
-else
+endif
+ifneq (,$(findstring windows, $(shell uname -a)))
 HOSTOS		:= windows
+endif
+ifneq (,$(findstring Darwin, $(shell uname -a)))
+HOSTOS		:= macos
 endif
 
 #
@@ -49,13 +53,13 @@ SRCDIRS		:=
 #
 # Override default variables.
 #
-# µ¼ÈëxbootÅäÖÃ²ÎÊı¸²¸ÇÄ¬ÈÏÖµ
+# å¯¼å…¥xbooté…ç½®å‚æ•°è¦†ç›–é»˜è®¤å€¼
 sinclude arch/$(ARCH)/$(MACH)/xboot.mk
 
 #
 # Modify default variables.
 #
-# ×·¼Óºê¶¨Òå
+# è¿½åŠ å®å®šä¹‰
 ifeq ($(strip $(ARCH)), arm32)
 DEFINES		+=	-D__ARM32__
 endif
@@ -66,22 +70,22 @@ ifeq ($(strip $(ARCH)), x64)
 DEFINES		+=	-D__X64__
 endif
 
-# ×·¼ÓASFLAGS²ÎÊı
+# è¿½åŠ ASFLAGSå‚æ•°
 ASFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
-# ×·¼ÓCFLAGS²ÎÊı
+# è¿½åŠ CFLAGSå‚æ•°
 CFLAGS		+=	-ffunction-sections -fdata-sections -ffreestanding -std=gnu99 $(DEFINES)
-# ×·¼ÓLDFLAGS²ÎÊı
+# è¿½åŠ LDFLAGSå‚æ•°
 LDFLAGS		+=	-Wl,-gc-sections
 
 #
 # Add necessary directory for INCDIRS and SRCDIRS.
 #
-# Í·ÎÄ¼şÂ·¾¶
+# å¤´æ–‡ä»¶è·¯å¾„
 INCDIRS		+=	include										\
 				arch/$(ARCH)/include						\
 				arch/$(ARCH)/$(MACH)/include
 
-# Ô´ÎÄ¼şÂ·¾¶
+# æºæ–‡ä»¶è·¯å¾„
 SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				arch/$(ARCH)/lib							\
 				arch/$(ARCH)/$(MACH)						\
@@ -244,7 +248,7 @@ SRCDIRS		+=	external/chipmunk-7.0.2/src
 #
 # You shouldn't need to change anything below this point.
 #
-# ÃüÁî¹¤¾ß¶¨Òå
+# å‘½ä»¤å·¥å…·å®šä¹‰
 AS			:=	$(CROSS_COMPILE)gcc -x assembler-with-cpp
 CC			:=	$(CROSS_COMPILE)gcc
 CXX			:=	$(CROSS_COMPILE)g++
@@ -258,43 +262,47 @@ CP			:=	cp -af
 RM			:=	rm -fr
 CD			:=	cd
 FIND		:=	find
+ifeq ($(strip $(HOSTOS)), macos)
+CPIO		:=	gcpio -o -H newc --quiet
+else
 CPIO		:=	cpio -o -H newc --quiet
+endif
 
 #
 # Xboot variables
 #
-# XBoot ÃüÁî²ÎÊı¶¨Òå
+# XBoot å‘½ä»¤å‚æ•°å®šä¹‰
 X_ASFLAGS	:=	$(MCFLAGS) $(ASFLAGS)
 X_CFLAGS	:=	$(MCFLAGS) $(CFLAGS)
 X_LDFLAGS	:=	$(LDFLAGS)
 X_LIBS		:=	$(LIBS) -lgcc
 
-# XBoot Êä³öÂ·¾¶¶¨Òå
+# XBoot è¾“å‡ºè·¯å¾„å®šä¹‰
 X_OUT		:=	../output
-# XBoot Êä³öÎÄ¼şÃû¶¨Òå
+# XBoot è¾“å‡ºæ–‡ä»¶åå®šä¹‰
 X_NAME		:=	$(patsubst %, $(X_OUT)/%, xboot)
-# Í·ÎÄ¼şÂ·¾¶Ìí¼ÓÇ°×º -I
+# å¤´æ–‡ä»¶è·¯å¾„æ·»åŠ å‰ç¼€ -I
 X_INCDIRS	:=	$(patsubst %, -I %, $(INCDIRS))
-# ¿âÂ·¾¶ÌíÇ°×º -L
+# åº“è·¯å¾„æ·»å‰ç¼€ -L
 X_LIBDIRS	:=	$(patsubst %, -L %, $(LIBDIRS))
 X_SRCDIRS	:=	$(patsubst %, %, $(SRCDIRS))
-# Ä¿±êÎÄ¼şÂ·¾¶
+# ç›®æ ‡æ–‡ä»¶è·¯å¾„
 X_OBJDIRS	:=	$(patsubst %, .obj/%, $(X_SRCDIRS))
 
-# ËÑË÷Ô´ÎÄ¼şÂ·¾¶ÏÂµÄ.SÎÄ¼ş
+# æœç´¢æºæ–‡ä»¶è·¯å¾„ä¸‹çš„.Sæ–‡ä»¶
 X_SFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.S))
-# ËÑË÷Ô´ÎÄ¼şÂ·¾¶ÏÂµÄ.cÎÄ¼ş
+# æœç´¢æºæ–‡ä»¶è·¯å¾„ä¸‹çš„.cæ–‡ä»¶
 X_CFILES	:=	$(foreach dir, $(X_SRCDIRS), $(wildcard $(dir)/*.c))
 
 X_SDEPS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o.d))
 X_CDEPS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o.d))
 X_DEPS		:=	$(X_SDEPS) $(X_CDEPS)
 
-# .SÉú³ÉµÄÄ¿±êÎÄ¼ş
+# .Sç”Ÿæˆçš„ç›®æ ‡æ–‡ä»¶
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
-# .cÉú³ÉµÄÄ¿±êÎÄ¼ş
+# .cç”Ÿæˆçš„ç›®æ ‡æ–‡ä»¶
 X_COBJS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o))
-# È«²¿Ä¿±êÎÄ¼ş
+# å…¨éƒ¨ç›®æ ‡æ–‡ä»¶
 X_OBJS		:=	$(X_SOBJS) $(X_COBJS)
 
 VPATH		:=	$(X_OBJDIRS)

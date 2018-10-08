@@ -101,7 +101,7 @@ static int new_value(struct json_state_t * state, struct json_value_t ** top, st
 
 			if(!(value->u.object.values = (struct json_object_entry_t *)json_alloc(state, values_size + ((unsigned long)value->u.object.values), 0)))
 				return 0;
-			value->reserved.object_mem = (*(char **)&value->u.object.values) + values_size;
+			value->reserved.object_mem = (char *)value->u.object.values + values_size;
 			value->u.object.length = 0;
 			break;
 
@@ -134,7 +134,7 @@ static int new_value(struct json_state_t * state, struct json_value_t ** top, st
 
 struct json_value_t * json_parse(const char * json, size_t length, char * errbuf)
 {
-	char error[128];
+	char error[256];
 	const char * end;
 	struct json_value_t * top, * root, * alloc = 0;
 	struct json_state_t state = { 0 };
@@ -322,14 +322,14 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 
 					case JSON_OBJECT:
 						if(state.first_pass)
-							(*(char **)&top->u.object.values) += string_length + 1;
+							top->u.object.values = (void *)((char *)top->u.object.values + string_length + 1);
 						else
 						{
 							top->u.object.values[top->u.object.length].name = (char *)top->reserved.object_mem;
 							top->u.object.values[top->u.object.length].name_length = string_length;
 							(*(char **)&top->reserved.object_mem) += string_length + 1;
 						}
-						flags |= FLAG_SEEK_VALUE | FLAG_NEED_COLON;
+						flags |= (FLAG_SEEK_VALUE | FLAG_NEED_COLON);
 						continue;
 
 					default:
@@ -412,6 +412,7 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 				case '\n':
 					++state.cur_line;
 					state.cur_col = 0;
+					continue;
 				case ' ':
 				case '\t':
 				case '\r':
@@ -430,6 +431,7 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 				case '\n':
 					++state.cur_line;
 					state.cur_col = 0;
+					continue;
 				case ' ':
 				case '\t':
 				case '\r':
@@ -593,6 +595,7 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 					case '\n':
 						++state.cur_line;
 						state.cur_col = 0;
+						continue;
 					case ' ':
 					case '\t':
 					case '\r':
@@ -605,7 +608,7 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 							goto e_failed;
 						}
 						flags |= FLAG_STRING;
-						string = (char *) top->reserved.object_mem;
+						string = (char *)top->reserved.object_mem;
 						string_length = 0;
 						break;
 
@@ -614,11 +617,13 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 						break;
 
 					case ',':
-						if(flags & FLAG_NEED_COMMA)
+						if(!(flags & FLAG_NEED_COMMA))
 						{
-							flags &= ~FLAG_NEED_COMMA;
-							break;
+							sprintf(error, "%d:%d: Unexpected `%c` in object", state.cur_line, state.cur_col, b);
+							goto e_failed;
 						}
+						flags &= ~FLAG_NEED_COMMA;
+						break;
 
 					default:
 						sprintf(error, "%d:%d: Unexpected `%c` in object", state.cur_line, state.cur_col, b);
@@ -689,8 +694,7 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 								sprintf(error, "%d:%d: Expected digit after `.`", state.cur_line, state.cur_col);
 								goto e_failed;
 							}
-							double p = (pow(10.0, (double)num_digits));
-							top->u.dbl += ((double)num_fraction) / p;
+							top->u.dbl += ((double) num_fraction) / (pow(10.0, (double) num_digits));
 						}
 
 						if(b == 'e' || b == 'E')

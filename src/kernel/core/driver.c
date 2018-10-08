@@ -160,18 +160,19 @@ bool_t unregister_driver(struct driver_t * drv)
 }
 
 /* 探测设备,根据json配置顺序初始化驱动 */
-void probe_device(const char * json, int length)
+void probe_device(const char * json, int length, const char * tips)
 {
 	struct driver_t * drv;
 	struct device_t * dev;
 	struct dtnode_t n;
 	struct json_value_t * v;
+	char errbuf[256];
 	char * p;
 	int i;
 
 	if(json && (length > 0))
 	{
-		v = json_parse(json, length, 0);
+		v = json_parse(json, length, errbuf);
 		if(v && (v->type == JSON_OBJECT))
 		{
 			for(i = 0; i < v->u.object.length; i++)
@@ -185,6 +186,8 @@ void probe_device(const char * json, int length)
                 /* 获取值 */
 				n.value = (struct json_value_t *)(v->u.object.values[i].value);
 
+				if(strcmp(dt_read_string(&n, "status", NULL), "disabled") != 0)
+				{
                 /* 根据名称搜索驱动 */
 				drv = search_driver(n.name);
                 /* 搜索到驱动并且探测设备 */
@@ -193,6 +196,11 @@ void probe_device(const char * json, int length)
 				else
 					LOG("Fail to probe device with %s", n.name);
 			}
+		}
+		}
+		else
+		{
+			LOG("[%s]-%s", tips ? tips : "Json", errbuf);
 		}
 		json_free(v);
 	}

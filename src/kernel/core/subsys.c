@@ -43,7 +43,7 @@ static void subsys_init_romdisk(void)
 		(unsigned long long)(&__romdisk_start),
 		(unsigned long long)(&__romdisk_end - &__romdisk_start));
     /* 探测romdisk设备 */
-	probe_device(json, length);
+	probe_device(json, length, NULL);
 }
 
 /* 子系统根文件系统初始化 */
@@ -83,7 +83,7 @@ static void subsys_init_dt(void)
 	    }
 	    close(fd);
         /* 探测json配置文件中的设备 */
-	    probe_device(json, len);
+		probe_device(json, len, path);
 	}
 	free(json);
 }

@@ -131,6 +131,7 @@ bool_t unregister_rtc(struct rtc_t * rtc)
 	return TRUE;
 }
 
+/* 获取某年某月的天数 */
 static int rtc_month_days(int year, int month)
 {
 	const unsigned char rtc_days_in_month[13] = {
@@ -139,6 +140,7 @@ static int rtc_month_days(int year, int month)
 	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2));
 }
 
+/* 判断时间是否有效 */
 static int rtc_time_is_valid(struct rtc_time_t * time)
 {
 	if((!time) || (time->year < 1970)
@@ -152,6 +154,7 @@ static int rtc_time_is_valid(struct rtc_time_t * time)
 	return 1;
 }
 
+/* rtc时间设置接口调用 */
 bool_t rtc_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	if(rtc && rtc->settime && rtc_time_is_valid(time))
@@ -159,6 +162,7 @@ bool_t rtc_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 	return FALSE;
 }
 
+/* rtc时间获取接口调用 */
 bool_t rtc_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
 	if(rtc && rtc->gettime)

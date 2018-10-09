@@ -30,6 +30,7 @@
 #include <pwm/pwm.h>
 #include <servo/servo.h>
 
+/* 伺服电机pwm控制方式私有数据结构 */
 struct servo_pwm_pdata_t {
 	struct pwm_t * pwm;
 	int period;
@@ -40,6 +41,7 @@ struct servo_pwm_pdata_t {
 	int angle;
 };
 
+/* 伺服电机pwm角度设置 */
 static void servo_pwm_set_angle(struct servo_pwm_pdata_t * pdat, int angle)
 {
 	int r = pdat->range / 2;
@@ -54,18 +56,21 @@ static void servo_pwm_set_angle(struct servo_pwm_pdata_t * pdat, int angle)
 	pwm_enable(pdat->pwm);
 }
 
+/* 伺服电机pwm enable接口具体实现 */
 static void servo_pwm_enable(struct servo_t * m)
 {
 	struct servo_pwm_pdata_t * pdat = (struct servo_pwm_pdata_t *)m->priv;
 	pwm_enable(pdat->pwm);
 }
 
+/* 伺服电机pwm disable接口具体实现 */
 static void servo_pwm_disable(struct servo_t * m)
 {
 	struct servo_pwm_pdata_t * pdat = (struct servo_pwm_pdata_t *)m->priv;
 	pwm_disable(pdat->pwm);
 }
 
+/* 伺服电机pwm角度设置接口具体实现 */
 static void servo_pwm_set(struct servo_t * m, int angle)
 {
 	struct servo_pwm_pdata_t * pdat = (struct servo_pwm_pdata_t *)m->priv;
@@ -77,6 +82,7 @@ static void servo_pwm_set(struct servo_t * m, int angle)
 	}
 }
 
+/* 伺服电机pwm控制探针 */
 static struct device_t * servo_pwm_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct servo_pwm_pdata_t * pdat;
@@ -125,6 +131,7 @@ static struct device_t * servo_pwm_probe(struct driver_t * drv, struct dtnode_t 
 	return dev;
 }
 
+/* 伺服电机pwm控制移除 */
 static void servo_pwm_remove(struct device_t * dev)
 {
 	struct servo_t * m = (struct servo_t *)dev->priv;
@@ -137,14 +144,17 @@ static void servo_pwm_remove(struct device_t * dev)
 	}
 }
 
+/* 伺服电机pwm控制挂起 */
 static void servo_pwm_suspend(struct device_t * dev)
 {
 }
 
+/* 伺服电机pwm控制释放 */
 static void servo_pwm_resume(struct device_t * dev)
 {
 }
 
+/* 伺服电机pwm控制驱动控制块 */
 static struct driver_t servo_pwm = {
 	.name		= "servo-pwm",
 	.probe		= servo_pwm_probe,
@@ -153,11 +163,13 @@ static struct driver_t servo_pwm = {
 	.resume		= servo_pwm_resume,
 };
 
+/* 伺服电机pwm控制驱动初始化 */
 static __init void servo_pwm_driver_init(void)
 {
 	register_driver(&servo_pwm);
 }
 
+/* 伺服电机pwm控制驱动退出 */
 static __exit void servo_pwm_driver_exit(void)
 {
 	unregister_driver(&servo_pwm);

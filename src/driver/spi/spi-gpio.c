@@ -376,10 +376,12 @@ static void spi_gpio_remove(struct device_t * dev)
 	}
 }
 
+/* spi-gpio挂起 */
 static void spi_gpio_suspend(struct device_t * dev)
 {
 }
 
+/* spi-gpio释放 */
 static void spi_gpio_resume(struct device_t * dev)
 {
 }

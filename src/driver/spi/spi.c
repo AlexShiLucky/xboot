@@ -45,7 +45,7 @@ bool_t register_spi(struct device_t ** device, struct spi_t * spi)
 {
 	struct device_t * dev;
 
-	if(!spi || !spi->name)
+	if(!spi || !spi->name || !spi->type)
 		return FALSE;
 
 	dev = malloc(sizeof(struct device_t));
@@ -120,7 +120,7 @@ void spi_deselect(struct spi_t * spi, int cs)
 }
 
 /* 根据spi相关参数申请一个spi设备 */
-struct spi_device_t * spi_device_alloc(const char * spibus, int cs, int mode, int bits, int speed)
+struct spi_device_t * spi_device_alloc(const char * spibus, int cs, int type, int mode, int bits, int speed)
 {
 	struct spi_device_t * dev;
 	struct spi_t * spi;
@@ -128,6 +128,11 @@ struct spi_device_t * spi_device_alloc(const char * spibus, int cs, int mode, in
     /* 根据名称搜索spi */
 	spi = search_spi(spibus);
 	if(!spi)
+		return NULL;
+
+	type &= (SPI_TYPE_SINGLE | SPI_TYPE_DUAL | SPI_TYPE_QUAD | SPI_TYPE_OCTAL);
+	type = (type > 0) ? type : SPI_TYPE_SINGLE;
+	if(!(spi->type & type))
 		return NULL;
 
     /* 申请一个spi设备块 */
@@ -138,6 +143,7 @@ struct spi_device_t * spi_device_alloc(const char * spibus, int cs, int mode, in
     /* 配置spi设备块 */
 	dev->spi = spi;
 	dev->cs = (cs > 0) ? cs : 0;
+	dev->type = type;
 	dev->mode = mode & 0x3;
 	dev->bits = bits;
 	dev->speed = (speed > 0) ? speed : 0;
@@ -159,6 +165,7 @@ int spi_device_write_then_read(struct spi_device_t * dev, void * txbuf, int txle
 	if(!dev)
 		return -1;
 
+	msg.type = dev->type;
 	msg.mode = dev->mode;
 	msg.bits = dev->bits;
 	msg.speed = dev->speed;

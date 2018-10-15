@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <light/light.h>
 
+/* 读取灯设备照明度 */
 static ssize_t light_read_illuminance(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct light_t * light = (struct light_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t light_read_illuminance(struct kobj_t * kobj, void * buf, size_t s
 	return sprintf(buf, "%dlx", lux);
 }
 
+/* 根据名称搜索一个灯设备 */
 struct light_t * search_light(const char * name)
 {
 	struct device_t * dev;
@@ -46,6 +48,7 @@ struct light_t * search_light(const char * name)
 	return (struct light_t *)dev->priv;
 }
 
+/* 搜索第一个灯设备 */
 struct light_t * search_first_light(void)
 {
 	struct device_t * dev;
@@ -56,6 +59,7 @@ struct light_t * search_first_light(void)
 	return (struct light_t *)dev->priv;
 }
 
+/* 注册一个灯设备 */
 bool_t register_light(struct device_t ** device,struct light_t * light)
 {
 	struct device_t * dev;
@@ -87,6 +91,7 @@ bool_t register_light(struct device_t ** device,struct light_t * light)
 	return TRUE;
 }
 
+/* 注销一个灯设备 */
 bool_t unregister_light(struct light_t * light)
 {
 	struct device_t * dev;
@@ -107,6 +112,7 @@ bool_t unregister_light(struct light_t * light)
 	return TRUE;
 }
 
+/* 获取灯设备照明度接口调用 */
 int light_get_illuminance(struct light_t * light)
 {
 	if(light && light->get)

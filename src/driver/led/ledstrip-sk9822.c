@@ -45,7 +45,7 @@
  *       "count": 64
  *   }
  */
-
+/* led灯带设备sk9822私有数据结构 */
 struct ledstrip_sk9822_pdata_t {
 	int dat;
 	int datcfg;
@@ -74,6 +74,7 @@ static void ledstrip_sk9822_send(struct ledstrip_t * strip, uint8_t byte)
 	}
 }
 
+/* led灯带设备sk9822led个数设置具体实现 */
 static void ledstrip_sk9822_set_count(struct ledstrip_t * strip, int n)
 {
 	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
@@ -88,24 +89,28 @@ static void ledstrip_sk9822_set_count(struct ledstrip_t * strip, int n)
 	}
 }
 
+/* led灯带设备sk9822led个数获取具体实现 */
 static int ledstrip_sk9822_get_count(struct ledstrip_t * strip)
 {
 	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
 	return pdat->count;
 }
 
+/* led灯带设备sk9822第i个led颜色设置具体实现 */
 static void ledstrip_sk9822_set_color(struct ledstrip_t * strip, int i, uint32_t color)
 {
 	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
 	pdat->buffer[i] = color;
 }
 
+/* led灯带设备sk9822第i个led颜色获取具体实现 */
 static uint32_t ledstrip_sk9822_get_color(struct ledstrip_t * strip, int i)
 {
 	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
 	return pdat->buffer[i];
 }
 
+/* led灯带设备sk9822刷新具体实现 */
 static void ledstrip_sk9822_refresh(struct ledstrip_t * strip)
 {
 	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
@@ -128,6 +133,7 @@ static void ledstrip_sk9822_refresh(struct ledstrip_t * strip)
 	ledstrip_sk9822_send(strip, 0xff);
 }
 
+/* led灯带设备sk9822探针 */
 static struct device_t * ledstrip_sk9822_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledstrip_sk9822_pdata_t * pdat;
@@ -198,6 +204,7 @@ static struct device_t * ledstrip_sk9822_probe(struct driver_t * drv, struct dtn
 	return dev;
 }
 
+/* led灯带设备sk9822移除 */
 static void ledstrip_sk9822_remove(struct device_t * dev)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)dev->priv;
@@ -214,14 +221,17 @@ static void ledstrip_sk9822_remove(struct device_t * dev)
 	}
 }
 
+/* led灯带设备sk9822挂起 */
 static void ledstrip_sk9822_suspend(struct device_t * dev)
 {
 }
 
+/* led灯带设备sk9822释放 */
 static void ledstrip_sk9822_resume(struct device_t * dev)
 {
 }
 
+/* led灯带设备sk9822驱动控制块 */
 static struct driver_t ledstrip_sk9822 = {
 	.name		= "ledstrip-sk9822",
 	.probe		= ledstrip_sk9822_probe,
@@ -230,11 +240,13 @@ static struct driver_t ledstrip_sk9822 = {
 	.resume		= ledstrip_sk9822_resume,
 };
 
+/* led灯带设备sk9822驱动初始化 */
 static __init void ledstrip_sk9822_driver_init(void)
 {
 	register_driver(&ledstrip_sk9822);
 }
 
+/* led灯带设备sk9822驱动退出 */
 static __exit void ledstrip_sk9822_driver_exit(void)
 {
 	unregister_driver(&ledstrip_sk9822);

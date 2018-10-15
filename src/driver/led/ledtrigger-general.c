@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/ledtrigger.h>
 
+/* led闪烁设备通用方式私有数据结构 */
 struct ledtrigger_general_pdata_t {
 	struct timer_t timer;
 	struct led_t * led;
@@ -36,6 +37,7 @@ struct ledtrigger_general_pdata_t {
 	int last_activity;
 };
 
+/* led闪烁设备通用方式定时器回调函数 */
 static int ledtrigger_general_timer_function(struct timer_t * timer, void * data)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)(data);
@@ -55,6 +57,7 @@ static int ledtrigger_general_timer_function(struct timer_t * timer, void * data
 	}
 }
 
+/* led闪烁设备通用方式激活具体实现 */
 static void ledtrigger_general_activity(struct ledtrigger_t * trigger)
 {
 	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)trigger->priv;
@@ -63,6 +66,7 @@ static void ledtrigger_general_activity(struct ledtrigger_t * trigger)
 	timer_start_now(&pdat->timer, ms_to_ktime(20));
 }
 
+/* led闪烁设备通用方式探针 */
 static struct device_t * ledtrigger_general_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledtrigger_general_pdata_t * pdat;
@@ -108,6 +112,7 @@ static struct device_t * ledtrigger_general_probe(struct driver_t * drv, struct 
 	return dev;
 }
 
+/* led闪烁设备通用方式移除 */
 static void ledtrigger_general_remove(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -123,6 +128,7 @@ static void ledtrigger_general_remove(struct device_t * dev)
 	}
 }
 
+/* led闪烁设备通用方式挂起 */
 static void ledtrigger_general_suspend(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -131,6 +137,7 @@ static void ledtrigger_general_suspend(struct device_t * dev)
 	timer_cancel(&pdat->timer);
 }
 
+/* led闪烁设备通用方式释放 */
 static void ledtrigger_general_resume(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -139,6 +146,7 @@ static void ledtrigger_general_resume(struct device_t * dev)
 	timer_cancel(&pdat->timer);
 }
 
+/* led闪烁设备通用方式驱动控制块 */
 static struct driver_t ledtrigger_general = {
 	.name		= "ledtrigger-general",
 	.probe		= ledtrigger_general_probe,
@@ -147,11 +155,13 @@ static struct driver_t ledtrigger_general = {
 	.resume		= ledtrigger_general_resume,
 };
 
+/* led闪烁设备通用方式驱动初始化 */
 static __init void ledtrigger_general_driver_init(void)
 {
 	register_driver(&ledtrigger_general);
 }
 
+/* led闪烁设备通用方式驱动退出 */
 static __exit void ledtrigger_general_driver_exit(void)
 {
 	unregister_driver(&ledtrigger_general);

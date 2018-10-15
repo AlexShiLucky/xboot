@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/ledtrigger.h>
 
+/* led闪烁设备心跳方式私有数据结构 */
 struct ledtrigger_heartbeat_pdata_t {
 	struct timer_t timer;
 	struct led_t * led;
@@ -36,6 +37,7 @@ struct ledtrigger_heartbeat_pdata_t {
 	int phase;
 };
 
+/* led闪烁设备心跳方式定时器回调函数 */
 static int ledtrigger_heartbeat_timer_function(struct timer_t * timer, void * data)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)(data);
@@ -78,10 +80,12 @@ static int ledtrigger_heartbeat_timer_function(struct timer_t * timer, void * da
 	return 1;
 }
 
+/* led闪烁设备心跳方式激活具体实现 */
 static void ledtrigger_heartbeat_activity(struct ledtrigger_t * trigger)
 {
 }
 
+/* led闪烁设备心跳方式探针 */
 static struct device_t * ledtrigger_heartbeat_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledtrigger_heartbeat_pdata_t * pdat;
@@ -129,6 +133,7 @@ static struct device_t * ledtrigger_heartbeat_probe(struct driver_t * drv, struc
 	return dev;
 }
 
+/* led闪烁设备心跳方式移除 */
 static void ledtrigger_heartbeat_remove(struct device_t * dev)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
@@ -144,6 +149,7 @@ static void ledtrigger_heartbeat_remove(struct device_t * dev)
 	}
 }
 
+/* led闪烁设备心跳方式挂起 */
 static void ledtrigger_heartbeat_suspend(struct device_t * dev)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
@@ -152,6 +158,7 @@ static void ledtrigger_heartbeat_suspend(struct device_t * dev)
 	timer_cancel(&pdat->timer);
 }
 
+/* led闪烁设备心跳方式释放 */
 static void ledtrigger_heartbeat_resume(struct device_t * dev)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
@@ -160,6 +167,7 @@ static void ledtrigger_heartbeat_resume(struct device_t * dev)
 	timer_start_now(&pdat->timer, ms_to_ktime(50));
 }
 
+/* led闪烁设备心跳方式驱动控制块 */
 static struct driver_t ledtrigger_heartbeat = {
 	.name		= "ledtrigger-heartbeat",
 	.probe		= ledtrigger_heartbeat_probe,
@@ -168,11 +176,13 @@ static struct driver_t ledtrigger_heartbeat = {
 	.resume		= ledtrigger_heartbeat_resume,
 };
 
+/* led闪烁设备心跳方式驱动初始化 */
 static __init void ledtrigger_heartbeat_driver_init(void)
 {
 	register_driver(&ledtrigger_heartbeat);
 }
 
+/* led闪烁设备心跳方式驱动退出 */
 static __exit void ledtrigger_heartbeat_driver_exit(void)
 {
 	unregister_driver(&ledtrigger_heartbeat);

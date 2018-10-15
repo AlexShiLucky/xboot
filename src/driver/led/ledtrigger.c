@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/ledtrigger.h>
 
+/* led闪烁设备写激活 */
 static ssize_t ledtrigger_write_activity(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)kobj->priv;
@@ -37,6 +38,7 @@ static ssize_t ledtrigger_write_activity(struct kobj_t * kobj, void * buf, size_
 	return size;
 }
 
+/* 根据名称搜索一个led闪烁设备 */
 struct ledtrigger_t * search_ledtrigger(const char * name)
 {
 	struct device_t * dev;
@@ -47,6 +49,7 @@ struct ledtrigger_t * search_ledtrigger(const char * name)
 	return (struct ledtrigger_t *)dev->priv;
 }
 
+/* 注册一个led闪烁设备 */
 bool_t register_ledtrigger(struct device_t ** device, struct ledtrigger_t * trigger)
 {
 	struct device_t * dev;
@@ -78,6 +81,7 @@ bool_t register_ledtrigger(struct device_t ** device, struct ledtrigger_t * trig
 	return TRUE;
 }
 
+/* 注销一个led闪烁设备 */
 bool_t unregister_ledtrigger(struct ledtrigger_t * trigger)
 {
 	struct device_t * dev;
@@ -98,6 +102,7 @@ bool_t unregister_ledtrigger(struct ledtrigger_t * trigger)
 	return TRUE;
 }
 
+/* led闪烁设备激活接口调用 */
 void ledtrigger_activity(struct ledtrigger_t * trigger)
 {
 	if(trigger && trigger->activity)

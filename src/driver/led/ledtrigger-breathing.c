@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/ledtrigger.h>
 
+/* led闪烁设备呼吸方式私有数据结构 */
 struct ledtrigger_breathing_pdata_t {
 	struct timer_t timer;
 	struct led_t * led;
@@ -37,6 +38,7 @@ struct ledtrigger_breathing_pdata_t {
 	int phase;
 };
 
+/* led闪烁设备呼吸方式定时器回调函数 */
 static int ledtrigger_breathing_timer_function(struct timer_t * timer, void * data)
 {
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)(data);
@@ -63,10 +65,12 @@ static int ledtrigger_breathing_timer_function(struct timer_t * timer, void * da
 	return 1;
 }
 
+/* led闪烁设备呼吸方式激活具体实现 */
 static void ledtrigger_breathing_activity(struct ledtrigger_t * trigger)
 {
 }
 
+/* led闪烁设备呼吸方式探针 */
 static struct device_t * ledtrigger_breathing_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledtrigger_breathing_pdata_t * pdat;
@@ -115,6 +119,7 @@ static struct device_t * ledtrigger_breathing_probe(struct driver_t * drv, struc
 	return dev;
 }
 
+/* led闪烁设备呼吸方式移除 */
 static void ledtrigger_breathing_remove(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -130,6 +135,7 @@ static void ledtrigger_breathing_remove(struct device_t * dev)
 	}
 }
 
+/* led闪烁设备呼吸方式挂起 */
 static void ledtrigger_breathing_suspend(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -138,6 +144,7 @@ static void ledtrigger_breathing_suspend(struct device_t * dev)
 	timer_cancel(&pdat->timer);
 }
 
+/* led闪烁设备呼吸方式释放 */
 static void ledtrigger_breathing_resume(struct device_t * dev)
 {
 	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
@@ -146,6 +153,7 @@ static void ledtrigger_breathing_resume(struct device_t * dev)
 	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 }
 
+/* led闪烁设备呼吸方式驱动控制块 */
 static struct driver_t ledtrigger_breathing = {
 	.name		= "ledtrigger-breathing",
 	.probe		= ledtrigger_breathing_probe,
@@ -154,11 +162,13 @@ static struct driver_t ledtrigger_breathing = {
 	.resume		= ledtrigger_breathing_resume,
 };
 
+/* led闪烁设备呼吸方式驱动初始化 */
 static __init void ledtrigger_breathing_driver_init(void)
 {
 	register_driver(&ledtrigger_breathing);
 }
 
+/* led闪烁设备呼吸方式驱动退出 */
 static __exit void ledtrigger_breathing_driver_exit(void)
 {
 	unregister_driver(&ledtrigger_breathing);

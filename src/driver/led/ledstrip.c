@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <led/ledstrip.h>
 
+/* 读取led灯带led个数 */
 static ssize_t ledstrip_read_count(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)kobj->priv;
@@ -36,6 +37,7 @@ static ssize_t ledstrip_read_count(struct kobj_t * kobj, void * buf, size_t size
 	return sprintf(buf, "%d", c);
 }
 
+/* 写入led灯带led个数 */
 static ssize_t ledstrip_write_count(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)kobj->priv;
@@ -44,6 +46,7 @@ static ssize_t ledstrip_write_count(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
+/* 读取led灯带颜色 */
 static ssize_t ledstrip_read_color(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)kobj->priv;
@@ -58,6 +61,7 @@ static ssize_t ledstrip_read_color(struct kobj_t * kobj, void * buf, size_t size
 	return len;
 }
 
+/* 写入led灯带颜色 */
 static ssize_t ledstrip_write_color(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)kobj->priv;
@@ -68,6 +72,7 @@ static ssize_t ledstrip_write_color(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
+/* led灯带刷新 */
 static ssize_t ledstrip_write_refresh(struct kobj_t * kobj, void * buf, size_t size)
 {
 	struct ledstrip_t * strip = (struct ledstrip_t *)kobj->priv;
@@ -75,6 +80,7 @@ static ssize_t ledstrip_write_refresh(struct kobj_t * kobj, void * buf, size_t s
 	return size;
 }
 
+/* 根据名称搜索一个led灯带设备 */
 struct ledstrip_t * search_ledstrip(const char * name)
 {
 	struct device_t * dev;
@@ -85,6 +91,7 @@ struct ledstrip_t * search_ledstrip(const char * name)
 	return (struct ledstrip_t *)dev->priv;
 }
 
+/* 注册一个led灯带设备 */
 bool_t register_ledstrip(struct device_t ** device, struct ledstrip_t * strip)
 {
 	struct device_t * dev;
@@ -118,6 +125,7 @@ bool_t register_ledstrip(struct device_t ** device, struct ledstrip_t * strip)
 	return TRUE;
 }
 
+/* 注销一个led灯带设备 */
 bool_t unregister_ledstrip(struct ledstrip_t * strip)
 {
 	struct device_t * dev;
@@ -138,6 +146,7 @@ bool_t unregister_ledstrip(struct ledstrip_t * strip)
 	return TRUE;
 }
 
+/* 设置led灯带led个数接口调用 */
 void ledstrip_set_count(struct ledstrip_t * strip, int c)
 {
 	if(strip && strip->set_count)
@@ -148,6 +157,7 @@ void ledstrip_set_count(struct ledstrip_t * strip, int c)
 	}
 }
 
+/* 获取led灯带led个数接口调用 */
 int ledstrip_get_count(struct ledstrip_t * strip)
 {
 	if(strip && strip->get_count)
@@ -155,6 +165,7 @@ int ledstrip_get_count(struct ledstrip_t * strip)
 	return 0;
 }
 
+/* 设置led灯带第i个led颜色接口调用 */
 void ledstrip_set_color(struct ledstrip_t * strip, int i, uint32_t color)
 {
 	int c = ledstrip_get_count(strip);
@@ -166,6 +177,7 @@ void ledstrip_set_color(struct ledstrip_t * strip, int i, uint32_t color)
 	}
 }
 
+/* 获取led灯带第i个led颜色接口调用 */
 uint32_t ledstrip_get_color(struct ledstrip_t * strip, int i)
 {
 	int c = ledstrip_get_count(strip);
@@ -178,6 +190,7 @@ uint32_t ledstrip_get_color(struct ledstrip_t * strip, int i)
 	return 0;
 }
 
+/* led灯带刷新接口调用 */
 void ledstrip_refresh(struct ledstrip_t * strip)
 {
 	if(strip && strip->refresh)

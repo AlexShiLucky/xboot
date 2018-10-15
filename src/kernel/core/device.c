@@ -39,6 +39,12 @@ static spinlock_t __device_lock = SPIN_LOCK_INIT();
 /* 设备通知链表 */
 static struct notifier_chain_t __device_nc = NOTIFIER_CHAIN_INIT();
 
+static const char* __device_name[] = {
+#define X(def, name)    name,
+#include <xboot/device_table.h>
+#undef X
+};
+
 /* 根据设备名称获取device哈希表 */
 static struct hlist_head * device_hash(const char * name)
 {
@@ -57,7 +63,7 @@ static struct hlist_head * device_hash(const char * name)
 static struct kobj_t * search_device_kobj(struct device_t * dev)
 {
 	struct kobj_t * kdevice;
-	char * name;
+	const char * name;
 
 	if(!dev || !dev->kobj)
 		return NULL;
@@ -67,140 +73,12 @@ static struct kobj_t * search_device_kobj(struct device_t * dev)
 		return NULL;
 
     /* 根据设备类型获取设备名称关键字 */
-	switch(dev->type)
-	{
-	case DEVICE_TYPE_ADC:
-		name = "adc";
-		break;
-	case DEVICE_TYPE_AUDIO:
-		name = "audio";
-		break;
-	case DEVICE_TYPE_BATTERY:
-		name = "battery";
-		break;
-	case DEVICE_TYPE_BLOCK:
-		name = "block";
-		break;
-	case DEVICE_TYPE_BUZZER:
-		name = "buzzer";
-		break;
-	case DEVICE_TYPE_CLK:
-		name = "clk";
-		break;
-	case DEVICE_TYPE_CLOCKEVENT:
-		name = "clockevent";
-		break;
-	case DEVICE_TYPE_CLOCKSOURCE:
-		name = "clocksource";
-		break;
-	case DEVICE_TYPE_COMPASS:
-		name = "compass";
-		break;
-	case DEVICE_TYPE_CONSOLE:
-		name = "console";
-		break;
-	case DEVICE_TYPE_DAC:
-		name = "dac";
-		break;
-	case DEVICE_TYPE_DISK:
-		name = "disk";
-		break;
-	case DEVICE_TYPE_FRAMEBUFFER:
-		name = "framebuffer";
-		break;
-	case DEVICE_TYPE_GMETER:
-		name = "gmeter";
-		break;
-	case DEVICE_TYPE_GPIOCHIP:
-		name = "gpiochip";
-		break;
-	case DEVICE_TYPE_GYROSCOPE:
-		name = "gyroscope";
-		break;
-	case DEVICE_TYPE_HYGROMETER:
-		name = "hygrometer";
-		break;
-	case DEVICE_TYPE_I2C:
-		name = "i2c";
-		break;
-	case DEVICE_TYPE_INPUT:
-		name = "input";
-		break;
-	case DEVICE_TYPE_IRQCHIP:
-		name = "irqchip";
-		break;
-	case DEVICE_TYPE_LASERSCAN:
-		name = "laserscan";
-		break;
-	case DEVICE_TYPE_LED:
-		name = "led";
-		break;
-	case DEVICE_TYPE_LEDSTRIP:
-		name = "ledstrip";
-		break;
-	case DEVICE_TYPE_LEDTRIGGER:
-		name = "ledtrigger";
-		break;
-	case DEVICE_TYPE_LIGHT:
-		name = "light";
-		break;
-	case DEVICE_TYPE_MOTOR:
-		name = "motor";
-		break;
-	case DEVICE_TYPE_NVMEM:
-		name = "nvmem";
-		break;
-	case DEVICE_TYPE_PRESSURE:
-		name = "pressure";
-		break;
-	case DEVICE_TYPE_PROXIMITY:
-		name = "proximity";
-		break;
-	case DEVICE_TYPE_PWM:
-		name = "pwm";
-		break;
-	case DEVICE_TYPE_REGULATOR:
-		name = "regulator";
-		break;
-	case DEVICE_TYPE_RESETCHIP:
-		name = "resetchip";
-		break;
-	case DEVICE_TYPE_RNG:
-		name = "rng";
-		break;
-	case DEVICE_TYPE_RTC:
-		name = "rtc";
-		break;
-	case DEVICE_TYPE_SDHCI:
-		name = "sdhci";
-		break;
-	case DEVICE_TYPE_SERVO:
-		name = "servo";
-		break;
-	case DEVICE_TYPE_SPI:
-		name = "spi";
-		break;
-	case DEVICE_TYPE_STEPPER:
-		name = "stepper";
-		break;
-	case DEVICE_TYPE_THERMOMETER:
-		name = "thermometer";
-		break;
-	case DEVICE_TYPE_UART:
-		name = "uart";
-		break;
-	case DEVICE_TYPE_VIBRATOR:
-		name = "vibrator";
-		break;
-	case DEVICE_TYPE_WATCHDOG:
-		name = "watchdog";
-		break;
-	default:
-		return NULL;
-	}
+    if (dev->type < DEVICE_TYPE_MAX_COUNT) {
+        name = __device_name[dev->type];
+    } else return NULL;
 
     /* 在kobj/device下创建name的设备路径 */
-	return kobj_search_directory_with_create(kdevice, (const char *)name);
+	return kobj_search_directory_with_create(kdevice, name);
 }
 
 static ssize_t device_write_suspend(struct kobj_t * kobj, void * buf, size_t size)

@@ -8,50 +8,10 @@ extern "C" {
 #include <xboot.h>
 
 enum device_type_t {
-    DEVICE_TYPE_ADC             = 0,    /* adc设备 */
-    DEVICE_TYPE_AUDIO           = 1,    /* audio设备 */
-    DEVICE_TYPE_BATTERY         = 2,    /* 电池设备 */
-    DEVICE_TYPE_BLOCK           = 3,    /* 块设备 */
-    DEVICE_TYPE_BUZZER          = 4,    /*  蜂鸣器设备 */
-    DEVICE_TYPE_CLK             = 5,    /*  CLK设备 */
-    DEVICE_TYPE_CLOCKEVENT      = 6,    /* 时钟事件设备 */
-    DEVICE_TYPE_CLOCKSOURCE     = 7,    /* 时钟源设备 */
-    DEVICE_TYPE_COMPASS         = 8,    /*  */
-    DEVICE_TYPE_CONSOLE         = 9,    /* 控制台设备 */
-    DEVICE_TYPE_DAC             = 10,   /* dac设备 */
-    DEVICE_TYPE_DISK            = 11,   /*  */
-    DEVICE_TYPE_FRAMEBUFFER     = 12,   /* 帧缓存设备 */
-    DEVICE_TYPE_GMETER          = 13,   /* 加速度计设备 */
-    DEVICE_TYPE_GPIOCHIP        = 14,   /* gpio设备 */
-    DEVICE_TYPE_GYROSCOPE       = 15,   /* 陀螺仪设备 */
-    DEVICE_TYPE_HYGROMETER      = 16,   /* 湿度计设备 */
-    DEVICE_TYPE_I2C             = 17,   /* i2c设备 */
-    DEVICE_TYPE_INPUT           = 18,   /*  输入设备 */
-    DEVICE_TYPE_IRQCHIP         = 19,   /*  IRQ设备 */
-    DEVICE_TYPE_LASERSCAN       = 20,   /*  */
-    DEVICE_TYPE_LED             = 21,   /*  Led设备 */
-    DEVICE_TYPE_LEDSTRIP        = 22,   /*  */
-    DEVICE_TYPE_LEDTRIGGER      = 23,   /*  */
-    DEVICE_TYPE_LIGHT           = 24,   /*  */
-    DEVICE_TYPE_MOTOR           = 25,   /*  Motor设备 */
-    DEVICE_TYPE_NVMEM           = 26,   /* 非易失Memory设备 */
-    DEVICE_TYPE_PRESSURE        = 27,   /* 压力传感器设备 */
-    DEVICE_TYPE_PROXIMITY       = 28,   /*  距离传感器设备 */
-    DEVICE_TYPE_PWM             = 29,   /* PWM设备 */
-    DEVICE_TYPE_REGULATOR       = 30,   /* 稳压器设备 */
-    DEVICE_TYPE_RESETCHIP       = 31,   /* 复位芯片设备 */
-    DEVICE_TYPE_RNG             = 32,   /* 随机数设备 */
-    DEVICE_TYPE_RTC             = 33,   /* 日历时钟设备 */
-    DEVICE_TYPE_SDHCI           = 34,   /* SDHCI设备 */
-    DEVICE_TYPE_SERVO           = 35,   /* 伺服电机设备 */
-    DEVICE_TYPE_SPI             = 36,   /* spi设备 */
-    DEVICE_TYPE_STEPPER         = 37,   /* 步进电机设备 */
-    DEVICE_TYPE_THERMOMETER     = 38,   /* 温度计设备 */
-    DEVICE_TYPE_UART            = 39,   /*  Uart设备 */
-    DEVICE_TYPE_VIBRATOR        = 40,   /* 振动器设备 */
-    DEVICE_TYPE_WATCHDOG        = 41,   /* 看门狗设备 */
-
-    DEVICE_TYPE_MAX_COUNT       = 42,
+#define X(def, name)        DEVICE_TYPE_ ## def,
+#include <xboot/device_table.h>
+#undef X
+    DEVICE_TYPE_MAX_COUNT
 };
 
 enum {

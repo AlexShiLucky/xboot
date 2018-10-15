@@ -189,6 +189,30 @@
 		"interrupt-offset": 34
 	},
 
+	"pwm-k210@0x502d0000": {
+		"clock-name": "link-timer0",
+		"reset": 21,
+		"channel": 0,
+		"pwm-gpio": 25,
+		"pwm-gpio-config": 190
+	},
+
+	"pwm-k210@0x502e0000": {
+		"clock-name": "link-timer1",
+		"reset": 22,
+		"channel": 0,
+		"pwm-gpio": 12,
+		"pwm-gpio-config": 194
+	},
+
+	"pwm-k210@0x502f0000": {
+		"clock-name": "link-timer2",
+		"reset": 23,
+		"channel": 0,
+		"pwm-gpio": 13,
+		"pwm-gpio-config": 198
+	},
+
 	"ce-clint-timer@0x02000000": {
 		"clock-name": "clint-timer-clk"
 	},
@@ -259,6 +283,94 @@
 		"delay-us": 5
 	},
 
+	"spi-gpio@0": {
+		"sclk-gpio": 29,
+		"sclk-gpio-config": 37,
+		"mosi-gpio": 30,
+		"mosi-gpio-config": 38,
+		"miso-gpio": 31,
+		"miso-gpio-config": 39,
+		"cs-gpio": 32,
+		"cs-gpio-config": 40
+	},
+
+	"spi-k210@0x52000000": {
+		"clock-name": "link-spi0",
+		"reset": 6,
+		"sclk-gpio": 7,
+		"sclk-gpio-config": 17,
+		"io0-gpio": -1,
+		"io0-gpio-config": 4,
+		"io1-gpio": -1,
+		"io1-gpio-config": 5,
+		"io2-gpio": -1,
+		"io2-gpio-config": 6,
+		"io3-gpio": -1,
+		"io3-gpio-config": 7,
+		"io4-gpio": -1,
+		"io4-gpio-config": 8,
+		"io5-gpio": -1,
+		"io5-gpio-config": 9,
+		"io6-gpio": -1,
+		"io6-gpio-config": 10,
+		"io7-gpio": -1,
+		"io7-gpio-config": 11,
+		"cs0-gpio": 6,
+		"cs0-gpio-config": 12,
+		"cs1-gpio": -1,
+		"cs1-gpio-config": 13,
+		"cs2-gpio": -1,
+		"cs2-gpio-config": 14,
+		"cs3-gpio": -1,
+		"cs3-gpio-config": 15,
+		"status": "disabled"
+	},
+
+	"spi-k210@0x53000000": {
+		"clock-name": "link-spi1",
+		"reset": 7,
+		"sclk-gpio": 29,
+		"sclk-gpio-config": 83,
+		"io0-gpio": 30,
+		"io0-gpio-config": 70,
+		"io1-gpio": 31,
+		"io1-gpio-config": 71,
+		"io2-gpio": -1,
+		"io2-gpio-config": 72,
+		"io3-gpio": -1,
+		"io3-gpio-config": 73,
+		"io4-gpio": -1,
+		"io4-gpio-config": 74,
+		"io5-gpio": -1,
+		"io5-gpio-config": 75,
+		"io6-gpio": -1,
+		"io6-gpio-config": 76,
+		"io7-gpio": -1,
+		"io7-gpio-config": 77,
+		"cs0-gpio": 32,
+		"cs0-gpio-config": 78,
+		"cs1-gpio": -1,
+		"cs1-gpio-config": 79,
+		"cs2-gpio": -1,
+		"cs2-gpio-config": 80,
+		"cs3-gpio": -1,
+		"cs3-gpio-config": 81,
+		"status": "disabled"
+	},
+
+	"spi-k210-xip@0x54000000": {
+		"clock-name": "link-spi3",
+		"reset": 9
+	},
+
+	"spi-flash@0": {
+		"spi-bus": "spi-k210-xip.0",
+		"chip-select": 0,
+		"mode": 0,
+		"speed": 1000000,
+		"status": "disabled"
+	},
+
 	"wdg-k210@0x50400000": {
 		"clock-name": "link-wdt0",
 		"reset": 24
@@ -273,11 +385,11 @@
 		"i2c-bus": "i2c-gpio.0"
 	},
 
-	"key-gpio-polled@0": {
+	"key-gpio@0": {
 		"keys": [
-			{ "gpio": 26, "gpio-config": 34, "active-low": true, "key-code": 10 }
-		],
-		"poll-interval-ms": 100
+			{ "gpio": 26, "gpio-config": 34, "active-low": true, "key-code": 10 },
+			{ "gpio": 16, "gpio-config": 24, "active-low": true, "key-code": 11 }
+		]
 	},
 
 	"led-gpio@0": {
@@ -288,14 +400,19 @@
 	},
 
 	"led-gpio@1": {
-		"gpio": 25,
-		"gpio-config": 33,
+		"gpio": 14,
+		"gpio-config": 62,
 		"active-low": true,
 		"default-brightness": 0
 	},
 
 	"ledtrigger-heartbeat@0": {
 		"led-name": "led-gpio.0",
+		"period-ms": 1260
+	},
+
+	"ledtrigger-heartbeat@1": {
+		"led-name": "led-gpio.1",
 		"period-ms": 1260
 	},
 

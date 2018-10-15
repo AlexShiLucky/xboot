@@ -29,6 +29,29 @@
 #include <xboot.h>
 #include <rtc/rtc.h>
 
+/* 获取某年某月的天数 */
+static int rtc_month_days(int year, int month)
+{
+	const unsigned char rtc_days_in_month[13] = {
+		0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+	};
+	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2));
+}
+
+/* 判断时间是否有效 */
+static int rtc_time_is_valid(struct rtc_time_t * time)
+{
+	if((!time) || (time->year < 1970)
+		|| ((time->month) > 12)
+		|| (time->day < 1)
+		|| (time->day > rtc_month_days(time->year, time->month))
+		|| ((time->hour) >= 24)
+		|| ((time->minute) >= 60)
+		|| ((time->second) >= 60))
+		return 0;
+	return 1;
+}
+
 /* 读取rtc设备时间 */
 static ssize_t rtc_time_read(struct kobj_t * kobj, void * buf, size_t size)
 {
@@ -82,6 +105,7 @@ struct rtc_t * search_first_rtc(void)
 bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
 {
 	struct device_t * dev;
+	struct rtc_time_t time;
 
 	if(!rtc || !rtc->name)
 		return FALSE;
@@ -96,6 +120,18 @@ bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
 	dev->priv = rtc;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "time", rtc_time_read, rtc_time_write, rtc);
+
+	if(rtc_gettime(rtc, &time) && !rtc_time_is_valid(&time))
+	{
+		time.second = 0;
+		time.minute = 0;
+		time.hour = 0;
+		time.week = 1;
+		time.day = 1;
+		time.month = 1;
+		time.year = 2018;
+		rtc_settime(rtc, &time);
+	}
 
 	if(!register_device(dev))
 	{
@@ -129,29 +165,6 @@ bool_t unregister_rtc(struct rtc_t * rtc)
 	free(dev->name);
 	free(dev);
 	return TRUE;
-}
-
-/* 获取某年某月的天数 */
-static int rtc_month_days(int year, int month)
-{
-	const unsigned char rtc_days_in_month[13] = {
-		0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-	};
-	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2));
-}
-
-/* 判断时间是否有效 */
-static int rtc_time_is_valid(struct rtc_time_t * time)
-{
-	if((!time) || (time->year < 1970)
-		|| ((time->month) > 12)
-		|| (time->day < 1)
-		|| (time->day > rtc_month_days(time->year, time->month))
-		|| ((time->hour) >= 24)
-		|| ((time->minute) >= 60)
-		|| ((time->second) >= 60))
-		return 0;
-	return 1;
 }
 
 /* rtc时间设置接口调用 */

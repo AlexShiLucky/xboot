@@ -5,14 +5,17 @@
 #include <runtime.h>
 #include <environ.h>
 
+/* 清除所有环境变量 */
 int clearenv(void)
 {
+    /* 获取当前运行环境的环境变量 */
 	struct environ_t * environ = &(runtime_get()->__environ);
 	struct environ_t * p, * q;
 
 	if (!environ)
 		return -1;
 
+    /* 遍历所有环境变量节点,并逐一删除 */
 	for(p = environ->next; p != environ;)
 	{
 		q = p;

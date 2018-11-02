@@ -7,8 +7,10 @@
 #include <malloc.h>
 #include <environ.h>
 
+/* 加入一个环境变量键值对字符串,len表示"name="的长度 */
 int __put_env(char * str, size_t len, int overwrite)
 {
+    /* 获取当前运行环境的环境变量 */
 	struct environ_t * environ = &(runtime_get()->__environ);
 	struct environ_t * env;
 	struct environ_t * p;
@@ -16,15 +18,17 @@ int __put_env(char * str, size_t len, int overwrite)
 	if(!environ)
 		return -1;
 
+    /* 遍历所有环境变量节点 */
 	for(p = environ->next; p != environ; p = p->next)
 	{
+        /* 匹配环境变量名称 */
 		if (!strncmp(p->content, str, len))
 		{
-			if (!overwrite)
+			if (!overwrite) /* 不覆盖 */
 			{
 				free(str);
 			}
-			else
+			else            /* 覆盖 */
 			{
 				free(p->content);
 				p->content = str;
@@ -33,10 +37,12 @@ int __put_env(char * str, size_t len, int overwrite)
 		}
 	}
 
+    /* 申请一个新的环境变量节点 */
 	env = malloc(sizeof(struct environ_t));
 	if(!env)
 		return -1;
 
+    /* 在环境变量链表中插入新节点 */
 	env->content = str;
 	env->prev = environ->prev;
 	env->next = environ;
@@ -46,6 +52,7 @@ int __put_env(char * str, size_t len, int overwrite)
 	return 0;
 }
 
+/* 加入一个环境变量字符串 */
 int putenv(const char * str)
 {
 	char * s;

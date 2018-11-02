@@ -8,6 +8,7 @@
 
 extern int __put_env(char * str, size_t len, int overwrite);
 
+/* 设置一个环境变量 */
 int setenv(const char * name, const char * val, int overwrite)
 {
 	const char *z;
@@ -18,6 +19,7 @@ int setenv(const char * name, const char * val, int overwrite)
 		return -1;
 
 	l1 = 0;
+    /* 计算name长度,并不允许包含等号 */
 	for(z = name; *z; z++)
 	{
 		l1++;
@@ -27,6 +29,7 @@ int setenv(const char * name, const char * val, int overwrite)
 
 	l2 = strlen(val);
 
+    /* 申请name=key的空间 */
 	s = malloc(l1 + l2 + 2);
 	if(!s)
 		return -1;

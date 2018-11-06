@@ -2,7 +2,6 @@
  * libc/environ/unsetenv.c
  */
 
-#include <runtime.h>
 #include <errno.h>
 #include <string.h>
 #include <malloc.h>
@@ -11,8 +10,8 @@
 /* 删除一个环境变量 */
 int unsetenv(const char * name)
 {
-    /* 获取当前运行环境的环境变量 */
-	struct environ_t * environ = &(runtime_get()->__environ);
+	/* 获取当前运行环境的环境变量 */
+	struct environ_t * environ = &__environ;
 	struct environ_t * p;
 	size_t len;
 	const char * z;
@@ -29,7 +28,7 @@ int unsetenv(const char * name)
 			return -1;
 	}
 
-	if(!environ)
+	if(!environ || !environ->content)
 		return 0;
 
     /* 遍历所有环境变量节点 */
@@ -46,7 +45,6 @@ int unsetenv(const char * name)
 			break;
 		}
 	}
-
 	return 0;
 }
 EXPORT_SYMBOL(unsetenv);

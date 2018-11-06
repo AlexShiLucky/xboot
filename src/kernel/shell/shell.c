@@ -29,21 +29,24 @@
 #include <xboot.h>
 #include <shell/system.h>
 #include <shell/readline.h>
+#include <shell/shell.h>
 
-void run_shell(void)
+void shell_task(struct task_t * task, void * data)
 {
 	char * p;
 	char cwd[256];
 	char prompt[256];
 
-    /* 获取当前工作路径 */
-	getcwd(cwd, sizeof(cwd));
-    /* 输出提示符和当前路径 */
-	sprintf(prompt, "xboot: %s$ ", cwd);
-
-    /* 输出提示符,并获取一行输入 */
-	p = readline(prompt);
-    /* 执行命令行 */
-	system(p);
-	free(p);
+	while(1)
+	{
+		/* 获取当前工作路径 */
+		getcwd(cwd, sizeof(cwd));
+		/* 输出提示符和当前路径 */
+		sprintf(prompt, "xboot: %s$ ", cwd);
+		/* 输出提示符,并获取一行输入 */
+		p = readline(prompt);
+		/* 执行命令行 */
+		system(p);
+		free(p);
+	}
 }

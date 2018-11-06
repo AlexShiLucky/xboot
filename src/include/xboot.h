@@ -7,12 +7,13 @@ extern "C" {
 
 #include <xconfigs.h>
 #include <endian.h>
+#include <sizes.h>
 #include <barrier.h>
 #include <atomic.h>
 #include <irqflags.h>
 #include <spinlock.h>
+#include <smp.h>
 #include <types.h>
-#include <sizes.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -41,7 +42,6 @@ extern "C" {
 #include <malloc.h>
 #include <charset.h>
 #include <version.h>
-#include <runtime.h>
 #include <xboot/kref.h>
 #include <xboot/kobj.h>
 #include <xboot/ktime.h>
@@ -55,6 +55,7 @@ extern "C" {
 #include <xboot/dtree.h>
 #include <xboot/device.h>
 #include <xboot/driver.h>
+#include <xboot/task.h>
 #include <time/delay.h>
 #include <time/timer.h>
 #include <clockevent/clockevent.h>

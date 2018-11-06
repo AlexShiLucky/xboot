@@ -40,9 +40,7 @@ static int do_mount(int argc, char ** argv)
 	char * dev = NULL, * dir = NULL;
 	bool_t ro_flag = FALSE;
 	s32_t mount_flag = 0;
-	struct block_t * blk;
 	struct stat st;
-	char * pdev = NULL;
 	s32_t i, index = 0;
 
 	if(argc < 5)

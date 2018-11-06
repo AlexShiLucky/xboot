@@ -1,5 +1,5 @@
 /*
- * framework/stopwatch/l-stopwatch.c
+ * kernel/command/cmd-ps.c
  *
  * Copyright(c) 2007-2018 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
@@ -26,54 +26,67 @@
  *
  */
 
-#include <framework/stopwatch/l-stopwatch.h>
+#include <command/command.h>
 
-struct stopwatch_t {
-	double __start_time;
-};
-
-static double __time_stamp(void)
+static void usage(void)
 {
-	task_yield();
-	return (double)(ktime_to_ns(ktime_get())) / (double)1000000000.0;
+	printf("usage:\r\n");
+	printf("    ps\r\n");
 }
 
-static int l_new(lua_State * L)
+static const char * task_status_tostring(struct task_t * task)
 {
-	struct stopwatch_t * stopwatch = lua_newuserdata(L, sizeof(struct stopwatch_t));
-	stopwatch->__start_time = __time_stamp();
-	luaL_setmetatable(L, MT_STOPWATCH);
-	return 1;
+	switch(task->status)
+	{
+	case TASK_STATUS_READY:
+		return "W";
+	case TASK_STATUS_RUNNING:
+		return "R";
+	case TASK_STATUS_SUSPEND:
+		return "S";
+	case TASK_STATUS_DEAD:
+		return "T";
+	default:
+		break;
+	}
+	return "N";
 }
 
-static const luaL_Reg l_stopwatch[] = {
-	{"new", l_new},
-	{NULL, NULL}
-};
-
-static int m_elapsed(lua_State * L)
+static int do_ps(int argc, char ** argv)
 {
-	struct stopwatch_t * stopwatch = luaL_checkudata(L, 1, MT_STOPWATCH);
-	lua_pushnumber(L, __time_stamp() - stopwatch->__start_time);
-	return 1;
-}
+	struct scheduler_t * sched;
+	struct task_t * pos, * n;
+	int i;
+    /* 返回先前运行环境 */
+	for(i = 0; i < CONFIG_MAX_CPUS; i++)
+	{
+		sched = __sched[i];
 
-static int m_reset(lua_State * L)
-{
-	struct stopwatch_t * stopwatch = luaL_checkudata(L, 1, MT_STOPWATCH);
-	stopwatch->__start_time = __time_stamp();
+		printf("CPU%d:\r\n", i);
+		list_for_each_entry_safe(pos, n, &sched->head, list)
+		{
+			printf(" %p %s %3d %20lld %s\r\n", pos->func, task_status_tostring(pos), pos->weight, pos->vruntime, pos->path ? pos->path : "");
+		}
+	}
 	return 0;
 }
 
-static const luaL_Reg m_stopwatch[] = {
-	{"elapsed",	m_elapsed},
-	{"reset",	m_reset},
-	{NULL,		NULL}
+static struct command_t cmd_ps = {
+	.name	= "ps",
+	.desc	= "report a snapshot of the current processes",
+	.usage	= usage,
+	.exec	= do_ps,
 };
 
-int luaopen_stopwatch(lua_State * L)
+static __init void ps_cmd_init(void)
 {
-	luaL_newlib(L, l_stopwatch);
-	luahelper_create_metatable(L, MT_STOPWATCH, m_stopwatch);
-	return 1;
+	register_command(&cmd_ps);
 }
+
+static __exit void ps_cmd_exit(void)
+{
+	unregister_command(&cmd_ps);
+}
+
+command_initcall(ps_cmd_init);
+command_exitcall(ps_cmd_exit);

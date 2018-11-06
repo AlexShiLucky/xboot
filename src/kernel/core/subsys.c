@@ -39,9 +39,9 @@ static void subsys_init_romdisk(void)
 
     /* json = "{romdisk@0:{address:xxxxxxxx,size:yyyyyyyy}}" */
 	length = sprintf(json,
-		"{\"romdisk@0\":{\"address\":\"%lld\",\"size\":\"%lld\"}}",
-		(unsigned long long)(&__romdisk_start),
-		(unsigned long long)(&__romdisk_end - &__romdisk_start));
+		"{\"romdisk@0\":{\"address\":\"%ld\",\"size\":\"%ld\"}}",
+		(unsigned long)(&__romdisk_start),
+		(unsigned long)(&__romdisk_end - &__romdisk_start));
     /* 探测romdisk设备 */
 	probe_device(json, length, NULL);
 }

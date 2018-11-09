@@ -6,19 +6,23 @@
  * Mobile phone: +86-18665388956
  * QQ: 8192542
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -117,12 +121,13 @@ static struct scheduler_t * scheduler_alloc(void)
 	if(!sched)
 		return NULL;
 
-	sched->root = RB_ROOT;
-	init_list_head(&sched->head);
+	sched->ready = RB_ROOT;
+	init_list_head(&sched->suspend);
+	init_list_head(&sched->dead);
 	spin_lock_init(&sched->lock);
 	sched->running = NULL;
 	sched->next = NULL;
-	sched->min_vruntime = 0;
+	sched->min_vtime = 0;
 
 	return sched;
 }
@@ -135,10 +140,20 @@ static void scheduler_free(struct scheduler_t * sched)
 	if(!sched)
 		return;
 
-	list_for_each_entry_safe(pos, n, &sched->head, list)
+	list_for_each_entry_safe(pos, n, &sched->dead, list)
 	{
 		task_destroy(pos);
 	}
+	list_for_each_entry_safe(pos, n, &sched->suspend, list)
+	{
+		task_destroy(pos);
+	}
+	rbtree_postorder_for_each_entry_safe(pos, n, &sched->ready, node)
+	{
+		task_destroy(pos);
+	}
+	task_destroy(sched->running);
+
 	free(sched);
 }
 
@@ -151,7 +166,7 @@ static inline struct task_t * scheduler_next_task(struct scheduler_t * sched)
 /* 调度器中添加一个任务 */
 static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct task_t * task)
 {
-	struct rb_node ** p = &sched->root.rb_node;
+	struct rb_node ** p = &sched->ready.rb_node;
 	struct rb_node * parent = NULL;
 	struct task_t * ptr;
 
@@ -159,18 +174,18 @@ static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct tas
 	{
 		parent = *p;
 		ptr = rb_entry(parent, struct task_t, node);
-		if(task->vruntime < ptr->vruntime)
+		if(task->vtime < ptr->vtime)
 			p = &(*p)->rb_left;
 		else
 			p = &(*p)->rb_right;
 	}
 	rb_link_node(&task->node, parent, p);
-	rb_insert_color(&task->node, &sched->root);
+	rb_insert_color(&task->node, &sched->ready);
 
-	if(!sched->next || (task->vruntime < sched->next->vruntime))
+	if(!sched->next || (task->vtime < sched->next->vtime))
 	{
 		sched->next = task;
-		sched->min_vruntime = sched->next->vruntime;
+		sched->min_vtime = sched->next->vtime;
 	}
 }
 
@@ -183,15 +198,15 @@ static inline void scheduler_dequeue_task(struct scheduler_t * sched, struct tas
 		if(rbn)
 		{
 			sched->next = rb_entry(rbn, struct task_t, node);
-			sched->min_vruntime = sched->next->vruntime;
+			sched->min_vtime = sched->next->vtime;
 		}
 		else
 		{
 			sched->next = NULL;
-			sched->min_vruntime = 0;
+			sched->min_vtime = 0;
 		}
 	}
-	rb_erase(&task->node, &sched->root);
+	rb_erase(&task->node, &sched->ready);
 	RB_CLEAR_NODE(&task->node);
 }
 
@@ -214,6 +229,7 @@ static void context_entry(struct transfer_t from)
 	t->fctx = from.fctx;
 	task->func(task, task->data);
 	task->status = TASK_STATUS_DEAD;
+	list_add_tail(&task->list, &sched->dead);
 	task_destroy(task);
 
 	next = scheduler_next_task(sched);
@@ -267,15 +283,16 @@ struct task_t * task_create(struct scheduler_t * sched, const char * path, task_
 	}
 
 	RB_CLEAR_NODE(&task->node);
-	list_add_tail(&task->list, &sched->head);
+	list_add_tail(&task->list, &sched->suspend);
 	task->path = strdup(path);
 	task->status = TASK_STATUS_SUSPEND;
-	task->vruntime = sched->min_vruntime;
 	task->start = ktime_to_ns(ktime_get());
+	task->time = 0;
+	task->vtime = 0;
 	task->sched = sched;
-	task->stack = stack + stksz;
+	task->stack = stack;
 	task->stksz = stksz;
-	task->fctx = make_fcontext(task->stack, task->stksz, context_entry);
+	task->fctx = make_fcontext(task->stack + stksz, task->stksz, context_entry);
 	task->func = func;
 	task->data = data;
 	task->__errno = 0;
@@ -288,7 +305,7 @@ struct task_t * task_create(struct scheduler_t * sched, const char * path, task_
 /* 任务销毁 */
 void task_destroy(struct task_t * task)
 {
-	if(task && (task->status == TASK_STATUS_DEAD))
+	if(task)
 	{
 		list_del(&task->list);
 		if(task->__xfs_ctx)
@@ -318,6 +335,7 @@ void task_suspend(struct task_t * task)
 	if(task && (task->status != TASK_STATUS_SUSPEND))
 	{
 		task->status = TASK_STATUS_SUSPEND;
+		list_add_tail(&task->list, &task->sched->suspend);
 		scheduler_dequeue_task(task->sched, task);
 	}
 }
@@ -327,7 +345,9 @@ void task_resume(struct task_t * task)
 {
 	if(task && (task->status != TASK_STATUS_READY))
 	{
+		task->vtime = task->sched->min_vtime;
 		task->status = TASK_STATUS_READY;
+		list_del(&task->list);
 		scheduler_enqueue_task(task->sched, task);
 	}
 }
@@ -338,9 +358,12 @@ void task_yield(void)
 	struct scheduler_t * sched = scheduler_self();
 	struct task_t * next, * self = task_self();
 	uint64_t now = ktime_to_ns(ktime_get());
+	uint64_t detla = now - self->start;
 
-	self->vruntime += calc_delta_fair(self, now - self->start);
-	if(self->vruntime < sched->min_vruntime)
+	self->time += detla;
+	self->vtime += calc_delta_fair(self, detla);
+
+	if(self->vtime < sched->min_vtime)
 	{
 		self->start = now;
 	}
@@ -357,13 +380,31 @@ void task_yield(void)
 	}
 }
 
+/* 空闲任务 */
+static void idle_task(struct task_t * task, void * data)
+{
+	while(1)
+	{
+		task_yield();
+	}
+}
+
 /* 任务初始化 */
 static __init void task_pure_init(void)
 {
+	struct task_t * task;
 	int i;
 
 	for(i = 0; i < CONFIG_MAX_CPUS; i++)
+	{
 		__sched[i] = scheduler_alloc();
+
+		task = task_create(__sched[i], "idle", idle_task, NULL, SZ_8K, 0);
+		task->nice = 26;
+		task->weight = 3;
+		task->inv_weight = 1431655765;
+		task_resume(task);
+	}
 }
 
 /* 任务退出 */

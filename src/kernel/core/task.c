@@ -112,7 +112,6 @@ static inline uint64_t calc_delta_fair(struct task_t * task, uint64_t delta)
 	return delta;
 }
 
-/* 申请一个调度器 */
 static struct scheduler_t * scheduler_alloc(void)
 {
 	struct scheduler_t * sched;
@@ -132,7 +131,6 @@ static struct scheduler_t * scheduler_alloc(void)
 	return sched;
 }
 
-/* 释放一个调度器 */
 static void scheduler_free(struct scheduler_t * sched)
 {
 	struct task_t * pos, * n;
@@ -157,13 +155,11 @@ static void scheduler_free(struct scheduler_t * sched)
 	free(sched);
 }
 
-/* 调度下一个任务 */
 static inline struct task_t * scheduler_next_task(struct scheduler_t * sched)
 {
 	return sched->next;
 }
 
-/* 调度器中添加一个任务 */
 static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct rb_node ** p = &sched->ready.rb_node;
@@ -189,7 +185,6 @@ static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct tas
 	}
 }
 
-/* 调度器中删除一个任务 */
 static inline void scheduler_dequeue_task(struct scheduler_t * sched, struct task_t * task)
 {
 	if(sched->next == task)
@@ -210,7 +205,6 @@ static inline void scheduler_dequeue_task(struct scheduler_t * sched, struct tas
 	RB_CLEAR_NODE(&task->node);
 }
 
-/* 调度器切换任务 */
 static inline void scheduler_switch_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct task_t * running = sched->running;
@@ -259,7 +253,6 @@ void scheduler_loop(void)
 	}
 }
 
-/* 任务创建 */
 struct task_t * task_create(struct scheduler_t * sched, const char * path, task_func_t func, void * data, size_t stksz, int nice)
 {
 	struct task_t * task;
@@ -302,7 +295,6 @@ struct task_t * task_create(struct scheduler_t * sched, const char * path, task_
 	return task;
 }
 
-/* 任务销毁 */
 void task_destroy(struct task_t * task)
 {
 	if(task)
@@ -329,7 +321,6 @@ void task_renice(struct task_t * task, int nice)
 	task->inv_weight = nice_to_wmult[nice];
 }
 
-/* 任务挂起 */
 void task_suspend(struct task_t * task)
 {
 	if(task && (task->status != TASK_STATUS_SUSPEND))
@@ -340,7 +331,6 @@ void task_suspend(struct task_t * task)
 	}
 }
 
-/* 任务释放 */
 void task_resume(struct task_t * task)
 {
 	if(task && (task->status != TASK_STATUS_READY))
@@ -352,7 +342,6 @@ void task_resume(struct task_t * task)
 	}
 }
 
-/* 任务让出 */
 void task_yield(void)
 {
 	struct scheduler_t * sched = scheduler_self();
@@ -380,7 +369,6 @@ void task_yield(void)
 	}
 }
 
-/* 空闲任务 */
 static void idle_task(struct task_t * task, void * data)
 {
 	while(1)
@@ -389,7 +377,6 @@ static void idle_task(struct task_t * task, void * data)
 	}
 }
 
-/* 任务初始化 */
 static __init void task_pure_init(void)
 {
 	struct task_t * task;
@@ -407,7 +394,6 @@ static __init void task_pure_init(void)
 	}
 }
 
-/* 任务退出 */
 static __exit void task_pure_exit(void)
 {
 	int i;

@@ -39,7 +39,7 @@ static int do_ps(int argc, char ** argv)
 	struct scheduler_t * sched;
 	struct task_t * pos, * n;
 	int i;
-    /* 返回先前运行环境 */
+
 	for(i = 0; i < CONFIG_MAX_CPUS; i++)
 	{
 		sched = __sched[i];

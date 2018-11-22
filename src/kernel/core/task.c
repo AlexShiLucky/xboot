@@ -39,7 +39,7 @@ struct transfer_t
 extern void * make_fcontext(void * stack, size_t size, void (*func)(struct transfer_t));
 extern struct transfer_t jump_fcontext(void * fctx, void * priv);
 
-struct scheduler_t * __sched[CONFIG_MAX_CPUS] = { 0 };
+struct scheduler_t * __sched[CONFIG_MAX_SMP_CPUS] = { 0 };
 
 static const int nice_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
@@ -158,11 +158,6 @@ static inline struct task_t * scheduler_next_ready_task(struct scheduler_t * sch
 	return rb_entry(leftmost, struct task_t, node);
 }
 
-static inline int task_before(struct task_t * a, struct task_t * b)
-{
-	return (int64_t)(a->vtime - b->vtime) < 0;
-}
-
 static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct rb_node ** link = &sched->ready.rb_root.rb_node;
@@ -174,7 +169,7 @@ static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct tas
 	{
 		parent = *link;
 		entry = rb_entry(parent, struct task_t, node);
-		if(task_before(task, entry))
+		if((int64_t)(task->vtime - entry->vtime) < 0)
 		{
 			link = &parent->rb_left;
 		}
@@ -279,6 +274,10 @@ struct task_t * task_create(struct scheduler_t * sched, const char * path, task_
 	}
 
 	RB_CLEAR_NODE(&task->node);
+	init_list_head(&task->list);
+	init_list_head(&task->slist);
+	init_list_head(&task->rlist);
+	init_list_head(&task->mlist);
 	list_add_tail(&task->list, &sched->suspend);
 	task->path = strdup(path);
 	task->status = TASK_STATUS_SUSPEND;
@@ -326,17 +325,42 @@ void task_renice(struct task_t * task, int nice)
 
 void task_suspend(struct task_t * task)
 {
-	if(task && (task->status != TASK_STATUS_SUSPEND))
+	struct task_t * next;
+	uint64_t now, detla;
+
+	if(task)
 	{
-		task->status = TASK_STATUS_SUSPEND;
-		list_add_tail(&task->list, &task->sched->suspend);
-		scheduler_dequeue_task(task->sched, task);
+		if(task->status == TASK_STATUS_READY)
+		{
+			task->status = TASK_STATUS_SUSPEND;
+			list_add_tail(&task->list, &task->sched->suspend);
+			scheduler_dequeue_task(task->sched, task);
+		}
+		else if(task->status == TASK_STATUS_RUNNING)
+		{
+			now = ktime_to_ns(ktime_get());
+			detla = now - task->start;
+
+			task->time += detla;
+			task->vtime += calc_delta_fair(task, detla);
+			task->status = TASK_STATUS_SUSPEND;
+			list_add_tail(&task->list, &task->sched->suspend);
+
+			next = scheduler_next_ready_task(task->sched);
+			if(next)
+			{
+				scheduler_dequeue_task(task->sched, next);
+				next->status = TASK_STATUS_RUNNING;
+				next->start = now;
+				scheduler_switch_task(task->sched, next);
+			}
+		}
 	}
 }
 
 void task_resume(struct task_t * task)
 {
-	if(task && (task->status != TASK_STATUS_READY))
+	if(task && (task->status == TASK_STATUS_SUSPEND))
 	{
 		task->vtime = task->sched->min_vtime;
 		task->status = TASK_STATUS_READY;
@@ -385,7 +409,7 @@ static __init void task_pure_init(void)
 	struct task_t * task;
 	int i;
 
-	for(i = 0; i < CONFIG_MAX_CPUS; i++)
+	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 	{
 		__sched[i] = scheduler_alloc();
 
@@ -401,7 +425,7 @@ static __exit void task_pure_exit(void)
 {
 	int i;
 
-	for(i = 0; i < CONFIG_MAX_CPUS; i++)
+	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 		scheduler_free(__sched[i]);
 }
 

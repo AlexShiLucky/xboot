@@ -1,5 +1,5 @@
 /*
- * init/main.c
+ * sys-smp.c
  *
  * Copyright(c) 2007-2018 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
@@ -27,48 +27,39 @@
  */
 
 #include <xboot.h>
-#include <init.h>
-#include <dma/dma.h>
-#include <shell/shell.h>
 
-/* xboot入口函数,从start.S跳转过来 */
-int xboot_main(int argc, char * argv[])
+struct smp_boot_entry_t {
+	void (*func)(int cpu);
+	atomic_t atomic;
+};
+struct smp_boot_entry_t __smp_boot_entry[CONFIG_MAX_SMP_CPUS];
+
+void sys_smp_secondary_startup(int cpu)
 {
-	struct task_t * task;
+	struct smp_boot_entry_t * e = &__smp_boot_entry[0];
 
-	/* Do initial memory */
-	do_init_mem();
+	if(cpu < 0 || cpu >= CONFIG_MAX_SMP_CPUS)
+		return;
 
-	/* Do initial scheduler */
-	do_init_sched();
+	e[cpu].func = NULL;
+	atomic_set(&e[cpu].atomic, 0);
 
-	/* Do initial event */
-	do_init_event();
+	while(1)
+	{
+		while(atomic_cmpxchg(&e[cpu].atomic, 1, 0) != 1)
+		{
+		}
+		if(e[cpu].func)
+			e[cpu].func(cpu);
+	}
+}
 
-	/* Do initial vfs - 初始化虚拟文件系统 */
-	do_init_vfs();
+void sys_smp_secondary_boot(int cpu, void (*func)(int cpu))
+{
+	struct smp_boot_entry_t * e = &__smp_boot_entry[0];
 
-	/* Do all initial calls - 初始化表调用 */
-	do_initcalls();
-
-	/* Do show logo - 显示logo */
-	do_showlogo();
-
-	/* Do auto boot - 调用init.c中的__do_autoboot */
-	do_autoboot();
-
-	/* Create shell task */
-	task = task_create(scheduler_self(), "shell", shell_task, NULL, 0, 0);
-
-	/* Resume shell task */
-	task_resume(task);
-
-	/* Scheduler loop */
-	scheduler_loop();
-
-	/* Do all exit calls */
-	do_exitcalls();
-
-	/* Xboot return */
-	return 0;
+	if(cpu < 0 || cpu >= CONFIG_MAX_SMP_CPUS)
+		return;
+	e[cpu].func = func;
+	atomic_cmpxchg(&e[cpu].atomic, 0, 1);
 }

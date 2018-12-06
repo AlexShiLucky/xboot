@@ -49,47 +49,88 @@ static inline int atomic_sub_return(atomic_t * a, int v)
 		: "memory");
 	return ret - v;
 }
+
+#define __cmpxchg(ptr, old, new, size)						\
+({															\
+	__typeof__(ptr) __ptr = (ptr);							\
+	__typeof__(*(ptr)) __old = (old);						\
+	__typeof__(*(ptr)) __new = (new);						\
+	__typeof__(*(ptr)) __ret;								\
+	register unsigned int __rc;								\
+	switch (size) {											\
+	case 4:													\
+		__asm__ __volatile__ (								\
+			"0:	lr.w %0, %2\n"								\
+			"bne  %0, %z3, 1f\n"							\
+			"sc.w.rl %1, %z4, %2\n"							\
+			"bnez %1, 0b\n"									\
+			"fence rw, rw\n"								\
+			"1:\n"											\
+			: "=&r" (__ret), "=&r" (__rc), "+A" (*__ptr)	\
+			: "rJ" (__old), "rJ" (__new)					\
+			: "memory");									\
+		break;												\
+	case 8:													\
+		__asm__ __volatile__ (								\
+			"0:	lr.d %0, %2\n"								\
+			"bne %0, %z3, 1f\n"								\
+			"sc.d.rl %1, %z4, %2\n"							\
+			"bnez %1, 0b\n"									\
+			"fence rw, rw\n"								\
+			"1:\n"											\
+			: "=&r" (__ret), "=&r" (__rc), "+A" (*__ptr)	\
+			: "rJ" (__old), "rJ" (__new)					\
+			: "memory");									\
+		break;												\
+	default:												\
+		break;												\
+	}														\
+	__ret;													\
+})
+
+#define cmpxchg(ptr, o, n)									\
+({															\
+	__typeof__(*(ptr)) _o_ = (o);							\
+	__typeof__(*(ptr)) _n_ = (n);							\
+	(__typeof__(*(ptr))) __cmpxchg((ptr),					\
+			_o_, _n_, sizeof(*(ptr)));						\
+})
+
+static inline int atomic_cmp_exchange(atomic_t * a, int o, int n)
+{
+	return cmpxchg(&a->counter, o, n);
+}
 #else
 static inline void atomic_add(atomic_t * a, int v)
 {
-	irq_flags_t flags;
-
-	local_irq_save(flags);
 	(volatile)a->counter += v;
-	local_irq_restore(flags);
 }
 
 static inline int atomic_add_return(atomic_t * a, int v)
 {
-	irq_flags_t flags;
-	int tmp;
-
-	local_irq_save(flags);
 	(volatile)a->counter += v;
-	tmp = a->counter;
-	local_irq_restore(flags);
-	return tmp;
+	return (volatile)a->counter;
 }
 
 static inline void atomic_sub(atomic_t * a, int v)
 {
-	irq_flags_t flags;
-
-	local_irq_save(flags);
 	(volatile)a->counter -= v;
-	local_irq_restore(flags);
 }
 
 static inline int atomic_sub_return(atomic_t * a, int v)
 {
-	irq_flags_t flags;
-	int tmp;
-
-	local_irq_save(flags);
 	(volatile)a->counter -= v;
-	tmp = a->counter;
-	local_irq_restore(flags);
-	return tmp;
+	return (volatile)a->counter;
+}
+
+static inline int atomic_cmp_exchange(atomic_t * a, int o, int n)
+{
+	volatile int v;
+
+	v = a->counter;
+	if(v == o)
+		(volatile)a->counter = n;
+	return v;
 }
 #endif
 
@@ -103,6 +144,7 @@ static inline int atomic_sub_return(atomic_t * a, int v)
 #define atomic_dec_and_test(a)		(atomic_sub_return(a, 1) == 0)
 #define atomic_add_negative(a, v)	(atomic_add_return(a, v) < 0)
 #define atomic_sub_and_test(a, v)	(atomic_sub_return(a, v) == 0)
+#define atomic_cmpxchg(a, o, n)		(atomic_cmp_exchange(a, o, n))
 
 #ifdef __cplusplus
 }

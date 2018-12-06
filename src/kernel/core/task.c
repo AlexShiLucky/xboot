@@ -39,7 +39,8 @@ struct transfer_t
 extern void * make_fcontext(void * stack, size_t size, void (*func)(struct transfer_t));
 extern struct transfer_t jump_fcontext(void * fctx, void * priv);
 
-struct scheduler_t * __sched[CONFIG_MAX_SMP_CPUS] = { 0 };
+struct scheduler_t __sched[CONFIG_MAX_SMP_CPUS];
+EXPORT_SYMBOL(__sched);
 
 static const int nice_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
@@ -110,43 +111,6 @@ static inline uint64_t calc_delta_fair(struct task_t * task, uint64_t delta)
 	if(unlikely(task->weight != 1024))
 		delta = calc_delta(task, delta);
 	return delta;
-}
-
-static struct scheduler_t * scheduler_alloc(void)
-{
-	struct scheduler_t * sched;
-
-	sched = malloc(sizeof(struct scheduler_t));
-	if(!sched)
-		return NULL;
-
-	sched->ready = RB_ROOT_CACHED;
-	init_list_head(&sched->suspend);
-	spin_lock_init(&sched->lock);
-	sched->running = NULL;
-	sched->min_vtime = 0;
-
-	return sched;
-}
-
-static void scheduler_free(struct scheduler_t * sched)
-{
-	struct task_t * pos, * n;
-
-	if(!sched)
-		return;
-
-	list_for_each_entry_safe(pos, n, &sched->suspend, list)
-	{
-		task_destroy(pos);
-	}
-	rbtree_postorder_for_each_entry_safe(pos, n, &sched->ready.rb_root, node)
-	{
-		task_destroy(pos);
-	}
-	task_destroy(sched->running);
-
-	free(sched);
 }
 
 static inline struct task_t * scheduler_next_ready_task(struct scheduler_t * sched)
@@ -234,23 +198,6 @@ static void fcontext_entry_func(struct transfer_t from)
 	}
 }
 
-void scheduler_loop(void)
-{
-	struct scheduler_t * sched;
-	struct task_t * next;
-
-	sched = __sched[smp_processor_id()];
-	next = scheduler_next_ready_task(sched);
-	if(next)
-	{
-		sched->running = next;
-		scheduler_dequeue_task(sched, next);
-		next->status = TASK_STATUS_RUNNING;
-		next->start = ktime_to_ns(ktime_get());
-		scheduler_switch_task(sched, next);
-	}
-}
-
 struct task_t * task_create(struct scheduler_t * sched, const char * path, task_func_t func, void * data, size_t stksz, int nice)
 {
 	struct task_t * task;
@@ -291,7 +238,10 @@ struct task_t * task_create(struct scheduler_t * sched, const char * path, task_
 	task->func = func;
 	task->data = data;
 	task->__errno = 0;
-	task->__xfs_ctx = xfs_alloc(task->path);
+	if(task->path && (task->path[0] == '/'))
+		task->__xfs_ctx = xfs_alloc(task->path);
+	else
+		task->__xfs_ctx = NULL;
 	task_renice(task, nice);
 
 	return task;
@@ -404,30 +354,72 @@ static void idle_task(struct task_t * task, void * data)
 	}
 }
 
-static __init void task_pure_init(void)
+static void smpboot_entry_func(int cpu)
 {
-	struct task_t * task;
+	struct scheduler_t * sched = scheduler_self();
+	struct task_t * task, * next;
+
+	machine_smpinit(cpu);
+
+	task = task_create(sched, "idle", idle_task, NULL, SZ_8K, 0);
+	task->nice = 26;
+	task->weight = 3;
+	task->inv_weight = 1431655765;
+	task_resume(task);
+
+	next = scheduler_next_ready_task(sched);
+	if(next)
+	{
+		sched->running = next;
+		scheduler_dequeue_task(sched, next);
+		next->status = TASK_STATUS_RUNNING;
+		next->start = ktime_to_ns(ktime_get());
+		scheduler_switch_task(sched, next);
+	}
+}
+
+void scheduler_loop(void)
+{
+	struct scheduler_t * sched = scheduler_self();
+	struct task_t * task, * next;
 	int i;
 
 	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 	{
-		__sched[i] = scheduler_alloc();
+		if(smp_processor_id() != i)
+			machine_smpboot(i, smpboot_entry_func);
+	}
 
-		task = task_create(__sched[i], "idle", idle_task, NULL, SZ_8K, 0);
-		task->nice = 26;
-		task->weight = 3;
-		task->inv_weight = 1431655765;
-		task_resume(task);
+	task = task_create(sched, "idle", idle_task, NULL, SZ_8K, 0);
+	task->nice = 26;
+	task->weight = 3;
+	task->inv_weight = 1431655765;
+	task_resume(task);
+
+	next = scheduler_next_ready_task(sched);
+	if(next)
+	{
+		sched->running = next;
+		scheduler_dequeue_task(sched, next);
+		next->status = TASK_STATUS_RUNNING;
+		next->start = ktime_to_ns(ktime_get());
+		scheduler_switch_task(sched, next);
 	}
 }
 
-static __exit void task_pure_exit(void)
+void do_init_sched(void)
 {
+	struct scheduler_t * sched;
 	int i;
 
 	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
-		scheduler_free(__sched[i]);
-}
+	{
+		sched = &__sched[i];
 
-pure_initcall(task_pure_init);
-pure_exitcall(task_pure_exit);
+		sched->ready = RB_ROOT_CACHED;
+		init_list_head(&sched->suspend);
+		spin_lock_init(&sched->lock);
+		sched->running = NULL;
+		sched->min_vtime = 0;
+	}
+}

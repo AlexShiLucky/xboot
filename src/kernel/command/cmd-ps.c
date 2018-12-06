@@ -42,12 +42,13 @@ static int do_ps(int argc, char ** argv)
 
 	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 	{
-		sched = __sched[i];
+		sched = &__sched[i];
 
 		printf("CPU%d:\r\n", i);
 
 		pos = sched->running;
-		printf(" %p %-8s %3d %20lld %s\r\n", pos->func, "Running", pos->nice, pos->time, pos->path ? pos->path : "");
+		if(pos)
+			printf(" %p %-8s %3d %20lld %s\r\n", pos->func, "Running", pos->nice, pos->time, pos->path ? pos->path : "");
 
 		rbtree_postorder_for_each_entry_safe(pos, n, &sched->ready.rb_root, node)
 		{

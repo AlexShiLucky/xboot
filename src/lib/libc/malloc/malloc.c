@@ -6,6 +6,7 @@
 #include <malloc.h>
 
 static void * __heap_pool = NULL;
+static spinlock_t __heap_lock = SPIN_LOCK_INIT();
 
 /*
  * Some macros.
@@ -811,36 +812,52 @@ void mm_info(void * mm, size_t * mused, size_t * mfree)
 
 void * malloc(size_t size)
 {
-	return tlsf_malloc(__heap_pool, size);
+	void * m;
+
+	spin_lock(&__heap_lock);
+	m = tlsf_malloc(__heap_pool, size);
+	spin_unlock(&__heap_lock);
+	return m;
 }
 EXPORT_SYMBOL(malloc);
 
 void * memalign(size_t align, size_t size)
 {
-	return tlsf_memalign(__heap_pool, align, size);
+	void * m;
+
+	spin_lock(&__heap_lock);
+	m = tlsf_memalign(__heap_pool, align, size);
+	spin_unlock(&__heap_lock);
+	return m;
 }
 EXPORT_SYMBOL(memalign);
 
 void * realloc(void * ptr, size_t size)
 {
-	return tlsf_realloc(__heap_pool, ptr, size);
+	void * m;
+
+	spin_lock(&__heap_lock);
+	m = tlsf_realloc(__heap_pool, ptr, size);
+	spin_unlock(&__heap_lock);
+	return m;
 }
 EXPORT_SYMBOL(realloc);
 
 void * calloc(size_t nmemb, size_t size)
 {
-	void * ptr;
+	void * m;
 
-	if((ptr = malloc(nmemb * size)))
-		memset(ptr, 0, nmemb * size);
-
-	return ptr;
+	if((m = malloc(nmemb * size)))
+		memset(m, 0, nmemb * size);
+	return m;
 }
 EXPORT_SYMBOL(calloc);
 
 void free(void * ptr)
 {
+	spin_lock(&__heap_lock);
 	tlsf_free(__heap_pool, ptr);
+	spin_unlock(&__heap_lock);
 }
 EXPORT_SYMBOL(free);
 
@@ -866,17 +883,24 @@ static ssize_t memory_read_meminfo(struct kobj_t * kobj, void * buf, size_t size
 	return len;
 }
 
-/* 内存池初始化 */
-void do_init_mem_pool(void)
+void do_init_mem(void)
 {
-#ifndef __SANDBOX__
+	void * heap;
+	size_t size;
+
+#ifdef __SANDBOX__
+	static char __heap_buf[CONFIG_HEAP_MEMORY_SIZE];
+	heap = (void *)&__heap_buf;
+	size = (size_t)(sizeof(__heap_buf));
+#else
 	extern unsigned char __heap_start;
 	extern unsigned char __heap_end;
-	__heap_pool = tlsf_create_with_pool((void *)&__heap_start, (size_t)(&__heap_end - &__heap_start));
-#else
-	static char __heap_buf[SZ_256M];
-	__heap_pool = tlsf_create_with_pool((void *)__heap_buf, (size_t)(sizeof(__heap_buf)));
+	heap = (void *)&__heap_start;
+	size = (size_t)(&__heap_end - &__heap_start);
 #endif
+
+	spin_lock_init(&__heap_lock);
+	__heap_pool = mm_create(heap, size);
     /* 在kobj/class/memory下创建meminfo文件 */
 	kobj_add_regular(search_class_memory_kobj(), "meminfo", memory_read_meminfo, NULL, mm_get(__heap_pool));
 }

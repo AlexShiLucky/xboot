@@ -117,8 +117,8 @@ static int luaopen_boot(lua_State * L)
 {
     /* 加载/framework/xboot/boot.lua文件,并运行 */
 	if(luaL_loadfile(L, "/framework/xboot/boot.lua") == LUA_OK)
-		lua_call(L, 0, 1);
-	return 1;
+		lua_call(L, 0, 0);
+	return 0;
 }
 
 struct __reader_data_t
@@ -145,7 +145,7 @@ static const char * __reader(lua_State * L, void * data, size_t * size)
 
 static int __loadfile(lua_State * L)
 {
-	struct xfs_context_t * ctx = luahelper_runtime(L)->__xfs_ctx;
+	struct xfs_context_t * ctx = luahelper_task(L)->__xfs_ctx;
 	const char * filename = luaL_checkstring(L, 1);
 	struct __reader_data_t * rd;
 
@@ -174,7 +174,7 @@ static int __loadfile(lua_State * L)
 
 static int l_search_package_lua(lua_State * L)
 {
-	struct xfs_context_t * ctx = luahelper_runtime(L)->__xfs_ctx;
+	struct xfs_context_t * ctx = luahelper_task(L)->__xfs_ctx;
 	const char * filename = lua_tostring(L, -1);
 	char * buf;
 	size_t len, i;
@@ -234,10 +234,6 @@ static int l_xboot_readline(lua_State * L)
 
 static int pmain(lua_State * L)
 {
-	int argc = (int)lua_tointeger(L, 1);
-	char ** argv = (char **)lua_touserdata(L, 2);
-	int i;
-
     /* 加载内部基本库 */
 	luaL_openlibs(L);
     /* 加载全局库 */
@@ -270,19 +266,10 @@ static int pmain(lua_State * L)
     /* 设置表xboot域readline调用函数               */
 	lua_pushcfunction(L, l_xboot_readline);
 	lua_setfield(L, -2, "readline");
-    /* 设置表xboot域arg */
-	lua_createtable(L, argc, 0);
-	for(i = 0; i < argc; i++)
-	{
-		lua_pushstring(L, argv[i]);
-		lua_rawseti(L, -2, i);
-	}
-	lua_setfield(L, -2, "arg");
-	lua_pop(L, 1);
 
     /* 调用boot.lua文件,启动xboot */
 	luaopen_boot(L);
-	return 1;
+	return 0;
 }
 
 static void * l_alloc(void * ud, void * ptr, size_t osize, size_t nsize)
@@ -312,41 +299,38 @@ static lua_State * l_newstate(void * ud)
 	return L;
 }
 
-int vmexec(int argc, char ** argv)
+static void vm_task(struct task_t * task, void * data)
 {
-    /* 当前运行环境 */
-	struct runtime_t rt;
-    /* 备份先前运行环境 */
-    struct runtime_t *rtbak;
 	lua_State * L;
-	int status = LUA_ERRRUN, result;
 
-    /* 创建新运行环境,并保存先前运行环境 */
-	runtime_create_save(&rt, argv[0], &rtbak);
-    /* 创建lua状态机 */
-	L = l_newstate(&rt);
+	L = l_newstate(task);
 	if(L)
 	{
 	    /* 传入C函数pmain */
 		lua_pushcfunction(L, &pmain);
-        /* 传入参数个数 */
-		lua_pushinteger(L, argc);
-        /* 传入用户数据 */
-		lua_pushlightuserdata(L, argv);
-        /* 调用传入C函数 */
-		status = luahelper_pcall(L, 2, 1);
-		result = lua_toboolean(L, -1);
-		if(status != LUA_OK)
+		if(luahelper_pcall(L, 0, 0) != LUA_OK)
 		{
-			const char * msg = lua_tostring(L, -1);
-			lua_writestringerror("%s: ", argv[0]);
-			lua_writestringerror("%s\r\n", msg);
+			lua_writestringerror("%s: ", task->path);
+			lua_writestringerror("%s\r\n", lua_tostring(L, -1));
 			lua_pop(L, 1);
 		}
         /* 关闭lua状态机 */
 		lua_close(L);
 	}
-    /* 销毁当前运行环境,并恢复先前运行环境 */
-	runtime_destroy_restore(&rt, rtbak);
-	return (result && (status == LUA_OK)) ? 0 : -1;
+}
+
+int vmexec(const char * path)
+{
+	struct task_t * task;
+
+	if(is_absolute_path(path))
+	{
+		task = task_create(NULL, path, vm_task, NULL, 0, 0);
+		if(task)
+		{
+			task_resume(task);
+			return 0;
+		}
+	}
+	return -1;
 }

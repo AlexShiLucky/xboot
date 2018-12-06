@@ -2,17 +2,15 @@
  * libc/environ/clearenv.c
  */
 
-#include <runtime.h>
 #include <environ.h>
 
 /* 清除所有环境变量 */
 int clearenv(void)
 {
-    /* 获取当前运行环境的环境变量 */
-	struct environ_t * environ = &(runtime_get()->__environ);
+	struct environ_t * environ = &__environ;
 	struct environ_t * p, * q;
 
-	if (!environ)
+	if (!environ || !environ->content)
 		return -1;
 
     /* 遍历所有环境变量节点,并逐一删除 */
@@ -26,7 +24,6 @@ int clearenv(void)
 		free(q->content);
 		free(q);
 	}
-
 	return 0;
 }
 EXPORT_SYMBOL(clearenv);

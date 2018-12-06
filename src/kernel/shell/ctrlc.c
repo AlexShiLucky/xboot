@@ -40,6 +40,10 @@ int ctrlc(void)
 		if(ch == 0x3)
 			return 1;
 	}
+	else
+	{
+		task_yield();
+	}
 	return 0;
 }
 EXPORT_SYMBOL(ctrlc);

@@ -27,17 +27,18 @@
  */
 
 #include <xboot.h>
+#include <command/command.h>
+#include <framework/vm.h>
 #include <shell/parser.h>
 #include <shell/system.h>
-#include <framework/vm.h>
-#include <command/command.h>
 
 /* 解析并执行命令行 */
 int system(const char * cmdline)
 {
 	struct command_t * cmd;
-	char **args;
-	char *p, *buf, *pos;
+	char ** args;
+	char * p, * buf, * pos;
+	char fpath[MAX_PATH];
 	size_t len;
 	int n, ret;
 
@@ -59,12 +60,16 @@ int system(const char * cmdline)
 			if(n > 0)
 			{
 				if((cmd = search_command(args[0])))     // if中(())消除警告
+				{
 					ret = cmd->exec(n, args);           // 找到命令执行命令
+				}
 				else
-					ret = vmexec(n, args);              // 未找到命令执行虚拟机
+				{
+					vfs_path_conv(args[0], fpath);
+					ret = vmexec(fpath);                // 未找到命令执行虚拟机
+				}
 				if((ret < 0) && pos)
 				{
-			    	printf(" when exec \'%s\' return an error code (%ld).\r\n", args[0], ret);
 			    	free(args[0]);
 			    	free(args);
 			    	break;
@@ -83,4 +88,3 @@ int system(const char * cmdline)
 	free(buf);
 	return 1;
 }
-EXPORT_SYMBOL(system);

@@ -186,7 +186,7 @@ void probe_device(const char * json, int length, const char * tips)
                 /* 获取值 */
 				n.value = (struct json_value_t *)(v->u.object.values[i].value);
 
-				if(strcmp(dt_read_string(&n, "status", NULL), "disabled") != 0)
+				if(strcmp(dt_read_string(&n, "status", "okay"), "disabled") != 0)
 				{
                     /* 根据名称搜索驱动 */
     				drv = search_driver(n.name);

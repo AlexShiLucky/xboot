@@ -2,7 +2,6 @@
  * libc/environ/putenv.c
  */
 
-#include <runtime.h>
 #include <string.h>
 #include <malloc.h>
 #include <environ.h>
@@ -10,8 +9,7 @@
 /* 加入一个环境变量键值对字符串,len表示"name="的长度 */
 int __put_env(char * str, size_t len, int overwrite)
 {
-    /* 获取当前运行环境的环境变量 */
-	struct environ_t * environ = &(runtime_get()->__environ);
+	struct environ_t * environ = &__environ;
 	struct environ_t * env;
 	struct environ_t * p;
 
@@ -21,10 +19,9 @@ int __put_env(char * str, size_t len, int overwrite)
     /* 遍历所有环境变量节点 */
 	for(p = environ->next; p != environ; p = p->next)
 	{
-        /* 匹配环境变量名称 */
-		if (!strncmp(p->content, str, len))
+		if(p->content && !strncmp(p->content, str, len))
 		{
-			if (!overwrite) /* 不覆盖 */
+			if(!overwrite) /* 不覆盖 */
 			{
 				free(str);
 			}

@@ -137,8 +137,7 @@ void xfs_walk(struct xfs_context_t * ctx, const char * name, xfs_walk_callback_t
 	struct xfs_path_t * pos, * n;
 	char * path;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -153,8 +152,7 @@ bool_t xfs_isdir(struct xfs_context_t * ctx, const char * name)
 	struct xfs_path_t * pos, * n;
 	char * path;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return FALSE;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -171,8 +169,7 @@ bool_t xfs_isfile(struct xfs_context_t * ctx, const char * name)
 	struct xfs_path_t * pos, * n;
 	char * path;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return FALSE;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -190,8 +187,7 @@ bool_t xfs_mkdir(struct xfs_context_t * ctx, const char * name)
 	char * path;
 	int ret = FALSE;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return FALSE;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -212,8 +208,7 @@ bool_t xfs_remove(struct xfs_context_t * ctx, const char * name)
 	char * path;
 	int ret = FALSE;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return FALSE;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -235,8 +230,7 @@ struct xfs_file_t * xfs_open_read(struct xfs_context_t * ctx, const char * name)
 	char * path;
 	void * f;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return NULL;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -262,8 +256,7 @@ struct xfs_file_t * xfs_open_write(struct xfs_context_t * ctx, const char * name
 	char * path;
 	void * f;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return NULL;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -292,8 +285,7 @@ struct xfs_file_t * xfs_open_append(struct xfs_context_t * ctx, const char * nam
 	char * path;
 	void * f;
 
-	path = normal_path(name);
-	if(!path)
+	if(!ctx || !(path = normal_path(name)))
 		return NULL;
 
 	list_for_each_entry_safe_reverse(pos, n, &ctx->mounts.list, list)
@@ -352,41 +344,41 @@ void xfs_close(struct xfs_file_t * file)
 	}
 }
 
-struct xfs_context_t * __xfs_alloc(const char * path)
+struct xfs_context_t * xfs_alloc(const char * path)
 {
 	struct xfs_context_t * ctx;
 	struct stat st;
-	char fpath[MAX_PATH];
 	char userdata[256];
 	uint8_t digest[20];
+
+	if(!is_absolute_path(path))
+		return NULL;
 
     /* 申请xfs上下文 */
 	ctx = malloc(sizeof(struct xfs_context_t));
 	if(!ctx)
 		return NULL;
+
 	memset(ctx, 0, sizeof(struct xfs_context_t));
     /* 初始化xfs mount链表 */
 	init_list_head(&ctx->mounts.list);
 	spin_lock_init(&ctx->lock);
 
-    /* 将path转化为绝对路径 */
-	if(path && vfs_path_conv(path, fpath) >= 0)
-	{
-	    /* 挂载/framework */
-		xfs_mount(ctx, "/framework", 0);
-        /* 挂载path */
-		xfs_mount(ctx, fpath, 0);
-		sha1_hash(fpath, strlen(fpath), digest);
-		sprintf(userdata, "/private/userdata/%s-%02x%02x%02x%02x%02x%02x%02x%02x", basename(fpath),
-			digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7]);
-		if(stat(userdata, &st) != 0)
-			mkdir(userdata, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-		xfs_mount(ctx, userdata, 1);
-	}
+	/* 挂载/framework */
+	xfs_mount(ctx, "/framework", 0);
+	/* 挂载path */
+	xfs_mount(ctx, path, 0);
+	sha1_hash(path, strlen(path), digest);
+	sprintf(userdata, "/private/userdata/%s-%02x%02x%02x%02x%02x%02x%02x%02x", basename(path),
+		digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7]);
+	if(stat(userdata, &st) != 0)
+		mkdir(userdata, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+	xfs_mount(ctx, userdata, 1);
+
 	return ctx;
 }
 
-void __xfs_free(struct xfs_context_t * ctx)
+void xfs_free(struct xfs_context_t * ctx)
 {
 	struct xfs_path_t * pos, * n;
 	irq_flags_t flags;

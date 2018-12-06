@@ -34,20 +34,18 @@
 /* xboot入口函数,从start.S跳转过来 */
 int xboot_main(int argc, char * argv[])
 {
-	struct runtime_t rt;
+	/* Do initial memory */
+	do_init_mem();
     struct runtime_t *prt;
 
-	/* Do initial mem pool - 初始化内存池 */
-	do_init_mem_pool();
+	/* Do initial scheduler */
+	do_init_sched();
 
-	/* Do initial dma pool - 初始化DMA池 */
-	do_init_dma_pool();
+	/* Do initial event */
+	do_init_event();
 
 	/* Do initial vfs - 初始化虚拟文件系统 */
 	do_init_vfs();
-
-	/* Create runtime - 创建运行环境 */
-	runtime_create_save(&rt, 0, &prt);
 
 	/* Do all initial calls - 初始化表调用 */
 	do_initcalls();
@@ -58,17 +56,19 @@ int xboot_main(int argc, char * argv[])
 	/* Do auto boot - 调用init.c中的__do_autoboot */
 	do_autoboot();
 
-	/* Run loop */
-	while(1) {
-		/* Run shell - 运行Shell */
-		run_shell();
-	}
+#if	defined(CONFIG_SHELL_TASK) && (CONFIG_SHELL_TASK > 0)
+	/* Create shell task */
+	struct task_t * task = task_create(NULL, "shell", shell_task, NULL, 0, 0);
 
-	/* Do all exit calls - 退出表调用 */
+	/* Resume shell task */
+	task_resume(task);
+#endif
+
+	/* Scheduler loop */
+	scheduler_loop();
+
+	/* Do all exit calls */
 	do_exitcalls();
-
-	/* Destroy runtime - 销毁当前运行环境并恢复先前运行环境 */
-	runtime_destroy_restore(&rt, prt);
 
 	/* Xboot return */
 	return 0;

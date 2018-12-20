@@ -26,6 +26,7 @@
  *
  */
 
+#include <xboot.h>
 #include <xboot/driver.h>
 
 /* 驱动哈希链表 */

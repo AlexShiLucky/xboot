@@ -49,40 +49,48 @@ static void subsys_init_romdisk(void)
 /* 子系统根文件系统初始化 */
 static void subsys_init_rootfs(void)
 {
-    /* mount块设备romdisk.0到根目录下的文件系统cpiofs */
-	mount("romdisk.0", "/", "cpiofs", 0); chdir("/");
-    /* mount /sys文件系统sysfs*/
-	mount(NULL, "/sys", "sysfs", 0);
-	mount(NULL, "/storage" , "ramfs", 0);
-	mount(NULL, "/private" , "ramfs", 0);
-	mkdir("/private/application", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-	mkdir("/private/userdata", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+	/* mount块设备romdisk.0到根目录下的文件系统cpiofs */
+	vfs_mount("romdisk.0", "/", "cpio", MOUNT_RDONLY);
+	vfs_mount(NULL, "/sys", "sys", MOUNT_RDONLY);
+	vfs_mount(NULL, "/tmp", "ram", MOUNT_RW);
+	vfs_mount(NULL, "/storage" , "ram", MOUNT_RW);
+	vfs_mount(NULL, "/private" , "ram", MOUNT_RW);
+	vfs_mkdir("/private/application", 0755);
+	vfs_mkdir("/private/userdata", 0755);
 }
 
 /* 子系统设备树初始化 */
 static void subsys_init_dt(void)
 {
-	char path[64];
+	struct vfs_stat_t st;
+	char path[VFS_MAX_PATH];
 	char * json;
 	int fd, n, len = 0;
 
-	json = malloc(SZ_1M);
+	/* 获取机器配置文件路径 */
+	sprintf(path, "/boot/%s.json", get_machine()->name);
+	if(vfs_stat(path, &st) < 0)
+		return;
+	if(!S_ISREG(st.st_mode))
+		return;
+	if(st.st_size <= 0)
+		return;
+
+	json = malloc(st.st_size + 1);
 	if(!json)
 		return;
 
-    /* 获取机器配置文件路径 */
-	sprintf(path, "/boot/%s.json", get_machine()->name);
-	if((fd = open(path, O_RDONLY, (S_IRUSR | S_IRGRP | S_IROTH))) > 0)
+	if((fd = vfs_open(path, O_RDONLY, 0)) >= 0)
 	{
-	    for(;;)
-	    {
-	        n = read(fd, (void *)(json + len), SZ_512K);
-	        if(n <= 0)
-	        	break;
+		for(;;)
+		{
+			n = vfs_read(fd, (void *)(json + len), SZ_64K);
+			if(n <= 0)
+				break;
 			len += n;
-	    }
-	    close(fd);
-        /* 探测json配置文件中的设备 */
+		}
+		vfs_close(fd);
+		/* 探测json配置文件中的设备 */
 		probe_device(json, len, path);
 	}
 	free(json);

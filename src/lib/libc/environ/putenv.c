@@ -5,6 +5,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <environ.h>
+#include <xboot/module.h>
 
 /* 加入一个环境变量键值对字符串,len表示"name="的长度 */
 int __put_env(char * str, size_t len, int overwrite)

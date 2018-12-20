@@ -5,7 +5,15 @@
 extern "C" {
 #endif
 
-#include <xboot.h>
+#include <types.h>
+#include <stddef.h>
+#include <time/timer.h>
+#include <xboot/seqlock.h>
+#include <xboot/ktime.h>
+#include <xboot/dtree.h>
+#include <xboot/device.h>
+#include <xboot/driver.h>
+#include <xboot/initcall.h>
 
 /*
  * Simplify initialization of mask field

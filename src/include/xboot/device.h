@@ -5,12 +5,16 @@
 extern "C" {
 #endif
 
-#include <xboot.h>
+#include <types.h>
+#include <list.h>
+#include <xboot/kobj.h>
+#include <xboot/notifier.h>
+#include <xboot/driver.h>
 
 enum device_type_t {
-#define X(def, name)        DEVICE_TYPE_ ## def,
+#define Xdef(def, name)        DEVICE_TYPE_ ## def,
 #include <xboot/device_table.h>
-#undef X
+#undef Xdef
     DEVICE_TYPE_MAX_COUNT
 };
 

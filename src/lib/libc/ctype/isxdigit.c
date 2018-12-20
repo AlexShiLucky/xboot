@@ -3,6 +3,7 @@
  */
 
 #include <ctype.h>
+#include <xboot/module.h>
 
 /* 判断是否为十六进制数 */
 int isxdigit(int c)

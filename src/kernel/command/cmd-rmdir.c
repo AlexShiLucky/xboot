@@ -26,6 +26,7 @@
  *
  */
 
+#include <xboot.h>
 #include <command/command.h>
 
 static void usage(void)
@@ -36,8 +37,9 @@ static void usage(void)
 
 static int do_rmdir(int argc, char ** argv)
 {
-	s32_t ret = 0;
-	s32_t i;
+	char fpath[VFS_MAX_PATH];
+	int ret = 0;
+	int i;
 
 	if(argc < 2)
 	{
@@ -47,13 +49,14 @@ static int do_rmdir(int argc, char ** argv)
 
 	for(i = 1; i < argc; i++)
 	{
-		if(rmdir((const char*)argv[i]) != 0)
+		if(shell_realpath(argv[i], fpath) < 0)
+			continue;
+		if(vfs_rmdir(fpath) != 0)
 		{
 			ret = -1;
-			printf("mkdir: failed to remove directory %s\r\n", argv[i]);
+			printf("mkdir: failed to remove directory %s\r\n", fpath);
 		}
 	}
-
 	return ret;
 }
 

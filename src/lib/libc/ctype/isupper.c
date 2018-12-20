@@ -3,6 +3,7 @@
  */
 
 #include <ctype.h>
+#include <xboot/module.h>
 
 /* 判断是否为大写字母 */
 int isupper(int c)

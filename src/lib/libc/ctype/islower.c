@@ -3,6 +3,7 @@
  */
 
 #include <ctype.h>
+#include <xboot/module.h>
 
 /* 判断是否是小写字母 */
 int islower(int c)

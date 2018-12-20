@@ -26,7 +26,10 @@
  *
  */
 
-#include <xboot.h>
+#include <string.h>
+#include <stdio.h>
+#include <malloc.h>
+#include <xboot/initcall.h>
 #include <xboot/module.h>
 
 extern struct symbol_t __ksymtab_start[];

@@ -26,8 +26,8 @@
  *
  */
 
-#include <xfs/archiver.h>
 #include <sandbox.h>
+#include <xfs/archiver.h>
 
 struct mhandle_dir_t {
 	char * path;
@@ -153,7 +153,7 @@ static void * dir_open(void * m, const char * name, int mode)
 		fd = sandbox_file_open(path, "r");
 		break;
 	}
-	if(fd <= 0)
+	if(fd < 0)
 	{
 		free(path);
 		return NULL;

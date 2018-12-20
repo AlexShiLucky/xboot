@@ -3,6 +3,7 @@
  */
 
 #include <ctype.h>
+#include <xboot/module.h>
 
 /* 判断是否为可打印字符 */
 int isprint(int c)

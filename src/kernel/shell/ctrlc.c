@@ -27,8 +27,8 @@
  */
 
 #include <xboot.h>
-#include <xboot/module.h>
 #include <shell/ctrlc.h>
+#include <xboot/module.h>
 
 /* Ctrl+C检测函数 */
 int ctrlc(void)

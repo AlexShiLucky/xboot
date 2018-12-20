@@ -3,8 +3,10 @@
  */
 
 #include <sizes.h>
-#include <malloc.h>
+#include <string.h>
 #include <stdio.h>
+#include <malloc.h>
+#include <xboot/module.h>
 
 int fscanf(FILE * f, const char * fmt, ...)
 {

@@ -3,7 +3,9 @@
  */
 
 #include <math.h>
+#include <string.h>
 #include <stdio.h>
+#include <xboot/module.h>
 
 enum flags {
 	FL_ZERO				= 0x01,		/* Zero modifier */

@@ -40,9 +40,9 @@ static spinlock_t __device_lock = SPIN_LOCK_INIT();
 static struct notifier_chain_t __device_nc = NOTIFIER_CHAIN_INIT();
 
 static const char* __device_name[] = {
-#define X(def, name)    name,
+#define Xdef(def, name)    name,
 #include <xboot/device_table.h>
-#undef X
+#undef Xdef
 };
 
 /* 根据设备名称获取device哈希表 */

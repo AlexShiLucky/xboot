@@ -6,6 +6,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <environ.h>
+#include <xboot/module.h>
 
 /* 删除一个环境变量 */
 int unsetenv(const char * name)

@@ -29,55 +29,55 @@
 #include <framework/lang/l-class.h>
 
 /* C字符串形式定义lua代码块:Class.lua */
-static const char class_lua[] =
-"local function rethack(t, bbak, mbak, ...)"									"\n"
-"	t.base = bbak"																"\n"
-"	setmetatable(t.self, mbak)"													"\n"
-""																				"\n"
-"	return ..."																	"\n"
-"end"																			"\n"
-""																				"\n"
-"local function super(t, k)"													"\n"
-"	return function(self, ...)"													"\n"
-"		local bbak = t.base"													"\n"
-"		local mbak = getmetatable(t.self)"										"\n"
-""																				"\n"
-"		setmetatable(t.self, t.base)"											"\n"
-"		t.base = t.base.base"													"\n"
-""																				"\n"
-"		return rethack(t, bbak, mbak, bbak[k](t.self, ...))"					"\n"
-"	end"																		"\n"
-"end"																			"\n"
-""																				"\n"
-"return function(b)"															"\n"
-"	local o = {}"																"\n"
-"	o.__index = o"																"\n"
-""																				"\n"
-"	function o.new(...)"														"\n"
-"		local self = {}"														"\n"
-"		setmetatable(self, o)"													"\n"
-"		self.super = setmetatable({self = self, base = b}, {__index = super})"	"\n"
-""																				"\n"
-"		if self.init then"														"\n"
-"			self:init(...)"														"\n"
-"		end"																	"\n"
-""																				"\n"
-"		return self"															"\n"
-"	end"																		"\n"
-""																				"\n"
-"	if b then"																	"\n"
-"		o.base = b"																"\n"
-"		setmetatable(o, {__index = b})"											"\n"
-"	end"																		"\n"
-""																				"\n"
-"	return o"																	"\n"
-"end"																			"\n"
-;
+static const char class_lua[] = X(
+local function rethack(t, bbak, mbak, ...)
+	t.base = bbak
+	setmetatable(t.self, mbak)
+
+	return ...
+end
+
+local function super(t, k)
+	return function(self, ...)
+		local bbak = t.base
+		local mbak = getmetatable(t.self)
+
+		setmetatable(t.self, t.base)
+		t.base = t.base.base
+
+		return rethack(t, bbak, mbak, bbak[k](t.self, ...))
+	end
+end
+
+return function(b)
+	local o = {}
+	o.__index = o
+
+	function o.new(...)
+		local self = {}
+		setmetatable (self, o)
+		self.super = setmetatable({self = self, base = b}, {__index = super})
+
+		if self.init then
+			self:init(...)
+		end
+
+		return self
+	end
+
+	if b then
+		o.base = b
+		setmetatable(o, {__index = b})
+	end
+
+	return o
+end
+);
 
 /* Class代码块调用入口 */
 int luaopen_class(lua_State * L)
 {
-	if(luaL_loadbuffer(L, class_lua, sizeof(class_lua)-1, "Class.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, class_lua, sizeof(class_lua) - 1, "Class.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

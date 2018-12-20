@@ -3,6 +3,7 @@
  */
 
 #include <ctype.h>
+#include <xboot/module.h>
 
 /* 判断是否为可见字符 */
 int isgraph(int c)

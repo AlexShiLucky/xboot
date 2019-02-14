@@ -21,17 +21,19 @@ function M:init(option, name)
 	self.opt.visible = option.visible or true
 	self.opt.touchable = option.touchable or true
 	self.opt.enable = option.enable or true
+	self.opt.text = option.text
 	self.opt.imageNormal = assert(option.imageNormal or theme.button.imageNormal)
 	self.opt.imagePressed = assert(option.imagePressed or theme.button.imagePressed)
 	self.opt.imageDisabled = assert(option.imageDisabled or theme.button.imageDisabled)
+	self.opt.fontFamily = assert(option.fontFamily or theme.button.fontFamily)
+	self.opt.fontSize = assert(option.fontSize or theme.button.fontSize)
+	self.opt.textPatternNormal = assert(option.textPatternNormal or theme.button.textPatternNormal)
+	self.opt.textPatternPressed = assert(option.textPatternPressed or theme.button.textPatternPressed)
+	self.opt.textPatternDisabled = assert(option.textPatternDisabled or theme.button.textPatternDisabled)
 
-	self.frameNormal = assets:loadDisplay(self.opt.imageNormal)
-	self.framePressed = assets:loadDisplay(self.opt.imagePressed)
-	self.frameDisabled = assets:loadDisplay(self.opt.imageDisabled)
-
-	self.frameNormal:setAlignment(Dobject.ALIGN_CENTER_FILL)
-	self.framePressed:setAlignment(Dobject.ALIGN_CENTER_FILL)
-	self.frameDisabled:setAlignment(Dobject.ALIGN_CENTER_FILL)
+	self.frameNormal = assets:loadDisplay(self.opt.imageNormal):setAlignment(Dobject.ALIGN_CENTER_FILL)
+	self.framePressed = assets:loadDisplay(self.opt.imagePressed):setAlignment(Dobject.ALIGN_CENTER_FILL)
+	self.frameDisabled = assets:loadDisplay(self.opt.imageDisabled):setAlignment(Dobject.ALIGN_CENTER_FILL)
 
 	local width, height = self.frameNormal:getSize()
 	self.opt.width = self.opt.width or width
@@ -45,6 +47,7 @@ function M:init(option, name)
 	self:setVisible(self.opt.visible)
 	self:setTouchable(self.opt.touchable)
 	self:setEnable(self.opt.enable)
+	self:setText(self.opt.text)
 	self:updateVisualState()
 
 	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown)
@@ -79,6 +82,21 @@ function M:setSize(width, height)
 	self.frameNormal:setSize(width, height)
 	self.framePressed:setSize(width, height)
 	self.frameDisabled:setSize(width, height)
+	self:updateVisualState()
+	return self
+end
+
+function M:setText(text)
+	if text then
+		if self.text then
+			self.text:setText(text)
+		else
+			self.text = DisplayText.new(assets:loadFont(self.opt.fontFamily, self.opt.fontSize), self.opt.textPatternNormal, text)
+			self.text:setAlignment(Dobject.ALIGN_NONE)
+		end
+	else
+		self.text = nil
+	end
 	self:updateVisualState()
 	return self
 end
@@ -185,6 +203,16 @@ function M:updateVisualState()
 		if not self:contains(self.frameNormal) then
 			self:addChild(self.frameNormal)
 		end
+		if self.text then
+			if not self:contains(self.text) then
+				self:addChild(self.text)
+			end
+			self.text:toFront():setPattern(self.opt.textPatternNormal)
+		else
+			if self:contains(self.text) then
+				self:removeChild(self.text)
+			end
+		end
 	elseif self.state == self.STATE_PRESSED then
 		if self:contains(self.frameNormal) then
 			self:removeChild(self.frameNormal)
@@ -195,6 +223,16 @@ function M:updateVisualState()
 		if not self:contains(self.framePressed) then
 			self:addChild(self.framePressed)
 		end
+		if self.text then
+			if not self:contains(self.text) then
+				self:addChild(self.text)
+			end
+			self.text:toFront():setPattern(self.opt.textPatternPressed)
+		else
+			if self:contains(self.text) then
+				self:removeChild(self.text)
+			end
+		end
 	elseif self.state == self.STATE_DISABLED then
 		if self:contains(self.frameNormal) then
 			self:removeChild(self.frameNormal)
@@ -204,6 +242,16 @@ function M:updateVisualState()
 		end
 		if not self:contains(self.frameDisabled) then
 			self:addChild(self.frameDisabled)
+		end
+		if self.text then
+			if not self:contains(self.text) then
+				self:addChild(self.text)
+			end
+			self.text:toFront():setPattern(self.opt.textPatternDisabled)
+		else
+			if self:contains(self.text) then
+				self:removeChild(self.text)
+			end
 		end
 	end
 	self:layout()

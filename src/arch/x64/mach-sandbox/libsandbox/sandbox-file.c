@@ -15,7 +15,6 @@ int sandbox_file_open(const char * path, const char * mode)
 {
 	int flags = O_RDONLY;
 	int plus = 0;
-	int fd;
 
 	while(*mode)
 	{
@@ -38,8 +37,7 @@ int sandbox_file_open(const char * path, const char * mode)
 	if(plus)
 		flags = (flags & ~(O_RDONLY | O_WRONLY)) | O_RDWR;
 
-	fd = open(path, flags, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
-	return fd < 0 ? 0 : fd;
+	return open(path, flags, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
 }
 
 int sandbox_file_close(int fd)
@@ -168,16 +166,26 @@ ssize_t sandbox_file_write(int fd, const void * buf, size_t count)
 	return (ret > 0) ? ret: 0;
 }
 
-uint64_t sandbox_file_seek(int fd, uint64_t offset)
+int64_t sandbox_file_seek(int fd, int64_t offset)
 {
-	return (uint64_t)lseek(fd, offset, SEEK_SET);
+	int64_t len = (int64_t)lseek(fd, 0, SEEK_END);
+	if(offset < 0)
+		offset = 0;
+	else if(offset > len)
+		offset = len;
+	return (int64_t)lseek(fd, offset, SEEK_SET);
 }
 
-uint64_t sandbox_file_length(int fd)
+int64_t sandbox_file_tell(int fd)
+{
+	return (int64_t)lseek(fd, 0, SEEK_CUR);
+}
+
+int64_t sandbox_file_length(int fd)
 {
 	off_t off, ret;
 	off = lseek(fd, 0, SEEK_CUR);
 	ret = lseek(fd, 0, SEEK_END);
 	lseek(fd, off, SEEK_SET);
-	return (ret > 0) ? ret: 0;
+	return (ret > 0) ? (int64_t)ret: 0;
 }

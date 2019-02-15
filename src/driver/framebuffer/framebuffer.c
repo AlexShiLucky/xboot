@@ -1,7 +1,7 @@
 /*
  * driver/framebuffer/framebuffer.c
  *
- * Copyright(c) 2007-2018 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -137,10 +137,6 @@ bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb
 	kobj_add_regular(dev->kobj, "brightness", framebuffer_read_brightness, framebuffer_write_brightness, fb);
 	kobj_add_regular(dev->kobj, "max_brightness", framebuffer_read_max_brightness, NULL, fb);
 
-	if(fb->create)
-		fb->alone = (fb->create)(fb);
-	if(fb->present)
-		fb->present(fb, fb->alone, NULL, 0);
 	if(fb->setbl)
 		fb->setbl(fb, 0);
 
@@ -178,8 +174,6 @@ bool_t unregister_framebuffer(struct framebuffer_t * fb)
 	{
 		if(driver->setbl)
 			driver->setbl(driver, 0);
-		if(fb->destroy)
-			fb->destroy(fb, fb->alone);
 	}
 
 	kobj_remove_self(dev->kobj);

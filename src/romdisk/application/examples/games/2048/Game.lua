@@ -1,9 +1,10 @@
+local Button = require "xboot.widget.Button"
 local Tile = require("games.2048.Tile")
 local Score = require("games.2048.Score")
 local M = Class(DisplayObject)
 
 function M:init(w, h)
-	self.super:init()
+	self.super:init(w, h)
 	
 	local assets = assets
 	local bg = assets:loadDisplay("games/2048/images/gamebg.png")
@@ -11,11 +12,11 @@ function M:init(w, h)
 	self:setSize(width, height)
 	self:addChild(bg)
 
-	local button = Widget.Button.new({x = 130, y = 90,
+	local button = Button.new({x = 130, y = 90,
 		imageNormal = "games/2048/images/restartNormal.png",
 		imagePressed = "games/2048/images/restartPressed.png",
 		imageDisabled = "games/2048/images/restartDisabled.png"})
-		:addEventListener("Release", function(d, e) self:restart() end, self)
+		:addEventListener("Release", function(d, e) d:restart() end, self)
 	self:addChild(button)
 
 	self.score = Score.new(0):setPosition(140, 50)

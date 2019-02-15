@@ -1,3 +1,5 @@
+local Pattern = Pattern
+
 local M = Class(DisplayObject)
 
 function M:init(w, h)
@@ -6,7 +8,7 @@ function M:init(w, h)
 	local assets = assets
 
 	self:addChild(DisplayShape.new(w, h)
-		:setSource(Pattern.texture(assets:loadTexture("graphics/dragme/bg.png")):setExtend(Pattern.EXTEND_REPEAT))
+		:setSource(Pattern.image(assets:loadImage("graphics/dragme/bg.png")):setExtend(Pattern.EXTEND_REPEAT))
 		:paint())
 
 	for i = 1, 5 do
@@ -19,12 +21,12 @@ function M:init(w, h)
 			:stroke()
 			:setPosition(math.random(0, w - 100), math.random(0, h - 50))
 	
-		shape:addEventListener(Event.MOUSE_DOWN, self.onMouseDown, shape)
-		shape:addEventListener(Event.MOUSE_MOVE, self.onMouseMove, shape)
-		shape:addEventListener(Event.MOUSE_UP, self.onMouseUp, shape)
-		shape:addEventListener(Event.TOUCH_BEGIN, self.onTouchBegin, shape)
-		shape:addEventListener(Event.TOUCH_MOVE, self.onTouchMove, shape)
-		shape:addEventListener(Event.TOUCH_END, self.onTouchEnd, shape)
+		shape:addEventListener(Event.MOUSE_DOWN, self.onMouseDown)
+		shape:addEventListener(Event.MOUSE_MOVE, self.onMouseMove)
+		shape:addEventListener(Event.MOUSE_UP, self.onMouseUp)
+		shape:addEventListener(Event.TOUCH_BEGIN, self.onTouchBegin)
+		shape:addEventListener(Event.TOUCH_MOVE, self.onTouchMove)
+		shape:addEventListener(Event.TOUCH_END, self.onTouchEnd)
 	
 		self:addChild(shape)
 	end

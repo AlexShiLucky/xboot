@@ -1,7 +1,9 @@
+local Easing = Easing
+
 local M = Class(DisplayObject)
 
-function M:init(cases, width, height)
-	self.super:init()
+function M:init(width, height, cases)
+	self.super:init(width, height)
 
 	self.width = width or 640
 	self.height = height or 480
@@ -14,7 +16,7 @@ function M:init(cases, width, height)
 	end
 	self.tweening = false
 	
-	self:addEventListener(Event.ENTER_FRAME, self.onEnterFrame, self)
+	self:addEventListener(Event.ENTER_FRAME, self.onEnterFrame)
 end
 
 function M:onEnterFrame(e)

@@ -1,7 +1,7 @@
 /*
  * kernel/command/cmd-event.c
  *
- * Copyright(c) 2007-2018 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -39,12 +39,13 @@ static void usage(void)
 
 static int do_event(int argc, char ** argv)
 {
+	struct event_context_t * ectx = event_context_alloc();
 	struct input_t * input;
 	struct event_t e;
 
 	while(1)
 	{
-		if(pump_event(&e))
+		if(pump_event(ectx, &e))
 		{
 			input = (struct input_t *)(e.device);
 
@@ -101,9 +102,13 @@ static int do_event(int argc, char ** argv)
 		}
 
 		if(ctrlc())
+		{
+			event_context_free(ectx);
 			return -1;
+		}
 	}
 
+	event_context_free(ectx);
 	return 0;
 }
 

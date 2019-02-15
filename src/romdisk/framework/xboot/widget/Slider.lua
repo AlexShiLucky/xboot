@@ -1,3 +1,5 @@
+local Dobject = Dobject
+
 local M = Class(DisplayObject)
 
 M.STATE_NORMAL = "NORMAL"
@@ -32,11 +34,11 @@ function M:init(option, name)
 	self.frameThumbPressed = assets:loadDisplay(self.opt.imageThumbPressed)
 	self.frameThumbDisabled = assets:loadDisplay(self.opt.imageThumbDisabled)
 
-	self.frameimageTrack:setAlignment(Object.ALIGN_NONE)
-	self.frameBackground:setAlignment(Object.ALIGN_CENTER_FILL)
-	self.frameThumbNormal:setAlignment(Object.ALIGN_NONE)
-	self.frameThumbPressed:setAlignment(Object.ALIGN_NONE)
-	self.frameThumbDisabled:setAlignment(Object.ALIGN_NONE)
+	self.frameimageTrack:setAlignment(Dobject.ALIGN_NONE)
+	self.frameBackground:setAlignment(Dobject.ALIGN_CENTER_FILL)
+	self.frameThumbNormal:setAlignment(Dobject.ALIGN_NONE)
+	self.frameThumbPressed:setAlignment(Dobject.ALIGN_NONE)
+	self.frameThumbDisabled:setAlignment(Dobject.ALIGN_NONE)
 
 	local width, height = self.frameBackground:getSize()
 	self.opt.width = self.opt.width or width
@@ -52,13 +54,13 @@ function M:init(option, name)
 	self:setEnable(self.opt.enable)
 	self:updateVisualState()
 
-	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown, self)
-	self:addEventListener(Event.MOUSE_MOVE, self.onMouseMove, self)
-	self:addEventListener(Event.MOUSE_UP, self.onMouseUp, self)
+	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown)
+	self:addEventListener(Event.MOUSE_MOVE, self.onMouseMove)
+	self:addEventListener(Event.MOUSE_UP, self.onMouseUp)
 
-	self:addEventListener(Event.TOUCH_BEGIN, self.onTouchBegin, self)
-	self:addEventListener(Event.TOUCH_MOVE, self.onTouchMove, self)
-	self:addEventListener(Event.TOUCH_END, self.onTouchEnd, self)
+	self:addEventListener(Event.TOUCH_BEGIN, self.onTouchBegin)
+	self:addEventListener(Event.TOUCH_MOVE, self.onTouchMove)
+	self:addEventListener(Event.TOUCH_END, self.onTouchEnd)
 end
 
 function M:setSize(width, height)

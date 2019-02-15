@@ -6,14 +6,14 @@ extern "C" {
 #endif
 
 #include <xfs/xfs.h>
-#include <cairo-xboot.h>
+#include <xboot/display.h>
+#include <xboot/event.h>
 
 struct vmctx_t
 {
 	struct xfs_context_t * xfs;
-	struct framebuffer_t * fb;
-	cairo_surface_t * cs;
-	cairo_t * cr;
+	struct display_t * disp;
+	struct event_context_t * ectx;
 };
 
 int vmexec(const char * path, const char * fb);

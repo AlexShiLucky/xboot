@@ -1,7 +1,7 @@
 /*
  * init/main.c
  *
- * Copyright(c) 2007-2018 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -38,9 +38,6 @@ int xboot_main(int argc, char * argv[])
 
 	/* Do initial scheduler */
 	do_init_sched();
-
-	/* Do initial event */
-	do_init_event();
 
 	/* Do initial vfs - 初始化虚拟文件系统 */
 	do_init_vfs();

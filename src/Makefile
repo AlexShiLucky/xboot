@@ -168,11 +168,8 @@ SRCDIRS		+=	arch/$(ARCH)/lib/cpu						\
 				driver/watchdog								\
 				framework									\
 				framework/codec								\
-				framework/display							\
-				framework/event								\
-				framework/hardware							\
-				framework/lang								\
-				framework/stopwatch
+				framework/core								\
+				framework/hardware
 
 #
 # Add external library

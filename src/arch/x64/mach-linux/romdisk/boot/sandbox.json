@@ -1,0 +1,19 @@
+{
+	"ce-sandbox@0": {
+	},
+
+	"cs-sandbox@0": {
+	},
+
+	"input-sandbox@0": {
+	},
+
+	"fb-sandbox@0": {
+		"device": "/dev/fb0",
+		"physical-width": 216,
+		"physical-height": 135
+	},
+
+	"console-sandbox@0": {
+	}
+}

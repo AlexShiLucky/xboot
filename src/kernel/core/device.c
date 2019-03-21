@@ -48,15 +48,7 @@ static const char* __device_name[] = {
 /* 根据设备名称获取device哈希表 */
 static struct hlist_head * device_hash(const char * name)
 {
-	unsigned char * p = (unsigned char *)name;
-	unsigned int seed = 131;
-	unsigned int hash = 0;
-
-	while(*p)
-	{
-		hash = hash * seed + (*p++);
-	}
-	return &__device_hash[hash % ARRAY_SIZE(__device_hash)];
+	return &__device_hash[shash(name) % ARRAY_SIZE(__device_hash)];
 }
 
 /* 搜索设备kobj*/

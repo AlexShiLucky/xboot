@@ -58,15 +58,7 @@ static char * trim(char * s)
 /* 通过key获取hash表头 */
 static struct hlist_head * kvdb_hash(struct kvdb_t * db, const char * key)
 {
-	unsigned char * p = (unsigned char *)key;
-	unsigned int seed = 131;
-	unsigned int hash = 0;
-
-	while(*p)
-	{
-		hash = hash * seed + (*p++);
-	}
-	return &db->hash[hash % db->hash_size];
+	return &db->hash[shash(key) % db->hash_size];
 }
 
 /* 根据key搜索记录节点指针 */

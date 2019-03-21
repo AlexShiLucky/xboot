@@ -36,15 +36,7 @@ static spinlock_t __driver_lock = SPIN_LOCK_INIT();
 /* 根据驱动名称获取device哈希表 */
 static struct hlist_head * driver_hash(const char * name)
 {
-	unsigned char * p = (unsigned char *)name;
-	unsigned int seed = 131;
-	unsigned int hash = 0;
-
-	while(*p)
-	{
-		hash = hash * seed + (*p++);
-	}
-	return &__driver_hash[hash % ARRAY_SIZE(__driver_hash)];
+	return &__driver_hash[shash(name) % ARRAY_SIZE(__driver_hash)];
 }
 
 /* 搜索驱动kobj */

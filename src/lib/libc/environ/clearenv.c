@@ -9,14 +9,14 @@
 /* 清除所有环境变量 */
 int clearenv(void)
 {
-	struct environ_t * environ = &__environ;
+	struct environ_t * xenv = &__xenviron;
 	struct environ_t * p, * q;
 
-	if (!environ || !environ->content)
+	if (!xenv || !xenv->content)
 		return -1;
 
     /* 遍历所有环境变量节点,并逐一删除 */
-	for(p = environ->next; p != environ;)
+	for(p = xenv->next; p != xenv;)
 	{
 		q = p;
 		p = p->next;

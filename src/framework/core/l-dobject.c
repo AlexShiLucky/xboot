@@ -269,6 +269,11 @@ static int l_dobject_new(lua_State * L)
 	o->anchory = 0;
 	o->alpha = 1;
 	o->alignment = ALIGN_NONE;
+	o->margin.left = 0;
+	o->margin.top = 0;
+	o->margin.right = 0;
+	o->margin.bottom = 0;
+	o->type = COLLIDER_TYPE_NONE;
 	o->visible = 1;
 	o->touchable = 1;
 	o->mflag = 0;
@@ -309,6 +314,21 @@ static const luaL_Reg l_dobject[] = {
 	{"new",	l_dobject_new},
 	{NULL,	NULL}
 };
+
+static int m_dobject_gc(lua_State * L)
+{
+	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	if(o->type == COLLIDER_TYPE_POLYGON)
+	{
+		if((o->hit.polygon.length > 0) && o->hit.polygon.points)
+		{
+			free(o->hit.polygon.points);
+			o->hit.polygon.points = NULL;
+			o->hit.polygon.length = 0;
+		}
+	}
+	return 0;
+}
 
 static void dobject_mark_with_children(struct ldobject_t * o, int mark)
 {
@@ -372,7 +392,7 @@ static int m_to_back(lua_State * L)
 static int m_set_width(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	o->width = round(luaL_checknumber(L, 2));
+	o->width = luaL_checknumber(L, 2);
 	o->mflag |= MFLAG_LOCAL_MATRIX;
 	dobject_mark_with_children(o, MFLAG_GLOBAL_MATRIX);
 	return 0;
@@ -388,7 +408,7 @@ static int m_get_width(lua_State * L)
 static int m_set_height(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	o->height = round(luaL_checknumber(L, 2));
+	o->height = luaL_checknumber(L, 2);
 	o->mflag |= MFLAG_LOCAL_MATRIX;
 	dobject_mark_with_children(o, MFLAG_GLOBAL_MATRIX);
 	return 0;
@@ -404,8 +424,8 @@ static int m_get_height(lua_State * L)
 static int m_set_size(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	o->width = round(luaL_checknumber(L, 2));
-	o->height = round(luaL_checknumber(L, 3));
+	o->width = luaL_checknumber(L, 2);
+	o->height = luaL_checknumber(L, 3);
 	o->mflag |= MFLAG_LOCAL_MATRIX;
 	dobject_mark_with_children(o, MFLAG_GLOBAL_MATRIX);
 	return 0;
@@ -675,10 +695,159 @@ static int m_get_alignment(lua_State * L)
 	return 1;
 }
 
+static int m_set_margin(lua_State * L)
+{
+	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	o->margin.left = luaL_optnumber(L, 2, 0);
+	o->margin.top = luaL_optnumber(L, 3, 0);
+	o->margin.right = luaL_optnumber(L, 4, 0);
+	o->margin.bottom = luaL_optnumber(L, 5, 0);
+	return 0;
+}
+
+static int m_get_margin(lua_State * L)
+{
+	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	lua_pushnumber(L, o->margin.left);
+	lua_pushnumber(L, o->margin.top);
+	lua_pushnumber(L, o->margin.right);
+	lua_pushnumber(L, o->margin.bottom);
+	return 4;
+}
+
+static int m_set_collider(lua_State * L)
+{
+	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	const char * type = luaL_optstring(L, 2, "");
+	if(o->type == COLLIDER_TYPE_POLYGON)
+	{
+		if((o->hit.polygon.length > 0) && o->hit.polygon.points)
+		{
+			free(o->hit.polygon.points);
+			o->hit.polygon.points = NULL;
+			o->hit.polygon.length = 0;
+		}
+	}
+	if(strcmp(type, "circle") == 0)
+	{
+		o->type = COLLIDER_TYPE_CIRCLE;
+		o->hit.circle.x = luaL_optnumber(L, 3, o->width / 2);
+		o->hit.circle.y = luaL_optnumber(L, 4, o->height / 2);
+		o->hit.circle.radius = luaL_optnumber(L, 5, (o->width < o->height ? o->width : o->height) / 2);
+	}
+	else if(strcmp(type, "ellipse") == 0)
+	{
+		o->type = COLLIDER_TYPE_ELLIPSE;
+		o->hit.ellipse.x = luaL_optnumber(L, 3, o->width / 2);
+		o->hit.ellipse.y = luaL_optnumber(L, 4, o->height / 2);
+		o->hit.ellipse.width = luaL_optnumber(L, 5, o->width / 2);
+		o->hit.ellipse.height = luaL_optnumber(L, 6, o->height / 2);
+	}
+	else if(strcmp(type, "rectangle") == 0)
+	{
+		o->type = COLLIDER_TYPE_RECTANGLE;
+		o->hit.rectangle.x = luaL_optnumber(L, 3, 0);
+		o->hit.rectangle.y = luaL_optnumber(L, 4, 0);
+		o->hit.rectangle.width = luaL_optnumber(L, 5, o->width);
+		o->hit.rectangle.height = luaL_optnumber(L, 6, o->height);
+	}
+	else if(strcmp(type, "roundedRectangle") == 0)
+	{
+		o->type = COLLIDER_TYPE_ROUND_RECTANGLE;
+		o->hit.rounded_rectangle.x = luaL_optnumber(L, 3, 0);
+		o->hit.rounded_rectangle.y = luaL_optnumber(L, 4, 0);
+		o->hit.rounded_rectangle.width = luaL_optnumber(L, 5, o->width);
+		o->hit.rounded_rectangle.height = luaL_optnumber(L, 6, o->height);
+		o->hit.rounded_rectangle.radius = luaL_optnumber(L, 7, (o->width < o->height ? o->width : o->height) / 5);
+	}
+	else if(strcmp(type, "polygon") == 0)
+	{
+		double * p = NULL;
+		int i, n = 0;
+		o->type = COLLIDER_TYPE_POLYGON;
+		if(lua_istable(L, 3))
+		{
+			n = lua_rawlen(L, 3) & ~0x1;
+			if(n > 0)
+			{
+				p = malloc(sizeof(double) * n);
+				for(i = 0; i < n; i++)
+				{
+					lua_rawgeti(L, 3, i + 1);
+					p[i] = luaL_checknumber(L, -1);
+					lua_pop(L, 1);
+				}
+			}
+		}
+		o->hit.polygon.points = p;
+		o->hit.polygon.length = n;
+	}
+	else
+	{
+		o->type = COLLIDER_TYPE_NONE;
+	}
+	return 0;
+}
+
+static int m_get_collider(lua_State * L)
+{
+	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	int i;
+	switch(o->type)
+	{
+	case COLLIDER_TYPE_NONE:
+		lua_pushstring(L, "none");
+		return 1;
+	case COLLIDER_TYPE_CIRCLE:
+		lua_pushstring(L, "circle");
+		lua_pushnumber(L, o->hit.circle.x);
+		lua_pushnumber(L, o->hit.circle.y);
+		lua_pushnumber(L, o->hit.circle.radius);
+		return 4;
+	case COLLIDER_TYPE_ELLIPSE:
+		lua_pushstring(L, "ellipse");
+		lua_pushnumber(L, o->hit.ellipse.x);
+		lua_pushnumber(L, o->hit.ellipse.y);
+		lua_pushnumber(L, o->hit.ellipse.width);
+		lua_pushnumber(L, o->hit.ellipse.height);
+		return 5;
+	case COLLIDER_TYPE_RECTANGLE:
+		lua_pushstring(L, "rectangle");
+		lua_pushnumber(L, o->hit.rectangle.x);
+		lua_pushnumber(L, o->hit.rectangle.y);
+		lua_pushnumber(L, o->hit.rectangle.width);
+		lua_pushnumber(L, o->hit.rectangle.height);
+		return 5;
+	case COLLIDER_TYPE_ROUND_RECTANGLE:
+		lua_pushstring(L, "roundedRectangle");
+		lua_pushnumber(L, o->hit.rounded_rectangle.x);
+		lua_pushnumber(L, o->hit.rounded_rectangle.y);
+		lua_pushnumber(L, o->hit.rounded_rectangle.width);
+		lua_pushnumber(L, o->hit.rounded_rectangle.height);
+		lua_pushnumber(L, o->hit.rounded_rectangle.radius);
+		return 6;
+	case COLLIDER_TYPE_POLYGON:
+		lua_pushstring(L, "polygon");
+		lua_newtable(L);
+		if((o->hit.polygon.length > 0) && o->hit.polygon.points)
+		{
+			for(i = 0; i < o->hit.polygon.length; i++)
+			{
+				lua_pushnumber(L, o->hit.polygon.points[i]);
+				lua_rawseti(L, -2, i + 1);
+			}
+		}
+		return 2;
+	default:
+		break;
+	}
+	return 0;
+}
+
 static int m_set_visible(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	o->visible = lua_toboolean(L, 2) ? 1 : 0;
+	o->visible = lua_toboolean(L, 2);
 	return 0;
 }
 
@@ -692,7 +861,7 @@ static int m_get_visible(lua_State * L)
 static int m_set_touchable(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	o->touchable = lua_toboolean(L, 2) ? 1 : 0;
+	o->touchable = lua_toboolean(L, 2);
 	return 0;
 }
 
@@ -730,9 +899,106 @@ static int m_local_to_global(lua_State * L)
 	return 2;
 }
 
+static inline int circle_hit_test_point(struct ldobject_t * o, double x, double y)
+{
+	double r = o->hit.circle.radius;
+	double r2, dx, dy;
+	if(r > 0)
+	{
+		r2 = r * r;
+		dx = o->hit.circle.x - x;
+		dy = o->hit.circle.y - y;
+		dx *= dx;
+		dy *= dy;
+		return (dx + dy <= r2) ? 1 : 0;
+	}
+	return 0;
+}
+
+static inline int ellipse_hit_test_point(struct ldobject_t * o, double x, double y)
+{
+	double w = o->hit.ellipse.width;
+	double h = o->hit.ellipse.height;
+	double normx, normy;
+	if((w > 0) && (h > 0))
+	{
+		normx = (x - o->hit.ellipse.x) / w;
+		normy = (y - o->hit.ellipse.y) / h;
+		normx *= normx;
+		normy *= normy;
+		return (normx + normy <= 1) ? 1 : 0;
+	}
+	return 0;
+}
+
+static inline int rectangle_hit_test_point(struct ldobject_t * o, double x, double y)
+{
+	double w = o->hit.rectangle.width;
+	double h = o->hit.rectangle.height;
+	double rx = o->hit.rectangle.x;
+	double ry = o->hit.rectangle.y;
+	if((w > 0) && (h > 0))
+	{
+		if((x >= rx) && (x < rx + w) && (y >= ry) && (y < ry + h))
+			return 1;
+	}
+	return 0;
+}
+
+static inline int rounded_rectangle_hit_test_point(struct ldobject_t * o, double x, double y)
+{
+	double w = o->hit.rounded_rectangle.width;
+	double h = o->hit.rounded_rectangle.height;
+	double rx = o->hit.rounded_rectangle.x;
+	double ry = o->hit.rounded_rectangle.y;
+	double r = o->hit.rounded_rectangle.radius;
+	double r2, dx, dy;
+	if((w > 0) && (h > 0))
+	{
+		if((x >= rx) && (x <= rx + w))
+		{
+			if((y >= ry) && (y <= ry + h))
+			{
+				if(((y >= ry + r) && (y <= ry + h - r)) || ((x >= rx + r) && (x <= rx + w - r)))
+					return 1;
+				dx = x - (rx + r);
+				dy = y - (ry + r);
+				r2 = r * r;
+				if(dx * dx + dy * dy <= r2)
+					return 1;
+				dx = x - (rx + w - r);
+				if(dx * dx + dy * dy <= r2)
+					return 1;
+				dy = y - (ry + h - r);
+				if(dx * dx + dy * dy <= r2)
+					return 1;
+				dx = x - (rx + r);
+				if(dx * dx + dy * dy <= r2)
+					return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+static inline int polygon_hit_test_point(struct ldobject_t * o, double x, double y)
+{
+	double * p = o->hit.polygon.points;
+	int n = o->hit.polygon.length / 2;
+	int c = 0;
+	int i, j;
+	for(i = 0, j = n - 1; i < n; j = i++)
+	{
+		if(((p[(i << 1) + 1] > y) != (p[(j << 1) + 1] > y)) && (x < (p[j << 1] - p[i << 1]) * (y - p[(i << 1) + 1]) / (p[(j << 1) + 1] - p[(i << 1) + 1]) + p[i << 1]))
+			c = !c;
+	}
+	return c;
+}
+
 static int m_hit_test_point(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
+	int hit = 0;
 	if(o->visible && o->touchable)
 	{
 		double nx, x = luaL_checknumber(L, 2);
@@ -741,11 +1007,33 @@ static int m_hit_test_point(lua_State * L)
 		double id = 1.0 / (m->xx * m->yy - m->xy * m->yx);
 		nx = ((x - m->x0) * m->yy + (m->y0 - y) * m->xy) * id;
 		ny = ((y - m->y0) * m->xx + (m->x0 - x) * m->yx) * id;
-		lua_pushboolean(L, ((nx >= 0) && (ny >= 0) && (nx <= o->width) && (ny <= o->height)) ? 1 : 0);
-		return 1;
+		switch(o->type)
+		{
+		case COLLIDER_TYPE_NONE:
+			if((nx >= 0) && (nx < o->width) && (ny >= 0) && (ny < o->height))
+				hit = 1;
+			break;
+		case COLLIDER_TYPE_CIRCLE:
+			hit = circle_hit_test_point(o, nx, ny);
+			break;
+		case COLLIDER_TYPE_ELLIPSE:
+			hit = ellipse_hit_test_point(o, nx, ny);
+			break;
+		case COLLIDER_TYPE_RECTANGLE:
+			hit = rectangle_hit_test_point(o, nx, ny);
+			break;
+		case COLLIDER_TYPE_ROUND_RECTANGLE:
+			hit = rounded_rectangle_hit_test_point(o, nx, ny);
+			break;
+		case COLLIDER_TYPE_POLYGON:
+			hit = polygon_hit_test_point(o, nx, ny);
+			break;
+		default:
+			break;
+		}
 	}
-	lua_pushboolean(L, 0);
-	return 0;
+	lua_pushboolean(L, hit);
+	return 1;
 }
 
 static int m_bounds(lua_State * L)
@@ -786,6 +1074,10 @@ static inline void dobject_translate_fill(struct ldobject_t * o, double x, doubl
 
 	if(o->width != 0.0 && o->height != 0.0)
 	{
+		if(w < 1.0)
+			w = 1.0;
+		if(h < 1.0)
+			h = 1.0;
 		o->scalex = w / o->width;
 		o->scaley = h / o->height;
 		if((o->scalex == 1.0) && (o->scaley == 1.0))
@@ -820,130 +1112,159 @@ static int m_layout(lua_State * L)
 		double oy1 = ry1;
 		double ox2 = rx2;
 		double oy2 = ry2;
-		double cx1 = 0;
-		double cy1 = 0;
-		double cx2 = c->width;
-		double cy2 = c->height;
+		double cx1 = 0 - c->margin.left;
+		double cy1 = 0 - c->margin.top;
+		double cx2 = c->width + c->margin.right;
+		double cy2 = c->height + c->margin.bottom;
+		double dx, dy;
 		_cairo_matrix_transform_bounding_box(dobject_local_matrix(c), &cx1, &cy1, &cx2, &cy2, NULL);
 
 		switch(c->alignment)
 		{
 		case ALIGN_LEFT:
-			dobject_translate(c, ox1 - cx1, 0);
+			dx = ox1 - cx1;
+			dy = 0;
 			rx1 += cx2 - cx1;
 			break;
 		case ALIGN_TOP:
-			dobject_translate(c, 0, oy1 - cy1);
+			dx = 0;
+			dy = oy1 - cy1;
 			ry1 += cy2 - cy1;
 			break;
 		case ALIGN_RIGHT:
-			dobject_translate(c, ox2 - cx2, 0);
+			dx = ox2 - cx2;
+			dy = 0;
 			rx2 -= cx2 - cx1;
 			break;
 		case ALIGN_BOTTOM:
-			dobject_translate(c, 0, oy2 - cy2);
+			dx = 0;
+			dy = oy2 - cy2;
 			ry2 -= cy2 - cy1;
 			break;
 		case ALIGN_LEFT_TOP:
-			dobject_translate(c, ox1 - cx1, oy1 - cy1);
+			dx = ox1 - cx1;
+			dy = oy1 - cy1;
 			rx1 += cx2 - cx1;
 			ry1 += cy2 - cy1;
 			break;
 		case ALIGN_RIGHT_TOP:
-			dobject_translate(c, ox2 - cx2, oy1 - cy1);
+			dx = ox2 - cx2;
+			dy = oy1 - cy1;
 			rx2 -= cx2 - cx1;
 			ry1 += cy2 - cy1;
 			break;
 		case ALIGN_LEFT_BOTTOM:
-			dobject_translate(c, ox1 - cx1, oy2 - cy2);
+			dx = ox1 - cx1;
+			dy = oy2 - cy2;
 			rx1 += cx2 - cx1;
 			ry2 -= cy2 - cy1;
 			break;
 		case ALIGN_RIGHT_BOTTOM:
-			dobject_translate(c, ox2 - cx2, oy2 - cy2);
+			dx = ox2 - cx2;
+			dy = oy2 - cy2;
 			rx2 -= cx2 - cx1;
 			ry2 -= cy2 - cy1;
 			break;
 		case ALIGN_LEFT_CENTER:
-			dobject_translate(c, ox1 - cx1, oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2);
+			dx = ox1 - cx1;
+			dy = oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2;
 			rx1 += cx2 - cx1;
 			break;
 		case ALIGN_TOP_CENTER:
-			dobject_translate(c, ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2, oy1 - cy1);
+			dx = ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2;
+			dy = oy1 - cy1;
 			ry1 += cy2 - cy1;
 			break;
 		case ALIGN_RIGHT_CENTER:
-			dobject_translate(c, ox2 - cx2, oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2);
+			dx = ox2 - cx2;
+			dy = oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2;
 			rx2 -= cx2 - cx1;
 			break;
 		case ALIGN_BOTTOM_CENTER:
-			dobject_translate(c, ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2, oy2 - cy2);
+			dx = ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2;
+			dy = oy2 - cy2;
 			ry2 -= cy2 - cy1;
 			break;
 		case ALIGN_HORIZONTAL_CENTER:
-			dobject_translate(c, ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2, 0);
+			dx = ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2;
+			dy = 0;
 			break;
 		case ALIGN_VERTICAL_CENTER:
-			dobject_translate(c, 0, oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2);
+			dx = 0;
+			dy = oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2;
 			break;
 		case ALIGN_CENTER:
-			dobject_translate(c, ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2, oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2);
+			dx = ox1 - cx1 + ((ox2 - ox1) - (cx2 - cx1)) / 2;
+			dy = oy1 - cy1 + ((oy2 - oy1) - (cy2 - cy1)) / 2;
 			break;
 		default:
+			dx = 0;
+			dy = 0;
 			break;
 		}
+		dobject_translate(c, dx, dy);
 	}
 	else if((c->alignment <= ALIGN_CENTER_FILL))
 	{
-		double w;
-		double h;
+		double x, y;
+		double w, h;
 
 		switch(c->alignment)
 		{
 		case ALIGN_LEFT_FILL:
 			w = c->width * c->scalex;
-			h = ry2 - ry1;
-			dobject_translate_fill(c, rx1, ry1, w, h);
-			rx1 += w;
+			h = ry2 - ry1 - (c->margin.top + c->margin.bottom);
+			x = rx1 + c->margin.left;
+			y = ry1 + c->margin.top;
+			rx1 += w + c->margin.right;
 			break;
 		case ALIGN_TOP_FILL:
-			w = rx2 - rx1;
+			w = rx2 - rx1 - (c->margin.left + c->margin.right);
 			h = c->height * c->scaley;
-			dobject_translate_fill(c, rx1, ry1, w, h);
-			ry1 += h;
+			x = rx1 + c->margin.left;
+			y = ry1 + c->margin.top;
+			ry1 += h + c->margin.bottom;
 			break;
 		case ALIGN_RIGHT_FILL:
 			w = c->width * c->scalex;
-			h = ry2 - ry1;
-			dobject_translate_fill(c, rx2 - w, ry1, w, h);
-			rx2 -= w;
+			h = ry2 - ry1 - (c->margin.top + c->margin.bottom);
+			x = rx2 - w - c->margin.right;
+			y = ry1 + c->margin.top;
+			rx2 -= w + c->margin.left;
 			break;
 		case ALIGN_BOTTOM_FILL:
-			w = rx2 - rx1;
+			w = rx2 - rx1 - (c->margin.left + c->margin.right);
 			h = c->height * c->scaley;
-			dobject_translate_fill(c, rx1, ry2 - h, w, h);
-			ry2 -= h;
+			x = rx1 + c->margin.left;
+			y = ry2 - h - c->margin.bottom;
+			ry2 -= h + c->margin.top;
 			break;
 		case ALIGN_HORIZONTAL_FILL:
-			w = rx2 - rx1;
+			w = rx2 - rx1 - (c->margin.left + c->margin.right);
 			h = c->height * c->scaley;
-			dobject_translate_fill(c, rx1, c->y, w, h);
+			x = rx1 + c->margin.left;
+			y = c->y;
 			break;
 		case ALIGN_VERTICAL_FILL:
 			w = c->width * c->scalex;
-			h = ry2 - ry1;
-			dobject_translate_fill(c, c->x, ry1, w, h);
+			h = ry2 - ry1 - (c->margin.top + c->margin.bottom);
+			x = c->x;
+			y = ry1 + c->margin.top;
 			break;
 		case ALIGN_CENTER_FILL:
-			w = rx2 - rx1;
-			h = ry2 - ry1;
-			dobject_translate_fill(c, rx1, ry1, w, h);
-			rx1 += w;
-			ry1 += h;
+			w = rx2 - rx1 - (c->margin.left + c->margin.right);
+			h = ry2 - ry1 - (c->margin.top + c->margin.bottom);
+			x = rx1 + c->margin.left;
+			y = ry1 + c->margin.top;
 			break;
 		default:
+			w = c->width * c->scalex;
+			h = c->height * c->scaley;
+			x = c->x;
+			y = c->y;
 			break;
 		}
+		dobject_translate_fill(c, x, y, w, h);
 	}
 
 	lua_pushnumber(L, rx1);
@@ -957,9 +1278,10 @@ static int m_draw(lua_State * L)
 {
 	struct display_t * disp = ((struct vmctx_t *)luahelper_vmctx(L))->disp;
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	if(o->visible && o->draw)
+	if(o->visible)
 	{
-		o->draw(L, o);
+		if(o->draw)
+			o->draw(L, o);
 		if(disp->showobj)
 		{
 			cairo_t * cr = disp->cr;
@@ -967,10 +1289,80 @@ static int m_draw(lua_State * L)
 			cairo_set_matrix(cr, dobject_global_matrix(o));
 			cairo_set_line_width(cr, 1);
 			cairo_rectangle(cr, 0, 0, o->width, o->height);
-			cairo_set_source_rgba(cr, 1, 0, 0, 0.1);
-			cairo_fill_preserve(cr);
-			cairo_set_source_rgba(cr, 0, 0, 1, 0.9);
+			cairo_set_source_rgba(cr, 1, 0, 0, 0.5);
 			cairo_stroke(cr);
+			if((o->type != COLLIDER_TYPE_NONE) && o->touchable)
+			{
+				cairo_matrix_t m;
+				double x, y;
+				double w, h;
+				double r;
+				double * p;
+				int n, i;
+
+				switch(o->type)
+				{
+				case COLLIDER_TYPE_CIRCLE:
+					cairo_new_sub_path(cr);
+					cairo_move_to(cr, o->hit.circle.x + o->hit.circle.radius, o->hit.circle.y);
+					cairo_arc(cr, o->hit.circle.x, o->hit.circle.y, o->hit.circle.radius, 0, M_PI * 2);
+					cairo_close_path(cr);
+					break;
+				case COLLIDER_TYPE_ELLIPSE:
+					x = o->hit.ellipse.x;
+					y = o->hit.ellipse.y;
+					w = o->hit.ellipse.width;
+					h = o->hit.ellipse.height;
+					cairo_get_matrix(cr, &m);
+					cairo_translate(cr, x, y);
+					cairo_scale(cr, 1, h / w);
+					cairo_translate(cr, -x, -y);
+					cairo_new_sub_path(cr);
+					cairo_move_to(cr, x + w, y);
+					cairo_arc(cr, x, y, w, 0, M_PI * 2);
+					cairo_close_path(cr);
+					cairo_set_matrix(cr, &m);
+					break;
+				case COLLIDER_TYPE_RECTANGLE:
+					cairo_new_sub_path(cr);
+					cairo_rectangle(cr, o->hit.rectangle.x, o->hit.rectangle.y, o->hit.rectangle.width, o->hit.rectangle.height);
+					cairo_close_path(cr);
+					break;
+				case COLLIDER_TYPE_ROUND_RECTANGLE:
+					x = o->hit.rounded_rectangle.x;
+					y = o->hit.rounded_rectangle.y;
+					w = o->hit.rounded_rectangle.width;
+					h = o->hit.rounded_rectangle.height;
+					r = o->hit.rounded_rectangle.radius;
+					cairo_new_sub_path(cr);
+					cairo_move_to(cr, x + r, y);
+					cairo_line_to(cr, x + w - r, y);
+					cairo_arc(cr, x + w - r, y + r, r, - M_PI / 2, 0);
+					cairo_line_to(cr, x + w, y + h - r);
+					cairo_arc(cr, x + w - r, y + h - r, r, 0, M_PI / 2);
+					cairo_line_to(cr, x + r, y + h);
+					cairo_arc(cr, x + r, y + h - r, r, M_PI / 2, M_PI);
+					cairo_arc(cr, x + r, y + r, r, M_PI, M_PI + M_PI / 2);
+					cairo_close_path(cr);
+					break;
+				case COLLIDER_TYPE_POLYGON:
+					p = o->hit.polygon.points;
+					n = o->hit.polygon.length / 2;
+					if(n > 0)
+					{
+						cairo_new_sub_path(cr);
+						cairo_move_to(cr, p[0], p[1]);
+						for(i = 1; i < n; i++)
+							cairo_line_to(cr, p[i << 1], p[(i << 1) + 1]);
+						cairo_close_path(cr);
+					}
+					break;
+				default:
+					break;
+				}
+				cairo_set_source_rgba(cr, 1, 1, 0, 0.6);
+				cairo_fill(cr);
+			}
 			cairo_restore(cr);
 		}
 	}
@@ -978,6 +1370,7 @@ static int m_draw(lua_State * L)
 }
 
 static const luaL_Reg m_dobject[] = {
+	{"__gc",			m_dobject_gc},
 	{"addChild",		m_add_child},
 	{"removeChild",		m_remove_child},
 	{"toFront",			m_to_front},
@@ -1014,6 +1407,10 @@ static const luaL_Reg m_dobject[] = {
 	{"getAlpha",		m_get_alpha},
 	{"setAlignment",	m_set_alignment},
 	{"getAlignment",	m_get_alignment},
+	{"setMargin",		m_set_margin},
+	{"getMargin",		m_get_margin},
+	{"setCollider",		m_set_collider},
+	{"getCollider",		m_get_collider},
 	{"setVisible",		m_set_visible},
 	{"getVisible",		m_get_visible},
 	{"setTouchable",	m_set_touchable},

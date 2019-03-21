@@ -135,6 +135,10 @@ function M:showfps(value)
 	return self
 end
 
+function M:snapshot()
+	return self.display:snapshot()
+end
+
 function M:loop()
 	local Event = Event
 	local display = self.display
@@ -143,6 +147,7 @@ function M:loop()
 	self:addTimer(Timer.new(1 / 60, 0, function(t)
 		self:render(Event.new(Event.ENTER_FRAME))
 		display:present()
+		collectgarbage("step")
 	end))
 
 	self:addEventListener(Event.KEY_DOWN, function(d, e)

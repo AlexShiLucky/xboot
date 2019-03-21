@@ -28,6 +28,7 @@
 
 #include <xboot.h>
 #include <framework/core/l-pattern.h>
+#include <framework/core/l-image.h>
 #include <framework/core/l-shape.h>
 
 static int l_shape_new(lua_State * L)
@@ -53,6 +54,28 @@ static int m_shape_gc(lua_State * L)
 	cairo_destroy(shape->cr);
 	cairo_surface_destroy(shape->cs);
 	return 0;
+}
+
+static int m_shape_get_width(lua_State * L)
+{
+	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
+	lua_pushnumber(L, cairo_image_surface_get_width(shape->cs));
+	return 1;
+}
+
+static int m_shape_get_height(lua_State * L)
+{
+	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
+	lua_pushnumber(L, cairo_image_surface_get_height(shape->cs));
+	return 1;
+}
+
+static int m_shape_get_size(lua_State * L)
+{
+	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
+	lua_pushnumber(L, cairo_image_surface_get_width(shape->cs));
+	lua_pushnumber(L, cairo_image_surface_get_height(shape->cs));
+	return 2;
 }
 
 static int m_shape_save(lua_State * L)
@@ -290,6 +313,26 @@ static int m_shape_rectangle(lua_State * L)
 	return 0;
 }
 
+static int m_shape_rounded_rectangle(lua_State * L)
+{
+	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
+	cairo_t * cr = shape->cr;
+	double x = luaL_checknumber(L, 2);
+	double y = luaL_checknumber(L, 3);
+	double width = luaL_checknumber(L, 4);
+	double height = luaL_checknumber(L, 5);
+	double radius = luaL_optnumber(L, 6, 0);
+	cairo_move_to(cr, x + radius, y);
+	cairo_line_to(cr, x + width - radius, y);
+	cairo_arc(cr, x + width - radius, y + radius, radius, - M_PI / 2, 0);
+	cairo_line_to(cr, x + width, y + height - radius);
+	cairo_arc(cr, x + width - radius, y + height - radius, radius, 0, M_PI / 2);
+	cairo_line_to(cr, x + radius, y + height);
+	cairo_arc(cr, x + radius, y + height - radius, radius, M_PI / 2, M_PI);
+	cairo_arc(cr, x + radius, y + radius, radius, M_PI, M_PI + M_PI / 2);
+	return 0;
+}
+
 static int m_shape_arc(lua_State * L)
 {
 	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
@@ -364,16 +407,26 @@ static int m_shape_paint(lua_State * L)
 	return 0;
 }
 
-static int m_shape_size(lua_State * L)
+static int m_shape_snapshot(lua_State * L)
 {
 	struct lshape_t * shape = luaL_checkudata(L, 1, MT_SHAPE);
-	lua_pushnumber(L, cairo_image_surface_get_width(shape->cs));
-	lua_pushnumber(L, cairo_image_surface_get_height(shape->cs));
-	return 2;
+	struct limage_t * img = lua_newuserdata(L, sizeof(struct limage_t));
+	int w = cairo_image_surface_get_width(shape->cs);
+	int h = cairo_image_surface_get_height(shape->cs);
+	img->cs = cairo_surface_create_similar(shape->cs, cairo_surface_get_content(shape->cs), w, h);
+	cairo_t * cr = cairo_create(img->cs);
+	cairo_set_source_surface(cr, shape->cs, 0, 0);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+	luaL_setmetatable(L, MT_IMAGE);
+	return 1;
 }
 
 static const luaL_Reg m_shape[] = {
 	{"__gc",				m_shape_gc},
+	{"getWidth",			m_shape_get_width},
+	{"getHeight",			m_shape_get_height},
+	{"getSize",				m_shape_get_size},
 	{"save",				m_shape_save},
 	{"restore",				m_shape_restore},
 	{"pushGroup",			m_shape_push_group},
@@ -400,6 +453,7 @@ static const luaL_Reg m_shape[] = {
 	{"curveTo",				m_shape_curve_to},
 	{"relCurveTo",			m_shape_rel_curve_to},
 	{"rectangle",			m_shape_rectangle},
+	{"roundedRectangle",	m_shape_rounded_rectangle},
 	{"arc",					m_shape_arc},
 	{"arcNegative",			m_shape_arc_negative},
 	{"stroke",				m_shape_stroke},
@@ -409,7 +463,7 @@ static const luaL_Reg m_shape[] = {
 	{"clip",				m_shape_clip},
 	{"clipPreserve",		m_shape_clip_preserve},
 	{"paint",				m_shape_paint},
-	{"size",				m_shape_size},
+	{"snapshot",			m_shape_snapshot},
 	{NULL,					NULL}
 };
 

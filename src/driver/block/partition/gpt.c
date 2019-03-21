@@ -78,7 +78,6 @@ struct gpt_header_t {
 static bool_t gpt_map(struct disk_t * disk)
 {
 	struct mbr_header_t mbr;
-	struct partition_t * part;
 
 	if(!disk || !disk->name)
 		return FALSE;

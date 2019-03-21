@@ -29,18 +29,23 @@
 #include <xboot.h>
 #include <vfs/vfs.h>
 
+/* 文件系统列表 */
 static struct list_head __filesystem_list = {
 	.next = &__filesystem_list,
 	.prev = &__filesystem_list,
 };
 static spinlock_t __filesystem_lock = SPIN_LOCK_INIT();
 
+/* 搜索文件系统kobj */
 static struct kobj_t * search_class_filesystem_kobj(void)
 {
+    /* 在kobj下搜索(创建)class */
 	struct kobj_t * kclass = kobj_search_directory_with_create(kobj_get_root(), "class");
+    /* 在kobj/class下创建filesystem路径 */
 	return kobj_search_directory_with_create(kclass, "filesystem");
 }
 
+/* 根据名称搜索一个文件系统 */
 struct filesystem_t * search_filesystem(const char * name)
 {
 	struct filesystem_t * pos, * n;
@@ -56,6 +61,7 @@ struct filesystem_t * search_filesystem(const char * name)
 	return NULL;
 }
 
+/* 注册一个文件系统 */
 bool_t register_filesystem(struct filesystem_t * fs)
 {
 	irq_flags_t flags;
@@ -76,6 +82,7 @@ bool_t register_filesystem(struct filesystem_t * fs)
 	return TRUE;
 }
 
+/* 注销一个文件系统 */
 bool_t unregister_filesystem(struct filesystem_t * fs)
 {
 	irq_flags_t flags;
@@ -84,6 +91,7 @@ bool_t unregister_filesystem(struct filesystem_t * fs)
 		return FALSE;
 
 	spin_lock_irqsave(&__filesystem_lock, flags);
+    /* 从文件系统链表中移除自身 */
 	list_del(&fs->list);
 	spin_unlock_irqrestore(&__filesystem_lock, flags);
 	kobj_remove(search_class_filesystem_kobj(), fs->kobj);

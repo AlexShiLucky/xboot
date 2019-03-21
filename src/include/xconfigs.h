@@ -48,7 +48,7 @@ extern "C" {
 #endif
 
 #if !defined(CONFIG_AUTO_BOOT_DELAY)
-#define CONFIG_AUTO_BOOT_DELAY				(1)
+#define CONFIG_AUTO_BOOT_DELAY				(10)
 #endif
 
 #if !defined(CONFIG_AUTO_BOOT_COMMAND)

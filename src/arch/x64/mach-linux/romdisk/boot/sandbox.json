@@ -6,6 +6,9 @@
 	},
 
 	"input-sandbox@0": {
+		"pointer-range-x": 640,
+		"pointer-range-y": 480,
+		"pointer-sensitivity": 6
 	},
 
 	"fb-sandbox@0": {

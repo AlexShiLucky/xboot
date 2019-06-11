@@ -90,11 +90,11 @@ int sandbox_fb_sdl_get_pheight(void * context)
 	return 0;
 }
 
-int sandbox_fb_sdl_get_bpp(void * context)
+int sandbox_fb_sdl_get_bytes(void * context)
 {
 	struct sandbox_fb_sdl_context_t * ctx = (struct sandbox_fb_sdl_context_t *)context;
 	if(ctx)
-		return 32;
+		return 4;
 	return 0;
 }
 
@@ -113,6 +113,7 @@ int sandbox_fb_sdl_surface_create(void * context, struct sandbox_fb_surface_t * 
 	surface->width = face->w;
 	surface->height = face->h;
 	surface->pitch = face->pitch;
+	surface->bytes = bpp / 8;
 	surface->pixels = face->pixels;
 	surface->priv = face;
 
@@ -126,21 +127,23 @@ int sandbox_fb_sdl_surface_destroy(void * context, struct sandbox_fb_surface_t *
 	return 1;
 }
 
-int sandbox_fb_sdl_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_dirty_rect_t * rect, int nrect)
+int sandbox_fb_sdl_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_region_list_t * rl)
 {
 	struct sandbox_fb_sdl_context_t * ctx = (struct sandbox_fb_sdl_context_t *)context;
-	SDL_Rect r;
+	struct sandbox_fb_region_t * r;
+	SDL_Rect rect;
 	int i;
 
-	if(rect && (nrect > 0))
+	if(rl && (rl->count > 0))
 	{
-		for(i = 0; i < nrect; i++)
+		for(i = 0; i < rl->count; i++)
 		{
-			r.x = rect[i].x;
-			r.y = rect[i].y;
-			r.w = rect[i].w;
-			r.h = rect[i].h;
-			SDL_BlitSurface(surface->priv, &r, ctx->screen, &r);
+			r = &rl->region[i];
+			rect.x = r->x;
+			rect.y = r->y;
+			rect.w = r->w;
+			rect.h = r->h;
+			SDL_BlitSurface(surface->priv, &rect, ctx->screen, &rect);
 		}
 	}
 	else

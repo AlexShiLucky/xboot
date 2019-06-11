@@ -28,12 +28,14 @@
 
 #include <xfs/xfs.h>
 #include <framework/luahelper.h>
+#include <framework/core/l-application.h>
 #include <framework/core/l-assets.h>
 #include <framework/core/l-class.h>
-#include <framework/core/l-display.h>
 #include <framework/core/l-display-image.h>
 #include <framework/core/l-display-ninepatch.h>
 #include <framework/core/l-display-object.h>
+#include <framework/core/l-display-pager.h>
+#include <framework/core/l-display-scroll.h>
 #include <framework/core/l-display-shape.h>
 #include <framework/core/l-display-text.h>
 #include <framework/core/l-dobject.h>
@@ -41,15 +43,19 @@
 #include <framework/core/l-event.h>
 #include <framework/core/l-event-dispatcher.h>
 #include <framework/core/l-font.h>
+#include <framework/core/l-i18n.h>
 #include <framework/core/l-image.h>
 #include <framework/core/l-matrix.h>
 #include <framework/core/l-ninepatch.h>
 #include <framework/core/l-pattern.h>
+#include <framework/core/l-printr.h>
 #include <framework/core/l-shape.h>
+#include <framework/core/l-spring.h>
 #include <framework/core/l-stage.h>
 #include <framework/core/l-stopwatch.h>
 #include <framework/core/l-text.h>
 #include <framework/core/l-timer.h>
+#include <framework/core/l-window.h>
 #include <framework/core/l-xfs.h>
 #include <framework/codec/l-base64.h>
 #include <framework/codec/l-json.h>
@@ -60,9 +66,12 @@ static void luaopen_glblibs(lua_State * L)
 {
 	const luaL_Reg glblibs[] = {
 		{ "Class",					luaopen_class },
+		{ "Printr",					luaopen_printr },
 		{ "Xfs",					luaopen_xfs },
-		{ "Display",				luaopen_display },
+		{ "Window",					luaopen_window },
+		{ "I18n",					luaopen_i18n },
 		{ "Easing",					luaopen_easing },
+		{ "Spring",					luaopen_spring },
 		{ "Stopwatch",				luaopen_stopwatch },
 		{ "Matrix",					luaopen_matrix },
 		{ "Image",					luaopen_image },
@@ -75,6 +84,8 @@ static void luaopen_glblibs(lua_State * L)
 		{ "Event",					luaopen_event },
 		{ "EventDispatcher",		luaopen_event_dispatcher },
 		{ "DisplayObject",			luaopen_display_object },
+		{ "DisplayPager",			luaopen_display_pager },
+		{ "DisplayScroll",			luaopen_display_scroll },
 		{ "DisplayImage",			luaopen_display_image },
 		{ "DisplayNinepatch",		luaopen_display_ninepatch },
 		{ "DisplayShape",			luaopen_display_shape },
@@ -82,6 +93,7 @@ static void luaopen_glblibs(lua_State * L)
 		{ "Timer",					luaopen_timer },
 		{ "Stage",					luaopen_stage },
 		{ "Assets",					luaopen_assets },
+		{ "Application",			luaopen_application },
 		{ NULL,	NULL },
 	};
 	const luaL_Reg * lib;
@@ -139,6 +151,7 @@ static void luaopen_prelibs(lua_State * L)
 static const char boot_lua[] = X(
 	stage = Stage.new()
 	assets = Assets.new()
+	T = I18n.new("en-US")
 	if require("main") then
 		stage:loop()
 	end
@@ -147,20 +160,20 @@ static const char boot_lua[] = X(
 static int luaopen_boot(lua_State * L)
 {
     /* 加载/framework/xboot/boot.lua文件,并运行 */
-	if(luaL_loadbuffer(L, boot_lua, sizeof(boot_lua)-1, "Boot.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, boot_lua, sizeof(boot_lua) - 1, "Boot.lua") == LUA_OK)
 		lua_call(L, 0, 0);
 	return 0;
 }
 
-struct __reader_data_t
+struct reader_data_t
 {
 	struct xfs_file_t * file;
 	char buffer[LUAL_BUFFERSIZE];
 };
 
-static const char * __reader(lua_State * L, void * data, size_t * size)
+static const char * reader(lua_State * L, void * data, size_t * size)
 {
-	struct __reader_data_t * rd = (struct __reader_data_t *)data;
+	struct reader_data_t * rd = (struct reader_data_t *)data;
 	s64_t ret;
 
 	ret = xfs_read(rd->file, rd->buffer, LUAL_BUFFERSIZE);
@@ -174,33 +187,54 @@ static const char * __reader(lua_State * L, void * data, size_t * size)
 	return rd->buffer;
 }
 
-static int __loadfile(lua_State * L)
+static int l_loadfile(lua_State * L)
 {
 	struct xfs_context_t * ctx = ((struct vmctx_t *)luahelper_vmctx(L))->xfs;
-	const char * filename = luaL_checkstring(L, 1);
-	struct __reader_data_t * rd;
+	const char * filename = luaL_optstring(L, 1, NULL);
+	struct reader_data_t * rd;
 
-	rd = malloc(sizeof(struct __reader_data_t));
+	rd = malloc(sizeof(struct reader_data_t));
 	if(!rd)
-		return lua_error(L);
+	{
+		lua_pushnil(L);
+		lua_pushfstring(L, "cannot malloc memory", filename);
+		return 2;
+	}
 
 	rd->file = xfs_open_read(ctx, filename);
 	if(!rd->file)
 	{
 		free(rd);
-		return lua_error(L);
+		lua_pushnil(L);
+		lua_pushfstring(L, "cannot open %s", filename);
+		return 2;
 	}
 
-	if(lua_load(L, __reader, rd, filename, NULL))
+	if(lua_load(L, reader, rd, filename, NULL))
 	{
 		free(rd);
-		return lua_error(L);
+		lua_pushnil(L);
+		lua_pushfstring(L, "cannot read %s", filename);
+		return 2;
 	}
 
 	xfs_close(rd->file);
 	free(rd);
-
 	return 1;
+}
+
+static int dofilecont(lua_State * L, int d1, lua_KContext d2)
+{
+	return lua_gettop(L) - 1;
+}
+
+static int l_dofile(lua_State * L)
+{
+	lua_settop(L, 1);
+	if(l_loadfile(L) != 1)
+		return lua_error(L);
+	lua_callk(L, 0, LUA_MULTRET, 0, dofilecont);
+	return dofilecont(L, 0, 0);
 }
 
 static int l_search_package_lua(lua_State * L)
@@ -230,7 +264,7 @@ static int l_search_package_lua(lua_State * L)
 	if(xfs_isfile(ctx, buf))
 	{
 		lua_pop(L, 1);
-		lua_pushcfunction(L, __loadfile);
+		lua_pushcfunction(L, l_loadfile);
 		lua_pushstring(L, buf);
 		lua_call(L, 1, 1);
 	}
@@ -249,9 +283,45 @@ static int l_xboot_version(lua_State * L)
 	return 1;
 }
 
+static int l_xboot_banner(lua_State * L)
+{
+	struct machine_t * mach = get_machine();
+	char buf[SZ_4K];
+	sprintf(buf, "%s - [%s][%s]", xboot_banner_string(), mach->name, mach->desc);
+	lua_pushstring(L, buf);
+	return 1;
+}
+
+static int l_xboot_shutdown(lua_State * L)
+{
+	machine_shutdown();
+	return 0;
+}
+
+static int l_xboot_reboot(lua_State * L)
+{
+	machine_reboot();
+	return 0;
+}
+
+static int l_xboot_sleep(lua_State * L)
+{
+	machine_sleep();
+	return 0;
+}
+
 static int l_xboot_uniqueid(lua_State * L)
 {
 	lua_pushstring(L, machine_uniqueid());
+	return 1;
+}
+
+static int l_xboot_keygen(lua_State * L)
+{
+	const char * msg = luaL_optstring(L, 1, "");
+	char key[SZ_4K];
+	int len = machine_keygen(msg, key);
+	lua_pushlstring(L, key, len);
 	return 1;
 }
 
@@ -263,6 +333,14 @@ static int pmain(lua_State * L)
 	luaopen_glblibs(L);
     /* 预加载库 */
 	luaopen_prelibs(L);
+
+	lua_pushcfunction(L, l_loadfile);
+	lua_pushvalue(L, -1);
+	lua_setglobal(L, "loadfile");
+
+	lua_pushcfunction(L, l_dofile);
+	lua_pushvalue(L, -1);
+	lua_setglobal(L, "dofile");
 
     /* 设置包搜索器 */
 	luahelper_package_searcher(L, l_search_package_lua, 2);
@@ -283,9 +361,19 @@ static int pmain(lua_State * L)
     /* 设置表xboot域version调用函数               */
 	lua_pushcfunction(L, l_xboot_version);
 	lua_setfield(L, -2, "version");
+	lua_pushcfunction(L, l_xboot_banner);
+	lua_setfield(L, -2, "banner");
+	lua_pushcfunction(L, l_xboot_shutdown);
+	lua_setfield(L, -2, "shutdown");
+	lua_pushcfunction(L, l_xboot_reboot);
+	lua_setfield(L, -2, "reboot");
+	lua_pushcfunction(L, l_xboot_sleep);
+	lua_setfield(L, -2, "sleep");
     /* 设置表xboot域uniqueid调用函数               */
 	lua_pushcfunction(L, l_xboot_uniqueid);
 	lua_setfield(L, -2, "uniqueid");
+	lua_pushcfunction(L, l_xboot_keygen);
+	lua_setfield(L, -2, "keygen");
 
     /* 调用boot.lua文件,启动xboot */
 	luaopen_boot(L);
@@ -319,7 +407,7 @@ static lua_State * l_newstate(void * ud)
 	return L;
 }
 
-static struct vmctx_t * vmctx_alloc(const char * path, const char * fb)
+static struct vmctx_t * vmctx_alloc(const char * path, const char * fb, const char * input)
 {
 	struct vmctx_t * ctx;
 
@@ -330,9 +418,9 @@ static struct vmctx_t * vmctx_alloc(const char * path, const char * fb)
 	if(!ctx)
 		return NULL;
 
-	ctx->xfs = xfs_alloc(path);
-	ctx->disp = display_alloc(fb);
-	ctx->ectx = event_context_alloc();
+	ctx->path = strdup(path);
+	ctx->xfs = xfs_alloc(path, 1);
+	ctx->w = window_alloc(fb, input, ctx);
 	return ctx;
 }
 
@@ -341,9 +429,9 @@ static void vmctx_free(struct vmctx_t * ctx)
 	if(!ctx)
 		return;
 
+	free(ctx->path);
 	xfs_free(ctx->xfs);
-	display_free(ctx->disp);
-	event_context_free(ctx->ectx);
+	window_free(ctx->w);
 	free(ctx);
 }
 
@@ -369,7 +457,7 @@ static void vm_task(struct task_t * task, void * data)
 	vmctx_free(ctx);
 }
 
-int vmexec(const char * path, const char * fb)
+int vmexec(const char * path, const char * fb, const char * input)
 {
 	struct task_t * task;
 	struct vmctx_t * ctx;
@@ -377,7 +465,7 @@ int vmexec(const char * path, const char * fb)
 	if(!is_absolute_path(path))
 		return -1;
 
-	ctx = vmctx_alloc(path, fb);
+	ctx = vmctx_alloc(path, fb, input);
 	if(!ctx)
 		return -1;
 

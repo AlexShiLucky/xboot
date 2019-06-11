@@ -34,6 +34,7 @@
 #include <input/keyboard.h>
 #include <command/command.h>
 
+#if 0
 static void usage(void)
 {
 	printf("usage:\r\n");
@@ -195,8 +196,8 @@ static int do_tscal(int argc, char ** argv)
 	index = 0;
 
 	cairo_draw_point(cr, cal.xfb[index], cal.yfb[index]);
-	cairo_xboot_surface_present(cs, NULL, 0);
-	ectx = event_context_alloc();
+	cairo_xboot_surface_present(cs, NULL);
+	ectx = event_context_alloc(NULL);
 
 	while(1)
 	{
@@ -207,7 +208,7 @@ static int do_tscal(int argc, char ** argv)
 		{
 			if(e.type == EVENT_TYPE_KEY_UP)
 			{
-				if(e.e.key_up.key == KEY_EXIT)
+				if(e.e.key_up.key == KEY_BACK)
 					break;
 			}
 			else if(e.type == EVENT_TYPE_TOUCH_END)
@@ -226,12 +227,12 @@ static int do_tscal(int argc, char ** argv)
 						sprintf(buffer, "%s", "calibration failed");
 					}
 					cairo_draw_string(cr, 50, height / 2, buffer);
-					cairo_xboot_surface_present(cs, NULL, 0);
+					cairo_xboot_surface_present(cs, NULL);
 					printf("%s\r\n", buffer);
 					break;
 				}
 				cairo_draw_point(cr, cal.xfb[index], cal.yfb[index]);
-				cairo_xboot_surface_present(cs, NULL, 0);
+				cairo_xboot_surface_present(cs, NULL);
 			}
 		}
 	}
@@ -261,3 +262,4 @@ static __exit void tscal_cmd_exit(void)
 
 command_initcall(tscal_cmd_init);
 command_exitcall(tscal_cmd_exit);
+#endif

@@ -6,36 +6,17 @@ extern "C" {
 #endif
 
 #include <list.h>
-#include <cairo.h>
-#include <cairoint.h>
+#include <xboot/window.h>
 #include <framework/luahelper.h>
 
 #define MT_DOBJECT	"__mt_dobject__"
 
-enum alignment_t {
-	ALIGN_NONE						= 0,
-	ALIGN_LEFT						= 1,
-	ALIGN_TOP						= 2,
-	ALIGN_RIGHT						= 3,
-	ALIGN_BOTTOM					= 4,
-	ALIGN_LEFT_TOP					= 5,
-	ALIGN_RIGHT_TOP					= 6,
-	ALIGN_LEFT_BOTTOM				= 7,
-	ALIGN_RIGHT_BOTTOM				= 8,
-	ALIGN_LEFT_CENTER				= 9,
-	ALIGN_TOP_CENTER				= 10,
-	ALIGN_RIGHT_CENTER				= 11,
-	ALIGN_BOTTOM_CENTER				= 12,
-	ALIGN_HORIZONTAL_CENTER			= 13,
-	ALIGN_VERTICAL_CENTER			= 14,
-	ALIGN_CENTER					= 15,
-	ALIGN_LEFT_FILL					= 16,
-	ALIGN_TOP_FILL					= 17,
-	ALIGN_RIGHT_FILL				= 18,
-	ALIGN_BOTTOM_FILL				= 19,
-	ALIGN_HORIZONTAL_FILL			= 20,
-	ALIGN_VERTICAL_FILL				= 21,
-	ALIGN_CENTER_FILL				= 22,
+enum dobject_type_t {
+	DOBJECT_TYPE_CONTAINER			= 0,
+	DOBJECT_TYPE_IMAGE				= 1,
+	DOBJECT_TYPE_NINEPATCH			= 2,
+	DOBJECT_TYPE_SHAPE				= 3,
+	DOBJECT_TYPE_TEXT				= 4,
 };
 
 enum collider_type_t {
@@ -43,7 +24,7 @@ enum collider_type_t {
 	COLLIDER_TYPE_CIRCLE			= 1,
 	COLLIDER_TYPE_ELLIPSE			= 2,
 	COLLIDER_TYPE_RECTANGLE			= 3,
-	COLLIDER_TYPE_ROUND_RECTANGLE	= 4,
+	COLLIDER_TYPE_ROUNDED_RECTANGLE	= 4,
 	COLLIDER_TYPE_POLYGON			= 5,
 };
 
@@ -51,6 +32,7 @@ struct ldobject_t {
 	struct ldobject_t * parent;
 	struct list_head entry;
 	struct list_head children;
+	enum dobject_type_t dtype;
 
 	double width, height;
 	double x, y;
@@ -59,15 +41,32 @@ struct ldobject_t {
 	double skewx, skewy;
 	double anchorx, anchory;
 	double alpha;
-	enum alignment_t alignment;
-	struct {
-		double left;
-		double top;
-		double right;
-		double bottom;
-	} margin;
 
-	enum collider_type_t type;
+	struct {
+		double red;
+		double green;
+		double blue;
+		double alpha;
+	} background;
+
+	struct {
+		int style;
+		double grow;
+		double shrink;
+		double basis;
+		double width, height;
+		struct {
+			double left;
+			double top;
+			double right;
+			double bottom;
+		} margin;
+
+		double x, y;
+		double w, h;
+	} layout;
+
+	enum collider_type_t ctype;
 	union {
 		struct {
 			double x;
@@ -106,10 +105,12 @@ struct ldobject_t {
 	int visible;
 	int touchable;
 	int mflag;
-	cairo_matrix_t local_matrix;
-	cairo_matrix_t global_matrix;
+	struct matrix_t local_matrix;
+	struct matrix_t global_matrix;
+	struct region_t global_bounds;
+	struct region_t dirty_bounds;
 
-	void (*draw)(lua_State * L, struct ldobject_t * o);
+	void (*draw)(struct ldobject_t * o, struct window_t * w);
 	void * priv;
 };
 

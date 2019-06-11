@@ -366,6 +366,7 @@ static struct render_t * fb_create(struct framebuffer_t * fb)
 	render->width = pdat->width;
 	render->height = pdat->height;
 	render->pitch = (pdat->width * pdat->bytes_per_pixel + 0x3) & ~0x3;
+	render->bytes = pdat->bytes_per_pixel;
 	render->format = PIXEL_FORMAT_ARGB32;
 	render->pixels = pixels;
 	render->pixlen = pixlen;
@@ -383,7 +384,7 @@ static void fb_destroy(struct framebuffer_t * fb, struct render_t * render)
 	}
 }
 
-static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct dirty_rect_t * rect, int nrect)
+static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct region_list_t * rl)
 {
 	struct fb_rk3288_pdata_t * pdat = (struct fb_rk3288_pdata_t *)fb->priv;
 
@@ -464,7 +465,7 @@ static struct device_t * fb_rk3288_probe(struct driver_t * drv, struct dtnode_t 
 	fb->height = pdat->height;
 	fb->pwidth = pdat->pwidth;
 	fb->pheight = pdat->pheight;
-	fb->bpp = pdat->bits_per_pixel;
+	fb->bytes = pdat->bytes_per_pixel;
 	fb->setbl = fb_setbl;
 	fb->getbl = fb_getbl;
 	fb->create = fb_create;

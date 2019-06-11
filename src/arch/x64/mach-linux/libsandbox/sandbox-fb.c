@@ -114,11 +114,11 @@ int sandbox_fb_get_pheight(void * context)
 	return 0;
 }
 
-int sandbox_fb_get_bpp(void * context)
+int sandbox_fb_get_bytes(void * context)
 {
 	struct sandbox_fb_context_t * ctx = (struct sandbox_fb_context_t *)context;
 	if(ctx)
-		return ctx->vi.bits_per_pixel;
+		return ctx->vi.bits_per_pixel >> 3;
 	return 0;
 }
 
@@ -128,6 +128,7 @@ int sandbox_fb_surface_create(void * context, struct sandbox_fb_surface_t * surf
 	surface->width = ctx->vi.xres;
 	surface->height = ctx->vi.yres;
 	surface->pitch = ctx->fi.line_length;
+	surface->bytes = ctx->vi.bits_per_pixel >> 3;
 	surface->pixels = memalign(4, ctx->vramsz);
 	return 1;
 }
@@ -139,35 +140,38 @@ int sandbox_fb_surface_destroy(void * context, struct sandbox_fb_surface_t * sur
 	return 1;
 }
 
-int sandbox_fb_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_dirty_rect_t * rect, int nrect)
+int sandbox_fb_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_region_list_t * rl)
 {
 	struct sandbox_fb_context_t * ctx = (struct sandbox_fb_context_t *)context;
+	struct sandbox_fb_region_t * r;
 	unsigned char * p, * q;
-	int stride, bytes, height, line;
+	int pitch = ctx->fi.line_length;
+	int bytes = ctx->vi.bits_per_pixel >> 3;
+	int offset, line, height;
 	int i, j;
 
-	if(rect && (nrect > 0))
+	if(rl && (rl->count > 0))
 	{
-		stride = ctx->fi.line_length;
-		bytes = ctx->vi.bits_per_pixel / 8;
-		for(i = 0; i < nrect; i++)
+		for(i = 0; i < rl->count; i++)
 		{
-			height = rect[i].h;
-			line = rect[i].w * bytes;
-			p = (unsigned char *)surface->pixels + rect[i].y * stride + rect[i].x * bytes;
-			q = (unsigned char *)ctx->vram + rect[i].y * stride + rect[i].x * bytes;
-			for(j = 0; j < height; j++, p += stride, q += stride)
-				memcpy(q, p, line);
+			r = &rl->region[i];
+			offset = r->y * pitch + r->x * bytes;
+			line = r->w * bytes;
+			height = r->h;
+
+			p = (unsigned char *)ctx->vram + offset;
+			q = (unsigned char *)surface->pixels + offset;
+			for(j = 0; j < height; j++, p += pitch, q += pitch)
+				memcpy(p, q, line);
 		}
 	}
 	else
 	{
-		stride = ctx->fi.line_length;
 		height = ctx->vi.yres;
-		p = (unsigned char *)surface->pixels;
-		q = (unsigned char *)ctx->vram;
-		for(j = 0; j < height; j++, p += stride, q += stride)
-			memcpy(q, p, stride);
+		p = (unsigned char *)ctx->vram;
+		q = (unsigned char *)surface->pixels;
+		for(j = 0; j < height; j++, p += pitch, q += pitch)
+			memcpy(p, q, pitch);
 	}
 	return 1;
 }

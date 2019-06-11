@@ -154,8 +154,9 @@
 	"mouse-pl050@0x10007000": {
 		"clock-name": "kclk",
 		"interrupt": 53,
-		"x-pos-max": 640,
-		"y-pos-max": 480,
+		"pointer-range-x": 640,
+		"pointer-range-y": 480,
+		"pointer-sensitivity": 6,
 		"simulate-touch-event": false
 	},
 
@@ -203,7 +204,7 @@
 		"height": 480,
 		"physical-width": 216,
 		"physical-height": 135,
-		"bits-per-pixel": 32,
+		"bytes-per-pixel": 4,
 		"clock-frequency": 50000000,
 		"hfront-porch": 1,
 		"hback-porch": 1,

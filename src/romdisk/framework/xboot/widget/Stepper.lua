@@ -1,5 +1,4 @@
 local Button = require "xboot.widget.Button"
-local Dobject = Dobject
 
 local M = Class(DisplayObject)
 
@@ -34,12 +33,10 @@ function M:init(option, name)
 		imageNormal = self.opt.imageMinusNormal,
 		imagePressed = self.opt.imageMinusPressed,
 		imageDisabled = self.opt.imageMinusDisabled,})
-		:setAlignment(Dobject.ALIGN_LEFT)
 	self.buttonPlus = Button.new({
 		imageNormal = self.opt.imagePlusNormal,
 		imagePressed = self.opt.imagePlusPressed,
 		imageDisabled = self.opt.imagePlusDisabled,})
-		:setAlignment(Dobject.ALIGN_RIGHT)
 
 	self:addChild(self.buttonMinus)
 	self:addChild(self.buttonPlus)
@@ -64,14 +61,14 @@ function M:init(option, name)
 	self:setValue(self.opt.value)
 	self:updateVisualState()
 
-	self.buttonMinus:addEventListener("Click", function(d, e)
+	self.buttonMinus:addEventListener("click", function(d, e)
 		self:setValue(self:getValue() - 1)
-		self:dispatchEvent(Event.new("Change", {value = self.value}))
+		self:dispatchEvent(Event.new("change", {value = self.value}))
 	end)
 	
-	self.buttonPlus:addEventListener("Click", function(d, e)
+	self.buttonPlus:addEventListener("click", function(d, e)
 		self:setValue(self:getValue() + 1)
-		self:dispatchEvent(Event.new("Change", {value = self.value}))
+		self:dispatchEvent(Event.new("change", {value = self.value}))
 	end)
 end
 
@@ -143,7 +140,6 @@ function M:updateVisualState()
 		self.buttonMinus:disable()
 		self.buttonPlus:disable()
 	end
-	self:layout()
 end
 
 return M

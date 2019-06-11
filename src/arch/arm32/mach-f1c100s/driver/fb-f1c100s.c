@@ -58,6 +58,7 @@ struct fb_f1c100s_pdata_t
 	int bytes_per_pixel;
 	int index;
 	void * vram[2];
+	struct region_list_t * nrl, * orl;
 
 	struct {
 		int pixel_clock_hz;
@@ -249,6 +250,7 @@ static struct render_t * fb_create(struct framebuffer_t * fb)
 	render->width = pdat->width;
 	render->height = pdat->height;
 	render->pitch = (pdat->width * pdat->bytes_per_pixel + 0x3) & ~0x3;
+	render->bytes = pdat->bytes_per_pixel;
 	render->format = PIXEL_FORMAT_ARGB32;
 	render->pixels = pixels;
 	render->pixlen = pixlen;
@@ -266,17 +268,23 @@ static void fb_destroy(struct framebuffer_t * fb, struct render_t * render)
 	}
 }
 
-static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct dirty_rect_t * rect, int nrect)
+static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct region_list_t * rl)
 {
 	struct fb_f1c100s_pdata_t * pdat = (struct fb_f1c100s_pdata_t *)fb->priv;
+	struct region_list_t * nrl = pdat->nrl;
 
-	if(render && render->pixels)
-	{
-		pdat->index = (pdat->index + 1) & 0x1;
+	region_list_clear(nrl);
+	region_list_merge(nrl, pdat->orl);
+	region_list_merge(nrl, rl);
+	region_list_clone(pdat->orl, rl);
+
+	pdat->index = (pdat->index + 1) & 0x1;
+	if(nrl->count > 0)
+		present_render(pdat->vram[pdat->index], render, nrl);
+	else
 		memcpy(pdat->vram[pdat->index], render->pixels, render->pixlen);
-		dma_cache_sync(pdat->vram[pdat->index], render->pixlen, DMA_TO_DEVICE);
-		f1c100s_debe_set_address(pdat, pdat->vram[pdat->index]);
-	}
+	dma_cache_sync(pdat->vram[pdat->index], render->pixlen, DMA_TO_DEVICE);
+	f1c100s_debe_set_address(pdat, pdat->vram[pdat->index]);
 }
 
 static struct device_t * fb_f1c100s_probe(struct driver_t * drv, struct dtnode_t * n)
@@ -321,6 +329,8 @@ static struct device_t * fb_f1c100s_probe(struct driver_t * drv, struct dtnode_t
 	pdat->index = 0;
 	pdat->vram[0] = dma_alloc_noncoherent(pdat->width * pdat->height * pdat->bytes_per_pixel);
 	pdat->vram[1] = dma_alloc_noncoherent(pdat->width * pdat->height * pdat->bytes_per_pixel);
+	pdat->nrl = region_list_alloc(0);
+	pdat->orl = region_list_alloc(0);
 
 	pdat->timing.pixel_clock_hz = dt_read_long(n, "clock-frequency", 33000000);
 	pdat->timing.h_front_porch = dt_read_int(n, "hfront-porch", 40);
@@ -340,7 +350,7 @@ static struct device_t * fb_f1c100s_probe(struct driver_t * drv, struct dtnode_t
 	fb->height = pdat->height;
 	fb->pwidth = pdat->pwidth;
 	fb->pheight = pdat->pheight;
-	fb->bpp = pdat->bytes_per_pixel * 8;
+	fb->bytes = pdat->bytes_per_pixel;
 	fb->setbl = fb_setbl;
 	fb->getbl = fb_getbl;
 	fb->create = fb_create;
@@ -371,6 +381,8 @@ static struct device_t * fb_f1c100s_probe(struct driver_t * drv, struct dtnode_t
 		free(pdat->clktcon);
 		dma_free_noncoherent(pdat->vram[0]);
 		dma_free_noncoherent(pdat->vram[1]);
+		region_list_free(pdat->nrl);
+		region_list_free(pdat->orl);
 
 		free_device_name(fb->name);
 		free(fb->priv);
@@ -397,6 +409,8 @@ static void fb_f1c100s_remove(struct device_t * dev)
 		free(pdat->clktcon);
 		dma_free_noncoherent(pdat->vram[0]);
 		dma_free_noncoherent(pdat->vram[1]);
+		region_list_free(pdat->nrl);
+		region_list_free(pdat->orl);
 
 		free_device_name(fb->name);
 		free(fb->priv);

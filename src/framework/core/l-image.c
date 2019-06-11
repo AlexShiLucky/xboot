@@ -27,6 +27,7 @@
  */
 
 #include <xboot.h>
+#include <framework/core/l-matrix.h>
 #include <framework/core/l-image.h>
 
 #ifndef MIN
@@ -228,18 +229,51 @@ static int m_image_get_size(lua_State * L)
 static int m_image_clone(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
-	int x = luaL_optinteger(L, 2, 0);
-	int y = luaL_optinteger(L, 3, 0);
-	int w = luaL_optinteger(L, 4, cairo_image_surface_get_width(img->cs));
-	int h = luaL_optinteger(L, 5, cairo_image_surface_get_height(img->cs));
-	cairo_format_t format = cairo_image_surface_get_format(img->cs);
-	struct limage_t * subimg = lua_newuserdata(L, sizeof(struct limage_t));
-	subimg->cs = cairo_surface_create_similar_image(img->cs, format, w, h);
-	cairo_t * cr = cairo_create(subimg->cs);
-	cairo_set_source_surface(cr, img->cs, -x, -y);
-	cairo_paint(cr);
-	cairo_destroy(cr);
-	luaL_setmetatable(L, MT_IMAGE);
+	if(luaL_testudata(L, 2, MT_MATRIX))
+	{
+		struct matrix_t * m = lua_touserdata(L, 2);
+		struct limage_t * subimg = lua_newuserdata(L, sizeof(struct limage_t));
+		double x1 = 0;
+		double y1 = 0;
+		double x2 = cairo_image_surface_get_width(img->cs);
+		double y2 = cairo_image_surface_get_height(img->cs);
+		matrix_transform_bounds(m, &x1, &y1, &x2, &y2);
+		subimg->cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, x2 - x1, y2 - y1);
+		cairo_t * cr = cairo_create(subimg->cs);
+		cairo_set_matrix(cr, (cairo_matrix_t *)m);
+		cairo_set_source_surface(cr, img->cs, 0, 0);
+		cairo_paint(cr);
+		cairo_destroy(cr);
+		luaL_setmetatable(L, MT_IMAGE);
+	}
+	else
+	{
+		int x = luaL_optinteger(L, 2, 0);
+		int y = luaL_optinteger(L, 3, 0);
+		int w = luaL_optinteger(L, 4, cairo_image_surface_get_width(img->cs));
+		int h = luaL_optinteger(L, 5, cairo_image_surface_get_height(img->cs));
+		int r = luaL_optinteger(L, 6, 0);
+		struct limage_t * subimg = lua_newuserdata(L, sizeof(struct limage_t));
+		subimg->cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+		cairo_t * cr = cairo_create(subimg->cs);
+		if(r > 0)
+		{
+			cairo_move_to(cr, r, 0);
+			cairo_line_to(cr, w - r, 0);
+			cairo_arc(cr, w - r, r, r, - M_PI / 2, 0);
+			cairo_line_to(cr, w, h - r);
+			cairo_arc(cr, w - r, h - r, r, 0, M_PI / 2);
+			cairo_line_to(cr, r, h);
+			cairo_arc(cr, r, h - r, r, M_PI / 2, M_PI);
+			cairo_line_to(cr, 0, r);
+			cairo_arc(cr, r, r, r, M_PI, M_PI + M_PI / 2);
+			cairo_clip(cr);
+		}
+		cairo_set_source_surface(cr, img->cs, -x, -y);
+		cairo_paint(cr);
+		cairo_destroy(cr);
+		luaL_setmetatable(L, MT_IMAGE);
+	}
 	return 1;
 }
 
@@ -253,13 +287,13 @@ static int m_image_shadow(lua_State * L)
 	double alpha = luaL_optnumber(L, 6, 1);
 	int w = cairo_image_surface_get_width(img->cs);
 	int h = cairo_image_surface_get_height(img->cs);
-	cairo_format_t format = cairo_image_surface_get_format(img->cs);
 	int extra = radius + radius;
 	int width = w + extra + extra;
 	int height = h + extra + extra;
 	struct limage_t * subimg = lua_newuserdata(L, sizeof(struct limage_t));
-	subimg->cs = cairo_surface_create_similar_image(img->cs, format, width, height);
+	subimg->cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 	cairo_surface_t * cs = subimg->cs;
+	cairo_format_t format = cairo_image_surface_get_format(cs);
 	unsigned char * pixel = cairo_image_surface_get_data(cs);
 	cairo_t * cr = cairo_create(cs);
 	cairo_pattern_t * pattern = cairo_pattern_create_rgba(red, green, blue, alpha);
@@ -275,11 +309,9 @@ static int m_image_shadow(lua_State * L)
 		case CAIRO_FORMAT_ARGB32:
 		case CAIRO_FORMAT_RGB24:
 			expblur(pixel, width, height, 4, radius);
-			cairo_surface_mark_dirty(cs);
 			break;
 		case CAIRO_FORMAT_A8:
 			expblur(pixel, width, height, 1, radius);
-			cairo_surface_mark_dirty(cs);
 			break;
 		case CAIRO_FORMAT_A1:
 		case CAIRO_FORMAT_RGB16_565:
@@ -291,6 +323,32 @@ static int m_image_shadow(lua_State * L)
 		}
 	}
 	luaL_setmetatable(L, MT_IMAGE);
+	return 1;
+}
+
+static int m_image_clear(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	cairo_t * cr = cairo_create(img->cs);
+	cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_image_paste(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	struct limage_t * other = luaL_checkudata(L, 2, MT_IMAGE);
+	cairo_t * cr = cairo_create(img->cs);
+	cairo_set_source_surface(cr, other->cs, 0, 0);
+	if(luaL_testudata(L, 3, MT_IMAGE))
+		cairo_mask_surface(cr, ((struct limage_t *)lua_touserdata(L, 3))->cs, 0, 0);
+	else
+		cairo_paint(cr);
+	cairo_destroy(cr);
+	lua_settop(L, 1);
 	return 1;
 }
 
@@ -323,7 +381,6 @@ static int m_image_grayscale(lua_State * L)
 				p[2] = gray;
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 	case CAIRO_FORMAT_A1:
@@ -369,7 +426,6 @@ static int m_image_sepia(lua_State * L)
 				p[2] = MIN(tr, 255);
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 	case CAIRO_FORMAT_A1:
@@ -407,7 +463,6 @@ static int m_image_invert(lua_State * L)
 				p[2] = 255 - p[2];
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 		for(y = 0; y < height; y++, q += stride)
@@ -417,7 +472,6 @@ static int m_image_invert(lua_State * L)
 				p[0] = 255 - p[0];
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A1:
 	case CAIRO_FORMAT_RGB16_565:
@@ -501,7 +555,6 @@ static int m_image_threshold(lua_State * L)
 		default:
 			break;
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 		switch(t)
@@ -554,7 +607,6 @@ static int m_image_threshold(lua_State * L)
 		default:
 			break;
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A1:
 	case CAIRO_FORMAT_RGB16_565:
@@ -713,7 +765,6 @@ static int m_image_colorize(lua_State * L)
 				p[2] = cm[p[2]][2];
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 	case CAIRO_FORMAT_A1:
@@ -758,7 +809,6 @@ static int m_image_gamma(lua_State * L)
 				p[2] = lut[p[2]];
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 		for(y = 0; y < height; y++, q += stride)
@@ -768,7 +818,6 @@ static int m_image_gamma(lua_State * L)
 				p[0] = lut[p[0]];
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A1:
 	case CAIRO_FORMAT_RGB16_565:
@@ -828,7 +877,6 @@ static int m_image_hue(lua_State * L)
 				p[2] = CLAMP(tr, 0, 255);
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 	case CAIRO_FORMAT_A1:
@@ -894,7 +942,6 @@ static int m_image_saturate(lua_State * L)
 				p[2] = CLAMP(r, 0, 255);
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 	case CAIRO_FORMAT_A1:
@@ -942,7 +989,6 @@ static int m_image_brightness(lua_State * L)
 				p[2] = CLAMP(tr, 0, 255);
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 		for(y = 0; y < height; y++, q += stride)
@@ -954,7 +1000,6 @@ static int m_image_brightness(lua_State * L)
 				p[0] = CLAMP(ta, 0, 255);
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A1:
 	case CAIRO_FORMAT_RGB16_565:
@@ -1001,7 +1046,6 @@ static int m_image_contrast(lua_State * L)
 				p[2] = CLAMP(tr, 0, 255 << 7) >> 7;
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A8:
 		for(y = 0; y < height; y++, q += stride)
@@ -1013,7 +1057,6 @@ static int m_image_contrast(lua_State * L)
 				p[0] = CLAMP(ta, 0, 255 << 7) >> 7;
 			}
 		}
-		cairo_surface_mark_dirty(cs);
 		break;
 	case CAIRO_FORMAT_A1:
 	case CAIRO_FORMAT_RGB16_565:
@@ -1043,11 +1086,9 @@ static int m_image_blur(lua_State * L)
 		case CAIRO_FORMAT_ARGB32:
 		case CAIRO_FORMAT_RGB24:
 			expblur(pixel, width, height, 4, radius);
-			cairo_surface_mark_dirty(cs);
 			break;
 		case CAIRO_FORMAT_A8:
 			expblur(pixel, width, height, 1, radius);
-			cairo_surface_mark_dirty(cs);
 			break;
 		case CAIRO_FORMAT_A1:
 		case CAIRO_FORMAT_RGB16_565:
@@ -1070,6 +1111,8 @@ static const luaL_Reg m_image[] = {
 	{"getSize",		m_image_get_size},
 	{"clone",		m_image_clone},
 	{"shadow",		m_image_shadow},
+	{"clear",		m_image_clear},
+	{"paste",		m_image_paste},
 	{"grayscale",	m_image_grayscale},
 	{"sepia",		m_image_sepia},
 	{"invert",		m_image_invert},

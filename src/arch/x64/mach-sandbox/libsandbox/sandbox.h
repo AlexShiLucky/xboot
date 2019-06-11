@@ -28,6 +28,10 @@ void sandbox_exit(void);
 /* Input device */
 void * sandbox_event_open(void);
 void sandbox_event_close(void * context);
+void sandbox_event_mouse_set_range(void * context, int xmax, int ymax);
+void sandbox_event_mouse_get_range(void * context, int * xmax, int * ymax);
+void sandbox_event_mouse_set_sensitivity(void * context, int s);
+void sandbox_event_mouse_get_sensitivity(void * context, int * s);
 void sandbox_event_set_key_callback(void * context, void * device,
 		void (*down)(void * device, unsigned int key),
 		void (*up)(void * device, unsigned int key));
@@ -51,6 +55,10 @@ void sandbox_event_set_joystick_callback(void * context, void * device,
 /* SDL event */
 void * sandbox_event_sdl_open(void);
 void sandbox_event_sdl_close(void * context);
+void sandbox_event_sdl_mouse_set_range(void * context, int xmax, int ymax);
+void sandbox_event_sdl_mouse_get_range(void * context, int * xmax, int * ymax);
+void sandbox_event_sdl_mouse_set_sensitivity(void * context, int s);
+void sandbox_event_sdl_mouse_get_sensitivity(void * context, int * s);
 void sandbox_event_sdl_set_key_callback(void * context, void * device,
 		void (*down)(void * device, unsigned int key),
 		void (*up)(void * device, unsigned int key));
@@ -78,13 +86,21 @@ struct sandbox_fb_surface_t {
 	int width;
 	int height;
 	int pitch;
+	int bytes;
 	void * pixels;
 	void * priv;
 };
 
-struct sandbox_fb_dirty_rect_t {
-	uint32_t x, y;
-	uint32_t w, h;
+struct sandbox_fb_region_t {
+	int x, y;
+	int w, h;
+	int area;
+};
+
+struct sandbox_fb_region_list_t {
+	struct sandbox_fb_region_t * region;
+	unsigned int size;
+	unsigned int count;
 };
 
 /* Framebuffer device */
@@ -94,10 +110,10 @@ int sandbox_fb_get_width(void * context);
 int sandbox_fb_get_height(void * context);
 int sandbox_fb_get_pwidth(void * context);
 int sandbox_fb_get_pheight(void * context);
-int sandbox_fb_get_bpp(void * context);
+int sandbox_fb_get_bytes(void * context);
 int sandbox_fb_surface_create(void * context, struct sandbox_fb_surface_t * surface);
 int sandbox_fb_surface_destroy(void * context, struct sandbox_fb_surface_t * surface);
-int sandbox_fb_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_dirty_rect_t * rect, int nrect);
+int sandbox_fb_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_region_list_t * rl);
 void sandbox_fb_set_backlight(void * context, int brightness);
 int sandbox_fb_get_backlight(void * context);
 
@@ -108,10 +124,10 @@ int sandbox_fb_sdl_get_width(void * context);
 int sandbox_fb_sdl_get_height(void * context);
 int sandbox_fb_sdl_get_pwidth(void * context);
 int sandbox_fb_sdl_get_pheight(void * context);
-int sandbox_fb_sdl_get_bpp(void * context);
+int sandbox_fb_sdl_get_bytes(void * context);
 int sandbox_fb_sdl_surface_create(void * context, struct sandbox_fb_surface_t * surface);
 int sandbox_fb_sdl_surface_destroy(void * context, struct sandbox_fb_surface_t * surface);
-int sandbox_fb_sdl_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_dirty_rect_t * rect, int nrect);
+int sandbox_fb_sdl_surface_present(void * context, struct sandbox_fb_surface_t * surface, struct sandbox_fb_region_list_t * rl);
 void sandbox_fb_sdl_set_backlight(void * context, int brightness);
 int sandbox_fb_sdl_get_backlight(void * context);
 

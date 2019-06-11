@@ -44,17 +44,17 @@ s:setRotation(45)
 --s:setScale(80, 80)
 
 --[[
-local par = Parttern.linear(0, 15, 0, 90 * 0.8)
-par:setExtend(Parttern.EXTEND_REPEAT)
+local par = Pattern.linear(0, 15, 0, 90 * 0.8)
+par:setExtend("repeat")
 par:addColor(0.0, 1, 0.6, 0)
 par:addColor(0.5, 1, 0.3, 0)
 
-text:setParttern(par)
+text:setPattern(par)
 
 local ttboy = Texture.new("ttboy.png")
 local ttpar = ttboy:toPattern()
-ttpar:setExtend(Parttern.EXTEND_REPEAT)
-text:setParttern(ttpar)
+ttpar:setExtend("repeat")
+text:setPattern(ttpar)
 ]]
 
 local i = 0;
@@ -80,6 +80,6 @@ btn:setPosition(300, 100)
 stage:addChild(btn)
 
 -- Register to "btn" event
-btn:addEventListener("Click", function(d, e)
+btn:addEventListener("click", function(d, e)
 	print("Button down")
 end, btn)

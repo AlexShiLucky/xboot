@@ -1,5 +1,3 @@
-local Dobject = Dobject
-
 local M = Class(DisplayObject)
 
 M.STATE_NORMAL = "NORMAL"
@@ -22,7 +20,6 @@ function M:init(option, name)
 	self.opt.touchable = option.touchable or true
 	self.opt.enable = option.enable or true
 	self.opt.text = option.text
-	self.opt.textAlignment = option.textAlignment or Dobject.ALIGN_CENTER
 	self.opt.imageNormal = assert(option.imageNormal or theme.button.image.normal)
 	self.opt.imagePressed = assert(option.imagePressed or theme.button.image.pressed)
 	self.opt.imageDisabled = assert(option.imageDisabled or theme.button.image.disabled)
@@ -36,9 +33,9 @@ function M:init(option, name)
 	self.opt.textMarginRight = assert(option.textMarginRight or theme.button.text.margin.right)
 	self.opt.textMarginBottom = assert(option.textMarginBottom or theme.button.text.margin.bottom)
 
-	self.frameNormal = assets:loadDisplay(self.opt.imageNormal):setAlignment(Dobject.ALIGN_CENTER_FILL)
-	self.framePressed = assets:loadDisplay(self.opt.imagePressed):setAlignment(Dobject.ALIGN_CENTER_FILL)
-	self.frameDisabled = assets:loadDisplay(self.opt.imageDisabled):setAlignment(Dobject.ALIGN_CENTER_FILL)
+	self.frameNormal = assets:loadDisplay(self.opt.imageNormal):setLayoutSpecial(true):setLayoutEnable(true)
+	self.framePressed = assets:loadDisplay(self.opt.imagePressed):setLayoutSpecial(true):setLayoutEnable(true)
+	self.frameDisabled = assets:loadDisplay(self.opt.imageDisabled):setLayoutSpecial(true):setLayoutEnable(true)
 
 	local width, height = self.frameNormal:getSize()
 	self.opt.width = self.opt.width or width
@@ -47,6 +44,7 @@ function M:init(option, name)
 	self.touchid = nil
 	self.state = M.STATE_NORMAL
 
+	self:setLayoutDirection("row"):setLayoutJustify("center"):setLayoutAlign("center")
 	self:setPosition(self.opt.x, self.opt.y)
 	self:setSize(self.opt.width, self.opt.height)
 	self:setVisible(self.opt.visible)
@@ -55,13 +53,13 @@ function M:init(option, name)
 	self:setText(self.opt.text)
 	self:updateVisualState()
 
-	self:addEventListener(Event.MOUSE_DOWN, self.onMouseDown)
-	self:addEventListener(Event.MOUSE_MOVE, self.onMouseMove)
-	self:addEventListener(Event.MOUSE_UP, self.onMouseUp)
+	self:addEventListener("mouse-down", self.onMouseDown)
+	self:addEventListener("mouse-move", self.onMouseMove)
+	self:addEventListener("mouse-up", self.onMouseUp)
 
-	self:addEventListener(Event.TOUCH_BEGIN, self.onTouchBegin)
-	self:addEventListener(Event.TOUCH_MOVE, self.onTouchMove)
-	self:addEventListener(Event.TOUCH_END, self.onTouchEnd)
+	self:addEventListener("touch-begin", self.onTouchBegin)
+	self:addEventListener("touch-move", self.onTouchMove)
+	self:addEventListener("touch-end", self.onTouchEnd)
 end
 
 function M:setWidth(width)
@@ -69,7 +67,6 @@ function M:setWidth(width)
 	self.frameNormal:setWidth(width)
 	self.framePressed:setWidth(width)
 	self.frameDisabled:setWidth(width)
-	self:updateVisualState()
 	return self
 end
 
@@ -78,7 +75,6 @@ function M:setHeight(height)
 	self.frameNormal:setHeight(height)
 	self.framePressed:setHeight(height)
 	self.frameDisabled:setHeight(height)
-	self:updateVisualState()
 	return self
 end
 
@@ -87,7 +83,6 @@ function M:setSize(width, height)
 	self.frameNormal:setSize(width, height)
 	self.framePressed:setSize(width, height)
 	self.frameDisabled:setSize(width, height)
-	self:updateVisualState()
 	return self
 end
 
@@ -97,8 +92,8 @@ function M:setText(text)
 			self.text:setText(text)
 		else
 			self.text = DisplayText.new(assets:loadFont(self.opt.textFontFamily, self.opt.textFontSize), self.opt.textPatternNormal, text)
-			self.text:setMargin(self.opt.textMarginLeft, self.opt.textMarginTop, self.opt.textMarginRight, self.opt.textMarginBottom)
-			self.text:setAlignment(self.opt.textAlignment)
+			self.text:setLayoutMargin(self.opt.textMarginLeft, self.opt.textMarginTop, self.opt.textMarginRight, self.opt.textMarginBottom)
+			self.text:setLayoutEnable(true)
 		end
 	else
 		self.text = nil
@@ -137,7 +132,7 @@ function M:onMouseDown(e)
 		self.touchid = -1
 		self.state = self.STATE_PRESSED
 		self:updateVisualState()
-		self:dispatchEvent(Event.new("Press"))
+		self:dispatchEvent(Event.new("press"))
 		e.stop = true
 	end
 end
@@ -148,7 +143,7 @@ function M:onMouseMove(e)
 			self.touchid = nil
 			self.state = self.STATE_NORMAL
 			self:updateVisualState()
-			self:dispatchEvent(Event.new("Release"))
+			self:dispatchEvent(Event.new("release"))
 		end
 		e.stop = true
 	end
@@ -160,8 +155,8 @@ function M:onMouseUp(e)
 			self.touchid = nil
 			self.state = self.STATE_NORMAL
 			self:updateVisualState()
-			self:dispatchEvent(Event.new("Release"))
-			self:dispatchEvent(Event.new("Click"))
+			self:dispatchEvent(Event.new("release"))
+			self:dispatchEvent(Event.new("click"))
 			e.stop = true
 		end
 	end
@@ -172,7 +167,7 @@ function M:onTouchBegin(e)
 		self.touchid = e.id
 		self.state = self.STATE_PRESSED
 		self:updateVisualState()
-		self:dispatchEvent(Event.new("Press"))
+		self:dispatchEvent(Event.new("press"))
 		e.stop = true
 	end
 end
@@ -183,7 +178,7 @@ function M:onTouchMove(e)
 			self.touchid = nil
 			self.state = self.STATE_NORMAL
 			self:updateVisualState()
-			self:dispatchEvent(Event.new("Release"))
+			self:dispatchEvent(Event.new("release"))
 		end
 		e.stop = true
 	end
@@ -195,8 +190,8 @@ function M:onTouchEnd(e)
 			self.touchid = nil
 			self.state = self.STATE_NORMAL
 			self:updateVisualState()
-			self:dispatchEvent(Event.new("Release"))
-			self:dispatchEvent(Event.new("Click"))
+			self:dispatchEvent(Event.new("release"))
+			self:dispatchEvent(Event.new("click"))
 			e.stop = true
 		end
 	end
@@ -264,7 +259,6 @@ function M:updateVisualState()
 			end
 		end
 	end
-	self:layout()
 end
 
 return M

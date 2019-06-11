@@ -32,24 +32,24 @@ static const char timer_lua[] = X(
 local M = Class()
 
 function M:init(delay, iteration, listener)
-	self.delay = delay or 1
-	self.iteration = iteration or 1
-	self.listener = listener
-	self.running = false
-	self.runtime = 0
-	self.runcount = 0
+	self._delay = delay or 1
+	self._iteration = iteration or 1
+	self._listener = listener
+	self._running = false
+	self._runtime = 0
+	self._runcount = 0
 end
 
 function M:start()
-	self.running = true
+	self._running = true
 end
 
 function M:pause()
-	self.running = false
+	self._running = false
 end
 
 function M:status()
-	return self.running
+	return self._running
 end
 
 return M

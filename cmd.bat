@@ -1,0 +1,2 @@
+@set PATH=C:\Program Files\Eclipse\eclipse-for-xboot-windows-x86_64\compiler\bin;%ECLIPSE_DIR%\compiler\arm-eabi\bin;%ECLIPSE_DIR%\compiler\arm-linux-gnueabihf\bin;%ECLIPSE_DIR%\compiler\aarch64-elf\bin;%PATH%;
+@start cmd.exe

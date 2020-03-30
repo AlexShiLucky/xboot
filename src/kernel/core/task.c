@@ -63,6 +63,7 @@ static const uint32_t nice_to_wmult[40] = {
  /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153,
 };
 
+/* 返回两个32位数相乘结果 */
 static inline uint64_t mul_u32_u32(uint32_t a, uint32_t b)
 {
 	return (uint64_t)a * b;
@@ -177,6 +178,7 @@ static inline void scheduler_switch_task(struct scheduler_t * sched, struct task
 	t->fctx = from.fctx;
 }
 
+/* 调度器均衡选择,返回最轻的调度器 */
 static inline struct scheduler_t * scheduler_load_balance_choice(void)
 {
 	struct scheduler_t * sched;
@@ -185,6 +187,7 @@ static inline struct scheduler_t * scheduler_load_balance_choice(void)
 
 	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 	{
+	    /* 根据调度器的weight属性,逐一查找weight最小的调度器 */
 		if(__sched[i].weight < weight)
 		{
 			sched = &__sched[i];
@@ -214,6 +217,7 @@ static void fcontext_entry_func(struct transfer_t from)
 	}
 }
 
+/* 任务创建 */
 struct task_t * task_create(struct scheduler_t * sched, const char * name, task_func_t func, void * data, size_t stksz, int nice)
 {
 	struct task_t * task;
@@ -222,6 +226,7 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 	if(!func)
 		return NULL;
 
+    /* 如果未指定调度器,则自动分配最轻的调度器 */
 	if(!sched)
 		sched = scheduler_load_balance_choice();
 
@@ -233,10 +238,12 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 	else if(nice > 19)
 		nice = 19;
 
+    /* 分配一个任务控制块 */
 	task = malloc(sizeof(struct task_t));
 	if(!task)
 		return NULL;
 
+    /* 分配栈空间 */
 	stack = malloc(stksz);
 	if(!stack)
 	{
@@ -244,35 +251,48 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 		return NULL;
 	}
 
+    /* 任务控制块内成员初始化 */
 	RB_CLEAR_NODE(&task->node);
 	init_list_head(&task->list);
 	init_list_head(&task->slist);
 	init_list_head(&task->rlist);
 	init_list_head(&task->mlist);
 	spin_lock(&sched->lock);
+    /* 将创建的任务连接到挂起链表 */
 	list_add_tail(&task->list, &sched->suspend);
 	sched->weight += nice_to_weight[nice + 20];
 	spin_unlock(&sched->lock);
 
 	task->name = strdup(name);
+    /* 新建的任务初始状态为Suspend状态 */
 	task->status = TASK_STATUS_SUSPEND;
+    /* 任务创建时刻 */
 	task->start = ktime_to_ns(ktime_get());
 	task->time = 0;
 	task->vtime = 0;
+    /* 任务所在调度器 */
 	task->sched = sched;
+    /* 任务栈 */
 	task->stack = stack;
+    /* 任务栈尺寸 */
 	task->stksz = stksz;
+    /* 任务nice值 */
 	task->nice = nice;
+    /* 任务weight值 */
 	task->weight = nice_to_weight[nice + 20];
 	task->inv_weight = nice_to_wmult[nice + 20];
 	task->fctx = make_fcontext(task->stack + stksz, task->stksz, fcontext_entry_func);
+    /* 任务入口函数 */
 	task->func = func;
+    /* 任务入口函数参数 */
 	task->data = data;
+    /* 任务的错误号 */
 	task->__errno = 0;
 
 	return task;
 }
 
+/* 任务销毁 */
 void task_destroy(struct task_t * task)
 {
 	if(task)
@@ -308,6 +328,7 @@ void task_renice(struct task_t * task, int nice)
 	}
 }
 
+/* 任务挂起 */
 void task_suspend(struct task_t * task)
 {
 	struct task_t * next;
@@ -347,6 +368,7 @@ void task_suspend(struct task_t * task)
 	}
 }
 
+/* 任务释放 */
 void task_resume(struct task_t * task)
 {
 	if(task && (task->status == TASK_STATUS_SUSPEND))
@@ -360,6 +382,7 @@ void task_resume(struct task_t * task)
 	}
 }
 
+/* 任务让出 */
 void task_yield(void)
 {
 	struct scheduler_t * sched = scheduler_self();
@@ -387,6 +410,7 @@ void task_yield(void)
 	}
 }
 
+/* 空闲任务 */
 static void idle_task(struct task_t * task, void * data)
 {
 	while(1)
@@ -423,6 +447,7 @@ static void smpboot_entry_func(int cpu)
 	}
 }
 
+/* 调度器循环 */
 void scheduler_loop(void)
 {
 	struct scheduler_t * sched = scheduler_self();
@@ -457,6 +482,7 @@ void scheduler_loop(void)
 	}
 }
 
+/* 初始化调度器 */
 void do_init_sched(void)
 {
 	struct scheduler_t * sched;

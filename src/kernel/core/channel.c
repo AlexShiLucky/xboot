@@ -29,17 +29,21 @@
 #include <xboot.h>
 #include <xboot/channel.h>
 
+/* 申请一个size长度的channel */
 struct channel_t * channel_alloc(unsigned int size)
 {
 	struct channel_t * c;
 
+    /* 分配一个channel结构 */
 	c = malloc(sizeof(struct channel_t));
 	if(!c)
 		return NULL;
 
+    /* 判断size是否为2的整数次幂 */
 	if(size & (size - 1))
 		size = roundup_pow_of_two(size);
 
+    /* 申请channel的buffer */
 	c->buffer = malloc(size);
 	if(!c->buffer)
 	{
@@ -56,6 +60,7 @@ struct channel_t * channel_alloc(unsigned int size)
 	return c;
 }
 
+/* 释放一个channel */
 void channel_free(struct channel_t * c)
 {
 	if(c)
@@ -65,6 +70,7 @@ void channel_free(struct channel_t * c)
 	}
 }
 
+/* 判断一个channel是否为空 */
 static inline int channel_isempty(struct channel_t * c)
 {
 	int ret;
@@ -76,6 +82,7 @@ static inline int channel_isempty(struct channel_t * c)
 	return ret;
 }
 
+/* 判断一个channel是否满 */
 static inline int channel_isfull(struct channel_t * c)
 {
 	int ret;
@@ -186,6 +193,7 @@ static inline unsigned int channel_put(struct channel_t * c, unsigned char * buf
 	return l;
 }
 
+/* 从channel中获取len字节的数据 */
 static inline unsigned int channel_get(struct channel_t * c, unsigned char * buf, unsigned int len)
 {
 	struct task_t * self;
@@ -251,6 +259,7 @@ static inline unsigned int channel_get(struct channel_t * c, unsigned char * buf
 	return l;
 }
 
+/* 往channel中发送len字节的数据 */
 void channel_send(struct channel_t * c, unsigned char * buf, unsigned int len)
 {
 	unsigned int l = 0;
@@ -264,6 +273,7 @@ void channel_send(struct channel_t * c, unsigned char * buf, unsigned int len)
 	}
 }
 
+/* 从channel中接收len字节的数据 */
 void channel_recv(struct channel_t * c, unsigned char * buf, unsigned int len)
 {
 	unsigned int l = 0;

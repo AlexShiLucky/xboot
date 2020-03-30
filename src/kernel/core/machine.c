@@ -77,6 +77,7 @@ static ssize_t machine_read_mmap(struct kobj_t * kobj, void * buf, size_t size)
     return len;
 }
 
+/* 读取机器唯一标识符字符串 */
 static ssize_t machine_read_uniqueid(struct kobj_t * kobj, void * buf, size_t size)
 {
     struct machine_t * mach = (struct machine_t *)kobj->priv;

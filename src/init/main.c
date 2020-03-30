@@ -32,10 +32,10 @@
 /* xboot入口函数,从start.S跳转过来 */
 int xboot_main(int argc, char * argv[])
 {
-	/* Do initial memory */
+	/* Do initial memory - 初始化内存 */
 	do_init_mem();
 
-	/* Do initial scheduler */
+	/* Do initial scheduler - 初始化调度器 */
 	do_init_sched();
 
 	/* Do initial vfs - 初始化虚拟文件系统 */

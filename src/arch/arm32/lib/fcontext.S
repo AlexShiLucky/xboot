@@ -32,6 +32,8 @@
 	.globl make_fcontext
 	.align 4
 	.type make_fcontext, %function
+	/* 创建一个协程栈 */
+    /* void * make_fcontext(void * stack, size_t size, void (*func)(struct transfer_t)); */
 make_fcontext:
 	/* shift address in A1 to lower 16 byte boundary */
 	bic a1, a1, #15
@@ -99,6 +101,7 @@ finish:
 	.globl jump_fcontext
 	.align 4
 	.type jump_fcontext, %function
+	/* struct transfer_t jump_fcontext(void * fctx, void * priv); */
 jump_fcontext:
 	/* save LR as PC */
 	push {lr}

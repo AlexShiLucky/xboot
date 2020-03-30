@@ -104,6 +104,7 @@ struct list_head __window_manager_list = {
 };
 static spinlock_t __window_manager_lock = SPIN_LOCK_INIT();
 
+/* 根据framebuffer搜索一个窗口管理器 */
 static inline struct window_manager_t * window_manager_search(struct framebuffer_t * fb)
 {
 	struct window_manager_t * pos, * n;
@@ -119,6 +120,7 @@ static inline struct window_manager_t * window_manager_search(struct framebuffer
 	return NULL;
 }
 
+/* 分配一个窗口管理器 */
 static struct window_manager_t * window_manager_alloc(const char * fb)
 {
 	struct window_manager_t * wm;
@@ -163,6 +165,7 @@ static struct window_manager_t * window_manager_alloc(const char * fb)
 	return wm;
 }
 
+/* 释放一个窗口管理器 */
 static void window_manager_free(struct window_manager_t * wm)
 {
 	struct window_manager_t * pos, * n;
@@ -185,6 +188,7 @@ static void window_manager_free(struct window_manager_t * wm)
 	}
 }
 
+/* 分配一个窗口 */
 struct window_t * window_alloc(const char * fb, const char * input, void * data)
 {
 	struct window_manager_t * wm = window_manager_alloc(fb);
@@ -250,6 +254,7 @@ struct window_t * window_alloc(const char * fb, const char * input, void * data)
 	return w;
 }
 
+/* 释放一个窗口 */
 void window_free(struct window_t * w)
 {
 	if(!w || !w->wm)
@@ -269,6 +274,7 @@ void window_free(struct window_t * w)
 	free(w);
 }
 
+/* 窗口前移 */
 void window_to_front(struct window_t * w)
 {
 	if(w && w->wm && !list_is_last(&w->list, &w->wm->window))
@@ -280,6 +286,7 @@ void window_to_front(struct window_t * w)
 	}
 }
 
+/* 窗口后移 */
 void window_to_back(struct window_t * w)
 {
 	if(w && w->wm && !list_is_first(&w->list, &w->wm->window))

@@ -29,6 +29,7 @@
 #include <xboot.h>
 #include <xboot/mutex.h>
 
+/* 互斥锁初始化 */
 void mutex_init(struct mutex_t * m)
 {
 	atomic_set(&m->atomic, 1);
@@ -36,6 +37,7 @@ void mutex_init(struct mutex_t * m)
 	spin_lock_init(&m->lock);
 }
 
+/* 互斥锁上锁 */
 void mutex_lock(struct mutex_t * m)
 {
 	struct task_t * self;
@@ -51,6 +53,7 @@ void mutex_lock(struct mutex_t * m)
 	}
 }
 
+/* 互斥锁解锁 */
 void mutex_unlock(struct mutex_t * m)
 {
 	struct task_t * pos, * n;

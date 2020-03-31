@@ -1,7 +1,7 @@
 /*
  * driver/keyboard-pl050.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -361,7 +361,7 @@ static void keyboard_pl050_interrupt(void * data)
 	}
 }
 
-static int keyboard_pl050_ioctl(struct input_t * input, int cmd, void * arg)
+static int keyboard_pl050_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	return -1;
 }
@@ -428,20 +428,17 @@ static struct device_t * keyboard_pl050_probe(struct driver_t * drv, struct dtno
 	kmi_write(pdat, 0x02);
 	write8(pdat->virt + KEYBOARD_CR, (1 << 2) | (1 << 4));
 
-	if(!register_input(&dev, input))
+	if(!(dev = register_input(input, drv)))
 	{
 		write8(pdat->virt + KEYBOARD_CR, 0);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -450,13 +447,13 @@ static void keyboard_pl050_remove(struct device_t * dev)
 	struct input_t * input = (struct input_t *)dev->priv;
 	struct keyboard_pl050_pdata_t * pdat = (struct keyboard_pl050_pdata_t *)input->priv;
 
-	if(input && unregister_input(input))
+	if(input)
 	{
+		unregister_input(input);
 		write8(pdat->virt + KEYBOARD_CR, 0);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);

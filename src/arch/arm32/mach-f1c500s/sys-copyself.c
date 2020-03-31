@@ -1,7 +1,7 @@
 /*
  * sys-copyself.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -35,25 +35,27 @@ extern void return_to_fel(void);
 extern void sys_mmu_init(void);
 extern void sys_uart_putc(char c);
 extern void sys_decompress(char * src, int slen, char * dst, int dlen);
-extern void sys_spi_flash_init(void);
-extern void sys_spi_flash_exit(void);
-extern void sys_spi_flash_read(int addr, void * buf, int count);
+extern void sys_spinor_init(void);
+extern void sys_spinor_exit(void);
+extern void sys_spinor_read(int addr, void * buf, int count);
 
 enum {
-	ZFLAG_COMPRESS_LZ4	= (1 << 0),
-	ZFLAG_VERIFY_WITHID	= (1 << 1),
+	ZFLAG_LZ4_COMPRESS			= (1 << 0),
+	ZFLAG_SHA256_BINDID			= (1 << 1),
+	ZFLAG_ECDSA256_SIGNATURE	= (1 << 2),
 };
 
 struct zdesc_t {
-	uint8_t magic[4];
-	uint8_t sha256[32];
-	uint8_t ecdsa256[64];
-	uint8_t majoy;
-	uint8_t minior;
-	uint8_t patch;
-	uint8_t flag;
-	uint8_t csize[4];
-	uint8_t dsize[4];
+	uint8_t magic[4];		/* ZBL! */
+	uint8_t sha256[32];		/* Sha256 hash */
+	uint8_t signature[64];	/* Ecdsa256 signature */
+	uint8_t csize[4];		/* Compress size */
+	uint8_t dsize[4];		/* Uncompress size */
+	uint8_t public[33];		/* Ecdsa256 public key */
+	uint8_t majoy;			/* Majoy version */
+	uint8_t minior;			/* Minior version */
+	uint8_t patch;			/* Patch version */
+	uint8_t flag;			/* Zflag */
 };
 
 enum {
@@ -108,26 +110,26 @@ void sys_copyself(void)
 		size = &__image_end - &__image_start;
 		sys_mmu_init();
 
-		sys_spi_flash_init();
-		sys_spi_flash_read(16384, &z, sizeof(struct zdesc_t));
-		sys_spi_flash_exit();
+		sys_spinor_init();
+		sys_spinor_read(16384, &z, sizeof(struct zdesc_t));
+		sys_spinor_exit();
 		if((z.magic[0] == 'Z') && (z.magic[1] == 'B') && (z.magic[2] == 'L') && (z.magic[3] == '!'))
 		{
 			csize = (z.csize[0] << 24) | (z.csize[1] << 16) | (z.csize[2] << 8) | (z.csize[3] << 0);
 			dsize = (z.dsize[0] << 24) | (z.dsize[1] << 16) | (z.dsize[2] << 8) | (z.dsize[3] << 0);
-			sys_spi_flash_init();
-			sys_spi_flash_read(16384 + sizeof(struct zdesc_t), tmp, csize);
-			sys_spi_flash_exit();
-			if(z.flag & ZFLAG_COMPRESS_LZ4)
+			sys_spinor_init();
+			sys_spinor_read(16384 + sizeof(struct zdesc_t), tmp, csize);
+			sys_spinor_exit();
+			if(z.flag & ZFLAG_LZ4_COMPRESS)
 				sys_decompress(tmp, csize, mem, dsize);
 			else
 				memcpy(mem, tmp, dsize);
 		}
 		else
 		{
-			sys_spi_flash_init();
-			sys_spi_flash_read(0, mem, size);
-			sys_spi_flash_exit();
+			sys_spinor_init();
+			sys_spinor_read(0, mem, size);
+			sys_spinor_exit();
 		}
 	}
 	else if(d == BOOT_DEVICE_MMC)

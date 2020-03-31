@@ -1,7 +1,7 @@
 /*
  * kernel/command/cmd-mv.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -32,54 +32,82 @@
 static void usage(void)
 {
 	printf("usage:\r\n");
-	printf("    mv SOURCE DEST\r\n");
+	printf("    mv [-v] <SRC> <DST>\r\n");
 }
 
 static int do_mv(int argc, char ** argv)
 {
-	char path[VFS_MAX_PATH];
-	char * src, * dest, * p;
 	struct vfs_stat_t st1, st2;
-	int rc;
+	char spath[VFS_MAX_PATH];
+	char dpath[VFS_MAX_PATH];
+	char tpath[VFS_MAX_PATH];
+	char * p;
+	int verbose = 0;
+	int i, index = 0;
 
-	src = argv[1];
-	dest = argv[2];
-
-	if(argc != 3)
+	if(argc < 3)
 	{
 		usage();
 		return -1;
 	}
 
-	if(vfs_stat(src, &st1) != 0)
+	for(i = 1; i < argc; i++)
 	{
-		printf("mv: cannot access %s: No such file or directory\r\n", src);
+		if(!strcmp(argv[i], "-v"))
+		{
+			verbose = 1;
+		}
+		else
+		{
+			if(index == 0)
+			{
+				if(shell_realpath(argv[i], spath) < 0)
+				{
+					usage();
+					return -1;
+				}
+			}
+			else if(index == 1)
+			{
+				if(shell_realpath(argv[i], dpath) < 0)
+				{
+					usage();
+					return -1;
+				}
+			}
+			else if(index >= 2)
+			{
+				usage();
+				return -1;
+			}
+			index++;
+		}
+	}
+
+	if(vfs_stat(spath, &st1) != 0)
+	{
+		printf("mv: cannot access %s: No such file or directory\r\n", spath);
 		return -1;
 	}
 
-	if(!S_ISREG(st1.st_mode))
+	if(!vfs_stat(dpath, &st2) && S_ISDIR(st2.st_mode))
 	{
-		printf("mv: invalid file type\r\n");
+		p = strrchr(spath, '/');
+		p = p ? p + 1 : spath;
+		strlcpy(tpath, dpath, sizeof(tpath));
+		if(strcmp(dpath, "/"))
+			strlcat(tpath, "/", sizeof(tpath));
+		strlcat(tpath, p, sizeof(tpath));
+		strlcpy(dpath, tpath, sizeof(tpath));
+	}
+
+	if(vfs_rename(spath, dpath) != 0)
+	{
+		printf("mv: failed to move file or directory %s to %s\r\n", spath, dpath);
 		return -1;
 	}
-
-	rc = vfs_stat(dest, &st2);
-	if(!rc && S_ISDIR(st2.st_mode))
-	{
-		p = strrchr(src, '/');
-		p = p ? p + 1 : src;
-		strlcpy(path, dest, sizeof(path));
-		if(strcmp(dest, "/"))
-			strlcat(path, "/", sizeof(path));
-		strlcat(path, p, sizeof(path));
-		dest = path;
-	}
-
-    if(vfs_rename(src, dest) != 0)
-    {
-    	printf("mv: failed to move file %s to %s\r\n", src, dest);
-    	return -1;
-    }
+	if(verbose)
+		printf("'%s' -> '%s'\r\n", spath, dpath);
 
 	return 0;
 }

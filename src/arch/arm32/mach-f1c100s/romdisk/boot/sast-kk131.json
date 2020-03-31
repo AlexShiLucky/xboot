@@ -122,6 +122,34 @@
 	"clk-gate@0x01c20064": {"parent": "gate-tcon", "name": "gate-bus-tcon", "shift": 4, "invert": false },
 	"clk-link": { "parent": "gate-bus-tcon", "name": "link-tcon" },
 
+	"clk-mux@0x01c20088": {
+		"parent": [
+			{ "name": "osc24m", "value": 0 },
+			{ "name": "pll-periph", "value": 1 }
+		],
+		"name": "mux-sdmmc0", "shift": 24, "width": 2,
+		"default": { "parent": "pll-periph" }
+	},
+	"clk-ratio@0x01c20088": { "parent": "mux-sdmmc0", "name": "ratio-sdmmc0", "shift": 16, "width": 2 },
+	"clk-divider@0x01c20088": { "parent": "ratio-sdmmc0", "name": "div-sdmmc0", "shift": 0, "width": 4, "divider-one-based": true, "default": { "rate": 50000000 } },
+	"clk-gate@0x01c20088": {"parent": "div-sdmmc0", "name": "gate-sdmmc0", "shift": 31, "invert": false },
+	"clk-gate@0x01c20060": {"parent": "gate-sdmmc0", "name": "gate-bus-sdmmc0", "shift": 8, "invert": false },
+	"clk-link": { "parent": "gate-bus-sdmmc0", "name": "link-sdmmc0" },
+
+	"clk-mux@0x01c2008c": {
+		"parent": [
+			{ "name": "osc24m", "value": 0 },
+			{ "name": "pll-periph", "value": 1 }
+		],
+		"name": "mux-sdmmc1", "shift": 24, "width": 2,
+		"default": { "parent": "pll-periph" }
+	},
+	"clk-ratio@0x01c2008c": { "parent": "mux-sdmmc1", "name": "ratio-sdmmc1", "shift": 16, "width": 2 },
+	"clk-divider@0x01c2008c": { "parent": "ratio-sdmmc1", "name": "div-sdmmc1", "shift": 0, "width": 4, "divider-one-based": true, "default": { "rate": 50000000 } },
+	"clk-gate@0x01c2008c": {"parent": "div-sdmmc1", "name": "gate-sdmmc1", "shift": 31, "invert": false },
+	"clk-gate@0x01c20060": {"parent": "gate-sdmmc1", "name": "gate-bus-sdmmc1", "shift": 9, "invert": false },
+	"clk-link": { "parent": "gate-bus-sdmmc1", "name": "link-sdmmc1" },
+
 	"reset-f1c100s@0x01c202c0": {
 		"reset-base": 0,
 		"reset-count": 32
@@ -308,11 +336,43 @@
 		"cs-gpio-config": 4
 	},
 
-	"spi-flash@0": {
+	"sdhci-f1c100s@0x01c0f000": {
+		"clock-name": "link-sdmmc0",
+		"reset": 8,
+		"max-clock-frequency": 2000000,
+		"clk-gpio": 162,
+		"clk-gpio-config": 2,
+		"cmd-gpio": 163,
+		"cmd-gpio-config": 2,
+		"dat0-gpio": 161,
+		"dat0-gpio-config": 2,
+		"dat1-gpio": 160,
+		"dat1-gpio-config": 2,
+		"dat2-gpio": 165,
+		"dat2-gpio-config": 2,
+		"dat3-gpio": 164,
+		"dat3-gpio-config": 2,
+		"dat4-gpio": -1,
+		"dat4-gpio-config": -1,
+		"dat5-gpio": -1,
+		"dat5-gpio-config": -1,
+		"dat6-gpio": -1,
+		"dat6-gpio-config": -1,
+		"dat7-gpio": -1,
+		"dat7-gpio-config": -1,
+		"cd-gpio": -1,
+		"cd-gpio-config": -1
+	},
+
+	"blk-spinor@0": {
 		"spi-bus": "spi-f1c100s.0",
 		"chip-select": 0,
 		"mode": 0,
-		"speed": 50000000
+		"speed": 50000000,
+		"partition": [
+			{ "name": "xboot",   "offset": 0,       "length": 4194304 },
+			{ "name": "private", "offset": 4194304, "length": 0 }
+		]
 	},
 
 	"wdg-f1c100s@0x01c20ca0": {
@@ -379,8 +439,6 @@
 		"height": 480,
 		"physical-width": 216,
 		"physical-height": 135,
-		"bits-per-pixel": 18,
-		"bytes-per-pixel": 4,
 		"clock-frequency": 33000000,
 		"hfront-porch": 40,
 		"hback-porch": 87,

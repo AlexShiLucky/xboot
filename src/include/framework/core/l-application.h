@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <cairo.h>
-#include <cairoint.h>
 #include <framework/luahelper.h>
 
 #define MT_APPLICATION	"__mt_application__"
@@ -15,7 +13,7 @@ struct lapplication_t {
 	char * path;
 	char * name;
 	char * desc;
-	cairo_surface_t * icon;
+	struct surface_t * icon;
 };
 
 int luaopen_application(lua_State * L);

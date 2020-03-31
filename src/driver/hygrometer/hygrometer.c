@@ -1,7 +1,7 @@
 /*
  * driver/hygrometer/hygrometer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -60,20 +60,20 @@ struct hygrometer_t * search_first_hygrometer(void)
 }
 
 /* 注册一个湿度计设备 */
-bool_t register_hygrometer(struct device_t ** device,struct hygrometer_t * hygrometer)
+struct device_t * register_hygrometer(struct hygrometer_t * hygrometer, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!hygrometer || !hygrometer->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(hygrometer->name);
 	dev->type = DEVICE_TYPE_THERMOMETER;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = hygrometer;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "humidity", hygrometer_read_humidity, NULL, hygrometer);
@@ -83,33 +83,26 @@ bool_t register_hygrometer(struct device_t ** device,struct hygrometer_t * hygro
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个湿度计设备 */
-bool_t unregister_hygrometer(struct hygrometer_t * hygrometer)
+void unregister_hygrometer(struct hygrometer_t * hygrometer)
 {
 	struct device_t * dev;
 
-	if(!hygrometer || !hygrometer->name)
-		return FALSE;
-
-	dev = search_device(hygrometer->name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(hygrometer && hygrometer->name)
+	{
+		dev = search_device(hygrometer->name, DEVICE_TYPE_THERMOMETER);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 读取湿度计设备信息湿度 */

@@ -1,7 +1,7 @@
 /*
  * framework/core/l-window.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -75,13 +75,6 @@ static int m_window_get_physical_size(lua_State * L)
 	return 2;
 }
 
-static int m_window_get_bytes_per_pixel(lua_State * L)
-{
-	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
-	lua_pushnumber(L, window_get_bytes(w));
-	return 1;
-}
-
 static int m_window_set_backlight(lua_State * L)
 {
 	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
@@ -112,46 +105,31 @@ static int m_window_to_back(lua_State * L)
 	return 0;
 }
 
+static int m_window_set_launcher(lua_State * L)
+{
+	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
+	window_set_launcher(w, lua_toboolean(L, 2));
+	return 0;
+}
+
 static int m_window_snapshot(lua_State * L)
 {
 	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
 	struct limage_t * img = lua_newuserdata(L, sizeof(struct limage_t));
-	int width = cairo_image_surface_get_width(w->cs);
-	int height = cairo_image_surface_get_height(w->cs);
-	img->cs = cairo_surface_create_similar(w->cs, cairo_surface_get_content(w->cs), width, height);
-	cairo_t * cr = cairo_create(img->cs);
-	cairo_set_source_surface(cr, w->cs, 0, 0);
-	cairo_paint(cr);
-	cairo_destroy(cr);
+	img->s = surface_clone(w->s, 0, 0, 0, 0, 0);
 	luaL_setmetatable(L, MT_IMAGE);
 	return 1;
-}
-
-static int m_window_ashome(lua_State * L)
-{
-	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
-	window_set_ashome(w, lua_toboolean(L, 2));
-	return 0;
-}
-
-static int m_window_showobj(lua_State * L)
-{
-	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
-	window_set_showobj(w, lua_toboolean(L, 2));
-	return 0;
 }
 
 static const luaL_Reg m_window[] = {
 	{"getSize",				m_window_get_size},
 	{"getPhysicalSize",		m_window_get_physical_size},
-	{"getBytesPerPixel",	m_window_get_bytes_per_pixel},
 	{"setBacklight",		m_window_set_backlight},
 	{"getBacklight",		m_window_get_backlight},
 	{"toFront",				m_window_to_front},
 	{"toBack",				m_window_to_back},
+	{"setLauncher",			m_window_set_launcher},
 	{"snapshot",			m_window_snapshot},
-	{"asHome",				m_window_ashome},
-	{"showObj",				m_window_showobj},
 	{NULL, NULL}
 };
 

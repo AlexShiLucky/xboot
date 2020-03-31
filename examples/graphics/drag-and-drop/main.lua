@@ -1,5 +1,3 @@
-local Pattern = Pattern
-
 local function onMouseDown(self, e)
 	if self:hitTestPoint(e.x, e.y) then
 		self:toFront():animate({scalex = self.sx * 1.2, scaley = self.sx * 1.2}, 0.1, "elastic-in-out")
@@ -61,13 +59,10 @@ local function onTouchEnd(self, e)
 end
 
 local sw, sh = stage:getSize()
-
-stage:addChild(DisplayShape.new(sw, sh)
-		:setSource(Pattern.image(assets:loadImage("bg.png")):setExtend("repeat"))
-		:paint())
+stage:addChild(DisplayImage.new(Image.new("assets/images/bg.png"):extend(sw, sh, "repeat")))
 
 for i = 1, 10 do
-	local img = assets:loadDisplay("tomato.png")
+	local img = assets:loadDisplay("assets/images/tomato.png")
 		:setPosition(math.random(0, sw - 64), math.random(0, sh - 64))
 		:setScale(math.random() * 0.4 + 0.6)
 		:setRotation(math.random(0, 360))

@@ -1,7 +1,7 @@
 /*
  * kernel/command/cmd-rm.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -32,40 +32,124 @@
 static void usage(void)
 {
 	printf("usage:\r\n");
-	printf("    rm [OPTION] FILE...\r\n");
+	printf("    rm [-v] <DIRECTORY>...\r\n");
+}
+
+static void scandir(struct slist_t * sl, const char * path)
+{
+	struct vfs_stat_t st;
+	struct vfs_dirent_t dir;
+	char * buf;
+	int fd, len;
+	int l;
+
+	if(((len = strlen(path)) > 0) && ((fd = vfs_opendir(path)) >= 0))
+	{
+		slist_add(sl, NULL, "%s", path);
+		while(vfs_readdir(fd, &dir) >= 0)
+		{
+			if(!strcmp(dir.d_name, ".") || !strcmp(dir.d_name, ".."))
+				continue;
+			l = len + strlen(dir.d_name) + 2;
+			if((buf = malloc(l)))
+			{
+				snprintf(buf, l, "%s%s%s", path, (path[len - 1] == '/') ? "" : "/", dir.d_name);
+				if(!vfs_stat(buf, &st))
+				{
+					if(S_ISDIR(st.st_mode))
+						scandir(sl, buf);
+					else
+						slist_add(sl, NULL, "%s", buf);
+				}
+				free(buf);
+			}
+		}
+		vfs_closedir(fd);
+	}
 }
 
 static int do_rm(int argc, char ** argv)
 {
 	struct vfs_stat_t st;
+	struct slist_t * sl, * e;
 	char fpath[VFS_MAX_PATH];
-	int ret;
+	char ** v;
+	int verbose = 0;
+	int c = 0;
 	int i;
 
-	if(argc < 2)
-	{
-		usage();
+	if(!(v = malloc(sizeof(char *) * argc)))
 		return -1;
-	}
 
 	for(i = 1; i < argc; i++)
 	{
-		if(shell_realpath(argv[i], fpath) < 0)
-			continue;
-	    if(vfs_stat(fpath, &st) >= 0)
-	    {
-	        if(S_ISDIR(st.st_mode))
-	            ret = vfs_rmdir(fpath);
-	        else
-	            ret = vfs_unlink(fpath);
-			if(ret != 0)
-				printf("rm: cannot remove %s: No such file or directory\r\n", fpath);
-	    }
-	    else
-	    {
-	    	printf("rm: cannot stat file or directory %s\r\n", fpath);
-	    }
+		if(strcmp(argv[i], "-v") == 0)
+			verbose = 1;
+		else
+			v[c++] = argv[i];
 	}
+
+	if(c == 0)
+	{
+		usage();
+		free(v);
+		return -1;
+	}
+
+	for(i = 0; i < c; i++)
+	{
+		if(shell_realpath(v[i], fpath) < 0)
+			continue;
+		if(vfs_stat(fpath, &st) >= 0)
+		{
+			if(vfs_access(fpath, W_OK) >= 0)
+			{
+				if(S_ISDIR(st.st_mode))
+				{
+					sl = slist_alloc();
+					scandir(sl, fpath);
+					slist_sort(sl);
+					slist_for_each_entry_reverse(e, sl)
+					{
+						if(vfs_stat(e->key, &st) >= 0)
+						{
+							if(S_ISDIR(st.st_mode))
+							{
+								if(vfs_rmdir(e->key) < 0)
+									printf("cannot remove directory '%s'\r\n", e->key);
+								else if(verbose)
+									printf("removed '%s'\r\n", e->key);
+							}
+							else
+							{
+								if(vfs_unlink(e->key) < 0)
+									printf("cannot remove file '%s'\r\n", e->key);
+								else if(verbose)
+									printf("removed '%s'\r\n", e->key);
+							}
+						}
+					}
+					slist_free(sl);
+				}
+				else
+				{
+					if(vfs_unlink(fpath) < 0)
+						printf("cannot remove file '%s'\r\n", fpath);
+					else if(verbose)
+						printf("removed '%s'\r\n", fpath);
+				}
+			}
+			else
+			{
+				printf("read only '%s'\r\n", fpath);
+			}
+		}
+		else
+		{
+			printf("cannot stat '%s'\r\n", fpath);
+		}
+	}
+	free(v);
 
 	return 0;
 }

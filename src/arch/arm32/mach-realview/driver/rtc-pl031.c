@@ -1,7 +1,7 @@
 /*
  * driver/rtc-pl031.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -169,15 +169,13 @@ static struct device_t * rtc_pl031_probe(struct driver_t * drv, struct dtnode_t 
 	write32(pdat->virt + RTC_ICR, 1);
 	write32(pdat->virt + RTC_CR, 1);
 
-	if(!register_rtc(&dev, rtc))
+	if(!(dev = register_rtc(rtc, drv)))
 	{
 		free_device_name(rtc->name);
 		free(rtc->priv);
 		free(rtc);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -187,11 +185,11 @@ static void rtc_pl031_remove(struct device_t * dev)
 	struct rtc_t * rtc = (struct rtc_t *)dev->priv;
 	struct rtc_pl031_pdata_t * pdat = (struct rtc_pl031_pdata_t *)rtc->priv;
 
-	if(rtc && unregister_rtc(rtc))
+	if(rtc)
 	{
+		unregister_rtc(rtc);
 		write32(pdat->virt + RTC_IMSC, 1);
 		write32(pdat->virt + RTC_ICR, 1);
-
 		free_device_name(rtc->name);
 		free(rtc->priv);
 		free(rtc);

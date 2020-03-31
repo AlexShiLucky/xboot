@@ -1,7 +1,7 @@
 /*
  * driver/reset-rk3128.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -88,15 +88,13 @@ static struct device_t * reset_rk3128_probe(struct driver_t * drv, struct dtnode
 	chip->deassert = reset_rk3128_deassert;
 	chip->priv = pdat;
 
-	if(!register_resetchip(&dev, chip))
+	if(!(dev = register_resetchip(chip, drv)))
 	{
 		free_device_name(chip->name);
 		free(chip->priv);
 		free(chip);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -104,8 +102,9 @@ static void reset_rk3128_remove(struct device_t * dev)
 {
 	struct resetchip_t * chip = (struct resetchip_t *)dev->priv;
 
-	if(chip && unregister_resetchip(chip))
+	if(chip)
 	{
+		unregister_resetchip(chip);
 		free_device_name(chip->name);
 		free(chip->priv);
 		free(chip);

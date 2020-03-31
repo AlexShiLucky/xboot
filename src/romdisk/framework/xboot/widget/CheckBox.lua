@@ -25,11 +25,11 @@ function M:init(option, name)
 	self.opt.imageOffNormal = assert(option.imageOffNormal or theme.checkbox.image.offNormal)
 	self.opt.imageOffPressed = assert(option.imageOffPressed or theme.checkbox.image.offPressed)
 	self.opt.imageOffDisabled = assert(option.imageOffDisabled or theme.checkbox.image.offDisabled)
-	self.opt.textFontFamily = assert(option.textFontFamily or theme.checkbox.text.font.family)
-	self.opt.textFontSize = assert(option.textFontSize or theme.checkbox.text.font.size)
-	self.opt.textPatternNormal = assert(option.textPatternNormal or theme.checkbox.text.pattern.normal)
-	self.opt.textPatternPressed = assert(option.textPatternPressed or theme.checkbox.text.pattern.pressed)
-	self.opt.textPatternDisabled = assert(option.textPatternDisabled or theme.checkbox.text.pattern.disabled)
+	self.opt.textFontFamily = assert(option.textFontFamily or theme.checkbox.text.fontFamily)
+	self.opt.textFontSize = assert(option.textFontSize or theme.checkbox.text.fontSize)
+	self.opt.textColorNormal = assert(option.textColorNormal or theme.checkbox.text.color.normal)
+	self.opt.textColorPressed = assert(option.textColorPressed or theme.checkbox.text.color.pressed)
+	self.opt.textColorDisabled = assert(option.textColorDisabled or theme.checkbox.text.color.disabled)
 	self.opt.textMarginLeft = assert(option.textMarginLeft or theme.checkbox.text.margin.left)
 	self.opt.textMarginTop = assert(option.textMarginTop or theme.checkbox.text.margin.top)
 	self.opt.textMarginRight = assert(option.textMarginRight or theme.checkbox.text.margin.right)
@@ -105,7 +105,7 @@ function M:setText(text)
 		if self.text then
 			self.text:setText(text)
 		else
-			self.text = DisplayText.new(assets:loadFont(self.opt.textFontFamily, self.opt.textFontSize), self.opt.textPatternNormal, text)
+			self.text = DisplayText.new(text, self.opt.textColorNormal, self.opt.textFontFamily, self.opt.textFontSize)
 			self.text:setLayoutMargin(self.opt.textMarginLeft, self.opt.textMarginTop, self.opt.textMarginRight, self.opt.textMarginBottom)
 			self.text:setLayoutEnable(true)
 		end
@@ -252,7 +252,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternNormal)
+				self.text:toFront():setColor(self.opt.textColorNormal)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)
@@ -272,7 +272,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternPressed)
+				self.text:toFront():setColor(self.opt.textColorPressed)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)
@@ -292,7 +292,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternDisabled)
+				self.text:toFront():setColor(self.opt.textColorDisabled)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)
@@ -323,7 +323,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternNormal)
+				self.text:toFront():setColor(self.opt.textColorNormal)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)
@@ -343,7 +343,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternPressed)
+				self.text:toFront():setColor(self.opt.textColorPressed)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)
@@ -363,7 +363,7 @@ function M:updateVisualState()
 				if not self:contains(self.text) then
 					self:addChild(self.text)
 				end
-				self.text:toFront():setPattern(self.opt.textPatternDisabled)
+				self.text:toFront():setColor(self.opt.textColorDisabled)
 			else
 				if self:contains(self.text) then
 					self:removeChild(self.text)

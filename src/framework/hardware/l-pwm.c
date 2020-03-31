@@ -1,7 +1,7 @@
 /*
  * framework/hardware/l-pwm.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -74,8 +74,8 @@ static int m_pwm_tostring(lua_State * L)
 static int m_pwm_config(lua_State * L)
 {
 	struct pwm_t * pwm = luaL_checkudata(L, 1, MT_HARDWARE_PWM);
-	int duty = luaL_optinteger(L, 2, pwm->__duty);
-	int period = luaL_optinteger(L, 3, pwm->__period);
+	int duty = luaL_checkinteger(L, 2);
+	int period = luaL_checkinteger(L, 3);
 	int polarity = lua_toboolean(L, 4) ? 1 : 0;
 	pwm_config(pwm, duty, period, polarity);
 	lua_settop(L, 1);

@@ -9,39 +9,7 @@ extern "C" {
 #include <barrier.h>
 #include <irqflags.h>
 
-#if __ARM32_ARCH__ == 5
-static inline void atomic_add(atomic_t * a, int v)
-{
-	a->counter += v;
-}
-
-static inline int atomic_add_return(atomic_t * a, int v)
-{
-	a->counter += v;
-	return a->counter;
-}
-
-static inline void atomic_sub(atomic_t * a, int v)
-{
-	a->counter -= v;
-}
-
-static inline int atomic_sub_return(atomic_t * a, int v)
-{
-	a->counter -= v;
-	return a->counter;
-}
-
-static inline int atomic_cmp_exchange(atomic_t * a, int o, int n)
-{
-	volatile int v;
-
-	v = a->counter;
-	if(v == o)
-		a->counter = n;
-	return v;
-}
-#else
+#if defined(CONFIG_MAX_SMP_CPUS) && (CONFIG_MAX_SMP_CPUS > 1) && (__ARM32_ARCH__ >= 6)
 static inline void atomic_add(atomic_t * a, int v)
 {
 	unsigned int tmp;
@@ -116,16 +84,67 @@ static inline int atomic_cmp_exchange(atomic_t * a, int o, int n)
 
 	do {
 		__asm__ __volatile__ (
-"ldrex %1, [%3]\n"
-"mov %0, #0\n"
-"teq %1, %4\n"
-"strexeq %0, %5, [%3]\n"
+"	ldrex %1, [%3]\n"
+"	mov %0, #0\n"
+"	teq %1, %4\n"
+"	strexeq %0, %5, [%3]\n"
 	: "=&r" (res), "=&r" (pre), "+Qo" (a->counter)
 	: "r" (&a->counter), "Ir" (o), "r" (n)
 	: "cc");
 	} while(res);
 
 	return pre;
+}
+#else
+static inline void atomic_add(atomic_t * a, int v)
+{
+	irq_flags_t flags;
+
+	local_irq_save(flags);
+	a->counter += v;
+	local_irq_restore(flags);
+}
+
+static inline int atomic_add_return(atomic_t * a, int v)
+{
+	irq_flags_t flags;
+
+	local_irq_save(flags);
+	a->counter += v;
+	local_irq_restore(flags);
+	return a->counter;
+}
+
+static inline void atomic_sub(atomic_t * a, int v)
+{
+	irq_flags_t flags;
+
+	local_irq_save(flags);
+	a->counter -= v;
+	local_irq_restore(flags);
+}
+
+static inline int atomic_sub_return(atomic_t * a, int v)
+{
+	irq_flags_t flags;
+
+	local_irq_save(flags);
+	a->counter -= v;
+	local_irq_restore(flags);
+	return a->counter;
+}
+
+static inline int atomic_cmp_exchange(atomic_t * a, int o, int n)
+{
+	irq_flags_t flags;
+	volatile int v;
+
+	local_irq_save(flags);
+	v = a->counter;
+	if(v == o)
+		a->counter = n;
+	local_irq_restore(flags);
+	return v;
 }
 #endif
 

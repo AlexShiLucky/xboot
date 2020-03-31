@@ -1,7 +1,7 @@
 /*
  * kernel/core/device.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -242,32 +242,27 @@ bool_t unregister_device_notifier(struct notifier_t * n)
 /* 通知设备已挂起 */
 void suspend_device(struct device_t * dev)
 {
-	if(dev && dev->driver && dev->driver->suspend)
+	if(dev)
 	{
 	    /* 先通知设备已挂起 */
 		notifier_chain_call(&__device_nc, NOTIFIER_DEVICE_SUSPEND, dev);
         /* 再挂起设备 */
-		dev->driver->suspend(dev);
+		if(dev->driver && dev->driver->suspend)
+			dev->driver->suspend(dev);
 	}
 }
 
 /* 通知设备已释放 */
 void resume_device(struct device_t * dev)
 {
-	if(dev && dev->driver && dev->driver->resume)
+	if(dev)
 	{
 	    /* 先释放设备 */
-		dev->driver->resume(dev);
+		if(dev->driver && dev->driver->resume)
+			dev->driver->resume(dev);
         /* 再通知设备已释放*/
 		notifier_chain_call(&__device_nc, NOTIFIER_DEVICE_RESUME, dev);
 	}
-}
-
-/* 移除设备 */
-void remove_device(struct device_t * dev)
-{
-	if(dev && dev->driver && dev->driver->remove)
-		dev->driver->remove(dev);
 }
 
 /* 初始化全局设备链表、全局设备类型链表、全局设备哈希表 */

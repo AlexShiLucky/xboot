@@ -26,14 +26,17 @@ struct audio_t
 	/* Audio capture stop */
 	void (*capture_stop)(struct audio_t * audio);
 
+	/* Ioctl interface */
+	int (*ioctl)(struct audio_t * audio, const char * cmd, void * arg);
+
 	/* Private data */
 	void * priv;
 };
 
 struct audio_t * search_audio(const char * name);
 struct audio_t * search_first_audio(void);
-bool_t register_audio(struct device_t ** device, struct audio_t * audio);
-bool_t unregister_audio(struct audio_t * audio);
+struct device_t * register_audio(struct audio_t * audio, struct driver_t * drv);
+void unregister_audio(struct audio_t * audio);
 
 void audio_playback(struct audio_t * audio);
 

@@ -1,7 +1,7 @@
 /*
  * driver/spi/spi.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -41,20 +41,20 @@ struct spi_t * search_spi(const char * name)
 }
 
 /* 注册spi设备 */
-bool_t register_spi(struct device_t ** device, struct spi_t * spi)
+struct device_t * register_spi(struct spi_t * spi, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!spi || !spi->name || !spi->type)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return dev;
 
 	dev->name = strdup(spi->name);
 	dev->type = DEVICE_TYPE_SPI;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = spi;
 	dev->kobj = kobj_alloc_directory(dev->name);
 
@@ -64,36 +64,29 @@ bool_t register_spi(struct device_t ** device, struct spi_t * spi)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 撤销spi设备 */
-bool_t unregister_spi(struct spi_t * spi)
+void unregister_spi(struct spi_t * spi)
 {
 	struct device_t * dev;
 
-	if(!spi || !spi->name)
-		return FALSE;
-
-    /* 根据spi名称搜索SPI设备 */
-	dev = search_device(spi->name, DEVICE_TYPE_SPI);
-	if(!dev)
-		return FALSE;
-
-    /* 注销设备 */
-	if(!unregister_device(dev))
-		return FALSE;
-
-    /* 移除设备路径kobj */
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(spi && spi->name)
+	{
+	    /* 根据spi名称搜索SPI设备 */
+		dev = search_device(spi->name, DEVICE_TYPE_SPI);
+		/* 注销设备 */
+		if(dev && unregister_device(dev))
+		{
+			/* 移除设备路径kobj */
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* spi发送消息 */

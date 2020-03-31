@@ -1,7 +1,7 @@
 /*
  * sys-mmu.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -29,6 +29,25 @@
 #include <xboot.h>
 #include <arm32.h>
 
+static inline void mmu_ttb_set(uint32_t base)
+{
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 0" : : "r" (base) : "memory");
+}
+
+static inline void mmu_domain_set(uint32_t domain)
+{
+	__asm__ __volatile__("mcr p15, 0, %0, c3, c0, 0" : : "r" (domain) : "memory");
+}
+
+static inline void mmu_inv_tlb(void)
+{
+	__asm__ __volatile__("mcr p15, 0, %0, c8, c7, 0" : : "r" (0));
+	__asm__ __volatile__("mcr p15, 0, %0, c8, c6, 0" : : "r" (0));
+	__asm__ __volatile__("mcr p15, 0, %0, c8, c5, 0" : : "r" (0));
+	dsb();
+	isb();
+}
+
 static void map_l1_section(uint32_t * ttb, virtual_addr_t virt, physical_addr_t phys, physical_size_t size, int type)
 {
 	physical_size_t i;
@@ -39,7 +58,7 @@ static void map_l1_section(uint32_t * ttb, virtual_addr_t virt, physical_addr_t 
 	type &= 0x3;
 
 	for(i = size; i > 0; i--, virt++, phys++)
-		ttb[virt] = (phys << 20) | (0x3 << 10) | (0x0 << 5) | (type << 2) | (0x2 << 0);
+		ttb[virt] = (phys << 20) | (1 << 16) | (0x3 << 10) | (0x0 << 5) | (type << 2) | (0x2 << 0);
 }
 
 void sys_mmu_init(void)
@@ -50,9 +69,9 @@ void sys_mmu_init(void)
 	map_l1_section(ttb, 0x80000000, 0x80000000, SZ_2G, 0);
 	map_l1_section(ttb, 0x80000000, 0x80000000, SZ_1M * 32, 3);
 
-	arm32_ttb_set((uint32_t)(ttb));
-	arm32_tlb_invalidate();
-	arm32_domain_set(0x3);
+	mmu_ttb_set((uint32_t)(ttb));
+	mmu_inv_tlb();
+	mmu_domain_set(0x3);
 	arm32_mmu_enable();
 	arm32_icache_enable();
 	arm32_dcache_enable();

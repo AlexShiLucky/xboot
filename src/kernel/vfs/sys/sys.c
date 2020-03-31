@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/sys/sys.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -29,12 +29,12 @@
 #include <xboot.h>
 #include <vfs/vfs.h>
 
-static int sys_mount(struct vfs_mount_t * m, const char * dev, u32_t flags)
+static int sys_mount(struct vfs_mount_t * m, const char * dev)
 {
 	if(dev)
 		return -1;
 
-	m->m_flags = flags & MOUNT_MASK;
+	m->m_flags |= MOUNT_RO;
 	m->m_root->v_data = (void *)kobj_get_root();
 	m->m_data = NULL;
 	return 0;

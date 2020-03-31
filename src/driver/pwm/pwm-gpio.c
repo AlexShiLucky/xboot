@@ -1,7 +1,7 @@
 /*
  * driver/pwm-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -46,9 +46,13 @@ struct pwm_gpio_pdata_t
 static void pwm_gpio_config(struct pwm_t * pwm, int duty, int period, int polarity)
 {
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
-	pdat->duty = duty;
-	pdat->period = period;
-	pdat->polarity = polarity;
+
+	if((pdat->duty != duty) || (pdat->period != period) || (pdat->polarity != polarity))
+	{
+		pdat->duty = duty;
+		pdat->period = period;
+		pdat->polarity = polarity;
+	}
 }
 
 /* pwm-gpio设备enable具体实现 */
@@ -66,7 +70,8 @@ static void pwm_gpio_enable(struct pwm_t * pwm)
 static void pwm_gpio_disable(struct pwm_t * pwm)
 {
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
-	pdat->enable = 0;
+	if(pdat->enable != 0)
+		pdat->enable = 0;
 }
 
 /* pwm-gpio设备定时器回调函数 */
@@ -122,7 +127,7 @@ static struct device_t * pwm_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	pdat->gpio = gpio;
 	pdat->gpiocfg = dt_read_int(n, "gpio-config", -1);
 	pdat->flag = 0;
-	pdat->enable = 0;
+	pdat->enable = -1;
 	pdat->duty = 5 * 1000 * 1000;
 	pdat->period = 10 * 1000 * 1000;
 	pdat->polarity = 0;
@@ -139,17 +144,14 @@ static struct device_t * pwm_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	gpio_set_direction(pdat->gpio, GPIO_DIRECTION_OUTPUT);
 	gpio_set_value(pdat->gpio, pdat->polarity ? 1 : 0);
 
-	if(!register_pwm(&dev, pwm))
+	if(!(dev = register_pwm(pwm, drv)))
 	{
 		timer_cancel(&pdat->timer);
-
 		free_device_name(pwm->name);
 		free(pwm->priv);
 		free(pwm);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -159,10 +161,10 @@ static void pwm_gpio_remove(struct device_t * dev)
 	struct pwm_t * pwm = (struct pwm_t *)dev->priv;
 	struct pwm_gpio_pdata_t * pdat = (struct pwm_gpio_pdata_t *)pwm->priv;
 
-	if(pwm && unregister_pwm(pwm))
+	if(pwm)
 	{
+		unregister_pwm(pwm);
 		timer_cancel(&pdat->timer);
-
 		free_device_name(pwm->name);
 		free(pwm->priv);
 		free(pwm);

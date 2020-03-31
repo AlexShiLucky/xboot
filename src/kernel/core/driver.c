@@ -1,7 +1,7 @@
 /*
  * kernel/core/driver.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -197,6 +197,12 @@ void probe_device(const char * json, int length, const char * tips)
 		}
 		json_free(v);
 	}
+}
+
+void remove_device(struct device_t * dev)
+{
+	if(dev && dev->driver && dev->driver->remove)
+		dev->driver->remove(dev);
 }
 
 /* 初始化全局驱动哈希表 */

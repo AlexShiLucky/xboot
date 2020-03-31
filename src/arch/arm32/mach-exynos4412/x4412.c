@@ -1,7 +1,7 @@
 /*
  * x4412.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,7 +27,6 @@
  */
 
 #include <xboot.h>
-#include <mmu.h>
 
 static int mach_detect(struct machine_t * mach)
 {
@@ -36,19 +35,11 @@ static int mach_detect(struct machine_t * mach)
 	return 1;
 }
 
-static void mach_memmap(struct machine_t * mach)
-{
-	machine_mmap(mach, "ram", 0x40000000, 0x40000000, SZ_128M, MAP_TYPE_CB);
-	machine_mmap(mach, "dma", 0x48000000, 0x48000000, SZ_128M, MAP_TYPE_NCNB);
-	machine_mmap(mach, "heap", 0x50000000, 0x50000000, SZ_256M, MAP_TYPE_CB);
-	mmu_setup(mach);
-}
-
-static void mach_smpinit(struct machine_t * mach, int cpu)
+static void mach_smpinit(struct machine_t * mach)
 {
 }
 
-static void mach_smpboot(struct machine_t * mach, int cpu, void (*func)(int cpu))
+static void mach_smpboot(struct machine_t * mach, void (*func)(void))
 {
 }
 
@@ -107,7 +98,6 @@ static struct machine_t x4412 = {
 	.name 		= "x4412",
 	.desc 		= "X4412 Based On Samsung Exynos4412",
 	.detect 	= mach_detect,
-	.memmap		= mach_memmap,
 	.smpinit	= mach_smpinit,
 	.smpboot	= mach_smpboot,
 	.shutdown	= mach_shutdown,

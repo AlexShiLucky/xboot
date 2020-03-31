@@ -1,7 +1,7 @@
 /*
  * driver/compass/compass.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -79,20 +79,20 @@ struct compass_t * search_first_compass(void)
 }
 
 /* 注册一个罗盘设备 */
-bool_t register_compass(struct device_t ** device,struct compass_t * c)
+struct device_t * register_compass(struct compass_t * c, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!c || !c->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(c->name);
 	dev->type = DEVICE_TYPE_COMPASS;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = c;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "offset", compass_read_offset, NULL, c);
@@ -104,33 +104,26 @@ bool_t register_compass(struct device_t ** device,struct compass_t * c)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个罗盘设备 */
-bool_t unregister_compass(struct compass_t * c)
+void unregister_compass(struct compass_t * c)
 {
 	struct device_t * dev;
 
-	if(!c || !c->name)
-		return FALSE;
-
-	dev = search_device(c->name, DEVICE_TYPE_COMPASS);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(c && c->name)
+	{
+		dev = search_device(c->name, DEVICE_TYPE_COMPASS);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 设置罗盘设备偏转 */

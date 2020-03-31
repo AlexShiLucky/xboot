@@ -1,7 +1,7 @@
 /*
  * driver/input-sandbox-sdl.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -199,7 +199,7 @@ static void cb_joystick_button_up(void * device, unsigned int button)
 	push_event(&e);
 }
 
-static int input_sandbox_sdl_ioctl(struct input_t * input, int cmd, void * arg)
+static int input_sandbox_sdl_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	return -1;
 }
@@ -255,17 +255,14 @@ static struct device_t * input_sandbox_sdl_probe(struct driver_t * drv, struct d
 			cb_joystick_button_down,
 			cb_joystick_button_up);
 
-	if(!register_input(&dev, input))
+	if(!(dev = register_input(input, drv)))
 	{
 		sandbox_event_sdl_close(input->priv);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -273,10 +270,10 @@ static void input_sandbox_sdl_remove(struct device_t * dev)
 {
 	struct input_t * input = (struct input_t *)dev->priv;
 
-	if(input && unregister_input(input))
+	if(input)
 	{
+		unregister_input(input);
 		sandbox_event_sdl_close(input->priv);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);

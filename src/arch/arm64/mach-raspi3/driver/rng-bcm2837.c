@@ -1,7 +1,7 @@
 /*
  * driver/rng-bcm2837.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -100,15 +100,13 @@ static struct device_t * rng_bcm2837_probe(struct driver_t * drv, struct dtnode_
 	write32(pdat->virt + RNG_STATUS, 0x40000);
 	write32(pdat->virt + RNG_CTRL, 0x1);
 
-	if(!register_rng(&dev, rng))
+	if(!(dev = register_rng(rng, drv)))
 	{
 		free_device_name(rng->name);
 		free(rng->priv);
 		free(rng);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -117,10 +115,10 @@ static void rng_bcm2837_remove(struct device_t * dev)
 	struct rng_t * rng = (struct rng_t *)dev->priv;
 	struct rng_bcm2837_pdata_t * pdat = (struct rng_bcm2837_pdata_t *)rng->priv;
 
-	if(rng && unregister_rng(rng))
+	if(rng)
 	{
+		unregister_rng(rng);
 		write32(pdat->virt + RNG_CTRL, 0);
-
 		free_device_name(rng->name);
 		free(rng->priv);
 		free(rng);

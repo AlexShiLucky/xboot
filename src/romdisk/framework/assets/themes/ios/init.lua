@@ -5,11 +5,11 @@ local function D(name)
 end
 
 local common = {
-	fontFamily = "assets/fonts/Roboto-Regular.ttf",
+	fontFamily = "roboto",
 	fontSize = 24,
-	textPatternNormal = Pattern.color(0.8, 0.8, 0.2),
-	textPatternPressed = Pattern.color(0.2, 0.8, 0.2),
-	textPatternDisabled = Pattern.color(0.8, 0.2, 0.2),
+	textPatternNormal = Color.new({0, 0, 0, 255}),
+	textPatternPressed = Color.new({128, 128, 25, 255}),
+	textPatternDisabled = Color.new({102, 102, 102, 255}),
 }
 
 return {
@@ -20,14 +20,12 @@ return {
 			disabled = D("button-disabled.9.png"),
 		},
 		text = {
-			font = {
-				family = "assets/fonts/Roboto-Regular.ttf",
-				size = 24,
-			},
-			pattern = {
-				normal = Pattern.color(0, 0, 0),
-				pressed = Pattern.color(0.5, 0.5, 0.1),
-				disabled = Pattern.color(0.4, 0.4, 0.4),
+			fontFamily = "roboto",
+			fontSize = 24,
+			color = {
+				normal = Color.new({0, 0, 0, 255}),
+				pressed = Color.new({128, 128, 25, 255}),
+				disabled = Color.new({102, 102, 102, 255}),
 			},
 			margin = {
 				left = 0,
@@ -48,14 +46,12 @@ return {
 			offDisabled = D("checkbox-off-disabled.png"),
 		},
 		text = {
-			font = {
-				family = "assets/fonts/Roboto-Regular.ttf",
-				size = 24,
-			},
-			pattern = {
-				normal = Pattern.color(0, 0, 0),
-				pressed = Pattern.color(0.5, 0.5, 0.1),
-				disabled = Pattern.color(0.4, 0.4, 0.4),
+			fontFamily = "roboto",
+			fontSize = 24,
+			color = {
+				normal = Color.new({0, 0, 0, 255}),
+				pressed = Color.new({128, 128, 25, 255}),
+				disabled = Color.new({102, 102, 102, 255}),
 			},
 			margin = {
 				left = 6,
@@ -76,14 +72,12 @@ return {
 			offDisabled = D("radiobutton-off-disabled.png"),
 		},
 		text = {
-			font = {
-				family = "assets/fonts/Roboto-Regular.ttf",
-				size = 24,
-			},
-			pattern = {
-				normal = Pattern.color(0, 0, 0),
-				pressed = Pattern.color(0.5, 0.5, 0.1),
-				disabled = Pattern.color(0.4, 0.4, 0.4),
+			fontFamily = "roboto",
+			fontSize = 24,
+			color = {
+				normal = Color.new({0, 0, 0, 255}),
+				pressed = Color.new({128, 128, 25, 255}),
+				disabled = Color.new({102, 102, 102, 255}),
 			},
 			margin = {
 				left = 6,

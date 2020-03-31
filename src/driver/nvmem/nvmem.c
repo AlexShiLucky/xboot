@@ -1,7 +1,7 @@
 /*
  * driver/nvmem/nvmem.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -120,24 +120,24 @@ static bool_t nvmem_init_kvdb(struct nvmem_t * m)
 }
 
 /* 注册一个非易失memory设备 */
-bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
+struct device_t * register_nvmem(struct nvmem_t * m, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!m || !m->name)
-		return FALSE;
+		return NULL;
 
 	if(!m->capacity && !m->read)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	nvmem_init_kvdb(m);
 	dev->name = strdup(m->name);
 	dev->type = DEVICE_TYPE_NVMEM;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = m;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "summary", nvmem_read_summary, NULL, m);
@@ -150,35 +150,28 @@ bool_t register_nvmem(struct device_t ** device, struct nvmem_t * m)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个非易失memory设备 */
-bool_t unregister_nvmem(struct nvmem_t * m)
+void unregister_nvmem(struct nvmem_t * m)
 {
 	struct device_t * dev;
 
-	if(!m || !m->name)
-		return FALSE;
-
-	dev = search_device(m->name, DEVICE_TYPE_NVMEM);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	if(m->db)
-		kvdb_free(m->db);
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(m && m->name)
+	{
+		dev = search_device(m->name, DEVICE_TYPE_NVMEM);
+		if(dev && unregister_device(dev))
+		{
+			if(m->db)
+				kvdb_free(m->db);
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 非易失memory设备容量读取接口调用 */

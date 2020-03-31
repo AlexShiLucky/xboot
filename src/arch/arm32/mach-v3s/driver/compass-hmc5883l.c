@@ -1,7 +1,7 @@
 /*
  * driver/compass-hmc5883l.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -171,17 +171,14 @@ static struct device_t * compass_hmc5883l_probe(struct driver_t * drv, struct dt
 	c->get = compass_hmc5883l_get;
 	c->priv = pdat;
 
-	if(!register_compass(&dev, c))
+	if(!(dev = register_compass(c, drv)))
 	{
 		i2c_device_free(pdat->dev);
-
 		free_device_name(c->name);
 		free(c->priv);
 		free(c);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -190,10 +187,10 @@ static void compass_hmc5883l_remove(struct device_t * dev)
 	struct compass_t * c = (struct compass_t *)dev->priv;
 	struct compass_hmc5883l_pdata_t * pdat = (struct compass_hmc5883l_pdata_t *)c->priv;
 
-	if(c && unregister_compass(c))
+	if(c)
 	{
+		unregister_compass(c);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(c->name);
 		free(c->priv);
 		free(c);

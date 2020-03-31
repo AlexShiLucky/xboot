@@ -1,7 +1,7 @@
 /*
  * framework/core/l-display-object.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -260,17 +260,8 @@ function M:getAnchor()
 	return self._dobj:getAnchor()
 end
 
-function M:setAlpha(alpha)
-	self._dobj:setAlpha(alpha)
-	return self
-end
-
-function M:getAlpha()
-	return self._dobj:getAlpha()
-end
-
-function M:setBackgroundColor(r, g, b, a)
-	self._dobj:setBackgroundColor(r, g, b, a)
+function M:setBackgroundColor(color)
+	self._dobj:setBackgroundColor(color)
 	return self
 end
 
@@ -437,8 +428,6 @@ function M:animate(properties, duration, easing)
 						b = d:getSkewX()
 					elseif k == "skewy" then
 						b = d:getSkewY()
-					elseif k == "alpha" then
-						b = d:getAlpha()
 					elseif k == "width" then
 						b = d:getWidth()
 					elseif k == "height" then
@@ -470,8 +459,6 @@ function M:animate(properties, duration, easing)
 					d:setSkewX(v(elapsed))
 				elseif k == "skewy" then
 					d:setSkewY(v(elapsed))
-				elseif k == "alpha" then
-					d:setAlpha(v(elapsed))
 				elseif k == "width" then
 					d:setWidth(v(elapsed))
 				elseif k == "height" then
@@ -539,8 +526,6 @@ function M:spring(properties, velocity, stiffness, damping)
 						d:setSkewX(ns)
 					elseif k == "skewy" then
 						d:setSkewY(ns)
-					elseif k == "alpha" then
-						d:setAlpha(ns)
 					elseif k == "width" then
 						d:setWidth(ns)
 					elseif k == "height" then
@@ -581,8 +566,6 @@ function M:spring(properties, velocity, stiffness, damping)
 				s = self:getSkewX()
 			elseif k == "skewy" then
 				s = self:getSkewY()
-			elseif k == "alpha" then
-				s = self:getAlpha()
 			elseif k == "width" then
 				s = self:getWidth()
 			elseif k == "height" then

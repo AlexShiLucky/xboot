@@ -1,5 +1,5 @@
-#ifndef __NEW_VFS_H__
-#define __NEW_VFS_H__
+#ifndef __VFS_H__
+#define __VFS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,13 +97,12 @@ struct vfs_stat_t {
 enum vfs_dirent_type_t {
 	VDT_UNK,
 	VDT_DIR,
-	VDT_REG,
-	VDT_BLK,
 	VDT_CHR,
-	VDT_FIFO,
+	VDT_BLK,
+	VDT_REG,
 	VDT_LNK,
+	VDT_FIFO,
 	VDT_SOCK,
-	VDT_WHT,
 };
 
 struct vfs_dirent_t {
@@ -119,14 +118,14 @@ enum vfs_node_flag_t {
 };
 
 enum vfs_node_type_t {
-	VNT_REG,
-	VNT_DIR,
-	VNT_BLK,
-	VNT_CHR,
-	VNT_LNK,
-	VNT_SOCK,
-	VNT_FIFO,
 	VNT_UNK,
+	VNT_DIR,
+	VNT_CHR,
+	VNT_BLK,
+	VNT_REG,
+	VNT_LNK,
+	VNT_FIFO,
+	VNT_SOCK,
 };
 
 struct vfs_node_t {
@@ -146,9 +145,9 @@ struct vfs_node_t {
 };
 
 enum {
-	MOUNT_RDONLY	= 0x1,
-	MOUNT_RW		= 0x2,
-	MOUNT_MASK		= 0x3,
+	MOUNT_RW	= (0x0 << 0),
+	MOUNT_RO	= (0x1 << 0),
+	MOUNT_MASK	= (0x1 << 0),
 };
 
 struct vfs_mount_t {
@@ -169,7 +168,7 @@ struct filesystem_t {
 	struct list_head list;
 	const char * name;
 
-	int (*mount)(struct vfs_mount_t *, const char *, u32_t);
+	int (*mount)(struct vfs_mount_t *, const char *);
 	int (*unmount)(struct vfs_mount_t *);
 	int (*msync)(struct vfs_mount_t *);
 	int (*vget)(struct vfs_mount_t *, struct vfs_node_t *);
@@ -189,15 +188,18 @@ struct filesystem_t {
 	int (*chmod)(struct vfs_node_t *, u32_t);
 };
 
+extern struct list_head __filesystem_list;
+
 struct filesystem_t * search_filesystem(const char * name);
 bool_t register_filesystem(struct filesystem_t * fs);
 bool_t unregister_filesystem(struct filesystem_t * fs);
 
+void vfs_force_unmount(struct vfs_mount_t * m);
 int vfs_mount(const char * dev, const char * dir, const char * fsname, u32_t flags);
 int vfs_unmount(const char * path);
 int vfs_sync(void);
 struct vfs_mount_t * vfs_mount_get(int index);
-u32_t vfs_mount_count(void);
+int vfs_mount_count(void);
 int vfs_open(const char * path, u32_t flags, u32_t mode);
 int vfs_close(int fd);
 u64_t vfs_read(int fd, void * buf, u64_t len);
@@ -224,4 +226,4 @@ void do_init_vfs(void);
 }
 #endif
 
-#endif /* __NEW_VFS_H__ */
+#endif /* __VFS_H__ */

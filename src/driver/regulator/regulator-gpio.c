@@ -1,7 +1,7 @@
 /*
  * driver/regulator/regulator-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -154,18 +154,15 @@ static struct device_t * regulator_gpio_probe(struct driver_t * drv, struct dtno
 	if(pdat->gpiocfg >= 0)
 		gpio_set_cfg(pdat->gpio, pdat->gpiocfg);
 
-	if(!register_regulator(&dev, supply))
+	if(!(dev = register_regulator(supply, drv)))
 	{
 		if(pdat->parent)
 			free(pdat->parent);
-
 		free(supply->name);
 		free(supply->priv);
 		free(supply);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	if(dt_read_object(n, "default", &o))
 	{
 		char * s = supply->name;
@@ -193,11 +190,11 @@ static void regulator_gpio_remove(struct device_t * dev)
 	struct regulator_t * supply = (struct regulator_t *)dev->priv;
 	struct regulator_gpio_pdata_t * pdat = (struct regulator_gpio_pdata_t *)supply->priv;
 
-	if(supply && unregister_regulator(supply))
+	if(supply)
 	{
+		unregister_regulator(supply);
 		if(pdat->parent)
 			free(pdat->parent);
-
 		free(supply->name);
 		free(supply->priv);
 		free(supply);

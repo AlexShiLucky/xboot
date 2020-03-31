@@ -1,7 +1,7 @@
 /*
  * kernel/core/machine.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -133,29 +133,25 @@ bool_t register_machine(struct machine_t * mach)
     list_add_tail(&mach->list, &__machine_list);
     spin_unlock_irqrestore(&__machine_lock, flags);
 
-    if(!__machine && (mach->detect(mach) > 0))
-    {
-        __machine = mach;
-        if(mach->memmap)
-        {
-            mach->memmap(mach);
-        }
-        if(mach->logger)
-        {
-            for(i = 0; i < 5; i++)
-            {
-                mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
-                mach->logger(mach, "\r\n", 2);
-            }
-            mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
-            mach->logger(mach, " - [", 4);
-            mach->logger(mach, mach->name, strlen(mach->name));
-            mach->logger(mach, "][", 2);
-            mach->logger(mach, mach->desc, strlen(mach->desc));
-            mach->logger(mach, "]\r\n", 3);
-        }
-    }
-    return TRUE;
+	if(!__machine && (mach->detect(mach) > 0))
+	{
+		__machine = mach;
+		if(mach->logger)
+		{
+			for(i = 0; i < 5; i++)
+			{
+				mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
+				mach->logger(mach, "\r\n", 2);
+			}
+			mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
+			mach->logger(mach, " - [", 4);
+			mach->logger(mach, mach->name, strlen(mach->name));
+			mach->logger(mach, "][", 2);
+			mach->logger(mach, mach->desc, strlen(mach->desc));
+			mach->logger(mach, "]\r\n", 3);
+		}
+	}
+	return TRUE;
 }
 
 /* 注销机器 */
@@ -218,20 +214,20 @@ inline __attribute__((always_inline)) struct machine_t * get_machine(void)
     return __machine;
 }
 
-void machine_smpinit(int cpu)
+void machine_smpinit(void)
 {
 	struct machine_t * mach = get_machine();
 
-	if(mach && mach->smpinit)
-		mach->smpinit(mach, cpu);
+	if(mach && mach->smpinit && (CONFIG_MAX_SMP_CPUS > 1))
+		mach->smpinit(mach);
 }
 
-void machine_smpboot(int cpu, void (*func)(int cpu))
+void machine_smpboot(void (*func)(void))
 {
 	struct machine_t * mach = get_machine();
 
-	if(mach && mach->smpboot)
-		mach->smpboot(mach, cpu, func);
+	if(mach && mach->smpboot && (CONFIG_MAX_SMP_CPUS > 1))
+		mach->smpboot(mach, func);
 }
 
 /* 机器关机 */

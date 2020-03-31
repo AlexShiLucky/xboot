@@ -1,7 +1,7 @@
 /*
  * driver/vibrator/vibrator.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -74,20 +74,20 @@ struct vibrator_t * search_first_vibrator(void)
 }
 
 /* 注册一个振动器设备 */
-bool_t register_vibrator(struct device_t ** device, struct vibrator_t * vib)
+struct device_t * register_vibrator(struct vibrator_t * vib, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!vib || !vib->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(vib->name);
 	dev->type = DEVICE_TYPE_VIBRATOR;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = vib;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "state", vibrator_read_state, vibrator_write_state, vib);
@@ -98,33 +98,26 @@ bool_t register_vibrator(struct device_t ** device, struct vibrator_t * vib)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销以一个振动器设备 */
-bool_t unregister_vibrator(struct vibrator_t * vib)
+void unregister_vibrator(struct vibrator_t * vib)
 {
 	struct device_t * dev;
 
-	if(!vib || !vib->name)
-		return FALSE;
-
-	dev = search_device(vib->name, DEVICE_TYPE_VIBRATOR);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(vib && vib->name)
+	{
+		dev = search_device(vib->name, DEVICE_TYPE_VIBRATOR);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 设置振动器状态 */

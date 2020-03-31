@@ -1,7 +1,7 @@
 /*
  * driver/proximity/proximity-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -77,15 +77,13 @@ static struct device_t * proximity_gpio_probe(struct driver_t * drv, struct dtno
 	gpio_set_pull(pdat->gpio, pdat->active_low ? GPIO_PULL_UP :GPIO_PULL_DOWN);
 	gpio_set_direction(pdat->gpio, GPIO_DIRECTION_OUTPUT);
 
-	if(!register_proximity(&dev, p))
+	if(!(dev = register_proximity(p, drv)))
 	{
 		free_device_name(p->name);
 		free(p->priv);
 		free(p);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -93,8 +91,9 @@ static void proximity_gpio_remove(struct device_t * dev)
 {
 	struct proximity_t * p = (struct proximity_t *)dev->priv;
 
-	if(p && unregister_proximity(p))
+	if(p)
 	{
+		unregister_proximity(p);
 		free_device_name(p->name);
 		free(p->priv);
 		free(p);

@@ -1,7 +1,7 @@
 /*
  * x3288.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,7 +27,6 @@
  */
 
 #include <xboot.h>
-#include <mmu.h>
 #include <rk3288/reg-cru.h>
 #include <rk3288/reg-grf.h>
 #include <rk3288/reg-pmu.h>
@@ -51,20 +50,33 @@ static int mach_detect(struct machine_t * mach)
 	return 1;
 }
 
-static void mach_memmap(struct machine_t * mach)
-{
-	machine_mmap(mach, "ram", 0x60000000, 0x60000000, SZ_128M, MAP_TYPE_CB);
-	machine_mmap(mach, "dma", 0x68000000, 0x68000000, SZ_128M, MAP_TYPE_NCNB);
-	machine_mmap(mach, "heap", 0x70000000, 0x70000000, SZ_256M, MAP_TYPE_CB);
-	mmu_setup(mach);
-}
-
-static void mach_smpinit(struct machine_t * mach, int cpu)
+static void mach_smpinit(struct machine_t * mach)
 {
 }
 
-static void mach_smpboot(struct machine_t * mach, int cpu, void (*func)(int cpu))
+static void mach_smpboot(struct machine_t * mach, void (*func)(void))
 {
+	uint32_t c0, c1, c2, c3;
+	uint32_t f = 0xdeadbeef;
+
+	/* Wait for all cpu cores have ready */
+	do {
+		c0 = read32(phys_to_virt(0xff700010));
+		c1 = read32(phys_to_virt(0xff700014));
+		c2 = read32(phys_to_virt(0xff700018));
+		c3 = read32(phys_to_virt(0xff70001c));
+	} while((c0 != f) || (c1 != f) || (c2 != f) || (c3 != f));
+
+	/* Set boot informations */
+	write32(phys_to_virt(0xff70000c), (u32_t)func);
+	write32(phys_to_virt(0xff700010), 0xcafebabe);
+	write32(phys_to_virt(0xff700014), 0xcafebabe);
+	write32(phys_to_virt(0xff700018), 0xcafebabe);
+	write32(phys_to_virt(0xff70001c), 0xcafebabe);
+
+	/* Startup all cpu cores */
+	__asm__ __volatile__ ("dsb" : : : "memory");
+	__asm__ __volatile__ ("sev" : : : "memory");
 }
 
 static void mach_shutdown(struct machine_t * mach)
@@ -111,7 +123,6 @@ static struct machine_t x3288 = {
 	.name 		= "x3288",
 	.desc 		= "X3288 Based On RK3288 SOC",
 	.detect 	= mach_detect,
-	.memmap		= mach_memmap,
 	.smpinit	= mach_smpinit,
 	.smpboot	= mach_smpboot,
 	.shutdown	= mach_shutdown,

@@ -1,7 +1,7 @@
 /*
  * driver/mouse-pl050.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -179,14 +179,14 @@ static void mouse_pl050_interrupt(void * data)
 	}
 }
 
-static int mouse_pl050_ioctl(struct input_t * input, int cmd, void * arg)
+static int mouse_pl050_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	struct mouse_pl050_pdata_t * pdat = (struct mouse_pl050_pdata_t *)input->priv;
 	int * p = arg;
 
-	switch(cmd)
+	switch(shash(cmd))
 	{
-	case INPUT_IOCTL_MOUSE_SET_RANGE:
+	case 0x431aa221: /* "mouse-set-range" */
 		if(p)
 		{
 			pdat->xmax = p[0];
@@ -194,7 +194,7 @@ static int mouse_pl050_ioctl(struct input_t * input, int cmd, void * arg)
 			return 0;
 		}
 		break;
-	case INPUT_IOCTL_MOUSE_GET_RANGE:
+	case 0xcd455615: /* "mouse-get-range" */
 		if(p)
 		{
 			p[0] = pdat->xmax;
@@ -202,14 +202,14 @@ static int mouse_pl050_ioctl(struct input_t * input, int cmd, void * arg)
 			return 0;
 		}
 		break;
-	case INPUT_IOCTL_MOUSE_SET_SENSITIVITY:
+	case 0xe818d6df: /* "mouse-set-sensitivity" */
 		if(p)
 		{
-			pdat->sensitivity = p[0];
+			pdat->sensitivity = clamp(p[0], 1, 11);
 			return 0;
 		}
 		break;
-	case INPUT_IOCTL_MOUSE_GET_SENSITIVITY:
+	case 0x40bfb1d3: /* "mouse-get-sensitivity" */
 		if(p)
 		{
 			p[0] = pdat->sensitivity;
@@ -305,20 +305,17 @@ static struct device_t * mouse_pl050_probe(struct driver_t * drv, struct dtnode_
 	kmi_read(pdat, &value);
 	write8(pdat->virt + MOUSE_CR, (1 << 2) | (1 << 4));
 
-	if(!register_input(&dev, input))
+	if(!(dev = register_input(input, drv)))
 	{
 		write8(pdat->virt + MOUSE_CR, 0);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -327,13 +324,13 @@ static void mouse_pl050_remove(struct device_t * dev)
 	struct input_t * input = (struct input_t *)dev->priv;
 	struct mouse_pl050_pdata_t * pdat = (struct mouse_pl050_pdata_t *)input->priv;
 
-	if(input && unregister_input(input))
+	if(input)
 	{
+		unregister_input(input);
 		write8(pdat->virt + MOUSE_CR, 0);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);

@@ -1,7 +1,7 @@
 /*
  * framework/vm.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -31,12 +31,12 @@
 #include <framework/core/l-application.h>
 #include <framework/core/l-assets.h>
 #include <framework/core/l-class.h>
+#include <framework/core/l-color.h>
 #include <framework/core/l-display-image.h>
 #include <framework/core/l-display-ninepatch.h>
 #include <framework/core/l-display-object.h>
 #include <framework/core/l-display-pager.h>
 #include <framework/core/l-display-scroll.h>
-#include <framework/core/l-display-shape.h>
 #include <framework/core/l-display-text.h>
 #include <framework/core/l-dobject.h>
 #include <framework/core/l-easing.h>
@@ -47,9 +47,7 @@
 #include <framework/core/l-image.h>
 #include <framework/core/l-matrix.h>
 #include <framework/core/l-ninepatch.h>
-#include <framework/core/l-pattern.h>
 #include <framework/core/l-printr.h>
-#include <framework/core/l-shape.h>
 #include <framework/core/l-spring.h>
 #include <framework/core/l-stage.h>
 #include <framework/core/l-stopwatch.h>
@@ -73,11 +71,10 @@ static void luaopen_glblibs(lua_State * L)
 		{ "Easing",					luaopen_easing },
 		{ "Spring",					luaopen_spring },
 		{ "Stopwatch",				luaopen_stopwatch },
+		{ "Color",					luaopen_color },
 		{ "Matrix",					luaopen_matrix },
 		{ "Image",					luaopen_image },
 		{ "Ninepatch",				luaopen_ninepatch },
-		{ "Pattern",				luaopen_pattern },
-		{ "Shape",					luaopen_shape },
 		{ "Font",					luaopen_font },
 		{ "Text",					luaopen_text },
 		{ "Dobject",				luaopen_dobject },
@@ -88,7 +85,6 @@ static void luaopen_glblibs(lua_State * L)
 		{ "DisplayScroll",			luaopen_display_scroll },
 		{ "DisplayImage",			luaopen_display_image },
 		{ "DisplayNinepatch",		luaopen_display_ninepatch },
-		{ "DisplayShape",			luaopen_display_shape },
 		{ "DisplayText",			luaopen_display_text },
 		{ "Timer",					luaopen_timer },
 		{ "Stage",					luaopen_stage },
@@ -420,6 +416,7 @@ static struct vmctx_t * vmctx_alloc(const char * path, const char * fb, const ch
 
 	ctx->path = strdup(path);
 	ctx->xfs = xfs_alloc(path, 1);
+	ctx->f = font_context_alloc();
 	ctx->w = window_alloc(fb, input, ctx);
 	return ctx;
 }
@@ -431,6 +428,7 @@ static void vmctx_free(struct vmctx_t * ctx)
 
 	free(ctx->path);
 	xfs_free(ctx->xfs);
+	font_context_free(ctx->f);
 	window_free(ctx->w);
 	free(ctx);
 }

@@ -1,7 +1,7 @@
 /*
  * driver/thermometer/thermometer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -60,20 +60,20 @@ struct thermometer_t * search_first_thermometer(void)
 }
 
 /* 注册一个温度计设备 */
-bool_t register_thermometer(struct device_t ** device,struct thermometer_t * thermometer)
+struct device_t * register_thermometer(struct thermometer_t * thermometer, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!thermometer || !thermometer->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(thermometer->name);
 	dev->type = DEVICE_TYPE_THERMOMETER;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = thermometer;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "temperature", thermometer_read_temperature, NULL, thermometer);
@@ -83,33 +83,26 @@ bool_t register_thermometer(struct device_t ** device,struct thermometer_t * the
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个温度计设备 */
-bool_t unregister_thermometer(struct thermometer_t * thermometer)
+void unregister_thermometer(struct thermometer_t * thermometer)
 {
 	struct device_t * dev;
 
-	if(!thermometer || !thermometer->name)
-		return FALSE;
-
-	dev = search_device(thermometer->name, DEVICE_TYPE_THERMOMETER);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(thermometer && thermometer->name)
+	{
+		dev = search_device(thermometer->name, DEVICE_TYPE_THERMOMETER);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 获取温度计设备温度 */

@@ -1,7 +1,7 @@
 /*
  * driver/i2c/i2c.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -98,21 +98,21 @@ struct i2c_t * search_i2c(const char * name)
 }
 
 /* 注册一个i2c设备 */
-bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
+struct device_t * register_i2c(struct i2c_t * i2c, struct driver_t * drv)
 {
 	struct device_t * dev;
 
     /* 如若注册的i2c不存在或无名,则注册失败 */
 	if(!i2c || !i2c->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(i2c->name);
 	dev->type = DEVICE_TYPE_I2C;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = i2c;
     /* 申请一个i2c名称的路径kobj */
 	dev->kobj = kobj_alloc_directory(dev->name);
@@ -124,37 +124,29 @@ bool_t register_i2c(struct device_t ** device, struct i2c_t * i2c)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销i2c设备 */
-bool_t unregister_i2c(struct i2c_t * i2c)
+void unregister_i2c(struct i2c_t * i2c)
 {
 	struct device_t * dev;
 
-    /* 如若注销的i2c设备不存在或无名,则注销设备 */
-	if(!i2c || !i2c->name)
-		return FALSE;
-
-    /* 根据i2c名称和i2c类型,查找一个i2c设备 */
-	dev = search_device(i2c->name, DEVICE_TYPE_I2C);
-	if(!dev)
-		return FALSE;
-
-    /* 注销设备 */
-	if(!unregister_device(dev))
-		return FALSE;
-
-    /* 释放kobj资源 */
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(i2c || i2c->name)
+	{
+		/* 根据i2c名称和i2c类型,查找一个i2c设备 */
+		dev = search_device(i2c->name, DEVICE_TYPE_I2C);
+		/* 注销设备 */
+		if(dev && unregister_device(dev))
+		{
+			/* 释放kobj资源 */
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 根据i2c相关参数申请一个i2c设备 */

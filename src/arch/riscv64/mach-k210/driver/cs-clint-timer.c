@@ -1,7 +1,7 @@
 /*
  * driver/cs-clint-timer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -81,18 +81,15 @@ static struct device_t * cs_clint_timer_probe(struct driver_t * drv, struct dtno
 	cs->read = cs_clint_timer_read;
 	cs->priv = pdat;
 
-	if(!register_clocksource(&dev, cs))
+	if(!(dev = register_clocksource(cs, drv)))
 	{
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(cs->name);
 		free(cs->priv);
 		free(cs);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -101,11 +98,11 @@ static void cs_clint_timer_remove(struct device_t * dev)
 	struct clocksource_t * cs = (struct clocksource_t *)dev->priv;
 	struct cs_clint_timer_pdata_t * pdat = (struct cs_clint_timer_pdata_t *)cs->priv;
 
-	if(cs && unregister_clocksource(cs))
+	if(cs)
 	{
+		unregister_clocksource(cs);
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(cs->name);
 		free(cs->priv);
 		free(cs);

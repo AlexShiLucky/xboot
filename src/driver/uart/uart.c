@@ -1,7 +1,7 @@
 /*
  * driver/uart/uart.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -108,20 +108,20 @@ struct uart_t * search_uart(const char * name)
 }
 
 /* 注册一个uart设备 */
-bool_t register_uart(struct device_t ** device, struct uart_t * uart)
+struct device_t * register_uart(struct uart_t * uart, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!uart || !uart->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(uart->name);
 	dev->type = DEVICE_TYPE_UART;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = uart;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "baud", uart_read_baud, uart_write_baud, uart);
@@ -134,33 +134,26 @@ bool_t register_uart(struct device_t ** device, struct uart_t * uart)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个uart设备 */
-bool_t unregister_uart(struct uart_t * uart)
+void unregister_uart(struct uart_t * uart)
 {
 	struct device_t * dev;
 
-	if(!uart || !uart->name)
-		return FALSE;
-
-	dev = search_device(uart->name, DEVICE_TYPE_UART);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(uart && uart->name)
+	{
+		dev = search_device(uart->name, DEVICE_TYPE_UART);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* uart配置设置 */

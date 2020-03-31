@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/vfs.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -30,7 +30,7 @@
 #include <vfs/vfs.h>
 
 /* 文件系统列表 */
-static struct list_head __filesystem_list = {
+struct list_head __filesystem_list = {
 	.next = &__filesystem_list,
 	.prev = &__filesystem_list,
 };
@@ -120,8 +120,10 @@ static int count_match(const char * path, char * mount_root)
 
 	while(*path && *mount_root)
 	{
-		if((*path++) != (*mount_root++))
+		if(*path != *mount_root)
 			break;
+		path++;
+		mount_root++;
 		len++;
 	}
 
@@ -371,7 +373,7 @@ static int vfs_node_access(struct vfs_node_t * n, u32_t mode)
 
 	if(mode & W_OK)
 	{
-		if(n->v_mount->m_flags & MOUNT_RDONLY)
+		if(n->v_mount->m_flags & MOUNT_RO)
 			return -1;
 
 		if(!(m & (S_IWUSR | S_IWGRP | S_IWOTH)))
@@ -491,7 +493,7 @@ static int vfs_node_acquire(const char * path, struct vfs_node_t ** np)
 	return 0;
 }
 
-static void vfs_force_unmount(struct vfs_mount_t * m)
+void vfs_force_unmount(struct vfs_mount_t * m)
 {
 	struct vfs_mount_t * tm;
 	struct vfs_node_t * n;
@@ -572,7 +574,7 @@ int vfs_mount(const char * dev, const char * dir, const char * fsname, u32_t fla
 	struct vfs_node_t * n, * n_covered;
 	int err;
 
-	if(!dir || *dir == '\0' || !(flags & MOUNT_MASK))
+	if(!dir || *dir == '\0')
 		return -1;
 
 	if(!(fs = search_filesystem(fsname)))
@@ -636,7 +638,7 @@ int vfs_mount(const char * dev, const char * dir, const char * fsname, u32_t fla
 	m->m_root = n;
 
 	mutex_lock(&m->m_lock);
-	err = m->m_fs->mount(m, dev, flags);
+	err = m->m_fs->mount(m, dev);
 	mutex_unlock(&m->m_lock);
 	if(err != 0)
 	{
@@ -647,7 +649,7 @@ int vfs_mount(const char * dev, const char * dir, const char * fsname, u32_t fla
 		return err;
 	}
 
-	if(m->m_flags & MOUNT_RDONLY)
+	if(m->m_flags & MOUNT_RO)
 		m->m_root->v_mode &= ~(S_IWUSR|S_IWGRP|S_IWOTH);
 
 	mutex_lock(&mnt_list_lock);
@@ -709,6 +711,8 @@ int vfs_unmount(const char * path)
 	vfs_node_release(m->m_root);
 	if(m->m_covered)
 		vfs_node_release(m->m_covered);
+	if(m->m_dev)
+		block_sync(m->m_dev);
 	free(m);
 
 	return err;
@@ -755,10 +759,10 @@ struct vfs_mount_t * vfs_mount_get(int index)
 	return m;
 }
 
-u32_t vfs_mount_count(void)
+int vfs_mount_count(void)
 {
 	struct vfs_mount_t * m;
-	u32_t ret = 0;
+	int ret = 0;
 
 	mutex_lock(&mnt_list_lock);
 	list_for_each_entry(m, &mnt_list, m_link)
@@ -839,6 +843,8 @@ int vfs_open(const char * path, u32_t flags, u32_t mode)
 			mode |= S_IFREG;
 			mutex_lock(&dn->v_lock);
 			err = dn->v_mount->m_fs->create(dn, filename, mode);
+			if(!err)
+				err = dn->v_mount->m_fs->sync(dn);
 			mutex_unlock(&dn->v_lock);
 			vfs_node_release(dn);
 			if(err)

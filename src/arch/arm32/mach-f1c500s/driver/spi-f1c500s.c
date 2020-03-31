@@ -1,7 +1,7 @@
 /*
  * driver/spi-f1c500s.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -114,13 +114,18 @@ static void f1c500s_spi_write_txbuf(struct spi_f1c500s_pdata_t * pdat, u8_t * bu
 {
 	int i;
 
-	if(!buf)
-		len = 0;
-
 	write32(pdat->virt + SPI_MTC, len & 0xffffff);
 	write32(pdat->virt + SPI_BCC, len & 0xffffff);
-	for(i = 0; i < len; ++i)
-		write8(pdat->virt + SPI_TXD, *buf++);
+	if(buf)
+	{
+		for(i = 0; i < len; i++)
+			write8(pdat->virt + SPI_TXD, *buf++);
+	}
+	else
+	{
+		for(i = 0; i < len; i++)
+			write8(pdat->virt + SPI_TXD, 0xff);
+	}
 }
 
 static int f1c500s_spi_xfer(struct spi_f1c500s_pdata_t * pdat, struct spi_msg_t * msg)
@@ -194,13 +199,13 @@ static struct device_t * spi_f1c500s_probe(struct driver_t * drv, struct dtnode_
 
 	pdat = malloc(sizeof(struct spi_f1c500s_pdata_t));
 	if(!pdat)
-		return FALSE;
+		return NULL;
 
 	spi = malloc(sizeof(struct spi_t));
 	if(!spi)
 	{
 		free(pdat);
-		return FALSE;
+		return NULL;
 	}
 
 	clk_enable(clk);
@@ -251,18 +256,15 @@ static struct device_t * spi_f1c500s_probe(struct driver_t * drv, struct dtnode_
 	}
 	f1c500s_spi_enable_chip(pdat);
 
-	if(!register_spi(&dev, spi))
+	if(!(dev = register_spi(spi, drv)))
 	{
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(spi->name);
 		free(spi->priv);
 		free(spi);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -271,11 +273,11 @@ static void spi_f1c500s_remove(struct device_t * dev)
 	struct spi_t * spi = (struct spi_t *)dev->priv;
 	struct spi_f1c500s_pdata_t * pdat = (struct spi_f1c500s_pdata_t *)spi->priv;
 
-	if(spi && unregister_spi(spi))
+	if(spi)
 	{
+		unregister_spi(spi);
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(spi->name);
 		free(spi->priv);
 		free(spi);

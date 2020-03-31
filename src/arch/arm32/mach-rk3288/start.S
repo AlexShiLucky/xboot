@@ -1,7 +1,7 @@
 /*
  * start.S
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -37,11 +37,11 @@
 	ldr r1, [r0, #-4]
 	str r1, [sp, #-4]!
 	ldr r1, [r0, #-8]
-	str r1, [sp, #-(4*16)]
+	str r1, [sp, #-(4 * 16)]
 	ldr r1, [r0, #-12]
 	ldr r0, [r0, #-16]
-	stmdb sp, {r0-r14}^
-	sub sp, sp, #(4*16)
+	stmdb sp, {r0 - r14}^
+	sub sp, sp, #(4 * 16)
 	ldr r4, [sp]
 	and r0, r4, #0x1f
 	cmp r0, #0x10
@@ -49,10 +49,10 @@
 	cmp r0, #0x13
 	beq 11f
 	b .
-11:	add r1, sp, #(4*17)
-	str r1, [sp, #(4*14)]
-	str lr, [sp, #(4*15)]
-10:	add r1, sp, #(4*17)
+11:	add r1, sp, #(4 * 17)
+	str r1, [sp, #(4 * 14)]
+	str lr, [sp, #(4 * 15)]
+10:	add r1, sp, #(4 * 17)
 	str r1, [sp, #-4]!
 	mov r0, sp
 .endm
@@ -68,10 +68,10 @@
 	cmp r0, #0x13
 	beq 21f
 	b .
-20:	ldr lr, [r12, #(4*15)]
-	ldmia r12, {r0-r14}^
+20:	ldr lr, [r12, #(4 * 15)]
+	ldmia r12, {r0 - r14}^
 	movs pc, lr
-21:	ldm r12, {r0-r15}^
+21:	ldm r12, {r0 - r15}^
 	mov r0, r0
 .endm
 
@@ -130,8 +130,13 @@ reset:
 	ldr r0, =_start
 	mcr p15, 0, r0, c12, c0, 0
 	mrc p15, 0, r0, c1, c0, 0
-	bic r0, #(1<<13)
+	bic r0, #(1 << 13)
 	mcr p15, 0, r0, c1, c0, 0
+
+	/* Enable SMP mode for dcache, by setting bit 6 of auxiliary ctl reg */
+	mrc p15, 0, r0, c1, c0, 1
+	orr r0, r0, #(1 << 6)
+	mcr p15, 0, r0, c1, c0, 1
 
 	/* Enable neon/vfp unit */
 	mrc p15, 0, r0, c1, c0, 2
@@ -142,31 +147,108 @@ reset:
 	vmsr fpexc, r0
 
 	/* Initialize stacks */
+	mrc p15, 0, r4, c0, c0, 5
+	and r4, r4, #0xf
+	mov r5, #4
+
+	ldr r0, _stack_und_start
+	ldr r1, _stack_und_end
+	sub r0, r1, r0
+	mov r1, r5
+	bl udiv32
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x1b
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_und_end
+	sub sp, sp, r2
 
+	ldr r0, _stack_abt_start
+	ldr r1, _stack_abt_end
+	sub r0, r1, r0
+	mov r1, r5
+	bl udiv32
+	mul r2, r0, r4
+	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x17
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_abt_end
+	sub sp, sp, r2
 
+	ldr r0, _stack_irq_start
+	ldr r1, _stack_irq_end
+	sub r0, r1, r0
+	mov r1, r5
+	bl udiv32
+	mul r2, r0, r4
+	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x12
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_irq_end
+	sub sp, sp, r2
 
+	ldr r0, _stack_fiq_start
+	ldr r1, _stack_fiq_end
+	sub r0, r1, r0
+	mov r1, r5
+	bl udiv32
+	mul r2, r0, r4
+	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x11
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_fiq_end
+	sub sp, sp, r2
 
+	ldr r0, _stack_srv_start
+	ldr r1, _stack_srv_end
+	sub r0, r1, r0
+	mov r1, r5
+	bl udiv32
+	mul r2, r0, r4
+	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x13
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_srv_end
+	sub sp, sp, r2
+
+	/* Initail smp by precessor id */
+	mrc p15, 0, r0, c0, c0, 5
+	and r0, #3
+	mov r4, #4
+	mul r4, r4, r0
+	ldr r3, =0xff700010		/* New boot flag address */
+	add r3, r3, r4
+	ldr r1, =0xdeadbeef
+	str r1, [r3]
+	ldr r2, =0xcafebabe
+	mov r4, #0
+	cmp r0, r4
+	beq _master
+_slave:
+	ldr r1, [r3]
+	cmp r1, r2
+	wfene
+	bne _slave
+	bl mmu_enable
+	ldr r3, =0xff70000c		/* New boot function address */
+	ldr pc, [r3]
+_master:
+	/* Set the slave core's boot function */
+	ldr r1, =_start
+	ldr r2, =0xff700008
+	str r1, [r2]
+	/* Set the slave core's boot flag */
+	ldr r1, =0xdeadbeaf
+	ldr r2, =0xff700004
+	str r1, [r2]
+	/* Wakeup the slave core */
+	dsb
+	sev
 
 	/* Copyself to link address */
 	adr r0, _start
@@ -191,10 +273,32 @@ reset:
 	ldr r1, =_main
 	mov pc, r1
 _main:
-	mov r0, #0
-	mov r1, #0
+	bl mmu_setup
+	bl mmu_enable
 	bl xboot_main
 	b _main
+
+	.global udiv32
+udiv32:
+	cmp r1, #0
+	beq 3f
+	mov r2, r1
+	mov r1, r0
+	mov r0, #0
+	mov r3, #1
+1:	cmp r2, #0
+	blt 2f
+	cmp r2, r1
+	lslls r2, r2, #1
+	lslls r3, r3, #1
+	bls 1b
+2:	cmp r1, r2
+	subge r1, r1, r2
+	addge r0, r0, r3
+	lsr r2, r2, #1
+	lsrs r3, r3, #1
+	bcc 2b
+3:	mov pc, lr
 
 /*
  * Exception handlers
@@ -261,13 +365,23 @@ _bss_start:
 	.long __bss_start
 _bss_end:
 	.long __bss_end
+_stack_und_start:
+	.long __stack_und_start
 _stack_und_end:
 	.long __stack_und_end
+_stack_abt_start:
+	.long __stack_abt_start
 _stack_abt_end:
 	.long __stack_abt_end
+_stack_irq_start:
+	.long __stack_irq_start
 _stack_irq_end:
 	.long __stack_irq_end
+_stack_fiq_start:
+	.long __stack_fiq_start
 _stack_fiq_end:
 	.long __stack_fiq_end
+_stack_srv_start:
+	.long __stack_srv_start
 _stack_srv_end:
 	.long __stack_srv_end

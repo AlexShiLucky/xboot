@@ -1,7 +1,7 @@
 /*
  * driver/fb-sandbox-sdl.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -36,7 +36,6 @@ struct fb_sandbox_sdl_pdata_t
 	int height;
 	int pwidth;
 	int pheight;
-	int bytes;
 	void * priv;
 };
 
@@ -52,11 +51,11 @@ static int fb_getbl(struct framebuffer_t * fb)
 	return sandbox_fb_sdl_get_backlight(pdat->priv);
 }
 
-static struct render_t * fb_create(struct framebuffer_t * fb)
+static struct surface_t * fb_create(struct framebuffer_t * fb)
 {
 	struct fb_sandbox_sdl_pdata_t * pdat = (struct fb_sandbox_sdl_pdata_t *)fb->priv;
 	struct sandbox_fb_surface_t * surface;
-	struct render_t * render;
+	struct surface_t * s;
 
 	surface = malloc(sizeof(struct sandbox_fb_surface_t));
 	if(!surface)
@@ -68,42 +67,44 @@ static struct render_t * fb_create(struct framebuffer_t * fb)
 		return NULL;
 	}
 
-	render = malloc(sizeof(struct render_t));
-	if(!render)
+	s = malloc(sizeof(struct surface_t));
+	if(!s)
 	{
 		sandbox_fb_sdl_surface_destroy(pdat->priv, surface);
 		free(surface);
 		return NULL;
 	}
 
-	render->width = surface->width;
-	render->height = surface->height;
-	render->pitch = surface->pitch;
-	render->bytes = surface->bytes;
-	render->format = PIXEL_FORMAT_ARGB32;
-	render->pixels = surface->pixels;
-	render->pixlen = surface->height * surface->pitch;
-	render->priv = surface;
+	s->width = surface->width;
+	s->height = surface->height;
+	s->stride = surface->stride;
+	s->pixlen = surface->pixlen;
+	s->pixels = surface->pixels;
+	s->r = search_render();
+	s->pctx = s->r->create(s);
+	s->priv = surface;
 
-	return render;
+	return s;
 }
 
-static void fb_destroy(struct framebuffer_t * fb, struct render_t * render)
+static void fb_destroy(struct framebuffer_t * fb, struct surface_t * s)
 {
 	struct fb_sandbox_sdl_pdata_t * pdat = (struct fb_sandbox_sdl_pdata_t *)fb->priv;
 
-	if(render)
+	if(s)
 	{
-		sandbox_fb_sdl_surface_destroy(pdat->priv, render->priv);
-		free(render->priv);
-		free(render);
+		if(s->r)
+			s->r->destroy(s->pctx);
+		sandbox_fb_sdl_surface_destroy(pdat->priv, s->priv);
+		free(s->priv);
+		free(s);
 	}
 }
 
-static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct region_list_t * rl)
+static void fb_present(struct framebuffer_t * fb, struct surface_t * s, struct region_list_t * rl)
 {
 	struct fb_sandbox_sdl_pdata_t * pdat = (struct fb_sandbox_sdl_pdata_t *)fb->priv;
-	sandbox_fb_sdl_surface_present(pdat->priv, render->priv, (struct sandbox_fb_region_list_t *)rl);
+	sandbox_fb_sdl_surface_present(pdat->priv, s->priv, (struct sandbox_fb_region_list_t *)rl);
 }
 
 static struct device_t * fb_sandbox_sdl_probe(struct driver_t * drv, struct dtnode_t * n)
@@ -137,14 +138,12 @@ static struct device_t * fb_sandbox_sdl_probe(struct driver_t * drv, struct dtno
 	pdat->height = sandbox_fb_sdl_get_height(pdat->priv);
 	pdat->pwidth = dt_read_int(n, "physical-width", sandbox_fb_get_pwidth(pdat->priv));
 	pdat->pheight = dt_read_int(n, "physical-height", sandbox_fb_get_pheight(pdat->priv));
-	pdat->bytes = sandbox_fb_sdl_get_bytes(ctx);
 
 	fb->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
 	fb->width = pdat->width;
 	fb->height = pdat->height;
 	fb->pwidth = pdat->pwidth;
 	fb->pheight = pdat->pheight;
-	fb->bytes = pdat->bytes;
 	fb->setbl = fb_setbl;
 	fb->getbl = fb_getbl;
 	fb->create = fb_create;
@@ -152,17 +151,14 @@ static struct device_t * fb_sandbox_sdl_probe(struct driver_t * drv, struct dtno
 	fb->present = fb_present;
 	fb->priv = pdat;
 
-	if(!register_framebuffer(&dev, fb))
+	if(!(dev = register_framebuffer(fb, drv)))
 	{
 		sandbox_fb_sdl_close(pdat->priv);
-
 		free_device_name(fb->name);
 		free(fb->priv);
 		free(fb);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -171,10 +167,10 @@ static void fb_sandbox_sdl_remove(struct device_t * dev)
 	struct framebuffer_t * fb = (struct framebuffer_t *)dev->priv;
 	struct fb_sandbox_sdl_pdata_t * pdat = (struct fb_sandbox_sdl_pdata_t *)fb->priv;
 
-	if(fb && unregister_framebuffer(fb))
+	if(fb)
 	{
+		unregister_framebuffer(fb);
 		sandbox_fb_sdl_close(pdat->priv);
-
 		free_device_name(fb->name);
 		free(fb->priv);
 		free(fb);

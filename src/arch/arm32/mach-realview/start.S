@@ -1,7 +1,7 @@
 /*
  * start.S
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -26,8 +26,6 @@
  *
  */
 /* 保存寄存器组宏 */
-#include <xconfigs.h>
-
 .macro save_regs
 	str lr, [sp, #-4]
 	mrs lr, spsr_all
@@ -39,11 +37,11 @@
 	ldr r1, [r0, #-4]
 	str r1, [sp, #-4]!
 	ldr r1, [r0, #-8]
-	str r1, [sp, #-(4*16)]
+	str r1, [sp, #-(4 * 16)]
 	ldr r1, [r0, #-12]
 	ldr r0, [r0, #-16]
-	stmdb sp, {r0-r14}^
-	sub sp, sp, #(4*16)
+	stmdb sp, {r0 - r14}^
+	sub sp, sp, #(4 * 16)
 	ldr r4, [sp]
 	and r0, r4, #0x1f
 	cmp r0, #0x10
@@ -51,10 +49,10 @@
 	cmp r0, #0x13
 	beq 11f
 	b .
-11:	add r1, sp, #(4*17)
-	str r1, [sp, #(4*14)]
-	str lr, [sp, #(4*15)]
-10:	add r1, sp, #(4*17)
+11:	add r1, sp, #(4 * 17)
+	str r1, [sp, #(4 * 14)]
+	str lr, [sp, #(4 * 15)]
+10:	add r1, sp, #(4 * 17)
 	str r1, [sp, #-4]!
 	mov r0, sp
 .endm
@@ -71,10 +69,10 @@
 	cmp r0, #0x13
 	beq 21f
 	b .
-20:	ldr lr, [r12, #(4*15)]
-	ldmia r12, {r0-r14}^
+20:	ldr lr, [r12, #(4 * 15)]
+	ldmia r12, {r0 - r14}^
 	movs pc, lr
-21:	ldm r12, {r0-r15}^
+21:	ldm r12, {r0 - r15}^
 	mov r0, r0
 .endm
 
@@ -111,6 +109,12 @@ _fiq:
 	.word fiq
 
 /*
+ * The smp jump tables
+ */
+	.long 0
+	.long 0, 0, 0, 0
+
+/*
  * The actual reset code
  */
 reset:
@@ -130,16 +134,16 @@ reset:
 	fmxr fpexc, r0
 
 	/* Initialize stacks */
-	mrc p15, 0, r10, c0, c0, 5
-	and r10, r10, #0xf
-	mov r11, #CONFIG_MAX_SMP_CPUS
+	mrc p15, 0, r4, c0, c0, 5
+	and r4, r4, #0xf
+	mov r5, #4
 
 	ldr r0, _stack_und_start
 	ldr r1, _stack_und_end
 	sub r0, r1, r0
-	mov r1, r11
+	mov r1, r5
 	bl udiv32
-	mul r2, r0, r10
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x1b
@@ -150,9 +154,9 @@ reset:
 	ldr r0, _stack_abt_start
 	ldr r1, _stack_abt_end
 	sub r0, r1, r0
-	mov r1, r11
+	mov r1, r5
 	bl udiv32
-	mul r2, r0, r10
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x17
@@ -163,9 +167,9 @@ reset:
 	ldr r0, _stack_irq_start
 	ldr r1, _stack_irq_end
 	sub r0, r1, r0
-	mov r1, r11
+	mov r1, r5
 	bl udiv32
-	mul r2, r0, r10
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x12
@@ -176,9 +180,9 @@ reset:
 	ldr r0, _stack_fiq_start
 	ldr r1, _stack_fiq_end
 	sub r0, r1, r0
-	mov r1, r11
+	mov r1, r5
 	bl udiv32
-	mul r2, r0, r10
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x11
@@ -189,15 +193,39 @@ reset:
 	ldr r0, _stack_srv_start
 	ldr r1, _stack_srv_end
 	sub r0, r1, r0
-	mov r1, r11
+	mov r1, r5
 	bl udiv32
-	mul r2, r0, r10
+	mul r2, r0, r4
 	mrs r0, cpsr
 	bic r0, r0, #0x1f
 	orr r1, r0, #0x13
 	msr cpsr_cxsf, r1
 	ldr sp, _stack_srv_end
 	sub sp, sp, r2
+
+	/* Initail smp by precessor id */
+	mrc p15, 0, r0, c0, c0, 5
+	and r0, #3
+	mov r4, #4
+	mul r4, r4, r0
+	ldr r3, =0x00000040		/* New boot flag address */
+	add r3, r3, r4
+	ldr r1, =0xdeadbeef
+	str r1, [r3]
+	ldr r2, =0xcafebabe
+	mov r4, #0
+	cmp r0, r4
+	beq _master
+_slave:
+	ldr r1, [r3]
+	cmp r1, r2
+	wfene
+	bne _slave
+	bl mmu_enable
+	ldr r3, =0x0000003c		/* New boot function address */
+	ldr pc, [r3]
+_master:
+	nop
 
 	/* Copyself to link address */
 	adr r0, _start
@@ -234,8 +262,8 @@ reset:
 	ldr r1, =_main
 	mov pc, r1
 _main:
-	mov r0, #0
-	mov r1, #0
+	bl mmu_setup
+	bl mmu_enable
 	bl xboot_main
 	b _main
 
@@ -259,7 +287,7 @@ udiv32:
 	lsr r2, r2, #1
 	lsrs r3, r3, #1
 	bcc 2b
-3:	mov pc,lr
+3:	mov pc, lr
 
 /*
  * Exception handlers

@@ -1,7 +1,7 @@
 /*
  * driver/adc/adc.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -79,24 +79,24 @@ struct adc_t * search_adc(const char * name)
 }
 
 /* 注册一个adc设备 */
-bool_t register_adc(struct device_t ** device, struct adc_t * adc)
+struct device_t * register_adc(struct adc_t * adc, struct driver_t * drv)
 {
 	struct device_t * dev;
 	char buf[64];
 	int i;
 
 	if(!adc || !adc->name || (adc->resolution <= 0) || (adc->nchannel <= 0) || !adc->read)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(adc->name);
 	dev->type = DEVICE_TYPE_ADC;
+	dev->driver = drv;
     /* 将注册的adc设备控制块挂到设备priv域下 */
 	dev->priv = adc;
-	dev->driver = NULL;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "vreference", adc_read_vreference, NULL, adc);
 	kobj_add_regular(dev->kobj, "resolution", adc_read_resolution, NULL, adc);
@@ -117,33 +117,26 @@ bool_t register_adc(struct device_t ** device, struct adc_t * adc)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个adc设备 */
-bool_t unregister_adc(struct adc_t * adc)
+void unregister_adc(struct adc_t * adc)
 {
 	struct device_t * dev;
 
-	if(!adc || !adc->name)
-		return FALSE;
-
-	dev = search_device(adc->name, DEVICE_TYPE_ADC);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(adc && adc->name)
+	{
+		dev = search_device(adc->name, DEVICE_TYPE_ADC);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 读取adc某通道原始数据 */

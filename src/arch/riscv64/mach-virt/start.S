@@ -1,7 +1,7 @@
 /*
  * start.S
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -218,8 +218,6 @@ reset:
 	add a0, a0, t0
 	jr a0
 _main:
-	li a0, 0
-	li a1, 0
 	call xboot_main
 	j _main
 

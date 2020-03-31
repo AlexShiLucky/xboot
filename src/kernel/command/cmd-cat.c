@@ -1,7 +1,7 @@
 /*
  * kernel/command/cmd-cat.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -79,7 +79,12 @@ static int cat_file(const char * filename)
 	while((n = vfs_read(fd, buf, SZ_64K)) > 0)
 	{
 		for(i = 0; i < n; i++)
-			putchar(buf[i]);
+		{
+			if(isprint(buf[i]) || (buf[i] == '\r') || (buf[i] == '\n') || (buf[i] == '\t') || (buf[i] == '\f'))
+				putchar(buf[i]);
+			else
+				putchar('.');
+		}
 	}
 	printf("\r\n");
 

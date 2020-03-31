@@ -1,7 +1,7 @@
 /*
  * driver/irq-k210-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -149,7 +149,7 @@ static struct device_t * irq_k210_gpio_probe(struct driver_t * drv, struct dtnod
 	chip->dispatch = irq_k210_gpio_dispatch;
 	chip->priv = pdat;
 
-	if(!register_sub_irqchip(&dev, pdat->parent, chip))
+	if(!(dev = register_sub_irqchip(pdat->parent, chip, drv)))
 	{
 		free_device_name(chip->name);
 		free(chip->handler);
@@ -157,8 +157,6 @@ static struct device_t * irq_k210_gpio_probe(struct driver_t * drv, struct dtnod
 		free(chip);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -167,8 +165,9 @@ static void irq_k210_gpio_remove(struct device_t * dev)
 	struct irqchip_t * chip = (struct irqchip_t *)dev->priv;
 	struct irq_k210_gpio_pdata_t * pdat = (struct irq_k210_gpio_pdata_t *)chip->priv;
 
-	if(chip && unregister_sub_irqchip(pdat->parent, chip))
+	if(chip)
 	{
+		unregister_sub_irqchip(pdat->parent, chip);
 		free_device_name(chip->name);
 		free(chip->handler);
 		free(chip->priv);

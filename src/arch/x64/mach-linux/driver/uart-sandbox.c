@@ -1,7 +1,7 @@
 /*
  * driver/uart-sandbox.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -122,17 +122,14 @@ static struct device_t * uart_sandbox_probe(struct driver_t * drv, struct dtnode
 	uart->priv = pdat;
 	uart_sandbox_set(uart, pdat->baud, pdat->data, pdat->parity, pdat->stop);
 
-	if(!register_uart(&dev, uart))
+	if(!(dev = register_uart(uart, drv)))
 	{
 		sandbox_uart_close(pdat->fd);
-
 		free_device_name(uart->name);
 		free(uart->priv);
 		free(uart);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -141,10 +138,10 @@ static void uart_sandbox_remove(struct device_t * dev)
 	struct uart_t * uart = (struct uart_t *)dev->priv;
 	struct uart_sandbox_pdata_t * pdat = (struct uart_sandbox_pdata_t *)uart->priv;
 
-	if(uart && unregister_uart(uart))
+	if(uart)
 	{
+		unregister_uart(uart);
 		sandbox_uart_close(pdat->fd);
-
 		free_device_name(uart->name);
 		free(uart->priv);
 		free(uart);

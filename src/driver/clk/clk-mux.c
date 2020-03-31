@@ -1,7 +1,7 @@
 /*
  * driver/clk/clk-mux.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -163,19 +163,16 @@ static struct device_t * clk_mux_probe(struct driver_t * drv, struct dtnode_t * 
 	clk->get_rate = clk_mux_get_rate;
 	clk->priv = pdat;
 
-	if(!register_clk(&dev, clk))
+	if(!(dev = register_clk(clk, drv)))
 	{
 		for(i = 0; i < pdat->nparent; i++)
 			free(pdat->parent[i].name);
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	if(dt_read_object(n, "default", &o))
 	{
 		char * c = clk->name;
@@ -205,12 +202,12 @@ static void clk_mux_remove(struct device_t * dev)
 	struct clk_mux_pdata_t * pdat = (struct clk_mux_pdata_t *)clk->priv;
 	int i;
 
-	if(clk && unregister_clk(clk))
+	if(clk)
 	{
+		unregister_clk(clk);
 		for(i = 0; i < pdat->nparent; i++)
 			free(pdat->parent[i].name);
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);

@@ -1,7 +1,7 @@
 /*
  * driver/adc-s5pv210.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -95,18 +95,15 @@ static struct device_t * adc_s5pv210_probe(struct driver_t * drv, struct dtnode_
 	clk_enable(pdat->clk);
 	write32(pdat->virt + TSADCCON, (1 << 16) | (1 << 14) | (65 << 6));
 
-	if(!register_adc(&dev, adc))
+	if(!(dev = register_adc(adc, drv)))
 	{
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(adc->name);
 		free(adc->priv);
 		free(adc);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -115,11 +112,11 @@ static void adc_s5pv210_remove(struct device_t * dev)
 	struct adc_t * adc = (struct adc_t *)dev->priv;
 	struct adc_s5pv210_pdata_t * pdat = (struct adc_s5pv210_pdata_t *)adc->priv;
 
-	if(adc && unregister_adc(adc))
+	if(adc)
 	{
+		unregister_adc(adc);
 		clk_disable(pdat->clk);
 		free(pdat->clk);
-
 		free_device_name(adc->name);
 		free(adc->priv);
 		free(adc);

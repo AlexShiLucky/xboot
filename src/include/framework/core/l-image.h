@@ -5,14 +5,12 @@
 extern "C" {
 #endif
 
-#include <cairo.h>
-#include <cairoint.h>
 #include <framework/luahelper.h>
 
 #define MT_IMAGE	"__mt_image__"
 
 struct limage_t {
-	cairo_surface_t * cs;
+	struct surface_t * s;
 };
 
 int luaopen_image(lua_State * L);

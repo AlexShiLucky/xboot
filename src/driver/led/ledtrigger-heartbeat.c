@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger-heartbeat.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -119,17 +119,14 @@ static struct device_t * ledtrigger_heartbeat_probe(struct driver_t * drv, struc
 
 	timer_start_now(&pdat->timer, ms_to_ktime(50));
 
-	if(!register_ledtrigger(&dev, trigger))
+	if(!(dev = register_ledtrigger(trigger, drv)))
 	{
 		timer_cancel(&pdat->timer);
-
 		free_device_name(trigger->name);
 		free(trigger->priv);
 		free(trigger);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -139,10 +136,10 @@ static void ledtrigger_heartbeat_remove(struct device_t * dev)
 	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
 	struct ledtrigger_heartbeat_pdata_t * pdat = (struct ledtrigger_heartbeat_pdata_t *)trigger->priv;
 
-	if(trigger && unregister_ledtrigger(trigger))
+	if(trigger)
 	{
+		unregister_ledtrigger(trigger);
 		timer_cancel(&pdat->timer);
-
 		free_device_name(trigger->name);
 		free(trigger->priv);
 		free(trigger);

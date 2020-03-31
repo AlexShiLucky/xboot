@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/ext4/ext4.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -30,12 +30,15 @@
 #include <vfs/ext4/ext4-node.h>
 #include <vfs/ext4/ext4.h>
 
-int ext4fs_mount(struct vfs_mount_t * m, const char * dev, u32_t flags)
+int ext4fs_mount(struct vfs_mount_t * m, const char * dev)
 {
 	int rc;
 	u16_t rootmode;
 	struct ext4fs_control_t *ctrl;
 	struct ext4fs_node_t *root;
+
+	if(dev == NULL)
+		return -1;
 
 	ctrl = calloc(1, sizeof(struct ext4fs_control_t));
 	if(!ctrl)
@@ -120,10 +123,10 @@ int ext4fs_mount(struct vfs_mount_t * m, const char * dev, u32_t flags)
 
 	/* Save control as mount point data */
 	m->m_data = ctrl;
-
 	return 0;
 
-	fail: free(ctrl);
+fail:
+	free(ctrl);
 	return rc;
 }
 

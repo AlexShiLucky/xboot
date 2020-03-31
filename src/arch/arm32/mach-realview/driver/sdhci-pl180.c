@@ -1,7 +1,7 @@
 /*
  * driver/sdhci-pl180.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -262,6 +262,11 @@ static bool_t sdhci_pl180_detect(struct sdhci_t * sdhci)
 	return TRUE;
 }
 
+static bool_t sdhci_pl180_reset(struct sdhci_t * sdhci)
+{
+	return TRUE;
+}
+
 static bool_t sdhci_pl180_setwidth(struct sdhci_t * sdhci, u32_t width)
 {
 	return TRUE;
@@ -297,13 +302,13 @@ static struct device_t * sdhci_pl180_probe(struct driver_t * drv, struct dtnode_
 
 	pdat = malloc(sizeof(struct sdhci_pl180_pdata_t));
 	if(!pdat)
-		return FALSE;
+		return NULL;
 
 	sdhci = malloc(sizeof(struct sdhci_t));
 	if(!sdhci)
 	{
 		free(pdat);
-		return FALSE;
+		return NULL;
 	}
 
 	pdat->virt = virt;
@@ -311,24 +316,23 @@ static struct device_t * sdhci_pl180_probe(struct driver_t * drv, struct dtnode_
 	sdhci->name = alloc_device_name(dt_read_name(n), -1);
 	sdhci->voltage = MMC_VDD_27_36;
 	sdhci->width = MMC_BUS_WIDTH_4;
-	sdhci->clock = 52 * 1000 * 1000;
+	sdhci->clock = (u32_t)dt_read_long(n, "max-clock-frequency", 25 * 1000 * 1000);
 	sdhci->removable = TRUE;
 	sdhci->detect = sdhci_pl180_detect;
+	sdhci->reset = sdhci_pl180_reset;
 	sdhci->setwidth = sdhci_pl180_setwidth;
 	sdhci->setclock = sdhci_pl180_setclock;
 	sdhci->transfer = sdhci_pl180_transfer;
 	sdhci->priv = pdat;
 	write32(pdat->virt + PL180_POWER, 0xbf);
 
-	if(!register_sdhci(&dev, sdhci))
+	if(!(dev = register_sdhci(sdhci, drv)))
 	{
 		free_device_name(sdhci->name);
 		free(sdhci->priv);
 		free(sdhci);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -336,8 +340,9 @@ static void sdhci_pl180_remove(struct device_t * dev)
 {
 	struct sdhci_t * sdhci = (struct sdhci_t *)dev->priv;
 
-	if(sdhci && unregister_sdhci(sdhci))
+	if(sdhci)
 	{
+		unregister_sdhci(sdhci);
 		free_device_name(sdhci->name);
 		free(sdhci->priv);
 		free(sdhci);

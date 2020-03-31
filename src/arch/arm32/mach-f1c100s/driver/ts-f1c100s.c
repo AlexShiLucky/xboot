@@ -1,7 +1,7 @@
 /*
  * driver/ts-f1c100s.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -196,20 +196,20 @@ static void ts_f1c100s_interrupt(void * data)
 	write32(pdat->virt + TP_INT_FIFOS, val);
 }
 
-static int ts_f1c100s_ioctl(struct input_t * input, int cmd, void * arg)
+static int ts_f1c100s_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	struct ts_f1c100s_pdata_t * pdat = (struct ts_f1c100s_pdata_t *)input->priv;
 
-	switch(cmd)
+	switch(shash(cmd))
 	{
-	case INPUT_IOCTL_TOUCHSCEEN_SET_CALIBRATION:
+	case 0x50460f76: /* "touchscreen-set-calibration" */
 		if(arg)
 		{
 			tsfilter_setcal(pdat->filter, (int *)arg);
 			return 0;
 		}
 		break;
-	case INPUT_IOCTL_TOUCHSCEEN_GET_CALIBRATION:
+	case 0xa8ecea6a: /* "touchscreen-get-calibration" */
 		if(arg)
 		{
 			memcpy(arg, pdat->filter->cal, sizeof(int) * 7);
@@ -306,20 +306,17 @@ static struct device_t * ts_f1c100s_probe(struct driver_t * drv, struct dtnode_t
 	request_irq(pdat->irq, ts_f1c100s_interrupt, IRQ_TYPE_LEVEL_LOW, input);
 	ts_f1c100s_init(pdat);
 
-	if(!register_input(&dev, input))
+	if(!(dev = register_input(input, drv)))
 	{
 		clk_disable(pdat->clk);
 		free(pdat->clk);
 		free_irq(pdat->irq);
 		tsfilter_free(pdat->filter);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -328,13 +325,13 @@ static void ts_f1c100s_remove(struct device_t * dev)
 	struct input_t * input = (struct input_t *)dev->priv;
 	struct ts_f1c100s_pdata_t * pdat = (struct ts_f1c100s_pdata_t *)input->priv;
 
-	if(input && unregister_input(input))
+	if(input)
 	{
+		unregister_input(input);
 		clk_disable(pdat->clk);
 		free(pdat->clk);
 		free_irq(pdat->irq);
 		tsfilter_free(pdat->filter);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);

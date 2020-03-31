@@ -1,7 +1,7 @@
 /*
  * driver/ts-gt911.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -207,7 +207,7 @@ static void gt911_interrupt(void * data)
 	enable_irq(pdat->irq);
 }
 
-static int ts_gt911_ioctl(struct input_t * input, int cmd, void * arg)
+static int ts_gt911_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	return -1;
 }
@@ -284,18 +284,15 @@ static struct device_t * ts_gt911_probe(struct driver_t * drv, struct dtnode_t *
 	}
 	request_irq(pdat->irq, gt911_interrupt, IRQ_TYPE_EDGE_RISING, input);
 
-	if(!register_input(&dev, input))
+	if(!(dev = register_input(input, drv)))
 	{
 		free_irq(pdat->irq);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -304,11 +301,11 @@ static void ts_gt911_remove(struct device_t * dev)
 	struct input_t * input = (struct input_t *)dev->priv;
 	struct ts_gt911_pdata_t * pdat = (struct ts_gt911_pdata_t *)input->priv;
 
-	if(input && unregister_input(input))
+	if(input)
 	{
+		unregister_input(input);
 		free_irq(pdat->irq);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(input->name);
 		free(input->priv);
 		free(input);

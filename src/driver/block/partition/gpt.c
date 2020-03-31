@@ -1,7 +1,7 @@
 /*
  * driver/block/partition/gpt.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -75,17 +75,14 @@ struct gpt_header_t {
 	uint8_t part_crc[4];
 } __attribute__ ((packed));
 
-static bool_t gpt_map(struct disk_t * disk)
+static bool_t gpt_map(struct block_t * pblk)
 {
 	struct mbr_header_t mbr;
 
-	if(!disk || !disk->name)
+	if(!pblk || !pblk->name || (block_capacity(pblk) <= 0))
 		return FALSE;
 
-	if(!disk->size || !disk->count)
-		return FALSE;
-
-	if(disk_read(disk, (uint8_t *)(&mbr), 0, sizeof(struct mbr_header_t)) != sizeof(struct mbr_header_t))
+	if(block_read(pblk, (uint8_t *)(&mbr), 0, sizeof(struct mbr_header_t)) != sizeof(struct mbr_header_t))
 		return FALSE;
 
 	if((mbr.signature[0] != 0x55) || mbr.signature[1] != 0xaa)
@@ -94,7 +91,6 @@ static bool_t gpt_map(struct disk_t * disk)
 	if((mbr.entry[0].type != 0xee) && (mbr.entry[1].type != 0xee) && (mbr.entry[2].type != 0xee) && (mbr.entry[3].type != 0xee))
 		return FALSE;
 
-	//TODO
 	return FALSE;
 }
 

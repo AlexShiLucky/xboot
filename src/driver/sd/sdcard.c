@@ -1,7 +1,7 @@
 /*
  * driver/sd/sdcard.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,7 +27,7 @@
  */
 
 #include <xboot.h>
-#include <block/disk.h>
+#include <block/partition.h>
 #include <sd/sdhci.h>
 #include <sd/sdcard.h>
 
@@ -50,7 +50,7 @@ struct sdcard_t
 
 struct sdcard_pdata_t
 {
-	struct disk_t disk;
+	struct block_t blk;
 	struct sdcard_t card;
 	struct timer_t timer;
 	struct sdhci_t * hci;
@@ -100,7 +100,7 @@ static char * sdcard_version_string(struct sdcard_t * card)
 
 static unsigned int extract_mid(struct sdcard_t * card)
 {
-	if ((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4))
+	if((card->version & MMC_VERSION_MMC) && (card->version <= MMC_VERSION_1_4))
 		return UNSTUFF_BITS(card->cid, 104, 24);
 	else
 		return UNSTUFF_BITS(card->cid, 120, 8);
@@ -113,7 +113,7 @@ static unsigned int extract_oid(struct sdcard_t * card)
 
 static unsigned int extract_prv(struct sdcard_t * card)
 {
-	return card->cid[2] >> 24;
+	return (card->cid[2] >> 24);
 }
 
 static unsigned int extract_psn(struct sdcard_t * card)
@@ -158,7 +158,7 @@ static unsigned int extract_year(struct sdcard_t * card)
 
 static bool_t go_idle_state(struct sdhci_t * hci)
 {
-	struct sdhci_cmd_t cmd;
+	struct sdhci_cmd_t cmd = { 0 };
 
 	cmd.cmdidx = MMC_GO_IDLE_STATE;
 	cmd.cmdarg = 0;
@@ -171,7 +171,7 @@ static bool_t go_idle_state(struct sdhci_t * hci)
 
 static bool_t sd_send_if_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
-	struct sdhci_cmd_t cmd;
+	struct sdhci_cmd_t cmd = { 0 };
 
 	cmd.cmdidx = SD_CMD_SEND_IF_COND;
 	if(hci->voltage & MMC_VDD_27_36)
@@ -193,8 +193,8 @@ static bool_t sd_send_if_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 static bool_t sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
-	struct sdhci_cmd_t cmd;
-	int timeout = 1000;
+	struct sdhci_cmd_t cmd = { 0 };
+	int retries = 100;
 
 	do {
 		cmd.cmdidx = MMC_APP_CMD;
@@ -204,7 +204,16 @@ static bool_t sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	 		continue;
 
 		cmd.cmdidx = SD_CMD_APP_SEND_OP_COND;
-		if(!hci->isspi)
+		if(hci->isspi)
+		{
+			cmd.cmdarg = 0;
+			if(card->version == SD_VERSION_2)
+				cmd.cmdarg |= OCR_HCS;
+			cmd.resptype = MMC_RSP_R1;
+			if(sdhci_transfer(hci, &cmd, NULL))
+				break;
+		}
+		else
 		{
 			if(hci->voltage & MMC_VDD_27_36)
 				cmd.cmdarg = 0x00ff8000;
@@ -215,19 +224,12 @@ static bool_t sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 			if(card->version == SD_VERSION_2)
 				cmd.cmdarg |= OCR_HCS;
 			cmd.resptype = MMC_RSP_R3;
+			if(!sdhci_transfer(hci, &cmd, NULL) || (cmd.response[0] & OCR_BUSY))
+				break;
 		}
-		else
-		{
-			cmd.cmdarg = 0;
-			if(card->version == SD_VERSION_2)
-				cmd.cmdarg |= OCR_HCS;
-			cmd.resptype = MMC_RSP_R1;
-		}
-		if(sdhci_transfer(hci, &cmd, NULL))
-			break;
-	} while(timeout--);
+	} while(retries--);
 
-	if(timeout <= 0)
+	if(retries <= 0)
 		return FALSE;
 
 	if(card->version != SD_VERSION_2)
@@ -249,8 +251,8 @@ static bool_t sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 static bool_t mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
-	struct sdhci_cmd_t cmd;
-	int timeout = 1000;
+	struct sdhci_cmd_t cmd = { 0 };
+	int retries = 100;
 
 	if(!go_idle_state(hci))
 		return FALSE;
@@ -268,9 +270,9 @@ static bool_t mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.resptype = MMC_RSP_R3;
 	 	if(!sdhci_transfer(hci, &cmd, NULL))
 	 		return FALSE;
-	} while (!(cmd.response[0] & OCR_BUSY) && timeout--);
+	} while (!(cmd.response[0] & OCR_BUSY) && retries--);
 
-	if(timeout <= 0)
+	if(retries <= 0)
 		return FALSE;
 
 	if(hci->isspi)
@@ -288,10 +290,32 @@ static bool_t mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	return TRUE;
 }
 
+static int mmc_status(struct sdhci_t * hci, struct sdcard_t * card)
+{
+	struct sdhci_cmd_t cmd = { 0 };
+	int retries = 100;
+
+	cmd.cmdidx = MMC_SEND_STATUS;
+	cmd.resptype = MMC_RSP_R1;
+	cmd.cmdarg = card->rca << 16;
+	do
+	{
+		if(!sdhci_transfer(hci, &cmd, NULL))
+			continue;
+		if(cmd.response[0] & (1 << 8))
+			break;
+		udelay(1);
+	} while(retries-- > 0);
+	if(retries > 0)
+		return ((cmd.response[0] >> 9) & 0xf);
+	return -1;
+}
+
 static u64_t mmc_read_blocks(struct sdhci_t * hci, struct sdcard_t * card, u8_t * buf, u64_t start, u64_t blkcnt)
 {
-	struct sdhci_cmd_t cmd;
-	struct sdhci_data_t dat;
+	struct sdhci_cmd_t cmd = { 0 };
+	struct sdhci_data_t dat = { 0 };
+	int status;
 
 	if(blkcnt > 1)
 		cmd.cmdidx = MMC_READ_MULTIPLE_BLOCK;
@@ -308,7 +332,14 @@ static u64_t mmc_read_blocks(struct sdhci_t * hci, struct sdcard_t * card, u8_t 
 	dat.blkcnt = blkcnt;
 	if(!sdhci_transfer(hci, &cmd, &dat))
 		return 0;
-
+	if(!hci->isspi)
+	{
+		do {
+			status = mmc_status(hci, card);
+			if(status < 0)
+				return 0;
+		} while((status != MMC_STATUS_TRAN) && (status != MMC_STATUS_DATA));
+	}
 	if(blkcnt > 1)
 	{
 		cmd.cmdidx = MMC_STOP_TRANSMISSION;
@@ -322,8 +353,9 @@ static u64_t mmc_read_blocks(struct sdhci_t * hci, struct sdcard_t * card, u8_t 
 
 static u64_t mmc_write_blocks(struct sdhci_t * hci, struct sdcard_t * card, u8_t * buf, u64_t start, u64_t blkcnt)
 {
-	struct sdhci_cmd_t cmd;
-	struct sdhci_data_t dat;
+	struct sdhci_cmd_t cmd = { 0 };
+	struct sdhci_data_t dat = { 0 };
+	int status;
 
 	if(blkcnt > 1)
 		cmd.cmdidx = MMC_WRITE_MULTIPLE_BLOCK;
@@ -340,19 +372,39 @@ static u64_t mmc_write_blocks(struct sdhci_t * hci, struct sdcard_t * card, u8_t
 	dat.blkcnt = blkcnt;
 	if(!sdhci_transfer(hci, &cmd, &dat))
 		return 0;
+	if(!hci->isspi)
+	{
+		do {
+			status = mmc_status(hci, card);
+			if(status < 0)
+				return 0;
+		} while((status != MMC_STATUS_TRAN) && (status != MMC_STATUS_RCV));
+	}
+	if(blkcnt > 1)
+	{
+		cmd.cmdidx = MMC_STOP_TRANSMISSION;
+		cmd.cmdarg = 0;
+		cmd.resptype = MMC_RSP_R1B;
+		if(!sdhci_transfer(hci, &cmd, NULL))
+			return 0;
+	}
 	return blkcnt;
 }
 
 static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 {
-	struct sdhci_cmd_t cmd;
-	struct sdhci_data_t dat;
+	struct sdhci_cmd_t cmd = { 0 };
+	struct sdhci_data_t dat = { 0 };
 	char scap[32];
 	u64_t csize, cmult;
 	u32_t unit, time;
+	int width;
+	int status;
 
-	sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+	sdhci_reset(hci);
 	sdhci_set_clock(hci, 400 * 1000);
+	sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+
 	if(!go_idle_state(hci))
 		return FALSE;
 
@@ -420,6 +472,11 @@ static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.resptype = MMC_RSP_R1;
 		if(!sdhci_transfer(hci, &cmd, NULL))
 			return FALSE;
+		do {
+			status = mmc_status(hci, card);
+			if(status < 0)
+				return FALSE;
+		} while(status != MMC_STATUS_TRAN);
 	}
 
 	if(card->version == MMC_VERSION_UNKNOWN)
@@ -467,15 +524,20 @@ static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.cmdidx = MMC_SEND_EXT_CSD;
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R1;
-
 		dat.buf = card->extcsd;
 		dat.flag = MMC_DATA_READ;
 		dat.blksz = 512;
 		dat.blkcnt = 1;
-
 		if(!sdhci_transfer(hci, &cmd, &dat))
 			return FALSE;
-
+		if(!hci->isspi)
+		{
+			do {
+				status = mmc_status(hci, card);
+				if(status < 0)
+					return FALSE;
+			} while(status != MMC_STATUS_TRAN);
+		}
 		switch(card->extcsd[192])
 		{
 		case 1:
@@ -513,10 +575,7 @@ static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 		}
 		else
 		{
-			card->capacity = card->extcsd[212] << 0 |
-			card->extcsd[212 + 1] << 8 |
-			card->extcsd[212 + 2] << 16 |
-			card->extcsd[212 + 3] << 24;
+			card->capacity = card->extcsd[212] << 0 | card->extcsd[212 + 1] << 8 | card->extcsd[212 + 2] << 16 | card->extcsd[212 + 3] << 24;
 		}
 	}
 	else
@@ -527,19 +586,68 @@ static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 	}
 	card->capacity *= 1 << UNSTUFF_BITS(card->csd, 80, 4);
 
-/*	if(IS_SD(card))
-		ret = sd_change_freq(card);
+	if(hci->isspi)
+	{
+		sdhci_set_clock(hci, min(card->tran_speed, hci->clock));
+		sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+	}
 	else
-		ret = mmc_change_freq(card);
-	if(!ret)
-		return FALSE;
+	{
+		if(card->version & SD_VERSION_SD)
+		{
+			if((hci->width & MMC_BUS_WIDTH_8) || (hci->width & MMC_BUS_WIDTH_4))
+				width = 2;
+			else
+				width = 0;
 
-	if(IS_SD(card))
-		ret = mci_startup_sd(card);
-	else
-		ret = mci_startup_mmc(card);
-	if(!ret)
-		return FALSE; */
+			cmd.cmdidx = MMC_APP_CMD;
+			cmd.cmdarg = card->rca << 16;
+			cmd.resptype = MMC_RSP_R5;
+			if(!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
+
+			cmd.cmdidx = SD_CMD_SWITCH_FUNC;
+			cmd.cmdarg = width;
+			cmd.resptype = MMC_RSP_R1;
+			if(!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
+
+			sdhci_set_clock(hci, min(card->tran_speed, hci->clock));
+			if((hci->width & MMC_BUS_WIDTH_8) || (hci->width & MMC_BUS_WIDTH_4))
+				sdhci_set_width(hci, MMC_BUS_WIDTH_4);
+			else
+				sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+		}
+		else if(card->version & MMC_VERSION_MMC)
+		{
+			if(hci->width & MMC_BUS_WIDTH_8)
+				width = 2;
+			else if(hci->width & MMC_BUS_WIDTH_4)
+				width = 1;
+			else
+				width = 0;
+
+			cmd.cmdidx = MMC_APP_CMD;
+			cmd.cmdarg = card->rca << 16;
+			cmd.resptype = MMC_RSP_R5;
+			if(!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
+
+			cmd.cmdidx = SD_CMD_SWITCH_FUNC;
+			cmd.cmdarg = width;
+			cmd.resptype = MMC_RSP_R1;
+			if(!sdhci_transfer(hci, &cmd, NULL))
+				return FALSE;
+
+			sdhci_set_clock(hci, min(card->tran_speed, hci->clock));
+			if(hci->width & MMC_BUS_WIDTH_8)
+				sdhci_set_width(hci, MMC_BUS_WIDTH_8);
+			else if(hci->width & MMC_BUS_WIDTH_4)
+				sdhci_set_width(hci, MMC_BUS_WIDTH_4);
+			else if(hci->width & MMC_BUS_WIDTH_1)
+				sdhci_set_width(hci, MMC_BUS_WIDTH_1);
+		}
+	}
 
 	cmd.cmdidx = MMC_SET_BLOCKLEN;
 	cmd.cmdarg = card->read_bl_len;
@@ -565,51 +673,50 @@ static bool_t sdcard_detect(struct sdhci_t * hci, struct sdcard_t * card)
 	return TRUE;
 }
 
-static u64_t sdcard_disk_read(struct disk_t * disk, u8_t * buf, u64_t sector, u64_t count)
+static u64_t sdcard_blk_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
-	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(disk->priv);
+	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(blk->priv);
 	struct sdhci_t * hci = pdat->hci;
 	struct sdcard_t * card = &pdat->card;
-	u64_t cnt, blks = count;
+	u64_t cnt, blks = blkcnt;
 
 	while(blks > 0)
 	{
-		cnt = (blks > 65535) ?  65535 : blks;
-		if(mmc_read_blocks(hci, card, buf, sector, cnt) != cnt)
+		cnt = (blks > 127) ? 127 : blks;
+		if(mmc_read_blocks(hci, card, buf, blkno, cnt) != cnt)
 			return 0;
 		blks -= cnt;
-		sector += cnt;
+		blkno += cnt;
 		buf += cnt * card->read_bl_len;
 	}
-	return count;
+	return blkcnt;
 }
 
-static u64_t sdcard_disk_write(struct disk_t * disk, u8_t * buf, u64_t sector, u64_t count)
+static u64_t sdcard_blk_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
-	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(disk->priv);
+	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(blk->priv);
 	struct sdhci_t * hci = pdat->hci;
 	struct sdcard_t * card = &pdat->card;
-	u64_t cnt, blks = count;
+	u64_t cnt, blks = blkcnt;
 
 	while(blks > 0)
 	{
-		cnt = (blks > 65535) ?  65535 : blks;
-		if(mmc_write_blocks(hci, card, buf, sector, cnt) != cnt)
+		cnt = (blks > 127) ? 127 : blks;
+		if(mmc_write_blocks(hci, card, buf, blkno, cnt) != cnt)
 			return 0;
 		blks -= cnt;
-		sector += cnt;
+		blkno += cnt;
 		buf += cnt * card->write_bl_len;
 	}
-	return count;
+	return blkcnt;
 }
 
-static void sdcard_disk_sync(struct disk_t * disk)
+static void sdcard_blk_sync(struct block_t * blk)
 {
 }
 
-static int sdcard_disk_timer_function(struct timer_t * timer, void * data)
+static void sdcard_scan(struct sdcard_pdata_t * pdat)
 {
-	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(data);
 	char buf[256];
 
 	if(!pdat->online)
@@ -618,18 +725,24 @@ static int sdcard_disk_timer_function(struct timer_t * timer, void * data)
 		{
 			if(sdcard_detect(pdat->hci, &pdat->card))
 			{
-				snprintf(buf, sizeof(buf), "card.%s", pdat->hci->name);
-				pdat->disk.name = strdup(buf);
-				pdat->disk.size = pdat->card.read_bl_len;
-				pdat->disk.count = pdat->card.capacity / pdat->card.read_bl_len;
-				pdat->disk.read = sdcard_disk_read;
-				pdat->disk.write = sdcard_disk_write;
-				pdat->disk.sync = sdcard_disk_sync;
-				pdat->disk.priv = pdat;
-				if(!register_disk(NULL, &pdat->disk))
-					free_device_name(pdat->disk.name);
-				else
+				snprintf(buf, sizeof(buf), "%s.sdcard", pdat->hci->name);
+				pdat->blk.name = strdup(buf);
+				pdat->blk.blksz = pdat->card.read_bl_len;
+				pdat->blk.blkcnt = pdat->card.capacity / pdat->card.read_bl_len;
+				pdat->blk.read = sdcard_blk_read;
+				pdat->blk.write = sdcard_blk_write;
+				pdat->blk.sync = sdcard_blk_sync;
+				pdat->blk.priv = pdat;
+				if(register_block(&pdat->blk, NULL))
+				{
+					partition_map(&pdat->blk);
 					pdat->online = TRUE;
+				}
+				else
+				{
+					free(pdat->blk.name);
+					pdat->blk.name = NULL;
+				}
 			}
 		}
 	}
@@ -637,15 +750,19 @@ static int sdcard_disk_timer_function(struct timer_t * timer, void * data)
 	{
 		if(!sdhci_detect(pdat->hci))
 		{
-			if(unregister_disk(&pdat->disk))
-			{
-				free_device_name(pdat->disk.name);
-				pdat->online = FALSE;
-			}
+			unregister_sub_block(&pdat->blk);
+			unregister_block(&pdat->blk);
+			free(pdat->blk.name);
+			pdat->blk.name = NULL;
+			pdat->online = FALSE;
 		}
 	}
-	if(!pdat->hci->removable)
-		return 0;
+}
+
+static int sdcard_timer_function(struct timer_t * timer, void * data)
+{
+	struct sdcard_pdata_t * pdat = (struct sdcard_pdata_t *)(data);
+	sdcard_scan(pdat);
 	timer_forward_now(timer, ms_to_ktime(2000));
 	return 1;
 }
@@ -661,8 +778,12 @@ void * sdcard_probe(struct sdhci_t * hci)
 
 	pdat->hci = hci;
 	pdat->online = FALSE;
-	timer_init(&pdat->timer, sdcard_disk_timer_function, pdat);
-	timer_start_now(&pdat->timer, ms_to_ktime(100));
+	sdcard_scan(pdat);
+	if(pdat->hci->removable)
+	{
+		timer_init(&pdat->timer, sdcard_timer_function, pdat);
+		timer_start_now(&pdat->timer, ms_to_ktime(2000));
+	}
 	return pdat;
 }
 
@@ -672,9 +793,14 @@ void sdcard_remove(void * card)
 
 	if(pdat)
 	{
-		timer_cancel(&pdat->timer);
-		if(pdat->online && unregister_disk(&pdat->disk))
-			free_device_name(pdat->disk.name);
+		if(pdat->hci->removable)
+			timer_cancel(&pdat->timer);
+		if(pdat->online && search_block(pdat->blk.name))
+		{
+			unregister_sub_block(&pdat->blk);
+			unregister_block(&pdat->blk);
+			free(pdat->blk.name);
+		}
 		free(pdat);
 	}
 }

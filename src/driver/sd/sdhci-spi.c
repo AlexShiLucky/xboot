@@ -1,7 +1,7 @@
 /*
  * driver/sdhci-spi.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -30,6 +30,22 @@
 #include <spi/spi.h>
 #include <gpio/gpio.h>
 #include <sd/sdhci.h>
+
+/*
+ * SDHCI - SDCard SPI Mode Driver
+ *
+ * Example:
+ *	"sdhci-spi@0": {
+ *		"spi-bus": "spi-gpio.0",
+ *		"chip-select": 0,
+ *		"type": 0,
+ *		"mode": 0,
+ *		"speed": 0,
+ *		"cd-gpio": -1,
+ *		"cd-gpio-config": -1,
+ *		"max-clock-frequency": 25000000
+ *	},
+ */
 
 struct sdhci_spi_pdata_t {
 	struct spi_device_t * dev;
@@ -125,6 +141,11 @@ static bool_t sdhci_spi_detect(struct sdhci_t * sdhci)
 	return TRUE;
 }
 
+static bool_t sdhci_spi_reset(struct sdhci_t * sdhci)
+{
+	return TRUE;
+}
+
 static bool_t sdhci_spi_setvoltage(struct sdhci_t * sdhci, u32_t voltage)
 {
 	return TRUE;
@@ -155,6 +176,11 @@ static bool_t sdhci_spi_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 	{
 		memset(&tx[0], 0xff, 10);
 		spi_device_write_then_read(pdat->dev, &tx[0], 10, 0, 0);
+	}
+	else
+	{
+		tx[0] = 0xff;
+		spi_device_write_then_read(pdat->dev, &tx[0], 1, 0, 0);
 	}
 
 	spi_device_select(pdat->dev);
@@ -344,8 +370,8 @@ static bool_t sdhci_spi_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 	}
 	spi_device_deselect(pdat->dev);
 
-	memset(&tx[0], 0xff, 8);
-	spi_device_write_then_read(pdat->dev, &tx[0], 8, 0, 0);
+	tx[0] = 0xff;
+	spi_device_write_then_read(pdat->dev, &tx[0], 1, 0, 0);
 	return ret;
 }
 
@@ -364,7 +390,7 @@ static struct device_t * sdhci_spi_probe(struct driver_t * drv, struct dtnode_t 
 	if(!pdat)
 	{
 		spi_device_free(spidev);
-		return FALSE;
+		return NULL;
 	}
 
 	sdhci = malloc(sizeof(struct sdhci_t));
@@ -372,7 +398,7 @@ static struct device_t * sdhci_spi_probe(struct driver_t * drv, struct dtnode_t 
 	{
 		spi_device_free(spidev);
 		free(pdat);
-		return FALSE;
+		return NULL;
 	}
 
 	pdat->dev = spidev;
@@ -382,10 +408,11 @@ static struct device_t * sdhci_spi_probe(struct driver_t * drv, struct dtnode_t 
 	sdhci->name = alloc_device_name(dt_read_name(n), -1);
 	sdhci->voltage = MMC_VDD_27_36;
 	sdhci->width = MMC_BUS_WIDTH_1;
-	sdhci->clock = (u32_t)dt_read_long(n, "max-clock-frequency", 1 * 1000 * 1000);
-	sdhci->removable = dt_read_bool(n, "removable", 0) ? TRUE : FALSE;
+	sdhci->clock = (u32_t)dt_read_long(n, "max-clock-frequency", 25 * 1000 * 1000);
+	sdhci->removable = (pdat->cd >= 0) ? TRUE : FALSE;
 	sdhci->isspi = TRUE;
 	sdhci->detect = sdhci_spi_detect;
+	sdhci->reset = sdhci_spi_reset;
 	sdhci->setvoltage = sdhci_spi_setvoltage;
 	sdhci->setwidth = sdhci_spi_setwidth;
 	sdhci->setclock = sdhci_spi_setclock;
@@ -400,17 +427,14 @@ static struct device_t * sdhci_spi_probe(struct driver_t * drv, struct dtnode_t 
 		gpio_set_direction(pdat->cd, GPIO_DIRECTION_INPUT);
 	}
 
-	if(!register_sdhci(&dev, sdhci))
+	if(!(dev = register_sdhci(sdhci, drv)))
 	{
 		spi_device_free(pdat->dev);
-
 		free_device_name(sdhci->name);
 		free(sdhci->priv);
 		free(sdhci);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -419,10 +443,10 @@ static void sdhci_spi_remove(struct device_t * dev)
 	struct sdhci_t * sdhci = (struct sdhci_t *)dev->priv;
 	struct sdhci_spi_pdata_t * pdat = (struct sdhci_spi_pdata_t *)sdhci->priv;
 
-	if(sdhci && unregister_sdhci(sdhci))
+	if(sdhci)
 	{
+		unregister_sdhci(sdhci);
 		spi_device_free(pdat->dev);
-
 		free_device_name(sdhci->name);
 		free(sdhci->priv);
 		free(sdhci);

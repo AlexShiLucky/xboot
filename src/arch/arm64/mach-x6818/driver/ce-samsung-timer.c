@@ -1,7 +1,7 @@
 /*
  * driver/ce-samsung-timer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -115,7 +115,7 @@ static struct device_t * ce_samsung_timer_probe(struct driver_t * drv, struct dt
 	samsung_timer_count(pdat->virt, pdat->channel, 0);
 	samsung_timer_stop(pdat->virt, pdat->channel);
 
-	if(!register_clockevent(&dev, ce))
+	if(!(dev = register_clockevent(ce, drv)))
 	{
 		samsung_timer_irq_clear(pdat->virt, pdat->channel);
 		samsung_timer_stop(pdat->virt, pdat->channel);
@@ -123,14 +123,11 @@ static struct device_t * ce_samsung_timer_probe(struct driver_t * drv, struct dt
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(ce->name);
 		free(ce->priv);
 		free(ce);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -139,15 +136,15 @@ static void ce_samsung_timer_remove(struct device_t * dev)
 	struct clockevent_t * ce = (struct clockevent_t *)dev->priv;
 	struct ce_samsung_timer_pdata_t * pdat = (struct ce_samsung_timer_pdata_t *)ce->priv;
 
-	if(ce && unregister_clockevent(ce))
+	if(ce)
 	{
+		unregister_clockevent(ce);
 		samsung_timer_irq_clear(pdat->virt, pdat->channel);
 		samsung_timer_stop(pdat->virt, pdat->channel);
 		samsung_timer_disable(pdat->virt, pdat->channel);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(ce->name);
 		free(ce->priv);
 		free(ce);

@@ -1,7 +1,7 @@
 /*
  * init/main.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -30,7 +30,7 @@
 #include <init.h>
 
 /* xboot入口函数,从start.S跳转过来 */
-int xboot_main(int argc, char * argv[])
+void xboot_main(void)
 {
 	/* Do initial memory - 初始化内存 */
 	do_init_mem();
@@ -47,12 +47,15 @@ int xboot_main(int argc, char * argv[])
 	/* Do show logo - 显示logo */
 	do_showlogo();
 
+	/* Do auto mount */
+	do_automount();
+
 	/* Do auto boot - 调用init.c中的__do_autoboot */
 	do_autoboot();
 
 #if defined(CONFIG_SHELL_TASK) && (CONFIG_SHELL_TASK > 0)
 	/* Create shell task */
-	struct task_t * task = task_create(NULL, "shell", shell_task, NULL, 0, 0);
+	struct task_t * task = task_create(scheduler_self(), "shell", shell_task, NULL, 0, 0);
 
 	/* Resume shell task */
 	task_resume(task);
@@ -63,7 +66,4 @@ int xboot_main(int argc, char * argv[])
 
 	/* Do all exit calls */
 	do_exitcalls();
-
-	/* Xboot return */
-	return 0;
 }

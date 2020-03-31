@@ -1,7 +1,7 @@
 /*
  * sys-smp.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -29,7 +29,7 @@
 #include <xboot.h>
 
 struct smp_boot_entry_t {
-	void (*func)(int cpu);
+	void (*func)(void);
 	atomic_t atomic;
 };
 struct smp_boot_entry_t __smp_boot_entry[CONFIG_MAX_SMP_CPUS];
@@ -50,16 +50,18 @@ void sys_smp_secondary_startup(int cpu)
 		{
 		}
 		if(e[cpu].func)
-			e[cpu].func(cpu);
+			e[cpu].func();
 	}
 }
 
-void sys_smp_secondary_boot(int cpu, void (*func)(int cpu))
+void sys_smp_secondary_boot(void (*func)(void))
 {
 	struct smp_boot_entry_t * e = &__smp_boot_entry[0];
+	int i;
 
-	if(cpu < 0 || cpu >= CONFIG_MAX_SMP_CPUS)
-		return;
-	e[cpu].func = func;
-	atomic_cmpxchg(&e[cpu].atomic, 0, 1);
+	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
+	{
+		e[i].func = func;
+		atomic_cmpxchg(&e[i].atomic, 0, 1);
+	}
 }

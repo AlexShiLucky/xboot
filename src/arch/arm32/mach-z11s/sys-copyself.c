@@ -1,7 +1,7 @@
 /*
  * sys-copyself.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -32,9 +32,9 @@ extern unsigned char __image_start;
 extern unsigned char __image_end;
 extern void return_to_fel(void);
 extern void sys_uart_putc(char c);
-extern void sys_spi_flash_init(void);
-extern void sys_spi_flash_exit(void);
-extern void sys_spi_flash_read(int addr, void * buf, int count);
+extern void sys_spinor_init(void);
+extern void sys_spinor_exit(void);
+extern void sys_spinor_read(int addr, void * buf, int count);
 
 enum {
 	BOOT_DEVICE_FEL		= 0,
@@ -103,8 +103,8 @@ void sys_copyself(void)
 		mem = (void *)&__image_start;
 		size = &__image_end - &__image_start;
 
-		sys_spi_flash_init();
-		sys_spi_flash_read(0, mem, size);
-		sys_spi_flash_exit();
+		sys_spinor_init();
+		sys_spinor_read(0, mem, size);
+		sys_spinor_exit();
 	}
 }

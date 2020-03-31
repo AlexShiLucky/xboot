@@ -2,11 +2,11 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_start)
 
-STACK_UND_SIZE = 0x40000;
-STACK_ABT_SIZE = 0x40000;
-STACK_IRQ_SIZE = 0x40000;
-STACK_FIQ_SIZE = 0x40000;
-STACK_SRV_SIZE = 0x100000;
+STACK_UND_SIZE = 0x40000 * 1;
+STACK_ABT_SIZE = 0x40000 * 1;
+STACK_IRQ_SIZE = 0x40000 * 1;
+STACK_FIQ_SIZE = 0x40000 * 1;
+STACK_SRV_SIZE = 0x100000 * 1;
 
 MEMORY
 {
@@ -28,7 +28,7 @@ SECTIONS
 		.obj/arch/arm32/mach-z11s/sys-uart.o (.text*)
 		.obj/arch/arm32/mach-z11s/sys-clock.o (.text*)
 		.obj/arch/arm32/mach-z11s/sys-dram.o (.text*)
-		.obj/arch/arm32/mach-z11s/sys-spi-flash.o (.text*)
+		.obj/arch/arm32/mach-z11s/sys-spinor.o (.text*)
 		.obj/arch/arm32/mach-z11s/sys-copyself.o (.text*)
 		PROVIDE(__spl_end = .);
 		*(.text*)

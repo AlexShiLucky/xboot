@@ -1,7 +1,7 @@
 /*
  * kernel/core/profiler.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -54,26 +54,15 @@ static void __cpu_profiler_reset(void)
 }
 extern __typeof(__cpu_profiler_reset) cpu_profiler_reset __attribute__((weak, alias("__cpu_profiler_reset")));
 
-static inline uint32_t string_hash(const char * s)
-{
-	uint32_t nr = 1, nr2 = 4;
-	int len = strlen(s);
-
-	while(len--)
-	{
-		nr ^= (((nr & 63) + nr2) * ((uint32_t)(uint8_t)*s++)) + (nr << 8);
-		nr2 += 3;
-	}
-	return nr;
-}
-
 struct profiler_t * profiler_search(const char * name)
 {
 	struct profiler_t * p;
 	struct hlist_node * n;
-	uint32_t index = string_hash(name) % CONFIG_PROFILER_HASH_SIZE;
 
-	hlist_for_each_entry_safe(p, n, &__profiler_hash[index], node)
+	if(!name)
+		return NULL;
+
+	hlist_for_each_entry_safe(p, n, &__profiler_hash[shash(name) % CONFIG_PROFILER_HASH_SIZE], node)
 	{
 		if(strcmp(p->name, name) == 0)
 			return p;
@@ -85,7 +74,9 @@ void profiler_snap(const char * name, int event, int data)
 {
 	struct profiler_t * p;
 	irq_flags_t flags;
-	uint32_t index;
+
+	if(!name)
+		return;
 
 	p = profiler_search(name);
 	if(p)
@@ -106,7 +97,6 @@ void profiler_snap(const char * name, int event, int data)
 		if(!p)
 			return;
 
-		index = string_hash(name) % CONFIG_PROFILER_HASH_SIZE;
 		init_hlist_node(&p->node);
 		p->name = strdup(name);
 		p->event = event;
@@ -122,7 +112,7 @@ void profiler_snap(const char * name, int event, int data)
 		}
 		p->count = 1;
 		spin_lock_irqsave(&__profiler_lock, flags);
-		hlist_add_head(&p->node, &__profiler_hash[index]);
+		hlist_add_head(&p->node, &__profiler_hash[shash(name) % CONFIG_PROFILER_HASH_SIZE]);
 		spin_unlock_irqrestore(&__profiler_lock, flags);
 	}
 }
@@ -131,23 +121,32 @@ void profiler_dump(void)
 {
 	struct profiler_t * p;
 	struct hlist_node * n;
+	struct slist_t * sl, * e;
 	int i;
 
 	printf("Profiler analysis:\r\n");
+	sl = slist_alloc();
 	for(i = 0; i < ARRAY_SIZE(__profiler_hash); i++)
 	{
 		hlist_for_each_entry_safe(p, n, &__profiler_hash[i], node)
 		{
-			if(p->event == 0)
-			{
-				printf("[%s] %lld, %lld, [%lld ~ %lld]\r\n", p->name, p->count, (p->end - p->begin) / ((p->count > 1) ? (p->count - 1) : 1), p->begin, p->end);
-			}
-			else
-			{
-				printf("[%s] %lld, %lld, [%lld ~ %lld]\r\n", p->name, p->count, (p->end - p->begin) / ((p->count > 1) ? (p->count - 1) : 1), p->begin, p->end);
-			}
+			slist_add(sl, p, "%s", p->name);
 		}
 	}
+	slist_sort(sl);
+	slist_for_each_entry(e, sl)
+	{
+		p = (struct profiler_t *)e->priv;
+		if(p->event == 0)
+		{
+			printf("[%s] %lld, %lld, [%lld ~ %lld]\r\n", p->name, p->count, (p->end - p->begin) / ((p->count > 1) ? (p->count - 1) : 1), p->begin, p->end);
+		}
+		else
+		{
+			printf("[%s] %lld, %lld, [%lld ~ %lld]\r\n", p->name, p->count, (p->end - p->begin) / ((p->count > 1) ? (p->count - 1) : 1), p->begin, p->end);
+		}
+	}
+	slist_free(sl);
 }
 
 void profiler_reset(void)

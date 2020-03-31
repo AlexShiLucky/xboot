@@ -9,13 +9,14 @@ Xdef(AUDIO,           "audio")         /* audio设备 */
 Xdef(BATTERY,         "battery")       /* 电池设备 */
 Xdef(BLOCK,           "block")         /* 块设备 */
 Xdef(BUZZER,          "buzzer")        /* 蜂鸣器设备 */
+Xdef(CAMERA,          "camera")        /* 摄像头设备 */
 Xdef(CLK,             "clk")           /* CLK设备 */
 Xdef(CLOCKEVENT,      "clockevent")    /* 时钟事件设备 */
 Xdef(CLOCKSOURCE,     "clocksource")   /* 时钟源设备 */
 Xdef(COMPASS,         "compass")       /* 罗盘设备 */
 Xdef(CONSOLE,         "console")       /* 控制台设备 */
 Xdef(DAC,             "dac")           /* dac设备 */
-Xdef(DISK,            "disk")          /* 磁盘设备 */
+Xdef(DMACHIP,         "dmachip")       /* DMA设备 */
 Xdef(FRAMEBUFFER,     "framebuffer")   /* 帧缓存设备 */
 Xdef(GMETER,          "gmeter")        /* 加速度计设备 */
 Xdef(GPIOCHIP,        "gpiochip")      /* gpio设备 */
@@ -24,7 +25,6 @@ Xdef(HYGROMETER,      "hygrometer")    /* 湿度计设备 */
 Xdef(I2C,             "i2c")           /* i2c设备 */
 Xdef(INPUT,           "input")         /* 输入设备 */
 Xdef(IRQCHIP,         "irqchip")       /* IRQ设备 */
-Xdef(LASERSCAN,       "laserscan")     /* 激光器设备 */
 Xdef(LED,             "led")           /* led常亮设备 */
 Xdef(LEDSTRIP,        "ledstrip")      /* led灯带设备 */
 Xdef(LEDTRIGGER,      "ledtrigger")    /* led闪烁设备 */

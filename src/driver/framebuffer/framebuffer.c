@@ -1,7 +1,7 @@
 /*
  * driver/framebuffer/framebuffer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -57,13 +57,6 @@ static ssize_t framebuffer_read_pheight(struct kobj_t * kobj, void * buf, size_t
 	return sprintf(buf, "%u", framebuffer_get_pheight(fb));
 }
 
-/* 帧缓存每像素的bit数信息读取 */
-static ssize_t framebuffer_read_bytes(struct kobj_t * kobj, void * buf, size_t size)
-{
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", framebuffer_get_bytes(fb));
-}
-
 /* 帧缓存亮度信息读取 */
 static ssize_t framebuffer_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
@@ -113,27 +106,26 @@ struct framebuffer_t * search_first_framebuffer(void)
 }
 
 /* 注册一个帧缓存设备 */
-bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb)
+struct device_t * register_framebuffer(struct framebuffer_t * fb, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!fb || !fb->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(fb->name);
 	dev->type = DEVICE_TYPE_FRAMEBUFFER;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = fb;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "width", framebuffer_read_width, NULL, fb);
 	kobj_add_regular(dev->kobj, "height", framebuffer_read_height, NULL, fb);
 	kobj_add_regular(dev->kobj, "pwidth", framebuffer_read_pwidth, NULL, fb);
 	kobj_add_regular(dev->kobj, "pheight", framebuffer_read_pheight, NULL, fb);
-	kobj_add_regular(dev->kobj, "bytes", framebuffer_read_bytes, NULL, fb);
 	kobj_add_regular(dev->kobj, "brightness", framebuffer_read_brightness, framebuffer_write_brightness, fb);
 	kobj_add_regular(dev->kobj, "max_brightness", framebuffer_read_max_brightness, NULL, fb);
 
@@ -145,104 +137,28 @@ bool_t register_framebuffer(struct device_t ** device, struct framebuffer_t * fb
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个帧缓存设备 */
-bool_t unregister_framebuffer(struct framebuffer_t * fb)
+void unregister_framebuffer(struct framebuffer_t * fb)
 {
 	struct device_t * dev;
-	struct framebuffer_t * driver;
 
-	if(!fb || !fb->name)
-		return FALSE;
-
-	dev = search_device(fb->name, DEVICE_TYPE_FRAMEBUFFER);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	driver = (struct framebuffer_t *)(dev->driver);
-	if(driver)
+	if(fb && fb->name)
 	{
-		if(driver->setbl)
-			driver->setbl(driver, 0);
+		if(fb->setbl)
+			fb->setbl(fb, 0);
+		dev = search_device(fb->name, DEVICE_TYPE_FRAMEBUFFER);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
 	}
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-
-	return TRUE;
-}
-
-/* 帧缓存宽度(像素)信息读取 */
-int framebuffer_get_width(struct framebuffer_t * fb)
-{
-	if(fb)
-		return fb->width;
-	return 0;
-}
-
-/* 帧缓存高度(像素)信息读取 */
-int framebuffer_get_height(struct framebuffer_t * fb)
-{
-	if(fb)
-		return fb->height;
-	return 0;
-}
-
-/* 帧缓存宽度(毫米数)信息读取 */
-int framebuffer_get_pwidth(struct framebuffer_t * fb)
-{
-	if(fb)
-		return fb->pwidth;
-	return 0;
-}
-
-/* 帧缓存高度(毫米数)信息读取 */
-int framebuffer_get_pheight(struct framebuffer_t * fb)
-{
-	if(fb)
-		return fb->pheight;
-	return 0;
-}
-
-/* 帧缓存每像素的bit数信息读取 */
-int framebuffer_get_bytes(struct framebuffer_t * fb)
-{
-	if(fb)
-		return fb->bytes;
-	return 0;
-}
-
-/* 创建一个帧缓存着色 */
-struct render_t * framebuffer_create_render(struct framebuffer_t * fb)
-{
-	if(fb && fb->create)
-		return fb->create(fb);
-	return NULL;
-}
-
-/* 销毁一个帧缓存着色 */
-void framebuffer_destroy_render(struct framebuffer_t * fb, struct render_t * render)
-{
-	if(fb && fb->destroy)
-		fb->destroy(fb, render);
-}
-
-/* 读取当前帧缓存着色 */
-void framebuffer_present_render(struct framebuffer_t * fb, struct render_t * render, struct region_list_t * rl)
-{
-	if(fb && fb->present)
-		fb->present(fb, render, rl);
 }
 
 /* 设置背光亮度 */

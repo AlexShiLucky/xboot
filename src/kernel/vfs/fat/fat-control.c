@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/fat/fat-control.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -396,14 +396,23 @@ static int __fatfs_control_nth_cluster(struct fatfs_control_t * ctrl, u32_t clus
 	return 0;
 }
 
-static int __fatfs_control_alloc_first_cluster(struct fatfs_control_t * ctrl, u32_t * newclust)
+static int __fatfs_control_alloc_cluster(struct fatfs_control_t * ctrl, u32_t clust, u32_t * newclust)
 {
 	int rc;
 	bool_t found;
 	u32_t current, next, first, last;
 
 	found = FALSE;
-	first = __fatfs_control_first_valid_cluster(ctrl);
+
+	if(__fatfs_control_valid_cluster(ctrl, clust))
+	{
+		first = clust;
+	}
+	else
+	{
+		first = __fatfs_control_first_valid_cluster(ctrl);
+	}
+
 	last = __fatfs_control_last_valid_cluster(ctrl);
 	for(current = first; current <= last; current++)
 	{
@@ -434,62 +443,14 @@ static int __fatfs_control_alloc_first_cluster(struct fatfs_control_t * ctrl, u3
 static int __fatfs_control_append_free_cluster(struct fatfs_control_t *ctrl, u32_t clust, u32_t *newclust)
 {
 	int rc;
-	bool_t found;
-	u32_t current, next, first, last;
 
-	if(!__fatfs_control_valid_cluster(ctrl, clust))
-		return -1;
-
-	rc = __fatfs_control_get_next_cluster(ctrl, clust, &next);
+	rc = __fatfs_control_alloc_cluster(ctrl, clust, newclust);
 	if(rc)
 		return rc;
 
-	while(__fatfs_control_valid_cluster(ctrl, next))
-	{
-		clust = next;
-
-		rc = __fatfs_control_get_next_cluster(ctrl, clust, &next);
-		if(rc)
-			return rc;
-	}
-
-	found = FALSE;
-	first = __fatfs_control_first_valid_cluster(ctrl);
-	last = __fatfs_control_last_valid_cluster(ctrl);
-	current = clust + 1;
-	while(1)
-	{
-		if(clust == current)
-			break;
-
-		rc = __fatfs_control_get_next_cluster(ctrl, current, &next);
-		if(rc)
-			return rc;
-
-		if(next == 0x0)
-		{
-			found = TRUE;
-			break;
-		}
-
-		current++;
-		if(current > last)
-			current = first;
-	}
-
-	if(!found)
-		return -1;
-
-	rc = __fatfs_control_set_last_cluster(ctrl, current);
+	rc = __fatfs_control_set_next_cluster(ctrl, clust, *newclust);
 	if(rc)
 		return rc;
-
-	rc = __fatfs_control_set_next_cluster(ctrl, clust, current);
-	if(rc)
-		return rc;
-
-	if(newclust)
-		*newclust = clust;
 
 	return 0;
 }
@@ -515,35 +476,25 @@ static int __fatfs_control_truncate_clusters(struct fatfs_control_t *ctrl, u32_t
 	return 0;
 }
 
-static s64_t fatfs_wallclock_mktime(unsigned int year0, unsigned int mon0, unsigned int day, unsigned int hour, unsigned int min, unsigned int sec)
+static s64_t fatfs_wallclock_mktime(unsigned int year, unsigned int mon, unsigned int day, unsigned int hour, unsigned int min, unsigned int sec)
 {
-	unsigned int year = year0, mon = mon0;
-	u64_t ret;
+	struct tm ti;
+	time_t t;
+	ti.tm_sec = sec;
+	ti.tm_min = min;
+	ti.tm_hour = hour;
+	ti.tm_mday = day;
+	ti.tm_mon = mon;
+	ti.tm_year = year;
 
-	if(0 >= (int)(mon -= 2))
-	{
-		mon += 12;
-		year -= 1;
-	}
+	t = mktime(&ti);
 
-	ret = (u64_t)(year / 4 - year / 100 + year / 400 + 367 * mon / 12 + day);
-	ret += (u64_t)(year) * 365 - 719499;
-
-	ret *= (u64_t)24;
-	ret += hour;
-
-	ret *= (u64_t)60;
-	ret += min;
-
-	ret *= (u64_t)60;
-	ret += sec;
-
-	return (s64_t)ret;
+	return (s64_t)t;
 }
 
 u32_t fatfs_pack_timestamp(u32_t year, u32_t mon, u32_t day, u32_t hour, u32_t min, u32_t sec)
 {
-	return (u32_t)fatfs_wallclock_mktime(1980+year, mon, day, hour, min, sec);
+	return (u32_t)fatfs_wallclock_mktime(1980 - 1900 + year, mon, day, hour, min, sec);
 }
 
 void fatfs_current_timestamp(u32_t * year, u32_t * mon, u32_t * day, u32_t * hour, u32_t * min, u32_t * sec)
@@ -555,7 +506,36 @@ void fatfs_current_timestamp(u32_t * year, u32_t * mon, u32_t * day, u32_t * hou
 	ti = localtime(&t);
 
 	if(year)
-		*year = ti->tm_year + 1900 - 1980;
+	{
+		if(ti->tm_year < 80)
+			*year = 0;
+		else
+			*year = ti->tm_year + 1900 - 1980;
+	}
+	if(mon)
+		*mon = ti->tm_mon;
+	if(day)
+		*day = ti->tm_mday;
+	if(hour)
+		*hour = ti->tm_hour;
+	if(min)
+		*min = ti->tm_min;
+	if(sec)
+		*sec = ti->tm_sec;
+}
+
+void fatfs_timestamp(time_t *t, u32_t * year, u32_t * mon, u32_t * day, u32_t * hour, u32_t * min, u32_t * sec)
+{
+	struct tm * ti;
+	ti = localtime(t);
+
+	if(year)
+	{
+		if(ti->tm_year < 80)
+			*year = 0;
+		else
+			*year = ti->tm_year + 1900 - 1980;
+	}
 	if(mon)
 		*mon = ti->tm_mon;
 	if(day)
@@ -600,7 +580,7 @@ int fatfs_control_alloc_first_cluster(struct fatfs_control_t * ctrl, u32_t * new
 	int rc;
 
 	mutex_lock(&ctrl->fat_cache_lock);
-	rc = __fatfs_control_alloc_first_cluster(ctrl, newclust);
+	rc = __fatfs_control_alloc_cluster(ctrl, 0, newclust);
 	mutex_unlock(&ctrl->fat_cache_lock);
 
 	return rc;

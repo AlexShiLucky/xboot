@@ -1,7 +1,7 @@
 /*
  * framework/core/l-dobject.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,9 +27,9 @@
  */
 
 #include <xboot.h>
+#include <framework/core/l-color.h>
 #include <framework/core/l-image.h>
 #include <framework/core/l-ninepatch.h>
-#include <framework/core/l-shape.h>
 #include <framework/core/l-text.h>
 #include <framework/core/l-window.h>
 #include <framework/core/l-dobject.h>
@@ -139,6 +139,14 @@ static inline struct region_t * dobject_global_bounds(struct ldobject_t * o)
 		o->mflag &= ~MFLAG_GLOBAL_BOUNDS;
 	}
 	return r;
+}
+
+static inline struct region_t * dobject_parent_global_bounds(struct ldobject_t * o)
+{
+	struct ldobject_t * parent = o->parent;
+	if(parent)
+		return dobject_global_bounds(parent);
+	return NULL;
 }
 
 static inline struct region_t * dobject_dirty_bounds(struct ldobject_t * o)
@@ -707,20 +715,6 @@ static void dobject_layout(struct ldobject_t * o)
 				scaley = 1.0;
 				ninepatch_stretch(pos->priv, width, height);
 				break;
-			case DOBJECT_TYPE_SHAPE:
-				width = pos->width;
-				height = pos->height;
-				if(width != 0.0 && height != 0.0)
-				{
-					scalex = pos->layout.w / width;
-					scaley = pos->layout.h / height;
-				}
-				else
-				{
-					scalex = pos->scalex;
-					scaley = pos->scaley;
-				}
-				break;
 			case DOBJECT_TYPE_TEXT:
 				width = pos->width;
 				height = pos->height;
@@ -777,148 +771,85 @@ static void dobject_layout(struct ldobject_t * o)
 static void dobject_draw_image(struct ldobject_t * o, struct window_t * w)
 {
 	struct limage_t * img = o->priv;
-	cairo_t * cr = w->cr;
-	cairo_save(cr);
-	cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(o));
-	cairo_set_source_surface(cr, img->cs, 0, 0);
-	cairo_paint_with_alpha(cr, o->alpha);
-	cairo_restore(cr);
+	surface_blit(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), img->s, RENDER_TYPE_GOOD);
 }
 
 static void dobject_draw_ninepatch(struct ldobject_t * o, struct window_t * w)
 {
 	struct lninepatch_t * ninepatch = o->priv;
-	cairo_t * cr = w->cr;
-	cairo_save(cr);
-	cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(o));
+	struct surface_t * s = w->s;
+	struct matrix_t m;
 	if(ninepatch->lt)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, 0, 0);
-		cairo_set_source_surface(cr, ninepatch->lt, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, 0, 0);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->lt, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->mt)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->left, 0);
-		cairo_scale(cr, ninepatch->__sx, 1);
-		cairo_set_source_surface(cr, ninepatch->mt, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->left, 0);
+		matrix_scale(&m, ninepatch->__sx, 1);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->mt, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->rt)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->__w - ninepatch->right, 0);
-		cairo_set_source_surface(cr, ninepatch->rt, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->__w - ninepatch->right, 0);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->rt, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->lm)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, 0, ninepatch->top);
-		cairo_scale(cr, 1, ninepatch->__sy);
-		cairo_set_source_surface(cr, ninepatch->lm, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, 0, ninepatch->top);
+		matrix_scale(&m, 1, ninepatch->__sy);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->lm, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->mm)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->left, ninepatch->top);
-		cairo_scale(cr, ninepatch->__sx, ninepatch->__sy);
-		cairo_set_source_surface(cr, ninepatch->mm, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->left, ninepatch->top);
+		matrix_scale(&m, ninepatch->__sx, ninepatch->__sy);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->mm, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->rm)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->__w - ninepatch->right, ninepatch->top);
-		cairo_scale(cr, 1, ninepatch->__sy);
-		cairo_set_source_surface(cr, ninepatch->rm, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->__w - ninepatch->right, ninepatch->top);
+		matrix_scale(&m, 1, ninepatch->__sy);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->rm, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->lb)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, 0, ninepatch->__h - ninepatch->bottom);
-		cairo_set_source_surface(cr, ninepatch->lb, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, 0, ninepatch->__h - ninepatch->bottom);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->lb, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->mb)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->left, ninepatch->__h - ninepatch->bottom);
-		cairo_scale(cr, ninepatch->__sx, 1);
-		cairo_set_source_surface(cr, ninepatch->mb, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->left, ninepatch->__h - ninepatch->bottom);
+		matrix_scale(&m, ninepatch->__sx, 1);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->mb, RENDER_TYPE_FAST);
 	}
 	if(ninepatch->rb)
 	{
-		cairo_save(cr);
-		cairo_translate(cr, ninepatch->__w - ninepatch->right, ninepatch->__h - ninepatch->bottom);
-		cairo_set_source_surface(cr, ninepatch->rb, 0, 0);
-		cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-		cairo_paint_with_alpha(cr, o->alpha);
-		cairo_restore(cr);
+		memcpy(&m, dobject_global_matrix(o), sizeof(struct matrix_t));
+		matrix_translate(&m, ninepatch->__w - ninepatch->right, ninepatch->__h - ninepatch->bottom);
+		surface_blit(s, dobject_parent_global_bounds(o), &m, ninepatch->rb, RENDER_TYPE_FAST);
 	}
-	cairo_restore(cr);
-}
-
-static void dobject_draw_shape(struct ldobject_t * o, struct window_t * w)
-{
-	struct lshape_t * shape = o->priv;
-	cairo_t * cr = w->cr;
-	cairo_save(cr);
-	cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(o));
-	cairo_set_source_surface(cr, shape->cs, 0, 0);
-	cairo_paint_with_alpha(cr, o->alpha);
-	cairo_restore(cr);
 }
 
 static void dobject_draw_text(struct ldobject_t * o, struct window_t * w)
 {
 	struct ltext_t * text = o->priv;
-	struct matrix_t * m = dobject_global_matrix(o);
-	cairo_t * cr = w->cr;
-	cairo_save(cr);
-	cairo_set_scaled_font(cr, text->font);
-	cairo_move_to(cr, m->tx, m->ty);
-	cairo_set_matrix(cr, (cairo_matrix_t *)m);
-	cairo_move_to(cr, 0, text->metric.height);
-	cairo_text_path(cr, text->utf8);
-	cairo_set_source(cr, text->pattern);
-	cairo_fill(cr);
-	cairo_restore(cr);
+	surface_text(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), text->txt);
 }
 
 static void dobject_draw_container(struct ldobject_t * o, struct window_t * w)
 {
-	if(o->background.alpha != 0.0)
-	{
-		cairo_t * cr = w->cr;
-		cairo_save(cr);
-		cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(o));
-		cairo_rectangle(cr, 0, 0, o->width, o->height);
-		cairo_set_source_rgba(cr, o->background.red, o->background.green, o->background.blue, o->background.alpha);
-		cairo_fill(cr);
-		cairo_restore(cr);
-	}
+	if(o->bgcolor.a != 0)
+		surface_fill(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), o->width, o->height, &o->bgcolor, RENDER_TYPE_GOOD);
 }
 
 static int l_dobject_new(lua_State * L)
@@ -938,12 +869,6 @@ static int l_dobject_new(lua_State * L)
 	{
 		dtype = DOBJECT_TYPE_NINEPATCH;
 		draw = dobject_draw_ninepatch;
-		userdata = lua_touserdata(L, 3);
-	}
-	else if(luaL_testudata(L, 3, MT_SHAPE))
-	{
-		dtype = DOBJECT_TYPE_SHAPE;
-		draw = dobject_draw_shape;
 		userdata = lua_touserdata(L, 3);
 	}
 	else if(luaL_testudata(L, 3, MT_TEXT))
@@ -974,11 +899,10 @@ static int l_dobject_new(lua_State * L)
 	o->skewy = 0;
 	o->anchorx = 0;
 	o->anchory = 0;
-	o->alpha = 1;
-	o->background.red = 0;
-	o->background.green = 0;
-	o->background.blue = 0;
-	o->background.alpha = 0;
+	o->bgcolor.r = 0;
+	o->bgcolor.g = 0;
+	o->bgcolor.b = 0;
+	o->bgcolor.a = 0;
 	o->layout.style = 0;
 	o->layout.grow = 0;
 	o->layout.shrink = 1;
@@ -1454,39 +1378,14 @@ static int m_get_archor(lua_State * L)
 	return 2;
 }
 
-static int m_set_alpha(lua_State * L)
-{
-	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	double alpha = luaL_checknumber(L, 2);
-	if(o->alpha != alpha)
-	{
-		dobject_mark_dirty(o);
-		o->alpha = alpha;
-	}
-	return 0;
-}
-
-static int m_get_alpha(lua_State * L)
-{
-	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	lua_pushnumber(L, o->alpha);
-	return 1;
-}
-
 static int m_set_background_color(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	double red = luaL_optnumber(L, 2, 1);
-	double green = luaL_optnumber(L, 3, 1);
-	double blue = luaL_optnumber(L, 4, 1);
-	double alpha = luaL_optnumber(L, 5, 1);
-	if((o->background.red != red) || (o->background.green != green) || (o->background.blue != blue) || (o->background.alpha != alpha))
+	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
+	if((o->bgcolor.r != c->r) || (o->bgcolor.g != c->g) || (o->bgcolor.b != c->b) || (o->bgcolor.a != c->a))
 	{
 		dobject_mark_dirty(o);
-		o->background.red = red;
-		o->background.green = green;
-		o->background.blue = blue;
-		o->background.alpha = alpha;
+		memcpy(&o->bgcolor, c, sizeof(struct color_t));
 	}
 	return 0;
 }
@@ -1494,11 +1393,10 @@ static int m_set_background_color(lua_State * L)
 static int m_get_background_color(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	lua_pushnumber(L, o->background.red);
-	lua_pushnumber(L, o->background.green);
-	lua_pushnumber(L, o->background.blue);
-	lua_pushnumber(L, o->background.alpha);
-	return 4;
+	struct color_t * c = lua_newuserdata(L, sizeof(struct color_t));
+	memcpy(c, &o->bgcolor, sizeof(struct color_t));
+	luaL_setmetatable(L, MT_COLOR);
+	return 1;
 }
 
 static int m_set_layout_enable(lua_State * L)
@@ -1930,7 +1828,7 @@ static int m_get_collider(lua_State * L)
 static int m_set_visible(lua_State * L)
 {
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
-	double visible = lua_toboolean(L, 2);
+	int visible = lua_toboolean(L, 2);
 	if(o->visible != visible)
 	{
 		dobject_mark_dirty(o);
@@ -2165,108 +2063,17 @@ static void display_draw(struct window_t * w, struct ldobject_t * o)
 
 	if(o->visible)
 	{
-		struct ldobject_t * parent = o->parent;
-		cairo_t * cr = w->cr;
-		cairo_save(cr);
-		if(parent && (parent->dtype == DOBJECT_TYPE_CONTAINER))
-		{
-			cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(parent));
-			cairo_rectangle(cr, 0, 0, parent->width, parent->height);
-			cairo_clip(cr);
-		}
 		o->draw(o, w);
-		if(w->showobj)
-		{
-			cairo_save(cr);
-			cairo_set_matrix(cr, (cairo_matrix_t *)dobject_global_matrix(o));
-			cairo_set_line_width(cr, 1);
-			cairo_rectangle(cr, 1, 1, o->width - 2, o->height - 2);
-			cairo_set_source_rgba(cr, 1, 0, 0, 0.6);
-			cairo_stroke(cr);
-			if((o->ctype != COLLIDER_TYPE_NONE) && o->touchable)
-			{
-				struct matrix_t m;
-				double x, y;
-				double w, h;
-				double r;
-				double * p;
-				int n, i;
-
-				switch(o->ctype)
-				{
-				case COLLIDER_TYPE_CIRCLE:
-					cairo_new_sub_path(cr);
-					cairo_move_to(cr, o->hit.circle.x + o->hit.circle.radius, o->hit.circle.y);
-					cairo_arc(cr, o->hit.circle.x, o->hit.circle.y, o->hit.circle.radius, 0, M_PI * 2);
-					cairo_close_path(cr);
-					break;
-				case COLLIDER_TYPE_ELLIPSE:
-					x = o->hit.ellipse.x;
-					y = o->hit.ellipse.y;
-					w = o->hit.ellipse.width;
-					h = o->hit.ellipse.height;
-					cairo_get_matrix(cr, (cairo_matrix_t *)(&m));
-					cairo_translate(cr, x, y);
-					cairo_scale(cr, 1, h / w);
-					cairo_translate(cr, -x, -y);
-					cairo_new_sub_path(cr);
-					cairo_move_to(cr, x + w, y);
-					cairo_arc(cr, x, y, w, 0, M_PI * 2);
-					cairo_close_path(cr);
-					cairo_set_matrix(cr, (cairo_matrix_t *)(&m));
-					break;
-				case COLLIDER_TYPE_RECTANGLE:
-					cairo_new_sub_path(cr);
-					cairo_rectangle(cr, o->hit.rectangle.x, o->hit.rectangle.y, o->hit.rectangle.width, o->hit.rectangle.height);
-					cairo_close_path(cr);
-					break;
-				case COLLIDER_TYPE_ROUNDED_RECTANGLE:
-					x = o->hit.rounded_rectangle.x;
-					y = o->hit.rounded_rectangle.y;
-					w = o->hit.rounded_rectangle.width;
-					h = o->hit.rounded_rectangle.height;
-					r = o->hit.rounded_rectangle.radius;
-					cairo_new_sub_path(cr);
-					cairo_move_to(cr, x + r, y);
-					cairo_line_to(cr, x + w - r, y);
-					cairo_arc(cr, x + w - r, y + r, r, - M_PI / 2, 0);
-					cairo_line_to(cr, x + w, y + h - r);
-					cairo_arc(cr, x + w - r, y + h - r, r, 0, M_PI / 2);
-					cairo_line_to(cr, x + r, y + h);
-					cairo_arc(cr, x + r, y + h - r, r, M_PI / 2, M_PI);
-					cairo_arc(cr, x + r, y + r, r, M_PI, M_PI + M_PI / 2);
-					cairo_close_path(cr);
-					break;
-				case COLLIDER_TYPE_POLYGON:
-					p = o->hit.polygon.points;
-					n = o->hit.polygon.length / 2;
-					if(n > 0)
-					{
-						cairo_new_sub_path(cr);
-						cairo_move_to(cr, p[0], p[1]);
-						for(i = 1; i < n; i++)
-							cairo_line_to(cr, p[i << 1], p[(i << 1) + 1]);
-						cairo_close_path(cr);
-					}
-					break;
-				default:
-					break;
-				}
-				cairo_set_source_rgba(cr, 1, 1, 0, 0.6);
-				cairo_fill(cr);
-			}
-			cairo_restore(cr);
-		}
 		list_for_each_entry(pos, &o->children, entry)
 		{
 			display_draw(w, pos);
 		}
-		cairo_restore(cr);
 	}
 }
 
 static int m_render(lua_State * L)
 {
+	static struct color_t c = { .r = 255, .g = 255, .b = 255, .a = 255 };
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
 	struct window_t * w = luaL_checkudata(L, 2, MT_WINDOW);
 	if(window_is_active(w))
@@ -2274,7 +2081,7 @@ static int m_render(lua_State * L)
 		dobject_layout(o);
 		window_region_list_clear(w);
 		window_region_list_fill(w, o);
-		window_present(w, (void *)o, (void (*)(struct window_t *, void *))display_draw);
+		window_present(w, &c, (void *)o, (void (*)(struct window_t *, void *))display_draw);
 	}
 	return 0;
 }
@@ -2313,8 +2120,6 @@ static const luaL_Reg m_dobject[] = {
 	{"getSkew",				m_get_skew},
 	{"setAnchor",			m_set_archor},
 	{"getAnchor",			m_get_archor},
-	{"setAlpha",			m_set_alpha},
-	{"getAlpha",			m_get_alpha},
 	{"setBackgroundColor",	m_set_background_color},
 	{"getBackgroundColor",	m_get_background_color},
 	{"setLayoutEnable",		m_set_layout_enable},

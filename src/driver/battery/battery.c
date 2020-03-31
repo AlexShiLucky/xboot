@@ -1,7 +1,7 @@
 /*
  * driver/battery/battery.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -162,20 +162,20 @@ struct battery_t * search_first_battery(void)
 }
 
 /* 注册一个电池设备 */
-bool_t register_battery(struct device_t ** device, struct battery_t * bat)
+struct device_t * register_battery(struct battery_t * bat, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!bat || !bat->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(bat->name);
 	dev->type = DEVICE_TYPE_BATTERY;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = bat;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "supply", battery_read_supply, NULL, bat);
@@ -194,33 +194,26 @@ bool_t register_battery(struct device_t ** device, struct battery_t * bat)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个电池设备 */
-bool_t unregister_battery(struct battery_t * bat)
+void unregister_battery(struct battery_t * bat)
 {
 	struct device_t * dev;
 
-	if(!bat || !bat->name)
-		return FALSE;
-
-	dev = search_device(bat->name, DEVICE_TYPE_BATTERY);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(bat && bat->name)
+	{
+		dev = search_device(bat->name, DEVICE_TYPE_BATTERY);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 供电类型转字符串类型 */

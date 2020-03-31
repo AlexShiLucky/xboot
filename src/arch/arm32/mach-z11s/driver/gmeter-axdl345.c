@@ -1,7 +1,7 @@
 /*
  * driver/gmeter-axdl345.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -180,17 +180,14 @@ static struct device_t * gmeter_axdl345_probe(struct driver_t * drv, struct dtno
 	g->get = gmeter_axdl345_get;
 	g->priv = pdat;
 
-	if(!register_gmeter(&dev, g))
+	if(!(dev = register_gmeter(g, drv)))
 	{
 		i2c_device_free(pdat->dev);
-
 		free_device_name(g->name);
 		free(g->priv);
 		free(g);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -199,10 +196,10 @@ static void gmeter_axdl345_remove(struct device_t * dev)
 	struct gmeter_t * g = (struct gmeter_t *)dev->priv;
 	struct gmeter_axdl345_pdata_t * pdat = (struct gmeter_axdl345_pdata_t *)g->priv;
 
-	if(g && unregister_gmeter(g))
+	if(g)
 	{
+		unregister_gmeter(g);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(g->name);
 		free(g->priv);
 		free(g);

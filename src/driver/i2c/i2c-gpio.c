@@ -1,7 +1,7 @@
 /*
  * driver/i2c/i2c-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -142,13 +142,13 @@ static struct device_t * i2c_gpio_probe(struct driver_t * drv, struct dtnode_t *
 
 	pdat = malloc(sizeof(struct i2c_gpio_pdata_t));
 	if(!pdat)
-		return FALSE;
+		return NULL;
 
 	i2c = malloc(sizeof(struct i2c_t));
 	if(!i2c)
 	{
 		free(pdat);
-		return FALSE;
+		return NULL;
 	}
 
 	pdat->sda = sda;
@@ -204,15 +204,13 @@ static struct device_t * i2c_gpio_probe(struct driver_t * drv, struct dtnode_t *
 	i2c->xfer = i2c_gpio_xfer;
 	i2c->priv = pdat;
 
-	if(!register_i2c(&dev, i2c))
+	if(!(dev = register_i2c(i2c, drv)))
 	{
 		free_device_name(i2c->name);
 		free(i2c->priv);
 		free(i2c);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -221,8 +219,9 @@ static void i2c_gpio_remove(struct device_t * dev)
 {
 	struct i2c_t * i2c = (struct i2c_t *)dev->priv;
 
-	if(i2c && unregister_i2c(i2c))
+	if(i2c)
 	{
+		unregister_i2c(i2c);
 		free_device_name(i2c->name);
 		free(i2c->priv);
 		free(i2c);

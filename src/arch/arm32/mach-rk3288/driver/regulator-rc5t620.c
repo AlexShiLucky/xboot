@@ -1,7 +1,7 @@
 /*
  * driver/regulator-rc5t620.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -594,17 +594,14 @@ static struct device_t * regulator_rc5t620_probe(struct driver_t * drv, struct d
 	supply->get_voltage = regulator_rc5t620_get_voltage;
 	supply->priv = pdat;
 
-	if(!register_regulator(&dev, supply))
+	if(!(dev = register_regulator(supply, drv)))
 	{
 		i2c_device_free(pdat->dev);
-
 		free(supply->name);
 		free(supply->priv);
 		free(supply);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	if(dt_read_object(n, "default", &o))
 	{
 		char * s = supply->name;
@@ -632,10 +629,10 @@ static void regulator_rc5t620_remove(struct device_t * dev)
 	struct regulator_t * supply = (struct regulator_t *)dev->priv;
 	struct regulator_rc5t620_pdata_t * pdat = (struct regulator_rc5t620_pdata_t *)supply->priv;
 
-	if(supply && unregister_regulator(supply))
+	if(supply)
 	{
+		unregister_regulator(supply);
 		i2c_device_free(pdat->dev);
-
 		free(supply->name);
 		free(supply->priv);
 		free(supply);

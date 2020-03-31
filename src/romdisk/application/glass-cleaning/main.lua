@@ -3,12 +3,8 @@ local sw, sh = stage:getSize()
 local bgimg = Image.new("assets/images/background.png")
 stage:addChild(DisplayImage.new(bgimg))
 
-local mask = DisplayShape.new(sw, sh)
-	:setSource(Pattern.image(bgimg:clone():blur(120)))
-	:paint()
-	:setSource(Pattern.image(Image.new("assets/images/water.png")))
-	:paint()
-	:setOperator("clear")
+local mimg = bgimg:extend(sw, sh, "repeat"):blur(120):blit(Matrix.new(), Image.new("assets/images/water.png"))
+local mask = DisplayImage.new(mimg)
 stage:addChild(mask)
 
 local function onMouseDown(self, e)
@@ -20,7 +16,7 @@ end
 
 local function onMouseMove(self, e)
 	if self.touchid == -1 then
-		mask:arc(e.x, e.y, 30, 0, 2 * math.pi):fill()
+		mimg:clear(Color.new({0, 0, 0, 0}), e.x - 20, e.y - 20, 40, 40)
 		mask:markDirty()
 		e.stop = true
 	end
@@ -42,7 +38,7 @@ end
 
 local function onTouchMove(self, e)
 	if self.touchid == e.id then
-		mask:arc(e.x, e.y, 30, 0, 2 * math.pi):fill()
+		mimg:clear(Color.new({0, 0, 0, 0}), e.x - 20, e.y - 20, 40, 40)
 		mask:markDirty()
 		e.stop = true
 	end

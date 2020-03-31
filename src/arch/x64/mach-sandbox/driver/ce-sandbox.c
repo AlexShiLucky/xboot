@@ -1,7 +1,7 @@
 /*
  * driver/ce-sandbox.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -67,7 +67,7 @@ static struct device_t * ce_sandbox_probe(struct driver_t * drv, struct dtnode_t
 	ce->priv = 0;
 	sandbox_timer_init();
 
-	if(!register_clockevent(&dev, ce))
+	if(!(dev = register_clockevent(ce, drv)))
 	{
 		sandbox_timer_exit();
 		free_device_name(ce->name);
@@ -75,8 +75,6 @@ static struct device_t * ce_sandbox_probe(struct driver_t * drv, struct dtnode_t
 		free(ce);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -84,8 +82,9 @@ static void ce_sandbox_remove(struct device_t * dev)
 {
 	struct clockevent_t * ce = (struct clockevent_t *)dev->priv;
 
-	if(ce && unregister_clockevent(ce))
+	if(ce)
 	{
+		unregister_clockevent(ce);
 		sandbox_timer_exit();
 		free_device_name(ce->name);
 		free(ce->priv);

@@ -1,7 +1,7 @@
 /*
  * driver/dac/dac.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -82,22 +82,22 @@ struct dac_t * search_dac(const char * name)
 }
 
 /* 注册一个dac设备 */
-bool_t register_dac(struct device_t ** device, struct dac_t * dac)
+struct device_t * register_dac(struct dac_t * dac, struct driver_t * drv)
 {
 	struct device_t * dev;
 	char buf[64];
 	int i;
 
 	if(!dac || !dac->name || (dac->resolution <= 0) || (dac->nchannel <= 0) || !dac->write)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(dac->name);
 	dev->type = DEVICE_TYPE_DAC;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = dac;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "vreference", dac_read_vreference, NULL, dac);
@@ -119,33 +119,26 @@ bool_t register_dac(struct device_t ** device, struct dac_t * dac)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个dac设备 */
-bool_t unregister_dac(struct dac_t * dac)
+void unregister_dac(struct dac_t * dac)
 {
 	struct device_t * dev;
 
-	if(!dac || !dac->name)
-		return FALSE;
-
-	dev = search_device(dac->name, DEVICE_TYPE_DAC);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(dac && dac->name)
+	{
+		dev = search_device(dac->name, DEVICE_TYPE_DAC);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 写入dac某通道原始数据*/

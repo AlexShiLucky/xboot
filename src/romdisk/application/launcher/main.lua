@@ -2,9 +2,8 @@ local AppPager = require "AppPager"
 local TaskScroll = require "TaskScroll"
 
 local sw, sh = stage:getSize()
-local bg = DisplayShape.new(sw, sh)
-	:setSource(Pattern.image(Image.new("assets/images/bg.png")):setExtend("repeat"))
-	:paint()
+
+local bg = DisplayImage.new(Image.new("assets/images/bg.png"):extend(sw, sh, "repeat"))
 local pager = AppPager.new(sw, sh)
 local bbg = nil
 local scroll = nil
@@ -47,5 +46,4 @@ end)
 
 stage:addChild(bg)
 stage:addChild(pager)
-stage:asHome(true)
-
+stage:setLauncher(true)

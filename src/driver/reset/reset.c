@@ -1,7 +1,7 @@
 /*
  * driver/reset/reset.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -54,23 +54,23 @@ struct resetchip_t * search_resetchip(int reset)
 	return NULL;
 }
 
-bool_t register_resetchip(struct device_t ** device, struct resetchip_t * chip)
+struct device_t * register_resetchip(struct resetchip_t * chip, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!chip || !chip->name)
-		return FALSE;
+		return NULL;
 
 	if(chip->base < 0 || chip->nreset <= 0)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(chip->name);
 	dev->type = DEVICE_TYPE_RESETCHIP;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = chip;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "base", resetchip_read_base, NULL, chip);
@@ -81,40 +81,30 @@ bool_t register_resetchip(struct device_t ** device, struct resetchip_t * chip)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
-bool_t unregister_resetchip(struct resetchip_t * chip)
+void unregister_resetchip(struct resetchip_t * chip)
 {
 	struct device_t * dev;
 
-	if(!chip || !chip->name)
-		return FALSE;
-
-	if(chip->base < 0 || chip->nreset <= 0)
-		return FALSE;
-
-	dev = search_device(chip->name, DEVICE_TYPE_RESETCHIP);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(chip && chip->name && (chip->base >= 0) && (chip->nreset > 0))
+	{
+		dev = search_device(chip->name, DEVICE_TYPE_RESETCHIP);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
-int reset_is_valid(int reset)
+int reset_is_valid(int rst)
 {
-	return search_resetchip(reset) ? 1 : 0;
+	return search_resetchip(rst) ? 1 : 0;
 }
 
 void reset_assert(int rst)

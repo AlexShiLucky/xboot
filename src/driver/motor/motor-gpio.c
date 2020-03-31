@@ -1,7 +1,7 @@
 /*
  * driver/motor/motor-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -198,16 +198,14 @@ static struct device_t * motor_gpio_probe(struct driver_t * drv, struct dtnode_t
 		gpio_set_value(pdat->e, 0);
 	}
 
-	if(!register_motor(&dev, m))
+	if(!(dev = register_motor(m, drv)))
 	{
 		timer_cancel(&pdat->timer);
-
 		free_device_name(m->name);
 		free(m->priv);
 		free(m);
 		return NULL;
 	}
-	dev->driver = drv;
 
 	return dev;
 }
@@ -218,10 +216,10 @@ static void motor_gpio_remove(struct device_t * dev)
 	struct motor_t * m = (struct motor_t *)dev->priv;
 	struct motor_gpio_pdata_t * pdat = (struct motor_gpio_pdata_t *)m->priv;
 
-	if(m && unregister_motor(m))
+	if(m)
 	{
+		unregister_motor(m);
 		timer_cancel(&pdat->timer);
-
 		free_device_name(m->name);
 		free(m->priv);
 		free(m);

@@ -1,7 +1,7 @@
 /*
  * framework/core/l-stage.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -112,10 +112,6 @@ function M:getDotsPerInch()
 	return w * 25.4 / pw, h * 25.4 / ph
 end
 
-function M:getBytesPerPixel()
-	return self._window:getBytesPerPixel()
-end
-
 function M:setBacklight(brightness)
 	return self._window:setBacklight(brightness)
 end
@@ -124,18 +120,13 @@ function M:getBacklight()
 	return self._window:getBacklight()
 end
 
+function M:setLauncher(enable)
+	self._window:setLauncher(enable)
+	return self
+end
+
 function M:snapshot()
 	return self._window:snapshot()
-end
-
-function M:asHome(enable)
-	self._window:asHome(enable)
-	return self
-end
-
-function M:showObj(enable)
-	self._window:showObj(enable)
-	return self
 end
 
 function M:loop()

@@ -403,7 +403,6 @@
 		"speed": 0,
 		"cd-gpio": -1,
 		"cd-gpio-config": -1,
-		"removable": false,
 		"max-clock-frequency": 25000000
 	},
 
@@ -542,8 +541,6 @@
 		"height": 600,
 		"physical-width": 216,
 		"physical-height": 135,
-		"bits-per-pixel": 32,
-		"bytes-per-pixel": 4,
 		"clock-frequency": 48000000,
 		"hfront-porch": 80,
 		"hback-porch": 80,

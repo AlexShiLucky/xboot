@@ -1,7 +1,7 @@
 /*
  * driver/ce-bcm2836-armtimer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -122,19 +122,16 @@ static struct device_t * ce_bcm2836_armtimer_probe(struct driver_t * drv, struct
 	write32(pdat->virt + ARM_TIMER_CLI, 0);
 	write32(pdat->virt + ARM_TIMER_CTL, 0);
 
-	if(!register_clockevent(&dev, ce))
+	if(!(dev = register_clockevent(ce, drv)))
 	{
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(ce->name);
 		free(ce->priv);
 		free(ce);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -143,12 +140,12 @@ static void ce_bcm2836_armtimer_remove(struct device_t * dev)
 	struct clockevent_t * ce = (struct clockevent_t *)dev->priv;
 	struct ce_bcm2836_armtimer_pdata_t * pdat = (struct ce_bcm2836_armtimer_pdata_t *)ce->priv;
 
-	if(ce && unregister_clockevent(ce))
+	if(ce)
 	{
+		unregister_clockevent(ce);
 		clk_disable(pdat->clk);
 		free_irq(pdat->irq);
 		free(pdat->clk);
-
 		free_device_name(ce->name);
 		free(ce->priv);
 		free(ce);

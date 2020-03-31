@@ -1,7 +1,7 @@
 /*
  * driver/clocksource/clocksource.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -143,17 +143,17 @@ struct clocksource_t * search_first_clocksource(void)
 }
 
 /* 注册一个时钟源设备 */
-bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs)
+struct device_t * register_clocksource(struct clocksource_t * cs, struct driver_t * drv)
 {
 	struct device_t * dev;
 	irq_flags_t flags;
 
 	if(!cs || !cs->name || !cs->read)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	cs->keeper.interval = clocksource_deferment(cs) >> 1;
 	cs->keeper.last = clocksource_cycle(cs);
@@ -163,7 +163,7 @@ bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs
 
 	dev->name = strdup(cs->name);
 	dev->type = DEVICE_TYPE_CLOCKSOURCE;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = cs;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "mult", clocksource_read_mult, NULL, cs);
@@ -178,9 +178,8 @@ bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
 	if(__clocksource == &__cs_dummy)
 	{
 		spin_lock_irqsave(&__clocksource_lock, flags);
@@ -188,44 +187,35 @@ bool_t register_clocksource(struct device_t ** device, struct clocksource_t * cs
 		spin_unlock_irqrestore(&__clocksource_lock, flags);
 	}
 	timer_start_now(&cs->keeper.timer, ns_to_ktime(cs->keeper.interval));
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个时钟源设备 */
-bool_t unregister_clocksource(struct clocksource_t * cs)
+void unregister_clocksource(struct clocksource_t * cs)
 {
 	struct device_t * dev;
 	struct clocksource_t * c;
 	irq_flags_t flags;
 
-	if(!cs || !cs->name || !cs->read)
-		return FALSE;
-
-	dev = search_device(cs->name, DEVICE_TYPE_CLOCKSOURCE);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	timer_cancel(&cs->keeper.timer);
-	if(__clocksource == cs)
+	if(cs && cs->name && cs->read)
 	{
-		if(!(c = search_first_clocksource()))
-			c = &__cs_dummy;
-
-		spin_lock_irqsave(&__clocksource_lock, flags);
-		__clocksource = c;
-		spin_unlock_irqrestore(&__clocksource_lock, flags);
+		dev = search_device(cs->name, DEVICE_TYPE_CLOCKSOURCE);
+		if(dev && unregister_device(dev))
+		{
+			timer_cancel(&cs->keeper.timer);
+			if(__clocksource == cs)
+			{
+				if(!(c = search_first_clocksource()))
+					c = &__cs_dummy;
+				spin_lock_irqsave(&__clocksource_lock, flags);
+				__clocksource = c;
+				spin_unlock_irqrestore(&__clocksource_lock, flags);
+			}
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
 	}
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
 }
 
 /* 将时钟源转ktime */

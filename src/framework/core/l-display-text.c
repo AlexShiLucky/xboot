@@ -1,7 +1,7 @@
 /*
  * framework/core/l-display-text.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -31,10 +31,8 @@
 static const char display_text_lua[] = X(
 local M = Class(DisplayObject)
 
-function M:init(font, pattern, text)
-	self._font = font
-	self._pattern = pattern or Pattern.color()
-	self._text = Text.new(self._font, self._pattern, text or "")
+function M:init(text, color, family, size)
+	self._text = Text.new(text or "", color, family, size)
 	local width, height = self._text:getSize()
 	self.super:init(width, height, self._text)
 end
@@ -51,24 +49,32 @@ function M:setSize(width, height)
 	return self
 end
 
-function M:setFont(font)
+function M:setText(text)
+	self._text:setText(text or "")
+	self.super:setSize(self._text:getSize())
+	self:markDirty()
+	return self
+end
+
+function M:setColor(color)
+	self._text:setColor(color)
+	self:markDirty()
+	return self
+end
+
+function M:setFontFamily(family)
 	if font then
-		self._font = font
-		self._text:setFont(font)
+		self._text:setFontFamily(family)
 		self.super:setSize(self._text:getSize())
+		self:markDirty()
 	end
 	return self
 end
 
-function M:setPattern(pattern)
-	self._pattern = pattern or Pattern.color()
-	self._text:setPattern(self._pattern)
-	return self
-end
-
-function M:setText(text)
-	self._text:setText(text or "")
+function M:setFontSize(size)
+	self._text:setFontSize(size)
 	self.super:setSize(self._text:getSize())
+	self:markDirty()
 	return self
 end
 

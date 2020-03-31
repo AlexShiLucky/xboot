@@ -1,7 +1,7 @@
 /*
  * driver/clk-s5p4418-pll.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -84,6 +84,7 @@ static struct device_t * clk_s5p4418_pll_probe(struct driver_t * drv, struct dtn
 	struct clk_s5p4418_pll_pdata_t * pdat;
 	struct clk_t * clk;
 	struct device_t * dev;
+	struct dtnode_t o;
 	virtual_addr_t virt = phys_to_virt(dt_read_address(n));
 	char * parent = dt_read_string(n, "parent", NULL);
 	char * name = dt_read_string(n, "name", NULL);
@@ -118,17 +119,33 @@ static struct device_t * clk_s5p4418_pll_probe(struct driver_t * drv, struct dtn
 	clk->get_rate = clk_s5p4418_pll_get_rate;
 	clk->priv = pdat;
 
-	if(!register_clk(&dev, clk))
+	if(!(dev = register_clk(clk, drv)))
 	{
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);
 		return NULL;
 	}
-	dev->driver = drv;
+	if(dt_read_object(n, "default", &o))
+	{
+		char * c = clk->name;
+		char * p;
+		u64_t r;
+		int e;
 
+		if((p = dt_read_string(&o, "parent", NULL)) && search_clk(p))
+			clk_set_parent(c, p);
+		if((r = (u64_t)dt_read_long(&o, "rate", 0)) > 0)
+			clk_set_rate(c, r);
+		if((e = dt_read_bool(&o, "enable", -1)) != -1)
+		{
+			if(e > 0)
+				clk_enable(c);
+			else
+				clk_disable(c);
+		}
+	}
 	return dev;
 }
 
@@ -137,10 +154,10 @@ static void clk_s5p4418_pll_remove(struct device_t * dev)
 	struct clk_t * clk = (struct clk_t *)dev->priv;
 	struct clk_s5p4418_pll_pdata_t * pdat = (struct clk_s5p4418_pll_pdata_t *)clk->priv;
 
-	if(clk && unregister_clk(clk))
+	if(clk)
 	{
+		unregister_clk(clk);
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);

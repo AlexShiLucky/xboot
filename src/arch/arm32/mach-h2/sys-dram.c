@@ -1,7 +1,7 @@
 /*
  * sys-dram.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -43,7 +43,6 @@
 #define clrsetbits_le32(addr, clear, set) \
 	write32(((virtual_addr_t)(addr)), (read32(((virtual_addr_t)(addr))) & ~(clear)) | (set))
 
-#define clamp(val, lo, hi)	min((typeof(val))max(val, lo), hi)
 #define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
 #define REPEAT_BYTE(x)		((~0ul / 0xff) * (x))
 
@@ -486,7 +485,6 @@ static void mctl_set_timing_params(struct dram_para_t * para)
 	u8_t twr2rd = tcwl + 2 + twtr;						/* WL + BL / 2 + tWTR */
 	u8_t trd2wr = tcl + 2 + 1 - tcwl;					/* RL + BL / 2 + 2 - WL */
 
-	/* Set mode register */
 	write32((virtual_addr_t)&ctl->mr[0], 0x1c70);		/* CL=11, WR=12 */
 	write32((virtual_addr_t)&ctl->mr[1], 0x40);
 	write32((virtual_addr_t)&ctl->mr[2], 0x18);			/* CWL=8 */
@@ -731,21 +729,12 @@ static void mctl_auto_detect_dram_size(struct dram_para_t * para)
 {
 	para->page_size = 512;
 	para->row_bits = 16;
-	/*
-	para->bank_bits = 2;
-	mctl_set_cr(para);
-	for(para->row_bits = 11; para->row_bits < 16; para->row_bits++)
-	{
-		if(mctl_mem_matches((1 << (para->row_bits + para->bank_bits)) * para->page_size))
-			break;
-	}
-	 */
 
 	para->bank_bits = 3;
 	mctl_set_cr(para);
 	for(para->bank_bits = 2; para->bank_bits < 3; para->bank_bits++)
 	{
-		if (mctl_mem_matches((1 << para->bank_bits) * para->page_size))
+		if(mctl_mem_matches((1 << para->bank_bits) * para->page_size))
 			break;
 	}
 

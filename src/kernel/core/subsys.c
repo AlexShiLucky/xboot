@@ -1,7 +1,7 @@
 /*
  * kernel/core/subsys.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -31,24 +31,6 @@
 extern unsigned char __romdisk_start;
 extern unsigned char __romdisk_end;
 
-static char * trim(char * s)
-{
-	char * e;
-
-	if(s)
-	{
-		while(isspace(*s))
-			s++;
-		if(*s == 0)
-			return s;
-		e = s + strlen(s) - 1;
-		while((e > s) && isspace(*e))
-			e--;
-		*(e + 1) = 0;
-	}
-	return s;
-}
-
 /* 子系统romdisk初始化 */
 static void subsys_init_romdisk(void)
 {
@@ -57,9 +39,9 @@ static void subsys_init_romdisk(void)
 
     /* json = "{romdisk@0:{address:xxxxxxxx,size:yyyyyyyy}}" */
 	length = sprintf(json,
-		"{\"romdisk@0\":{\"address\":\"%ld\",\"size\":\"%ld\"}}",
-		(unsigned long)(&__romdisk_start),
-		(unsigned long)(&__romdisk_end - &__romdisk_start));
+		"{\"blk-romdisk@0\":{\"address\":%lld,\"size\":%lld}}",
+		(unsigned long long)((virtual_addr_t)(&__romdisk_start)),
+		(unsigned long long)((virtual_size_t)(&__romdisk_end - &__romdisk_start)));
     /* 探测romdisk设备 */
 	probe_device(json, length, NULL);
 }
@@ -68,8 +50,8 @@ static void subsys_init_romdisk(void)
 static void subsys_init_rootfs(void)
 {
 	/* mount块设备romdisk.0到根目录下的文件系统cpiofs */
-	vfs_mount("romdisk.0", "/", "cpio", MOUNT_RDONLY);
-	vfs_mount(NULL, "/sys", "sys", MOUNT_RDONLY);
+	vfs_mount("blk-romdisk.0", "/", "cpio", MOUNT_RO);
+	vfs_mount(NULL, "/sys", "sys", MOUNT_RO);
 	vfs_mount(NULL, "/tmp", "ram", MOUNT_RW);
 	vfs_mount(NULL, "/storage", "ram", MOUNT_RW);
 }
@@ -124,8 +106,8 @@ static void subsys_init_private(void)
 		{
 			if(strchr(r, ':'))
 			{
-				dev = trim(strsep(&r, ":"));
-				type = trim(r);
+				dev = strim(strsep(&r, ":"));
+				type = strim(r);
 				dev = (dev && strcmp(dev, "") != 0) ? dev : NULL;
 				type = (type && strcmp(type, "") != 0) ? type : NULL;
 				if(dev && type)

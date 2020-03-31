@@ -6,12 +6,14 @@ extern "C" {
 #endif
 
 #include <xfs/xfs.h>
+#include <graphic/font.h>
 #include <xboot/window.h>
 
 struct vmctx_t
 {
 	char * path;
 	struct xfs_context_t * xfs;
+	struct font_context_t * f;
 	struct window_t * w;
 };
 

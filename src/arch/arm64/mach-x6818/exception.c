@@ -1,7 +1,7 @@
 /*
  * exception.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -28,6 +28,7 @@
 
 #include <xboot.h>
 #include <arm64.h>
+#include <interrupt/interrupt.h>
 
 struct pt_regs_t {
 	uint64_t regs[31];

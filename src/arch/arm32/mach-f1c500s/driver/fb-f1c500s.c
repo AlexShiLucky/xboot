@@ -1,7 +1,7 @@
 /*
  * driver/fb-f1c500s.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -61,6 +61,7 @@ struct fb_f1c500s_pdata_t
 	int pheight;
 	int bits_per_pixel;
 	int bytes_per_pixel;
+	int pixlen;
 	int index;
 	void * vram[2];
 	struct region_list_t * nrl, * orl;
@@ -413,47 +414,18 @@ static int fb_getbl(struct framebuffer_t * fb)
 	return led_get_brightness(pdat->backlight);
 }
 
-static struct render_t * fb_create(struct framebuffer_t * fb)
+static struct surface_t * fb_create(struct framebuffer_t * fb)
 {
 	struct fb_f1c500s_pdata_t * pdat = (struct fb_f1c500s_pdata_t *)fb->priv;
-	struct render_t * render;
-	void * pixels;
-	size_t pixlen;
-
-	pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
-	pixels = memalign(4, pixlen);
-	if(!pixels)
-		return NULL;
-
-	render = malloc(sizeof(struct render_t));
-	if(!render)
-	{
-		free(pixels);
-		return NULL;
-	}
-
-	render->width = pdat->width;
-	render->height = pdat->height;
-	render->pitch = (pdat->width * pdat->bytes_per_pixel + 0x3) & ~0x3;
-	render->bytes = pdat->bytes_per_pixel;
-	render->format = PIXEL_FORMAT_ARGB32;
-	render->pixels = pixels;
-	render->pixlen = pixlen;
-	render->priv = NULL;
-
-	return render;
+return surface_alloc(pdat->width, pdat->height, NULL);
 }
 
-static void fb_destroy(struct framebuffer_t * fb, struct render_t * render)
+static void fb_destroy(struct framebuffer_t * fb, struct surface_t * s)
 {
-	if(render)
-	{
-		free(render->pixels);
-		free(render);
-	}
+	surface_free(s);
 }
 
-static void fb_present(struct framebuffer_t * fb, struct render_t * render, struct region_list_t * rl)
+static void fb_present(struct framebuffer_t * fb, struct surface_t * s, struct region_list_t * rl)
 {
 	struct fb_f1c500s_pdata_t * pdat = (struct fb_f1c500s_pdata_t *)fb->priv;
 	struct region_list_t * nrl = pdat->nrl;
@@ -465,10 +437,10 @@ static void fb_present(struct framebuffer_t * fb, struct render_t * render, stru
 
 	pdat->index = (pdat->index + 1) & 0x1;
 	if(nrl->count > 0)
-		present_render(pdat->vram[pdat->index], render, nrl);
+		present_surface(pdat->vram[pdat->index], s, nrl);
 	else
-		memcpy(pdat->vram[pdat->index], render->pixels, render->pixlen);
-	dma_cache_sync(pdat->vram[pdat->index], render->pixlen, DMA_TO_DEVICE);
+		memcpy(pdat->vram[pdat->index], s->pixels, s->pixlen);
+	dma_cache_sync(pdat->vram[pdat->index], pdat->pixlen, DMA_TO_DEVICE);
 	f1c500s_debe_set_address(pdat, pdat->vram[pdat->index]);
 }
 
@@ -510,11 +482,12 @@ static struct device_t * fb_f1c500s_probe(struct driver_t * drv, struct dtnode_t
 	pdat->height = dt_read_int(n, "height", 240);
 	pdat->pwidth = dt_read_int(n, "physical-width", 216);
 	pdat->pheight = dt_read_int(n, "physical-height", 135);
-	pdat->bits_per_pixel = dt_read_int(n, "bits-per-pixel", 18);
-	pdat->bytes_per_pixel = dt_read_int(n, "bytes-per-pixel", 4);
+	pdat->bits_per_pixel = 18;
+	pdat->bytes_per_pixel = 4;
+	pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
 	pdat->index = 0;
-	pdat->vram[0] = dma_alloc_noncoherent(pdat->width * pdat->height * pdat->bytes_per_pixel);
-	pdat->vram[1] = dma_alloc_noncoherent(pdat->width * pdat->height * pdat->bytes_per_pixel);
+	pdat->vram[0] = dma_alloc_noncoherent(pdat->pixlen);
+	pdat->vram[1] = dma_alloc_noncoherent(pdat->pixlen);
 	pdat->nrl = region_list_alloc(0);
 	pdat->orl = region_list_alloc(0);
 
@@ -536,7 +509,6 @@ static struct device_t * fb_f1c500s_probe(struct driver_t * drv, struct dtnode_t
 	fb->height = pdat->height;
 	fb->pwidth = pdat->pwidth;
 	fb->pheight = pdat->pheight;
-	fb->bytes = pdat->bytes_per_pixel;
 	fb->setbl = fb_setbl;
 	fb->getbl = fb_getbl;
 	fb->create = fb_create;
@@ -557,7 +529,7 @@ static struct device_t * fb_f1c500s_probe(struct driver_t * drv, struct dtnode_t
 		write32(pdat->virtdebe + i, 0);
 	fb_f1c500s_init(pdat);
 
-	if(!register_framebuffer(&dev, fb))
+	if(!(dev = register_framebuffer(fb, drv)))
 	{
 		clk_disable(pdat->clkdefe);
 		clk_disable(pdat->clkdebe);
@@ -569,14 +541,11 @@ static struct device_t * fb_f1c500s_probe(struct driver_t * drv, struct dtnode_t
 		dma_free_noncoherent(pdat->vram[1]);
 		region_list_free(pdat->nrl);
 		region_list_free(pdat->orl);
-
 		free_device_name(fb->name);
 		free(fb->priv);
 		free(fb);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -585,8 +554,9 @@ static void fb_f1c500s_remove(struct device_t * dev)
 	struct framebuffer_t * fb = (struct framebuffer_t *)dev->priv;
 	struct fb_f1c500s_pdata_t * pdat = (struct fb_f1c500s_pdata_t *)fb->priv;
 
-	if(fb && unregister_framebuffer(fb))
+	if(fb)
 	{
+		unregister_framebuffer(fb);
 		clk_disable(pdat->clkdefe);
 		clk_disable(pdat->clkdebe);
 		clk_disable(pdat->clktcon);
@@ -597,7 +567,6 @@ static void fb_f1c500s_remove(struct device_t * dev)
 		dma_free_noncoherent(pdat->vram[1]);
 		region_list_free(pdat->nrl);
 		region_list_free(pdat->orl);
-
 		free_device_name(fb->name);
 		free(fb->priv);
 		free(fb);

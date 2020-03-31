@@ -1,7 +1,7 @@
 /*
  * driver/block/partition/mbr.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -56,19 +56,20 @@ static bool_t is_extended(uint8_t type)
 	return FALSE;
 }
 
-static bool_t mbr_map(struct disk_t * disk)
+static bool_t mbr_map(struct block_t * pblk)
 {
 	struct mbr_header_t mbr;
-	struct partition_t * part;
+	struct device_t * dev;
+	struct block_t * blk;
+	u64_t offset, length;
+	char nbuf[64];
+	char sbuf[64];
 	int i;
 
-	if(!disk || !disk->name)
+	if(!pblk || !pblk->name || (block_capacity(pblk) <= 0))
 		return FALSE;
 
-	if(!disk->size || !disk->count)
-		return FALSE;
-
-	if(disk_read(disk, (uint8_t *)(&mbr), 0, sizeof(struct mbr_header_t)) != sizeof(struct mbr_header_t))
+	if(block_read(pblk, (uint8_t *)(&mbr), 0, sizeof(struct mbr_header_t)) != sizeof(struct mbr_header_t))
 		return FALSE;
 
 	if((mbr.signature[0] != 0x55) || mbr.signature[1] != 0xaa)
@@ -77,19 +78,21 @@ static bool_t mbr_map(struct disk_t * disk)
 	if((mbr.entry[0].type == 0xee) || (mbr.entry[1].type == 0xee) || (mbr.entry[2].type == 0xee) || (mbr.entry[3].type == 0xee))
 		return FALSE;
 
+	LOG("Found mbr partition:");
+	LOG("  0x%016Lx ~ 0x%016Lx %s %*s- %s", 0ULL, block_capacity(pblk) - 1, ssize(sbuf, block_capacity(pblk)), 9 - strlen(sbuf), "", pblk->name);
 	for(i = 0; i < 4; i++)
 	{
 		if((mbr.entry[i].type != 0) && (!is_extended(mbr.entry[i].type)))
 		{
-			part = malloc(sizeof(struct partition_t));
-			if(!part)
-				return FALSE;
-
-			strlcpy(part->name, "", sizeof(part->name));
-			part->from = ((mbr.entry[i].start[3] << 24) | (mbr.entry[i].start[2] << 16) | (mbr.entry[i].start[1] << 8) | (mbr.entry[i].start[0] << 0));
-			part->to = part->from + ((mbr.entry[i].length[3] << 24) | (mbr.entry[i].length[2] << 16) | (mbr.entry[i].length[1] << 8) | (mbr.entry[i].length[0] << 0)) - 1;
-			part->size = disk->size;
-			list_add_tail(&part->entry, &(disk->part.entry));
+			snprintf(nbuf, sizeof(nbuf), "p%d", i);
+			offset = block_size(pblk) * ((mbr.entry[i].start[3] << 24) | (mbr.entry[i].start[2] << 16) | (mbr.entry[i].start[1] << 8) | (mbr.entry[i].start[0] << 0));
+			length = block_size(pblk) * ((mbr.entry[i].length[3] << 24) | (mbr.entry[i].length[2] << 16) | (mbr.entry[i].length[1] << 8) | (mbr.entry[i].length[0] << 0));
+			dev = register_sub_block(pblk, offset, length, nbuf);
+			if(dev)
+			{
+				blk = (struct block_t *)dev->priv;
+				LOG("  0x%016Lx ~ 0x%016Lx %s %*s- %s", offset, offset + length - 1, ssize(sbuf, length), 9 - strlen(sbuf), "", blk->name);
+			}
 		}
 	}
 	return TRUE;

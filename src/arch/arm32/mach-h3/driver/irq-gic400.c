@@ -1,7 +1,7 @@
 /*
  * driver/irq-gic400.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -200,7 +200,7 @@ static struct device_t * irq_gic400_probe(struct driver_t * drv, struct dtnode_t
 	gic400_cpu_init(pdat->virt);
 	arm32_interrupt_enable();
 
-	if(!register_irqchip(&dev, chip))
+	if(!(dev = register_irqchip(chip, drv)))
 	{
 		free_device_name(chip->name);
 		free(chip->handler);
@@ -208,8 +208,6 @@ static struct device_t * irq_gic400_probe(struct driver_t * drv, struct dtnode_t
 		free(chip);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -217,8 +215,9 @@ static void irq_gic400_remove(struct device_t * dev)
 {
 	struct irqchip_t * chip = (struct irqchip_t *)dev->priv;
 
-	if(chip && unregister_irqchip(chip))
+	if(chip)
 	{
+		unregister_irqchip(chip);
 		free_device_name(chip->name);
 		free(chip->handler);
 		free(chip->priv);

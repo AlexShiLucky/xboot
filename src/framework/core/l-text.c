@@ -1,7 +1,7 @@
 /*
  * framework/core/l-text.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,22 +27,24 @@
  */
 
 #include <xboot.h>
-#include <framework/core/l-pattern.h>
-#include <framework/core/l-font.h>
+#include <framework/core/l-color.h>
 #include <framework/core/l-text.h>
 
 static int l_text_new(lua_State * L)
 {
-	struct lfont_t * font = luaL_checkudata(L, 1, MT_FONT);
-	struct lpattern_t * pattern = luaL_checkudata(L, 2, MT_PATTERN);
-	const char * utf8 = luaL_checkstring(L, 3);
-	struct ltext_t * text = lua_newuserdata(L, sizeof(struct ltext_t));
-	text->utf8 = strdup(utf8);
-	text->font = font->font;
-	text->pattern = pattern->pattern;
-	cairo_scaled_font_text_extents(text->font, text->utf8, &text->metric);
-	luaL_setmetatable(L, MT_TEXT);
-	return 1;
+	const char * utf8 = luaL_checkstring(L, 1);
+	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
+	const char * family = luaL_optstring(L, 3, NULL);
+	int size = luaL_optinteger(L, 4, 24);
+	struct text_t * txt = text_alloc(utf8, c, ((struct vmctx_t *)luahelper_vmctx(L))->f, family, size);
+	if(txt)
+	{
+		struct ltext_t * text = lua_newuserdata(L, sizeof(struct ltext_t));
+		text->txt = txt;
+		luaL_setmetatable(L, MT_TEXT);
+		return 1;
+	}
+	return 0;
 }
 
 static const luaL_Reg l_text[] = {
@@ -53,54 +55,71 @@ static const luaL_Reg l_text[] = {
 static int m_text_gc(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	if(text->utf8)
-		free(text->utf8);
+	text_free(text->txt);
 	return 0;
+}
+
+static int m_text_get_origin(lua_State * L)
+{
+	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
+	lua_pushinteger(L, text->txt->e.x);
+	lua_pushinteger(L, text->txt->e.y);
+	return 2;
+}
+
+static int m_text_get_size(lua_State * L)
+{
+	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
+	lua_pushinteger(L, text->txt->e.w);
+	lua_pushinteger(L, text->txt->e.h);
+	return 2;
 }
 
 static int m_text_set_text(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
 	const char * utf8 = luaL_checkstring(L, 2);
-	if(text->utf8)
-		free(text->utf8);
-	text->utf8 = strdup(utf8);
-	cairo_scaled_font_text_extents(text->font, text->utf8, &text->metric);
-	return 0;
+	text_set_text(text->txt, utf8);
+	lua_settop(L, 1);
+	return 1;
 }
 
-static int m_text_set_font(lua_State * L)
+static int m_text_set_color(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	struct lfont_t * font = luaL_checkudata(L, 2, MT_FONT);
-	text->font = font->font;
-	cairo_scaled_font_text_extents(text->font, text->utf8, &text->metric);
-	return 0;
+	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
+	text_set_color(text->txt, c);
+	lua_settop(L, 1);
+	return 1;
 }
 
-static int m_text_set_pattern(lua_State * L)
+static int m_text_set_font_family(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	struct lpattern_t * pattern = luaL_checkudata(L, 2, MT_PATTERN);
-	text->pattern = pattern->pattern;
-	return 0;
+	const char * family = luaL_checkstring(L, 2);
+	text_set_font_family(text->txt, family);
+	lua_settop(L, 1);
+	return 1;
 }
 
-static int m_text_get_size(lua_State * L)
+static int m_text_set_font_size(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	lua_pushnumber(L, text->metric.width);
-	lua_pushnumber(L, text->metric.height);
-	return 2;
+	int size = luaL_optinteger(L, 2, 0);
+	text_set_font_size(text->txt, size);
+	lua_settop(L, 1);
+	return 1;
 }
 
 static const luaL_Reg m_text[] = {
-	{"__gc",		m_text_gc},
-	{"setText",		m_text_set_text},
-	{"setFont",		m_text_set_font},
-	{"setPattern",	m_text_set_pattern},
-	{"getSize",		m_text_get_size},
-	{NULL,			NULL}
+	{"__gc",			m_text_gc},
+	{"getOrigin",		m_text_get_origin},
+	{"getSize",			m_text_get_size},
+	{"setText",			m_text_set_text},
+	{"setColor",		m_text_set_color},
+	{"setFontFamily",	m_text_set_font_family},
+	{"setFontSize",		m_text_set_font_size},
+	{NULL, NULL}
 };
 
 int luaopen_text(lua_State * L)

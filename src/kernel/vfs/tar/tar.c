@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/tar/tar.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -173,7 +173,7 @@ static bool_t check_path(const char * path, const char * perfix, const char * na
 	return FALSE;
 }
 
-static int tar_mount(struct vfs_mount_t * m, const char * dev, u32_t flags)
+static int tar_mount(struct vfs_mount_t * m, const char * dev)
 {
 	struct tar_header_t header;
 	u64_t rd;
@@ -191,7 +191,7 @@ static int tar_mount(struct vfs_mount_t * m, const char * dev, u32_t flags)
 	if(strncmp((const char *)(header.magic), "ustar", 5) != 0)
 		return -1;
 
-	m->m_flags = MOUNT_RDONLY;
+	m->m_flags |= MOUNT_RO;
 	m->m_root->v_data = NULL;
 	m->m_data = NULL;
 

@@ -1,7 +1,7 @@
 /*
  * driver/proximity/proximity.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -60,20 +60,20 @@ struct proximity_t * search_first_proximity(void)
 }
 
 /* 注册一个距离传感器设备 */
-bool_t register_proximity(struct device_t ** device,struct proximity_t * p)
+struct device_t * register_proximity(struct proximity_t * p, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!p || !p->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(p->name);
 	dev->type = DEVICE_TYPE_PROXIMITY;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = p;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "distance", proximity_read_distance, NULL, p);
@@ -83,33 +83,26 @@ bool_t register_proximity(struct device_t ** device,struct proximity_t * p)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个距离传感器设备 */
-bool_t unregister_proximity(struct proximity_t * p)
+void unregister_proximity(struct proximity_t * p)
 {
 	struct device_t * dev;
 
-	if(!p || !p->name)
-		return FALSE;
-
-	dev = search_device(p->name, DEVICE_TYPE_PROXIMITY);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(p && p->name)
+	{
+		dev = search_device(p->name, DEVICE_TYPE_PROXIMITY);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 距离传感器设备距离获取接口调用 */

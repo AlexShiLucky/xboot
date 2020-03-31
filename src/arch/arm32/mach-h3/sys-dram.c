@@ -1,7 +1,7 @@
 /*
  * sys-dram.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -43,7 +43,6 @@
 #define clrsetbits_le32(addr, clear, set) \
 	write32(((virtual_addr_t)(addr)), (read32(((virtual_addr_t)(addr))) & ~(clear)) | (set))
 
-#define clamp(val, lo, hi)	min((typeof(val))max(val, lo), hi)
 #define DIV_ROUND_UP(n, d)	(((n) + (d) - 1) / (d))
 #define REPEAT_BYTE(x)		((~0ul / 0xff) * (x))
 
@@ -725,7 +724,7 @@ static void mctl_auto_detect_dram_size(struct dram_para_t * para)
 	mctl_set_cr(para);
 	for(para->bank_bits = 2; para->bank_bits < 3; para->bank_bits++)
 	{
-		if (mctl_mem_matches((1 << para->bank_bits) * para->page_size))
+		if(mctl_mem_matches((1 << para->bank_bits) * para->page_size))
 			break;
 	}
 

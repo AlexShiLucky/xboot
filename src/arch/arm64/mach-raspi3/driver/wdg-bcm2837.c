@@ -1,7 +1,7 @@
 /*
  * driver/wdg-bcm2837.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -113,15 +113,13 @@ static struct device_t * wdg_bcm2837_probe(struct driver_t * drv, struct dtnode_
 	wdg->get = wdg_bcm2837_get;
 	wdg->priv = pdat;
 
-	if(!register_watchdog(&dev, wdg))
+	if(!(dev = register_watchdog(wdg, drv)))
 	{
 		free_device_name(wdg->name);
 		free(wdg->priv);
 		free(wdg);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -129,8 +127,9 @@ static void wdg_bcm2837_remove(struct device_t * dev)
 {
 	struct watchdog_t * wdg = (struct watchdog_t *)dev->priv;
 
-	if(wdg && unregister_watchdog(wdg))
+	if(wdg)
 	{
+		unregister_watchdog(wdg);
 		free_device_name(wdg->name);
 		free(wdg->priv);
 		free(wdg);

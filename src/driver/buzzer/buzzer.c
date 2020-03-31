@@ -1,7 +1,7 @@
 /*
  * driver/buzzer/buzzer.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -85,20 +85,20 @@ struct buzzer_t * search_first_buzzer(void)
 }
 
 /* 注册一个蜂鸣器设备 */
-bool_t register_buzzer(struct device_t ** device, struct buzzer_t * buzzer)
+struct device_t * register_buzzer(struct buzzer_t * buzzer, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!buzzer || !buzzer->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(buzzer->name);
 	dev->type = DEVICE_TYPE_BUZZER;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = buzzer;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "frequency", buzzer_read_frequency, buzzer_write_frequency, buzzer);
@@ -109,33 +109,26 @@ bool_t register_buzzer(struct device_t ** device, struct buzzer_t * buzzer)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个蜂鸣器设备 */
-bool_t unregister_buzzer(struct buzzer_t * buzzer)
+void unregister_buzzer(struct buzzer_t * buzzer)
 {
 	struct device_t * dev;
 
-	if(!buzzer || !buzzer->name)
-		return FALSE;
-
-	dev = search_device(buzzer->name, DEVICE_TYPE_BUZZER);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(buzzer && buzzer->name)
+	{
+		dev = search_device(buzzer->name, DEVICE_TYPE_BUZZER);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 蜂鸣器设备频率设置接口调用 */

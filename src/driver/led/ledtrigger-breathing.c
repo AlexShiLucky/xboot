@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger-breathing.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -74,7 +74,7 @@ static void ledtrigger_breathing_activity(struct ledtrigger_t * trigger)
 static struct device_t * ledtrigger_breathing_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledtrigger_breathing_pdata_t * pdat;
-	struct ledtrigger_t * ledtrigger;
+	struct ledtrigger_t * trigger;
 	struct device_t * dev;
 	struct led_t * led;
 
@@ -86,60 +86,57 @@ static struct device_t * ledtrigger_breathing_probe(struct driver_t * drv, struc
 	if(!pdat)
 		return NULL;
 
-	ledtrigger = malloc(sizeof(struct ledtrigger_t));
-	if(!ledtrigger)
+	trigger = malloc(sizeof(struct ledtrigger_t));
+	if(!trigger)
 	{
 		free(pdat);
 		return NULL;
 	}
 
-	timer_init(&pdat->timer, ledtrigger_breathing_timer_function, ledtrigger);
+	timer_init(&pdat->timer, ledtrigger_breathing_timer_function, trigger);
 	pdat->led = led;
 	pdat->interval = dt_read_int(n, "interval-ms", 20);
 	pdat->period = dt_read_int(n, "period-ms", 3000);
 	pdat->phase = 0;
 
-	ledtrigger->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	ledtrigger->activity = ledtrigger_breathing_activity;
-	ledtrigger->priv = pdat;
+	trigger->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+	trigger->activity = ledtrigger_breathing_activity;
+	trigger->priv = pdat;
 
 	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 
-	if(!register_ledtrigger(&dev, ledtrigger))
+	if(!(dev = register_ledtrigger(trigger, drv)))
 	{
 		timer_cancel(&pdat->timer);
-
-		free_device_name(ledtrigger->name);
-		free(ledtrigger->priv);
-		free(ledtrigger);
+		free_device_name(trigger->name);
+		free(trigger->priv);
+		free(trigger);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
 /* led闪烁设备呼吸方式移除 */
 static void ledtrigger_breathing_remove(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)trigger->priv;
 
-	if(ledtrigger && unregister_ledtrigger(ledtrigger))
+	if(trigger)
 	{
+		unregister_ledtrigger(trigger);
 		timer_cancel(&pdat->timer);
-
-		free_device_name(ledtrigger->name);
-		free(ledtrigger->priv);
-		free(ledtrigger);
+		free_device_name(trigger->name);
+		free(trigger->priv);
+		free(trigger);
 	}
 }
 
 /* led闪烁设备呼吸方式挂起 */
 static void ledtrigger_breathing_suspend(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)trigger->priv;
 
 	timer_cancel(&pdat->timer);
 }
@@ -147,8 +144,8 @@ static void ledtrigger_breathing_suspend(struct device_t * dev)
 /* led闪烁设备呼吸方式释放 */
 static void ledtrigger_breathing_resume(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_breathing_pdata_t * pdat = (struct ledtrigger_breathing_pdata_t *)trigger->priv;
 
 	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 }

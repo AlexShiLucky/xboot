@@ -1,7 +1,7 @@
 /*
  * driver/nvmem/kvdb.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -36,24 +36,6 @@ struct record_t
 	char * key;
 	char * value;
 };
-
-static char * trim(char * s)
-{
-	char * e;
-
-	if(s)
-	{
-		while(isspace(*s))
-			s++;
-		if(*s == 0)
-			return s;
-		e = s + strlen(s) - 1;
-		while((e > s) && isspace(*e))
-			e--;
-		*(e + 1) = 0;
-	}
-	return s;
-}
 
 /* 通过key获取hash表头 */
 static struct hlist_head * kvdb_hash(struct kvdb_t * db, const char * key)
@@ -247,8 +229,8 @@ void kvdb_from_string(struct kvdb_t * db, char * str)
 	{
 		if(strchr(r, '='))
 		{
-			k = trim(strsep(&r, "="));
-			v = trim(r);
+			k = strim(strsep(&r, "="));
+			v = strim(r);
 			k = (k && strcmp(k, "") != 0) ? k : NULL;
 			v = (v && strcmp(v, "") != 0) ? v : NULL;
 			if(k && v)

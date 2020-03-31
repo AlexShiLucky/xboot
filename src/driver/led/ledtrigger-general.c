@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger-general.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -70,7 +70,7 @@ static void ledtrigger_general_activity(struct ledtrigger_t * trigger)
 static struct device_t * ledtrigger_general_probe(struct driver_t * drv, struct dtnode_t * n)
 {
 	struct ledtrigger_general_pdata_t * pdat;
-	struct ledtrigger_t * ledtrigger;
+	struct ledtrigger_t * trigger;
 	struct device_t * dev;
 	struct led_t * led;
 
@@ -82,57 +82,54 @@ static struct device_t * ledtrigger_general_probe(struct driver_t * drv, struct 
 	if(!pdat)
 		return NULL;
 
-	ledtrigger = malloc(sizeof(struct ledtrigger_t));
-	if(!ledtrigger)
+	trigger = malloc(sizeof(struct ledtrigger_t));
+	if(!trigger)
 	{
 		free(pdat);
 		return NULL;
 	}
 
-	timer_init(&pdat->timer, ledtrigger_general_timer_function, ledtrigger);
+	timer_init(&pdat->timer, ledtrigger_general_timer_function, trigger);
 	pdat->led = led;
 	pdat->activity = 0;
 	pdat->last_activity = 0;
 
-	ledtrigger->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	ledtrigger->activity = ledtrigger_general_activity;
-	ledtrigger->priv = pdat;
+	trigger->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+	trigger->activity = ledtrigger_general_activity;
+	trigger->priv = pdat;
 
-	if(!register_ledtrigger(&dev, ledtrigger))
+	if(!(dev = register_ledtrigger(trigger, drv)))
 	{
 		timer_cancel(&pdat->timer);
-
-		free_device_name(ledtrigger->name);
-		free(ledtrigger->priv);
-		free(ledtrigger);
+		free_device_name(trigger->name);
+		free(trigger->priv);
+		free(trigger);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
 /* led闪烁设备通用方式移除 */
 static void ledtrigger_general_remove(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)trigger->priv;
 
-	if(ledtrigger && unregister_ledtrigger(ledtrigger))
+	if(trigger)
 	{
+		unregister_ledtrigger(trigger);
 		timer_cancel(&pdat->timer);
-
-		free_device_name(ledtrigger->name);
-		free(ledtrigger->priv);
-		free(ledtrigger);
+		free_device_name(trigger->name);
+		free(trigger->priv);
+		free(trigger);
 	}
 }
 
 /* led闪烁设备通用方式挂起 */
 static void ledtrigger_general_suspend(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)trigger->priv;
 
 	timer_cancel(&pdat->timer);
 }
@@ -140,8 +137,8 @@ static void ledtrigger_general_suspend(struct device_t * dev)
 /* led闪烁设备通用方式释放 */
 static void ledtrigger_general_resume(struct device_t * dev)
 {
-	struct ledtrigger_t * ledtrigger = (struct ledtrigger_t *)dev->priv;
-	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)ledtrigger->priv;
+	struct ledtrigger_t * trigger = (struct ledtrigger_t *)dev->priv;
+	struct ledtrigger_general_pdata_t * pdat = (struct ledtrigger_general_pdata_t *)trigger->priv;
 
 	timer_cancel(&pdat->timer);
 }

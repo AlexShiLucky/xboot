@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -50,20 +50,20 @@ struct ledtrigger_t * search_ledtrigger(const char * name)
 }
 
 /* 注册一个led闪烁设备 */
-bool_t register_ledtrigger(struct device_t ** device, struct ledtrigger_t * trigger)
+struct device_t * register_ledtrigger(struct ledtrigger_t * trigger, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!trigger || !trigger->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(trigger->name);
 	dev->type = DEVICE_TYPE_LEDTRIGGER;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = trigger;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "activity", NULL, ledtrigger_write_activity, trigger);
@@ -73,33 +73,26 @@ bool_t register_ledtrigger(struct device_t ** device, struct ledtrigger_t * trig
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个led闪烁设备 */
-bool_t unregister_ledtrigger(struct ledtrigger_t * trigger)
+void unregister_ledtrigger(struct ledtrigger_t * trigger)
 {
 	struct device_t * dev;
 
-	if(!trigger || !trigger->name)
-		return FALSE;
-
-	dev = search_device(trigger->name, DEVICE_TYPE_LEDTRIGGER);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(trigger && trigger->name)
+	{
+		dev = search_device(trigger->name, DEVICE_TYPE_LEDTRIGGER);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* led闪烁设备激活接口调用 */

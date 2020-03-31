@@ -1,7 +1,7 @@
 /*
  * driver/buzzer/buzzer-gpio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -155,18 +155,15 @@ static struct device_t * buzzer_gpio_probe(struct driver_t * drv, struct dtnode_
 	gpio_set_direction(pdat->gpio, GPIO_DIRECTION_OUTPUT);
 	buzzer_gpio_set(buzzer, 0);
 
-	if(!register_buzzer(&dev, buzzer))
+	if(!(dev = register_buzzer(buzzer, drv)))
 	{
 		timer_cancel(&pdat->timer);
 		queue_free(pdat->queue, iter_queue_node);
-
 		free_device_name(buzzer->name);
 		free(buzzer->priv);
 		free(buzzer);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -175,11 +172,11 @@ static void buzzer_gpio_remove(struct device_t * dev)
 	struct buzzer_t * buzzer = (struct buzzer_t *)dev->priv;
 	struct buzzer_gpio_pdata_t * pdat = (struct buzzer_gpio_pdata_t *)buzzer->priv;
 
-	if(buzzer && unregister_buzzer(buzzer))
+	if(buzzer)
 	{
+		unregister_buzzer(buzzer);
 		timer_cancel(&pdat->timer);
 		queue_free(pdat->queue, iter_queue_node);
-
 		free_device_name(buzzer->name);
 		free(buzzer->priv);
 		free(buzzer);

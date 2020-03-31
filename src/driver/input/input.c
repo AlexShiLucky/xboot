@@ -1,7 +1,7 @@
 /*
  * driver/input/input.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -41,20 +41,20 @@ struct input_t * search_input(const char * name)
 }
 
 /* 注册一个输入设备 */
-bool_t register_input(struct device_t ** device, struct input_t * input)
+struct device_t * register_input(struct input_t * input, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!input || !input->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(input->name);
 	dev->type = DEVICE_TYPE_INPUT;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = input;
 	dev->kobj = kobj_alloc_directory(dev->name);
 
@@ -63,37 +63,30 @@ bool_t register_input(struct device_t ** device, struct input_t * input)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个输入设备 */
-bool_t unregister_input(struct input_t * input)
+void unregister_input(struct input_t * input)
 {
 	struct device_t * dev;
 
-	if(!input || !input->name)
-		return FALSE;
-
-	dev = search_device(input->name, DEVICE_TYPE_INPUT);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(input && input->name)
+	{
+		dev = search_device(input->name, DEVICE_TYPE_INPUT);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 输入设备io控制接口调用 */
-int input_ioctl(struct input_t * input, int cmd, void * arg)
+int input_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
 	if(input && input->ioctl)
 		return input->ioctl(input, cmd, arg);

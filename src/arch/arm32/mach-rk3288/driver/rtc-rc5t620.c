@@ -1,7 +1,7 @@
 /*
  * driver/rtc-rc5t620.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -195,17 +195,14 @@ static struct device_t * rtc_rc5t620_probe(struct driver_t * drv, struct dtnode_
 	rtc->gettime = rtc_rc5t620_gettime;
 	rtc->priv = pdat;
 
-	if(!register_rtc(&dev, rtc))
+	if(!(dev = register_rtc(rtc, drv)))
 	{
 		i2c_device_free(pdat->dev);
-
 		free_device_name(rtc->name);
 		free(rtc->priv);
 		free(rtc);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -214,10 +211,10 @@ static void rtc_rc5t620_remove(struct device_t * dev)
 	struct rtc_t * rtc = (struct rtc_t *)dev->priv;
 	struct rtc_rc5t620_pdata_t * pdat = (struct rtc_rc5t620_pdata_t *)rtc->priv;
 
-	if(rtc && unregister_rtc(rtc))
+	if(rtc)
 	{
+		unregister_rtc(rtc);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(rtc->name);
 		free(rtc->priv);
 		free(rtc);

@@ -55,28 +55,20 @@ local function onTouchEnd(self, e)
 end
 
 local sw, sh = stage:getSize()
-
-stage:addChild(DisplayShape.new(sw, sh)
-	:setSource(Pattern.image(assets:loadImage("assets/images/bg.png")):setExtend("repeat"))
-	:paint())
+stage:addChild(DisplayImage.new(Image.new("assets/images/bg.png"):extend(sw, sh, "repeat")))
 
 for i = 1, 5 do
-	local shape = DisplayShape.new(100, 50)
-		:setLineWidth(6)
-		:rectangle(0, 0, 100, 50)
-		:setSourceColor(1, 0, 0, 0.5)
-		:fillPreserve()
-		:setSourceColor(0, 0, 0)
-		:stroke()
-		:setPosition(math.random(0, sw - 100), math.random(0, sh - 50))
+	local image = DisplayImage.new(Image.new(100, 50)
+			:rectangle(0, 0, 100, 50, 0, -1, Color.new("#FF000080"))
+			:rectangle(0, 0, 100, 50, 0, 6, Color.new("#282828FF"))
+		):setPosition(math.random(0, sw - 100), math.random(0, sh - 50))
 
-	shape:addEventListener("mouse-down", onMouseDown)
-	shape:addEventListener("mouse-move", onMouseMove)
-	shape:addEventListener("mouse-up", onMouseUp)
-	shape:addEventListener("touch-begin", onTouchBegin)
-	shape:addEventListener("touch-move", onTouchMove)
-	shape:addEventListener("touch-end", onTouchEnd)
+	image:addEventListener("mouse-down", onMouseDown)
+	image:addEventListener("mouse-move", onMouseMove)
+	image:addEventListener("mouse-up", onMouseUp)
+	image:addEventListener("touch-begin", onTouchBegin)
+	image:addEventListener("touch-move", onTouchMove)
+	image:addEventListener("touch-end", onTouchEnd)
 
-	stage:addChild(shape)
+	stage:addChild(image)
 end
-

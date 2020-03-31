@@ -1,7 +1,7 @@
 /*
  * framework/core/l-assets.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -40,7 +40,6 @@ local M = Class()
 
 function M:init()
 	self._images = {}
-	self._fonts = {}
 	self._themes = {}
 end
 
@@ -50,20 +49,6 @@ function M:loadImage(name)
 			self._images[name] = Image.new(name)
 		end
 		return self._images[name]
-	end
-	return nil
-end
-
-function M:loadFont(family, size)
-	if type(family) == "string" then
-		if not self._fonts[family] then
-			self._fonts[family] = {}
-		end
-		local size = size or 1
-		if not self._fonts[family][size] and Xfs.isfile(family) then
-			self._fonts[family][size] = Font.new(family, size)
-		end
-		return self._fonts[family][size]
 	end
 	return nil
 end
@@ -99,6 +84,10 @@ function M:loadDisplay(name)
 			return DisplayNinepatch.new(Ninepatch.new(name))
 		elseif string.lower(string.sub(name, -4)) == ".png" then
 			return DisplayImage.new(self:loadImage(name))
+		elseif string.lower(string.sub(name, -4)) == ".jpg" then
+			return DisplayImage.new(self:loadImage(name))
+		elseif string.lower(string.sub(name, -5)) == ".jpeg" then
+			return DisplayImage.new(self:loadImage(name))
 		end
 	else
 		return name
@@ -107,7 +96,6 @@ end
 
 function M:clear()
 	self._images = {}
-	self._fonts = {}
 	self._themes = {}
 end
 

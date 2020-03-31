@@ -1,7 +1,7 @@
 /*
  * driver/battery-sbs.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -217,17 +217,14 @@ static struct device_t * battery_sbs_probe(struct driver_t * drv, struct dtnode_
 	bat->update = battery_sbs_update;
 	bat->priv = pdat;
 
-	if(!register_battery(&dev, bat))
+	if(!(dev = register_battery(bat, drv)))
 	{
 		i2c_device_free(pdat->dev);
-
 		free_device_name(bat->name);
 		free(bat->priv);
 		free(bat);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -236,10 +233,10 @@ static void battery_sbs_remove(struct device_t * dev)
 	struct battery_t * bat = (struct battery_t *)dev->priv;
 	struct battery_sbs_pdata_t * pdat = (struct battery_sbs_pdata_t *)bat->priv;
 
-	if(bat && unregister_battery(bat))
+	if(bat)
 	{
+		unregister_battery(bat);
 		i2c_device_free(pdat->dev);
-
 		free_device_name(bat->name);
 		free(bat->priv);
 		free(bat);

@@ -1,7 +1,7 @@
 /*
  * driver/rtc/rtc.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -30,24 +30,27 @@
 #include <rtc/rtc.h>
 
 /* 获取某年某月的天数 */
-static int rtc_month_days(int year, int month)
+static inline int rtc_month_days(unsigned int year, unsigned int month)
 {
-	const unsigned char rtc_days_in_month[13] = {
+	const int rtc_days_in_month[13] = {
 		0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 	};
-	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2));
+	if(month > 12)
+		month = 0;
+	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2)) ? 1 : 0;
 }
 
 /* 判断时间是否有效 */
 static int rtc_time_is_valid(struct rtc_time_t * time)
 {
 	if((!time) || (time->year < 1970)
-		|| ((time->month) > 12)
+		|| (time->month < 1)
+		|| (time->month > 12)
 		|| (time->day < 1)
 		|| (time->day > rtc_month_days(time->year, time->month))
-		|| ((time->hour) >= 24)
-		|| ((time->minute) >= 60)
-		|| ((time->second) >= 60))
+		|| (time->hour >= 24)
+		|| (time->minute >= 60)
+		|| (time->second >= 60))
 		return 0;
 	return 1;
 }
@@ -102,21 +105,21 @@ struct rtc_t * search_first_rtc(void)
 }
 
 /* 注册一个rtc设备 */
-bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
+struct device_t * register_rtc(struct rtc_t * rtc, struct driver_t * drv)
 {
 	struct device_t * dev;
 	struct rtc_time_t time;
 
 	if(!rtc || !rtc->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(rtc->name);
 	dev->type = DEVICE_TYPE_RTC;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = rtc;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "time", rtc_time_read, rtc_time_write, rtc);
@@ -138,33 +141,26 @@ bool_t register_rtc(struct device_t ** device, struct rtc_t * rtc)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个rtc设备 */
-bool_t unregister_rtc(struct rtc_t * rtc)
+void unregister_rtc(struct rtc_t * rtc)
 {
 	struct device_t * dev;
 
-	if(!rtc || !rtc->name)
-		return FALSE;
-
-	dev = search_device(rtc->name, DEVICE_TYPE_RTC);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(rtc && rtc->name)
+	{
+		dev = search_device(rtc->name, DEVICE_TYPE_RTC);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* rtc时间设置接口调用 */

@@ -1,7 +1,7 @@
 /*
  * driver/vibrator/vibrator-pwm.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -157,18 +157,15 @@ static struct device_t * vibrator_pwm_probe(struct driver_t * drv, struct dtnode
 
 	vibrator_pwm_set(vib, 0);
 
-	if(!register_vibrator(&dev, vib))
+	if(!(dev = register_vibrator(vib, drv)))
 	{
 		timer_cancel(&pdat->timer);
 		queue_free(pdat->queue, iter_queue_node);
-
 		free_device_name(vib->name);
 		free(vib->priv);
 		free(vib);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -177,11 +174,11 @@ static void vibrator_pwm_remove(struct device_t * dev)
 	struct vibrator_t * vib = (struct vibrator_t *)dev->priv;
 	struct vibrator_pwm_pdata_t * pdat = (struct vibrator_pwm_pdata_t *)vib->priv;
 
-	if(vib && unregister_vibrator(vib))
+	if(vib)
 	{
+		unregister_vibrator(vib);
 		timer_cancel(&pdat->timer);
 		queue_free(pdat->queue, iter_queue_node);
-
 		free_device_name(vib->name);
 		free(vib->priv);
 		free(vib);

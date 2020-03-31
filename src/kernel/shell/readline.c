@@ -1,7 +1,7 @@
 /*
  * kernel/shell/readline.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,6 +27,7 @@
  */
 
 #include <xboot.h>
+#include <command/command.h>
 #include <shell/readline.h>
 
 enum esc_state_t {
@@ -36,6 +37,7 @@ enum esc_state_t {
 };
 
 struct rl_buf_t {
+	char * prompt;
 	u32_t * buf;
 	u32_t * cut;
 	int bsize;
@@ -257,9 +259,9 @@ static void rl_cursor_end(struct rl_buf_t * rl)
 	}
 }
 
-static void rl_insert(struct rl_buf_t * rl, u32_t * str)
+static void rl_insert(struct rl_buf_t * rl, u32_t * s)
 {
-	int len = ucs4_strlen(str);
+	int len = ucs4_strlen(s);
 
 	if(len <= 0)
 		return;
@@ -276,7 +278,7 @@ static void rl_insert(struct rl_buf_t * rl, u32_t * str)
 	if(len + rl->len < rl->bsize)
 	{
 		memmove(rl->buf + rl->pos + len, rl->buf + rl->pos, (rl->len - rl->pos + 1) * sizeof(u32_t));
-		memmove (rl->buf + rl->pos, str, len * sizeof(u32_t));
+		memmove(rl->buf + rl->pos, s, len * sizeof(u32_t));
 
 		rl->pos = rl->pos + len;
 		rl->len = rl->len + len;
@@ -327,13 +329,11 @@ static struct rl_buf_t * rl_alloc(const char * prompt)
 {
 	struct rl_buf_t * rl;
 
-	if(prompt)
-		printf("%s", prompt);
-
 	rl = malloc(sizeof(struct rl_buf_t));
 	if(!rl)
 		return NULL;
 
+	rl->prompt = strdup(prompt);
 	rl->bsize = 128;
 	rl->buf = malloc(sizeof(u32_t) * rl->bsize);
 	rl->cut = NULL;
@@ -346,15 +346,20 @@ static struct rl_buf_t * rl_alloc(const char * prompt)
 
 	if(!rl->buf)
 	{
+		if(rl->prompt)
+			free(rl->prompt);
 		free(rl);
 		return NULL;
 	}
-
+	if(rl->prompt)
+		printf("%s", rl->prompt);
 	return rl;
 }
 
 static void rl_free(struct rl_buf_t * rl)
 {
+	if(rl->prompt)
+		free(rl->prompt);
 	if(rl->cut)
 		free(rl->cut);
 	free(rl->buf);
@@ -495,6 +500,219 @@ static bool_t rl_getcode(struct rl_buf_t * rl, u32_t * code)
 	return FALSE;
 }
 
+static void rl_complete_file(struct rl_buf_t * rl, char * utf8, char * p)
+{
+	struct vfs_stat_t st;
+	struct vfs_dirent_t dir;
+	struct slist_t * sl, * e;
+	char fpath[VFS_MAX_PATH];
+	char path[VFS_MAX_PATH];
+	char * bname;
+	char * dname;
+	u32_t * ucs4;
+	char * s;
+	int cnt = 0, min = INT_MAX, m, pl;
+	int len = 0, t, i, l;
+	int fd;
+
+	if(shell_realpath(p, fpath) >= 0)
+	{
+		if((strlen(p) > 0) && (p[strlen(p) - 1] == '/'))
+		{
+			bname = "";
+			dname = fpath;
+		}
+		else
+		{
+			bname = basename(fpath);
+			dname = dirname(fpath);
+		}
+		pl = strlen(bname);
+		if((vfs_stat(dname, &st) >= 0) && S_ISDIR(st.st_mode))
+		{
+			sl = slist_alloc();
+			if((fd = vfs_opendir(dname)) >= 0)
+			{
+				while(vfs_readdir(fd, &dir) >= 0)
+				{
+					if(!strcmp(dir.d_name, ".") || !strcmp(dir.d_name, ".."))
+						continue;
+					snprintf(path, sizeof(path), "%s/%s", dname, dir.d_name);
+					if(!vfs_stat(path, &st))
+					{
+						if(!strncmp(bname, dir.d_name, strlen(bname)))
+						{
+							if(S_ISDIR(st.st_mode))
+								slist_add(sl, NULL, "%s/", dir.d_name);
+							else
+								slist_add(sl, NULL, "%s", dir.d_name);
+							cnt++;
+						}
+					}
+				}
+				vfs_closedir(fd);
+			}
+			slist_sort(sl);
+			if(cnt > 0)
+			{
+				s = ((struct slist_t *)list_first_entry(&sl->list, struct slist_t, list))->key;
+				slist_for_each_entry(e, sl)
+				{
+					m = 0;
+					while((s[m] == e->key[m]) && (s[m] != '\0'))
+						m++;
+					if(m < min)
+						min = m;
+				}
+				if((cnt == 1) || (min > pl))
+				{
+					if((e = (struct slist_t *)list_first_entry_or_null(&sl->list, struct slist_t, list)))
+					{
+						e->key[min] = 0;
+						if((l = utf8_to_ucs4_alloc(&e->key[pl], &ucs4, NULL)) > 0)
+						{
+							ucs4[l] = 0;
+							rl_insert(rl, ucs4);
+							free(ucs4);
+						}
+					}
+				}
+				else
+				{
+					slist_for_each_entry(e, sl)
+					{
+						l = strlen(e->key) + 4;
+						if(l > len)
+							len = l;
+					}
+					t = 80 / (len + 1);
+					if(t == 0)
+						t = 1;
+					i = 0;
+					printf("\r\n");
+					slist_for_each_entry(e, sl)
+					{
+						if(!(++i % t))
+							printf("%s\r\n", e->key);
+						else
+							printf("%-*s", len, e->key);
+					}
+					if(i % t)
+						printf("\r\n");
+					printf("%s%s", rl->prompt ? rl->prompt : "", utf8);
+				}
+			}
+			slist_free(sl);
+		}
+	}
+}
+
+static void rl_complete_command(struct rl_buf_t * rl, char * utf8, char * p)
+{
+	struct command_t * pos, * n;
+	struct slist_t * sl, * e;
+	u32_t * ucs4;
+	char * s;
+	int cnt = 0, min = INT_MAX, m, pl;
+	int len = 0, t, i, l;
+
+	pl = strlen(p);
+	sl = slist_alloc();
+	list_for_each_entry_safe(pos, n, &__command_list, list)
+	{
+		if(!strncmp(p, pos->name, pl))
+		{
+			slist_add(sl, pos, "%s", pos->name);
+			cnt++;
+		}
+	}
+	slist_sort(sl);
+	if(cnt > 0)
+	{
+		s = ((struct slist_t *)list_first_entry(&sl->list, struct slist_t, list))->key;
+		slist_for_each_entry(e, sl)
+		{
+			m = 0;
+			while((s[m] == e->key[m]) && (s[m] != '\0'))
+				m++;
+			if(m < min)
+				min = m;
+		}
+		if((cnt == 1) || (min > pl))
+		{
+			if((e = (struct slist_t *)list_first_entry_or_null(&sl->list, struct slist_t, list)))
+			{
+				e->key[min] = 0;
+				if((l = utf8_to_ucs4_alloc(&e->key[pl], &ucs4, NULL)) > 0)
+				{
+					ucs4[l] = 0;
+					rl_insert(rl, ucs4);
+					free(ucs4);
+				}
+			}
+		}
+		else
+		{
+			slist_for_each_entry(e, sl)
+			{
+				l = strlen(e->key) + 4;
+				if(l > len)
+					len = l;
+			}
+			t = 80 / (len + 1);
+			if(t == 0)
+				t = 1;
+			i = 0;
+			printf("\r\n");
+			slist_for_each_entry(e, sl)
+			{
+				if(!(++i % t))
+					printf("%s\r\n", e->key);
+				else
+					printf("%-*s", len, e->key);
+			}
+			if(i % t)
+				printf("\r\n");
+			printf("%s%s", rl->prompt ? rl->prompt : "", utf8);
+		}
+	}
+	slist_free(sl);
+}
+
+static void rl_complete(struct rl_buf_t * rl)
+{
+	char * utf8;
+	char * p, * q;
+
+	if(rl->len > 0)
+	{
+		utf8 = ucs4_to_utf8_alloc(rl->buf, rl->len);
+		p = strrchr(utf8, ';');
+		if(!p)
+			p = utf8;
+		else
+			p++;
+		while(*p == ' ')
+			p++;
+		if(p && (strchr(p, '.') || strchr(p, '/')))
+		{
+			if((q = strrchr(p, ' ')))
+				p = ++q;
+			rl_complete_file(rl, utf8, p);
+		}
+		else if((q = strrchr(p, ' ')))
+		{
+			p = ++q;
+			rl_complete_file(rl, utf8, p);
+		}
+		else
+		{
+			rl_complete_command(rl, utf8, p);
+		}
+		free(utf8);
+	}
+}
+
 static bool_t readline_handle(struct rl_buf_t * rl, u32_t code)
 {
 	u32_t * p;
@@ -544,6 +762,8 @@ static bool_t readline_handle(struct rl_buf_t * rl, u32_t code)
 		break;
 
 	case 0x9: 	/* ctrl-i: tab */
+		if(rl->len > 0)
+			rl_complete(rl);
 		break;
 
 	case 0xb: 	/* ctrl-k: delete everything from the cursor to the end of the line */

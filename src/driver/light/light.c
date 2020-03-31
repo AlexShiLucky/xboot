@@ -1,7 +1,7 @@
 /*
  * driver/light/light.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -60,20 +60,20 @@ struct light_t * search_first_light(void)
 }
 
 /* 注册一个灯设备 */
-bool_t register_light(struct device_t ** device,struct light_t * light)
+struct device_t * register_light(struct light_t * light, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!light || !light->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(light->name);
 	dev->type = DEVICE_TYPE_LIGHT;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = light;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "illuminance", light_read_illuminance, NULL, light);
@@ -83,33 +83,26 @@ bool_t register_light(struct device_t ** device,struct light_t * light)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个灯设备 */
-bool_t unregister_light(struct light_t * light)
+void unregister_light(struct light_t * light)
 {
 	struct device_t * dev;
 
-	if(!light || !light->name)
-		return FALSE;
-
-	dev = search_device(light->name, DEVICE_TYPE_LIGHT);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(light && light->name)
+	{
+		dev = search_device(light->name, DEVICE_TYPE_LIGHT);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* 获取灯设备照明度接口调用 */

@@ -1,7 +1,7 @@
 /*
  * driver/sd/sdhci.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -42,20 +42,20 @@ struct sdhci_t * search_sdhci(const char * name)
 }
 
 /* 注册一个SDHCI设备 */
-bool_t register_sdhci(struct device_t ** device, struct sdhci_t * hci)
+struct device_t * register_sdhci(struct sdhci_t * hci, struct driver_t * drv)
 {
 	struct device_t * dev;
 
 	if(!hci || !hci->name)
-		return FALSE;
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
 	dev->name = strdup(hci->name);
 	dev->type = DEVICE_TYPE_SDHCI;
-	dev->driver = NULL;
+	dev->driver = drv;
 	dev->priv = hci;
 	dev->kobj = kobj_alloc_directory(dev->name);
 
@@ -64,35 +64,29 @@ bool_t register_sdhci(struct device_t ** device, struct sdhci_t * hci)
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
 	hci->sdcard = sdcard_probe(hci);
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个SDHCI设备 */
-bool_t unregister_sdhci(struct sdhci_t * hci)
+void unregister_sdhci(struct sdhci_t * hci)
 {
 	struct device_t * dev;
 
-	if(!hci || !hci->name)
-		return FALSE;
-
-	dev = search_device(hci->name, DEVICE_TYPE_SDHCI);
-	if(!dev)
-		return FALSE;
-	sdcard_remove(hci->sdcard);
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
+	if(hci && hci->name)
+	{
+		if(hci->sdcard)
+			sdcard_remove(hci->sdcard);
+		dev = search_device(hci->name, DEVICE_TYPE_SDHCI);
+		if(dev && unregister_device(dev))
+		{
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
+	}
 }
 
 /* SDHCI设备检测接口调用 */
@@ -100,6 +94,13 @@ bool_t sdhci_detect(struct sdhci_t * hci)
 {
 	if(hci && hci->detect)
 		return hci->detect(hci);
+	return FALSE;
+}
+
+bool_t sdhci_reset(struct sdhci_t * hci)
+{
+	if(hci && hci->reset)
+		return hci->reset(hci);
 	return FALSE;
 }
 

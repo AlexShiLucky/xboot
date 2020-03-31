@@ -1,7 +1,7 @@
 /*
  * driver/clk-rk3288-ratio.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -128,17 +128,14 @@ static struct device_t * clk_rk3288_ratio_probe(struct driver_t * drv, struct dt
 	clk->get_rate = clk_rk3288_ratio_get_rate;
 	clk->priv = pdat;
 
-	if(!register_clk(&dev, clk))
+	if(!(dev = register_clk(clk, drv)))
 	{
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	if(dt_read_object(n, "default", &o))
 	{
 		char * c = clk->name;
@@ -166,10 +163,10 @@ static void clk_rk3288_ratio_remove(struct device_t * dev)
 	struct clk_t * clk = (struct clk_t *)dev->priv;
 	struct clk_rk3288_ratio_pdata_t * pdat = (struct clk_rk3288_ratio_pdata_t *)clk->priv;
 
-	if(clk && unregister_clk(clk))
+	if(clk)
 	{
+		unregister_clk(clk);
 		free(pdat->parent);
-
 		free(clk->name);
 		free(clk->priv);
 		free(clk);

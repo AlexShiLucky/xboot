@@ -1,7 +1,7 @@
 /*
  * driver/console/console.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -29,12 +29,12 @@
 #include <xboot.h>
 #include <console/console.h>
 
-static ssize_t __console_dummy_read(struct console_t * console, unsigned char * buf, size_t count)
+static ssize_t __console_dummy_read(struct console_t * con, unsigned char * buf, size_t count)
 {
 	return 0;
 }
 
-static ssize_t __console_dummy_write(struct console_t * console, const unsigned char * buf, size_t count)
+static ssize_t __console_dummy_write(struct console_t * con, const unsigned char * buf, size_t count)
 {
 	return 0;
 }
@@ -51,18 +51,17 @@ static spinlock_t __console_lock = SPIN_LOCK_INIT();
 
 static ssize_t console_read_active(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct console_t * console = (struct console_t *)kobj->priv;
-
-	return sprintf(buf, "%d", (__console == console) ? 1 : 0);
+	struct console_t * con = (struct console_t *)kobj->priv;
+	return sprintf(buf, "%d", (__console == con) ? 1 : 0);
 }
 
 static ssize_t console_write_active(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct console_t * console = (struct console_t *)kobj->priv;
+	struct console_t * con = (struct console_t *)kobj->priv;
 	irq_flags_t flags;
 
 	spin_lock_irqsave(&__console_lock, flags);
-	__console = console;
+	__console = con;
 	spin_unlock_irqrestore(&__console_lock, flags);
 
 	return size;
@@ -91,76 +90,66 @@ struct console_t * search_first_console(void)
 }
 
 /* 注册一个console设备 */
-bool_t register_console(struct device_t ** device, struct console_t * console)
+struct device_t * register_console(struct console_t * con, struct driver_t * drv)
 {
 	struct device_t * dev;
 	irq_flags_t flags;
 
-	if(!console || !console->name)
-		return FALSE;
+	if(!con || !con->name)
+		return NULL;
 
 	dev = malloc(sizeof(struct device_t));
 	if(!dev)
-		return FALSE;
+		return NULL;
 
-	dev->name = strdup(console->name);
+	dev->name = strdup(con->name);
 	dev->type = DEVICE_TYPE_CONSOLE;
-	dev->driver = NULL;
-	dev->priv = console;
+	dev->driver = drv;
+	dev->priv = con;
 	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "active", console_read_active, console_write_active, console);
+	kobj_add_regular(dev->kobj, "active", console_read_active, console_write_active, con);
 
 	if(!register_device(dev))
 	{
 		kobj_remove_self(dev->kobj);
 		free(dev->name);
 		free(dev);
-		return FALSE;
+		return NULL;
 	}
-
 	if(__console == &__console_dummy)
 	{
 		spin_lock_irqsave(&__console_lock, flags);
-		__console = console;
+		__console = con;
 		spin_unlock_irqrestore(&__console_lock, flags);
 	}
-
-	if(device)
-		*device = dev;
-	return TRUE;
+	return dev;
 }
 
 /* 注销一个console设备 */
-bool_t unregister_console(struct console_t * console)
+void unregister_console(struct console_t * con)
 {
 	struct device_t * dev;
 	struct console_t * c;
 	irq_flags_t flags;
 
-	if(!console || !console->name)
-		return FALSE;
-
-	dev = search_device(console->name, DEVICE_TYPE_CONSOLE);
-	if(!dev)
-		return FALSE;
-
-	if(!unregister_device(dev))
-		return FALSE;
-
-	if(__console == console)
+	if(con && con->name)
 	{
-		if(!(c = search_first_console()))
-			c = &__console_dummy;
-
-		spin_lock_irqsave(&__console_lock, flags);
-		__console = c;
-		spin_unlock_irqrestore(&__console_lock, flags);
+		dev = search_device(con->name, DEVICE_TYPE_CONSOLE);
+		if(dev && unregister_device(dev))
+		{
+			if(__console == con)
+			{
+				if(!(c = search_first_console()))
+					c = &__console_dummy;
+				spin_lock_irqsave(&__console_lock, flags);
+				__console = c;
+				spin_unlock_irqrestore(&__console_lock, flags);
+			}
+			kobj_remove_self(dev->kobj);
+			free(dev->name);
+			free(dev);
+		}
 	}
-
-	kobj_remove_self(dev->kobj);
-	free(dev->name);
-	free(dev);
-	return TRUE;
 }
 
 /* 获取当前console设备指针 */

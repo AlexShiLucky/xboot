@@ -1,7 +1,7 @@
 /*
  * driver/led/led-pwm.c
  *
- * Copyright(c) 2007-2019 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -121,15 +121,13 @@ static struct device_t * led_pwm_probe(struct driver_t * drv, struct dtnode_t * 
 
 	led_pwm_set(led, dt_read_int(n, "default-brightness", 0));
 
-	if(!register_led(&dev, led))
+	if(!(dev = register_led(led, drv)))
 	{
 		free_device_name(led->name);
 		free(led->priv);
 		free(led);
 		return NULL;
 	}
-	dev->driver = drv;
-
 	return dev;
 }
 
@@ -137,8 +135,9 @@ static void led_pwm_remove(struct device_t * dev)
 {
 	struct led_t * led = (struct led_t *)dev->priv;
 
-	if(led && unregister_led(led))
+	if(led)
 	{
+		unregister_led(led);
 		free_device_name(led->name);
 		free(led->priv);
 		free(led);

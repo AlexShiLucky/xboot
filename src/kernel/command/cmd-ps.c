@@ -58,6 +58,8 @@ static int do_ps(int argc, char ** argv)
 	struct slist_t * sl, * e;
 	int i;
 
+    printf("    func     status nice         time         task\r\n");
+    printf(" ---------- ------- ---- -------------------- -----\r\n");
 	for(i = 0; i < CONFIG_MAX_SMP_CPUS; i++)
 	{
 		sl = slist_alloc();

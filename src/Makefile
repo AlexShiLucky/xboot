@@ -301,15 +301,19 @@ X_SRCDIRS	:=	$(patsubst %, %, $(SRCDIRS))
 # 目标文件路径
 X_OBJDIRS	:=	$(patsubst %, .obj/%, $(X_SRCDIRS))
 
+# 带arch/前缀的目录
 X_ARCHS		:=	$(filter arch/%, $(X_SRCDIRS))
+# 其他不带arch/前缀的目录
 X_OTHERS	:=	$(filter-out arch/%, $(X_SRCDIRS))
 
+# 获取arch/目录下所有的*.S文件
 X_SFILES	:=	$(foreach dir, $(X_ARCHS), $(wildcard $(dir)/*.S))
+# 获取arch/目录下所有的*.c文件
 X_CFILES	:=	$(foreach dir, $(X_ARCHS), $(wildcard $(dir)/*.c))
 
-# .S生成的目标文件
+# arch/目录下.S生成的目标文件
 X_SOBJS		:=	$(patsubst %, .obj/%, $(X_SFILES:.S=.o))
-# .c生成的目标文件
+# arch/目录下.c生成的目标文件
 X_COBJS		:=	$(patsubst %, .obj/%, $(X_CFILES:.c=.o))
 # 全部目标文件
 X_OBJS		:=	$(X_SOBJS) $(X_COBJS) $(foreach dir, $(X_OTHERS), .obj/$(dir)/built-in.o)
@@ -322,6 +326,7 @@ export AS CC LD X_ASFLAGS X_CFLAGS X_INCDIRS
 #
 all : xend
 
+# 最终目标
 xend : $(X_NAME)
 
 $(X_NAME) : $(X_OBJS)
@@ -332,23 +337,28 @@ $(X_NAME) : $(X_OBJS)
 	@echo     | tee -a $@.map
 	@$(SZ) $@ | tee -a $@.map
 	@echo     | tee -a $@.map
-	@echo [OD] Objdumping $@.objdump
-	@$(OD) -D -S $@ > $@.objdump
+#	@echo [OD] Objdumping $@.objdump
+#	@$(OD) -D -S $@ > $@.objdump
 	@echo [NM] Nm-ing $@.nm
 	@$(NM) $@ | sort > $@.nm
 
 $(X_OBJS) : $(X_OTHERS)
 
+# 其他目标对象
 $(X_OTHERS) : $(X_ARCHS)
 	@$(MAKE) -s -f rules.mk SRCDIR=$@ NAME=.obj/$@/built-in.o
 
+# arch目标对象
 $(X_ARCHS) : xbegin
 	@$(MAKE) -s -f rules.mk SRCDIR=$@
 
 xbegin : romdisk
 
+# 创建romdisk
 romdisk :
 	@echo [ROMDISK] Packing romdisk
+	# 创建所有的.obj目录下的目录和../output目录
+	# 然后将romdisk目录和arch/.../romdisk拷贝到.obj目录下合成,并打包成romdisk.cpio
 	@$(MKDIR) $(X_OBJDIRS) $(X_OUT) \
 		&& $(RM) .obj/init/version.o \
 		&& $(RM) .obj/driver/block/romdisk.o \
@@ -360,5 +370,6 @@ romdisk :
 		&& $(FIND) . -not -name . | $(CPIO) > ../romdisk.cpio \
 		&& $(CD) ../..
 
+# 清除目标
 clean : xclean
 	@$(RM) .obj $(X_OUT)

@@ -1,5 +1,5 @@
 /*
- * driver/wdg-f1c500s.c
+ * driver/wdg-r328.c
  *
  * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
@@ -38,7 +38,7 @@ enum {
 	WDG_MODE	= 0x18,
 };
 
-struct wdg_f1c500s_pdata_t {
+struct wdg_r328_pdata_t {
 	virtual_addr_t virt;
 	char * clk;
 };
@@ -47,9 +47,9 @@ static const int wdt_timeout_map[] = {
 	0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x0, 0x7, 0x0, 0x8, 0x0, 0x9, 0x0, 0xa, 0x0, 0xb,
 };
 
-static void wdg_f1c500s_set(struct watchdog_t * watchdog, int timeout)
+static void wdg_r328_set(struct watchdog_t * watchdog, int timeout)
 {
-	struct wdg_f1c500s_pdata_t * pdat = (struct wdg_f1c500s_pdata_t *)watchdog->priv;
+	struct wdg_r328_pdata_t * pdat = (struct wdg_r328_pdata_t *)watchdog->priv;
 	u32_t val;
 
 	if(timeout < 0)
@@ -75,14 +75,14 @@ static void wdg_f1c500s_set(struct watchdog_t * watchdog, int timeout)
 	}
 }
 
-static int wdg_f1c500s_get(struct watchdog_t * watchdog)
+static int wdg_r328_get(struct watchdog_t * watchdog)
 {
 	return 0;
 }
 
-static struct device_t * wdg_f1c500s_probe(struct driver_t * drv, struct dtnode_t * n)
+static struct device_t * wdg_r328_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct wdg_f1c500s_pdata_t * pdat;
+	struct wdg_r328_pdata_t * pdat;
 	struct watchdog_t * wdg;
 	struct device_t * dev;
 	virtual_addr_t virt = phys_to_virt(dt_read_address(n));
@@ -91,7 +91,7 @@ static struct device_t * wdg_f1c500s_probe(struct driver_t * drv, struct dtnode_
 	if(!search_clk(clk))
 		return NULL;
 
-	pdat = malloc(sizeof(struct wdg_f1c500s_pdata_t));
+	pdat = malloc(sizeof(struct wdg_r328_pdata_t));
 	if(!pdat)
 		return NULL;
 
@@ -106,8 +106,8 @@ static struct device_t * wdg_f1c500s_probe(struct driver_t * drv, struct dtnode_
 	pdat->clk = strdup(clk);
 
 	wdg->name = alloc_device_name(dt_read_name(n), -1);
-	wdg->set = wdg_f1c500s_set;
-	wdg->get = wdg_f1c500s_get;
+	wdg->set = wdg_r328_set;
+	wdg->get = wdg_r328_get;
 	wdg->priv = pdat;
 
 	clk_enable(pdat->clk);
@@ -131,10 +131,10 @@ static struct device_t * wdg_f1c500s_probe(struct driver_t * drv, struct dtnode_
 	return dev;
 }
 
-static void wdg_f1c500s_remove(struct device_t * dev)
+static void wdg_r328_remove(struct device_t * dev)
 {
 	struct watchdog_t * wdg = (struct watchdog_t *)dev->priv;
-	struct wdg_f1c500s_pdata_t * pdat = (struct wdg_f1c500s_pdata_t *)wdg->priv;
+	struct wdg_r328_pdata_t * pdat = (struct wdg_r328_pdata_t *)wdg->priv;
 
 	if(wdg)
 	{
@@ -149,31 +149,31 @@ static void wdg_f1c500s_remove(struct device_t * dev)
 	}
 }
 
-static void wdg_f1c500s_suspend(struct device_t * dev)
+static void wdg_r328_suspend(struct device_t * dev)
 {
 }
 
-static void wdg_f1c500s_resume(struct device_t * dev)
+static void wdg_r328_resume(struct device_t * dev)
 {
 }
 
-static struct driver_t wdg_f1c500s = {
-	.name		= "wdg-f1c500s",
-	.probe		= wdg_f1c500s_probe,
-	.remove		= wdg_f1c500s_remove,
-	.suspend	= wdg_f1c500s_suspend,
-	.resume		= wdg_f1c500s_resume,
+static struct driver_t wdg_r328 = {
+	.name		= "wdg-r328",
+	.probe		= wdg_r328_probe,
+	.remove		= wdg_r328_remove,
+	.suspend	= wdg_r328_suspend,
+	.resume		= wdg_r328_resume,
 };
 
-static __init void wdg_f1c500s_driver_init(void)
+static __init void wdg_r328_driver_init(void)
 {
-	register_driver(&wdg_f1c500s);
+	register_driver(&wdg_r328);
 }
 
-static __exit void wdg_f1c500s_driver_exit(void)
+static __exit void wdg_r328_driver_exit(void)
 {
-	unregister_driver(&wdg_f1c500s);
+	unregister_driver(&wdg_r328);
 }
 
-driver_initcall(wdg_f1c500s_driver_init);
-driver_exitcall(wdg_f1c500s_driver_exit);
+driver_initcall(wdg_r328_driver_init);
+driver_exitcall(wdg_r328_driver_exit);

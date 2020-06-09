@@ -5,11 +5,13 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/* 标准io无冲刷 */
 int __stdio_no_flush(FILE * f)
 {
 	return 0;
 }
 
+/* 标准io读冲刷 */
 int	__stdio_read_flush(FILE * f)
 {
 	f->seek(f, f->pos, SEEK_SET);
@@ -19,6 +21,7 @@ int	__stdio_read_flush(FILE * f)
 	return 0;
 }
 
+/* 标准io写冲刷 */
 int __stdio_write_flush(FILE * f)
 {
 	unsigned char * p;

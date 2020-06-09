@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <xboot/module.h>
 
+/* 冲刷文件 */
 int fflush(FILE * f)
 {
 	if(!f->write)

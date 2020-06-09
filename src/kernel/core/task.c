@@ -38,6 +38,7 @@ struct transfer_t
 extern void * make_fcontext(void * stack, size_t size, void (*func)(struct transfer_t));
 extern struct transfer_t jump_fcontext(void * fctx, void * priv);
 
+/* 调度器表 */
 struct scheduler_t __sched[CONFIG_MAX_SMP_CPUS];
 EXPORT_SYMBOL(__sched);
 
@@ -113,6 +114,7 @@ static inline uint64_t calc_delta_fair(struct task_t * task, uint64_t delta)
 	return delta;
 }
 
+/* 获取调度器中下一个就绪任务 */
 static inline struct task_t * scheduler_next_ready_task(struct scheduler_t * sched)
 {
 	struct rb_node * leftmost = rb_first_cached(&sched->ready);
@@ -122,6 +124,7 @@ static inline struct task_t * scheduler_next_ready_task(struct scheduler_t * sch
 	return rb_entry(leftmost, struct task_t, node);
 }
 
+/* 调度器入队一个任务 */
 static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct rb_node ** link = &sched->ready.rb_root.rb_node;
@@ -155,6 +158,7 @@ static inline void scheduler_enqueue_task(struct scheduler_t * sched, struct tas
 		sched->min_vtime = 0;
 }
 
+/* 调度器出队一个任务 */
 static inline void scheduler_dequeue_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct task_t * next;
@@ -169,6 +173,7 @@ static inline void scheduler_dequeue_task(struct scheduler_t * sched, struct tas
 		sched->min_vtime = 0;
 }
 
+/* 调度器任务切换 */
 static inline void scheduler_switch_task(struct scheduler_t * sched, struct task_t * task)
 {
 	struct task_t * running = sched->running;
@@ -230,9 +235,11 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 	if(!sched)
 		sched = scheduler_load_balance_choice();
 
+    /* 如果未设置栈深度,则使用默认设置 */
 	if(stksz <= 0)
 		stksz = CONFIG_TASK_STACK_SIZE;
 
+    /* 任务优先级 */
 	if(nice < -20)
 		nice = -20;
 	else if(nice > 19)
@@ -257,12 +264,16 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 	init_list_head(&task->slist);
 	init_list_head(&task->rlist);
 	init_list_head(&task->mlist);
+    /* 调度器上锁 */
 	spin_lock(&sched->lock);
     /* 将创建的任务连接到挂起链表 */
 	list_add_tail(&task->list, &sched->suspend);
+    /* 添加任务后.增加调度器负荷权重 */
 	sched->weight += nice_to_weight[nice + 20];
+    /* 调度器解锁 */
 	spin_unlock(&sched->lock);
 
+    /* 设置任务名称 */
 	task->name = strdup(name);
     /* 新建的任务初始状态为Suspend状态 */
 	task->status = TASK_STATUS_SUSPEND;
@@ -270,23 +281,24 @@ struct task_t * task_create(struct scheduler_t * sched, const char * name, task_
 	task->start = ktime_to_ns(ktime_get());
 	task->time = 0;
 	task->vtime = 0;
-    /* 任务所在调度器 */
+    /* 设置任务所在调度器 */
 	task->sched = sched;
-    /* 任务栈 */
+    /* 设置任务栈 */
 	task->stack = stack;
-    /* 任务栈尺寸 */
+    /* 设置任务栈深度 */
 	task->stksz = stksz;
-    /* 任务nice值 */
+    /* 设置任务优先级 */
 	task->nice = nice;
-    /* 任务weight值 */
+    /* 设置任务负荷权重值 */
 	task->weight = nice_to_weight[nice + 20];
 	task->inv_weight = nice_to_wmult[nice + 20];
+    /* 创建任务上下文 */
 	task->fctx = make_fcontext(task->stack + stksz, task->stksz, fcontext_entry_func);
-    /* 任务入口函数 */
+    /* 设置任务入口函数 */
 	task->func = func;
-    /* 任务入口函数参数 */
+    /* 设置任务入口函数参数 */
 	task->data = data;
-    /* 任务的错误号 */
+    /* 设置任务的错误号 */
 	task->__errno = 0;
 
 	return task;
@@ -297,17 +309,24 @@ void task_destroy(struct task_t * task)
 {
 	if(task)
 	{
+	    /* 调度器上锁 */
 		spin_lock(&task->sched->lock);
+        /* 销毁任务后.减小调度器负荷权重 */
 		task->sched->weight -= nice_to_weight[task->nice + 20];
+        /* 调度器解锁 */
 		spin_unlock(&task->sched->lock);
 
+        /* 释放任务名称 */
 		if(task->name)
 			free(task->name);
+        /* 释放任务栈 */
 		free(task->stack);
+        /* 释放任务控制块 */
 		free(task);
 	}
 }
 
+/* 重新设置任务优先级 */
 void task_renice(struct task_t * task, int nice)
 {
 	if(nice < -20)
@@ -317,12 +336,18 @@ void task_renice(struct task_t * task, int nice)
 
 	if(task->nice != nice)
 	{
+	    /* 调度器上锁 */
 		spin_lock(&task->sched->lock);
+        /* 修改任务优先级后,先减小原先调度器负荷权重 */
 		task->sched->weight -= nice_to_weight[task->nice + 20];
+        /* 后再加上现在调度器负荷权重 */
 		task->sched->weight += nice_to_weight[nice + 20];
+        /* 调度器解锁 */
 		spin_unlock(&task->sched->lock);
 
+        /* 修改任务优先级 */
 		task->nice = nice;
+        /* 修改任务负荷权重 */
 		task->weight = nice_to_weight[nice + 20];
 		task->inv_weight = nice_to_wmult[nice + 20];
 	}
@@ -336,32 +361,46 @@ void task_suspend(struct task_t * task)
 
 	if(task)
 	{
+	    /* 任务处于就绪状态 */
 		if(task->status == TASK_STATUS_READY)
 		{
 			task->status = TASK_STATUS_SUSPEND;
+            /* 调度器上锁 */
 			spin_lock(&task->sched->lock);
+            /* 将任务连接到挂起链表 */
 			list_add_tail(&task->list, &task->sched->suspend);
+            /* 调度器解锁 */
 			spin_unlock(&task->sched->lock);
+            /* 任务从调度器中出队 */
 			scheduler_dequeue_task(task->sched, task);
 		}
+        /* 任务处于运行状态 */
 		else if(task->status == TASK_STATUS_RUNNING)
 		{
+		    /* 获取当前时刻 */
 			now = ktime_to_ns(ktime_get());
+            /* 计算任务运行耗时 */
 			detla = now - task->start;
 
 			task->time += detla;
 			task->vtime += calc_delta_fair(task, detla);
 			task->status = TASK_STATUS_SUSPEND;
+            /* 调度器上锁 */
 			spin_lock(&task->sched->lock);
+            /* 将任务连接到挂起链表 */
 			list_add_tail(&task->list, &task->sched->suspend);
+            /* 调度器解锁 */
 			spin_unlock(&task->sched->lock);
 
+            /* 获取下一个就绪任务 */
 			next = scheduler_next_ready_task(task->sched);
 			if(next)
 			{
+			    /* 任务从调度器中出队 */
 				scheduler_dequeue_task(task->sched, next);
 				next->status = TASK_STATUS_RUNNING;
 				next->start = now;
+                /* 任务切换 */
 				scheduler_switch_task(task->sched, next);
 			}
 		}
@@ -378,6 +417,7 @@ void task_resume(struct task_t * task)
 		spin_lock(&task->sched->lock);
 		list_del_init(&task->list);
 		spin_unlock(&task->sched->lock);
+        /* 调度器入队该任务 */
 		scheduler_enqueue_task(task->sched, task);
 	}
 }
@@ -400,11 +440,15 @@ void task_yield(void)
 	else
 	{
 		self->status = TASK_STATUS_READY;
+        /* 调度器入队该任务 */
 		scheduler_enqueue_task(sched, self);
+        /* 获取下一个就绪任务 */
 		next = scheduler_next_ready_task(sched);
+        /* 调度器出队下一个任务 */
 		scheduler_dequeue_task(sched, next);
 		next->status = TASK_STATUS_RUNNING;
 		next->start = now;
+        /* 调度器切换到下一个任务 */
 		if(likely(next != self))
 			scheduler_switch_task(sched, next);
 	}
@@ -445,7 +489,7 @@ static void smpboot_entry_func(void)
 	}
 }
 
-/* 调度器循环 */
+/* 调度器循环调度 */
 void scheduler_loop(void)
 {
 	machine_smpboot(smpboot_entry_func);

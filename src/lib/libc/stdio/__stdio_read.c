@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
+/* 无缓冲方式读取 */
 static ssize_t __unbuffered_read(FILE * f, unsigned char * buf, size_t size)
 {
 	unsigned char * p = buf;
@@ -34,6 +35,7 @@ static ssize_t __unbuffered_read(FILE * f, unsigned char * buf, size_t size)
     return cnt;
 }
 
+/* 标准io读取 */
 ssize_t __stdio_read(FILE * f, unsigned char * buf, size_t size)
 {
 	unsigned char * p = buf;
@@ -46,12 +48,15 @@ ssize_t __stdio_read(FILE * f, unsigned char * buf, size_t size)
 
 	switch(f->mode)
 	{
+	/* IO NoBuffer:无缓冲读取 */
 	case _IONBF:
+    /* IO LineBuffer:行缓冲读取 */
 	case _IOLBF:
 		bytes = __unbuffered_read(f, p, size);
 		f->pos += bytes;
 		return bytes;
 
+    /* IO FullBuffer:完全缓冲读取 */
 	case _IOFBF:
 	{
 		bytes = fifo_get(f->fifo_read, p, size);

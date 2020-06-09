@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <stdio.h>
 
+/* 无缓冲模式写 */
 static ssize_t __unbuffered_write(FILE * f, const unsigned char * buf, size_t size)
 {
 	unsigned char * p = (unsigned char *)buf;
@@ -29,6 +30,7 @@ static ssize_t __unbuffered_write(FILE * f, const unsigned char * buf, size_t si
 	return cnt;
 }
 
+/* 标准io写入 */
 ssize_t __stdio_write(FILE * f, const unsigned char * buf, size_t size)
 {
 	unsigned char * p = (unsigned char *)buf;
@@ -42,6 +44,7 @@ ssize_t __stdio_write(FILE * f, const unsigned char * buf, size_t size)
 
 	switch (f->mode)
 	{
+	/* IO NoBuffer:无缓冲写入 */
 	case _IONBF:
 	{
 		bytes = __unbuffered_write(f, p, size);
@@ -49,6 +52,7 @@ ssize_t __stdio_write(FILE * f, const unsigned char * buf, size_t size)
 		return bytes;
 	}
 
+    /* IO LineBuffer:行缓冲写入 */
 	case _IOLBF:
 	{
 		for(i = size; i > 0; i--)
@@ -109,6 +113,7 @@ ssize_t __stdio_write(FILE * f, const unsigned char * buf, size_t size)
 		break;
 	}
 
+    /* IO FullBuffer:完全缓冲写入 */
 	case _IOFBF:
 	{
 		bufsz = f->fifo_write->size;

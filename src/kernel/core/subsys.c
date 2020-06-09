@@ -141,6 +141,7 @@ static __init void subsys_init(void)
 	subsys_init_rootfs();
 	/* 初始化设备树 */
 	subsys_init_dtree();
+    /* 初始化私有设备 */
 	subsys_init_private();
 }
 subsys_initcall(subsys_init);

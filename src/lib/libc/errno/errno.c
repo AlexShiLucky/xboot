@@ -6,6 +6,7 @@
 #include <xboot/task.h>
 #include <xboot/module.h>
 
+/* 获取本地任务错误码 */
 volatile int * __task_errno_location(void)
 {
 	return &(task_self()->__errno);

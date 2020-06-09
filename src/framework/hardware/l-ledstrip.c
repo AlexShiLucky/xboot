@@ -32,103 +32,103 @@
 
 static int l_ledstrip_new(lua_State * L)
 {
-	const char * name = luaL_checkstring(L, 1);
-	struct ledstrip_t * strip = search_ledstrip(name);
-	if(!strip)
-		return 0;
-	lua_pushlightuserdata(L, strip);
-	luaL_setmetatable(L, MT_HARDWARE_LEDSTRIP);
-	return 1;
+    const char * name = luaL_checkstring(L, 1);
+    struct ledstrip_t * strip = search_ledstrip(name);
+    if(!strip)
+        return 0;
+    lua_pushlightuserdata(L, strip);
+    luaL_setmetatable(L, MT_HARDWARE_LEDSTRIP);
+    return 1;
 }
 
 static int l_ledstrip_list(lua_State * L)
 {
-	struct device_t * pos, * n;
-	struct ledstrip_t * strip;
+    struct device_t * pos, * n;
+    struct ledstrip_t * strip;
 
-	lua_newtable(L);
-	list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_LEDSTRIP], head)
-	{
-		strip = (struct ledstrip_t *)(pos->priv);
-		if(!strip)
-			continue;
-		lua_pushlightuserdata(L, strip);
-		luaL_setmetatable(L, MT_HARDWARE_LEDSTRIP);
-		lua_setfield(L, -2, pos->name);
-	}
-	return 1;
+    lua_newtable(L);
+    list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_LEDSTRIP], head)
+    {
+        strip = (struct ledstrip_t *)(pos->priv);
+        if(!strip)
+            continue;
+        lua_pushlightuserdata(L, strip);
+        luaL_setmetatable(L, MT_HARDWARE_LEDSTRIP);
+        lua_setfield(L, -2, pos->name);
+    }
+    return 1;
 }
 
 static const luaL_Reg l_ledstrip[] = {
-	{"new",		l_ledstrip_new},
-	{"list",	l_ledstrip_list},
-	{NULL,	NULL}
+    {"new",     l_ledstrip_new},
+    {"list",    l_ledstrip_list},
+    {NULL,  NULL}
 };
 
 static int m_ledstrip_tostring(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	lua_pushstring(L, strip->name);
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    lua_pushstring(L, strip->name);
+    return 1;
 }
 
 static int m_ledstrip_set_count(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	int n = luaL_checkinteger(L, 2);
-	ledstrip_set_count(strip, n);
-	lua_settop(L, 1);
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    int n = luaL_checkinteger(L, 2);
+    ledstrip_set_count(strip, n);
+    lua_settop(L, 1);
+    return 1;
 }
 
 static int m_ledstrip_get_count(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	lua_pushinteger(L, ledstrip_get_count(strip));
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    lua_pushinteger(L, ledstrip_get_count(strip));
+    return 1;
 }
 
 static int m_ledstrip_set_color(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	int i = luaL_checkinteger(L, 2);
-	struct color_t * c = luaL_checkudata(L, 3, MT_COLOR);
-	ledstrip_set_color(strip, i, c);
-	lua_settop(L, 1);
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    int i = luaL_checkinteger(L, 2);
+    struct color_t * c = luaL_checkudata(L, 3, MT_COLOR);
+    ledstrip_set_color(strip, i, c);
+    lua_settop(L, 1);
+    return 1;
 }
 
 static int m_ledstrip_get_color(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	int i = luaL_checkinteger(L, 2);
-	struct color_t * c = lua_newuserdata(L, sizeof(struct color_t));
-	ledstrip_get_color(strip, i, c);
-	luaL_setmetatable(L, MT_COLOR);
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    int i = luaL_checkinteger(L, 2);
+    struct color_t * c = lua_newuserdata(L, sizeof(struct color_t));
+    ledstrip_get_color(strip, i, c);
+    luaL_setmetatable(L, MT_COLOR);
+    return 1;
 }
 
 static int m_ledstrip_refresh(lua_State * L)
 {
-	struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
-	ledstrip_refresh(strip);
-	lua_settop(L, 1);
-	return 1;
+    struct ledstrip_t * strip = luaL_checkudata(L, 1, MT_HARDWARE_LEDSTRIP);
+    ledstrip_refresh(strip);
+    lua_settop(L, 1);
+    return 1;
 }
 
 static const luaL_Reg m_ledstrip[] = {
-	{"__tostring",	m_ledstrip_tostring},
-	{"setCount",	m_ledstrip_set_count},
-	{"getCount",	m_ledstrip_get_count},
-	{"setColor",	m_ledstrip_set_color},
-	{"getColor",	m_ledstrip_get_color},
-	{"refresh",		m_ledstrip_refresh},
-	{NULL,	NULL}
+    {"__tostring",  m_ledstrip_tostring},
+    {"setCount",    m_ledstrip_set_count},
+    {"getCount",    m_ledstrip_get_count},
+    {"setColor",    m_ledstrip_set_color},
+    {"getColor",    m_ledstrip_get_color},
+    {"refresh",     m_ledstrip_refresh},
+    {NULL,  NULL}
 };
 
 int luaopen_hardware_ledstrip(lua_State * L)
 {
-	luaL_newlib(L, l_ledstrip);
-	luahelper_create_metatable(L, MT_HARDWARE_LEDSTRIP, m_ledstrip);
-	return 1;
+    luaL_newlib(L, l_ledstrip);
+    luahelper_create_metatable(L, MT_HARDWARE_LEDSTRIP, m_ledstrip);
+    return 1;
 }

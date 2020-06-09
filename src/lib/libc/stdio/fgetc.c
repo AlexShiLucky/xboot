@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <xboot/module.h>
 
+/* 从文件中读取一个字符 */
 int fgetc(FILE * f)
 {
 	unsigned char res;

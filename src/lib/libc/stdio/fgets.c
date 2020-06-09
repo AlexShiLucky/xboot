@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <xboot/module.h>
 
+/* 从文件流中读取一行数据 */
 char * fgets(char * s, int n, FILE * f)
 {
 	char * p = s;

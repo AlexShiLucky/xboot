@@ -135,30 +135,30 @@ typedef struct {
 } spinlock_t;
 
 typedef union _BIT8 {
-    s8_t    s8;
-    u8_t    u8;
+    s8_t    s8val;
+    u8_t    u8val;
     struct {
         FIELD_BITS08
     } bits;
 } BIT8, bit8_t;
 
 typedef union _BIT16 {
-    s16_t   s16;
-    u16_t   u16;
-    s8_t    s8[2];
-    u8_t    u8[2];
+    s16_t   s16val;
+    u16_t   u16val;
+    s8_t    s8val[2];
+    u8_t    u8val[2];
     struct {
         FIELD_BITS16
     } bits;
 } BIT16, bit16_t;
 
 typedef union _BIT32 {
-    s32_t   s32;
-    u32_t   u32;
-    s16_t   s16[2];
-    u16_t   u16[2];
-    s8_t    s8[4];
-    u8_t    u8[4];
+    s32_t   s32val;
+    u32_t   u32val;
+    s16_t   s16val[2];
+    u16_t   u16val[2];
+    s8_t    s8val[4];
+    u8_t    u8val[4];
     fp32_t  fp32;
     struct {
         FIELD_BITS32
@@ -166,14 +166,14 @@ typedef union _BIT32 {
 } BIT32, bit32_t;
 
 typedef union _BIT64 {
-    s64_t   s64;
-    u64_t   u64;
-    s32_t   s32[2];
-    u32_t   u32[2];
-    s16_t   s16[4];
-    u16_t   u16[4];
-    s8_t    s8[8];
-    u8_t    u8[8];
+    s64_t   s64val;
+    u64_t   u64val;
+    s32_t   s32val[2];
+    u32_t   u32val[2];
+    s16_t   s16val[4];
+    u16_t   u16val[4];
+    s8_t    s8val[8];
+    u8_t    u8val[8];
     fp64_t  fp64;
     struct {
         FIELD_BITS64

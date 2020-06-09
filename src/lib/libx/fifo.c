@@ -11,16 +11,19 @@
 #include <fifo.h>
 #include <xboot/module.h>
 
+/* FIFO复位 */
 void __fifo_reset(struct fifo_t * f)
 {
 	f->in = f->out = 0;
 }
 
+/* FIFO中有效数据长度 */
 unsigned int __fifo_len(struct fifo_t * f)
 {
 	return f->in - f->out;
 }
 
+/* 往FIFO中写入len长度的字符 */
 unsigned int __fifo_put(struct fifo_t * f, unsigned char * buf, unsigned int len)
 {
 	unsigned int l;
@@ -36,6 +39,7 @@ unsigned int __fifo_put(struct fifo_t * f, unsigned char * buf, unsigned int len
 	return len;
 }
 
+/* 从FIFO中获取len长度的字符 */
 unsigned int __fifo_get(struct fifo_t * f, unsigned char * buf, unsigned int len)
 {
 	unsigned int l;
@@ -51,6 +55,7 @@ unsigned int __fifo_get(struct fifo_t * f, unsigned char * buf, unsigned int len
 	return len;
 }
 
+/* 分配一个size尺寸的FIFO */
 struct fifo_t * fifo_alloc(unsigned int size)
 {
 	struct fifo_t * f;
@@ -62,6 +67,7 @@ struct fifo_t * fifo_alloc(unsigned int size)
 	if(!f)
 		return NULL;
 
+    /* 申请一块size长度的空间 */
 	f->buffer = malloc(size);
 	if(!f->buffer)
 	{
@@ -77,6 +83,7 @@ struct fifo_t * fifo_alloc(unsigned int size)
 }
 EXPORT_SYMBOL(fifo_alloc);
 
+/* 释放一个FIFO */
 void fifo_free(struct fifo_t * f)
 {
 	if(f)
@@ -87,6 +94,7 @@ void fifo_free(struct fifo_t * f)
 }
 EXPORT_SYMBOL(fifo_free);
 
+/* FIFO复位 */
 void fifo_reset(struct fifo_t * f)
 {
 	irq_flags_t flags;
@@ -97,6 +105,7 @@ void fifo_reset(struct fifo_t * f)
 }
 EXPORT_SYMBOL(fifo_reset);
 
+/* 获取FIFO有效长度 */
 unsigned int fifo_len(struct fifo_t * f)
 {
 	irq_flags_t flags;
@@ -110,6 +119,7 @@ unsigned int fifo_len(struct fifo_t * f)
 }
 EXPORT_SYMBOL(fifo_len);
 
+/* 往FIFO中写入len长度的字符 */
 unsigned int fifo_put(struct fifo_t * f, unsigned char * buf, unsigned int len)
 {
 	irq_flags_t flags;
@@ -122,6 +132,7 @@ unsigned int fifo_put(struct fifo_t * f, unsigned char * buf, unsigned int len)
 	return ret;
 }
 
+/* 从FIFO中获取len长度的字符 */
 unsigned int fifo_get(struct fifo_t * f, unsigned char * buf, unsigned int len)
 {
 	irq_flags_t flags;

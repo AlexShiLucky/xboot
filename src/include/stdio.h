@@ -26,9 +26,9 @@ extern "C" {
 #endif
 
 enum {
-	_IONBF			= 0,
-	_IOLBF			= 1,
-	_IOFBF			= 2,
+	_IONBF			= 0,        /* (IO NoBuffer)无缓冲*/
+	_IOLBF			= 1,        /* (IO LineBuffer)行缓冲(缓冲区满或一个新行写入的时候刷新) */
+	_IOFBF			= 2,        /* (IO FullBuffer)完全缓冲(缓冲区满的时候刷新) */
 };
 
 enum {
@@ -47,6 +47,7 @@ typedef loff_t fpos_t;
  */
 typedef struct __FILE FILE;
 struct __FILE {
+    /* 文件描述符 */
 	int fd;
 
 	ssize_t (*read)(FILE *, unsigned char *, size_t);
@@ -54,14 +55,19 @@ struct __FILE {
 	fpos_t (*seek)(FILE *, fpos_t, int);
 	int (*close)(FILE *);
 
+    /* 文件读FIFO */
 	struct fifo_t * fifo_read;
+    /* 文件写FIFO */
 	struct fifo_t * fifo_write;
 
 	unsigned char * buf;
 	size_t bufsz;
+    /* 文件读写冲刷 */
 	int (*rwflush)(FILE *);
 
+    /* 文件位置 */
 	fpos_t pos;
+    /* 文件读写缓冲模式 */
 	int mode;
 	int eof, error;
 };
@@ -125,16 +131,25 @@ int sscanf(const char * buf, const char * fmt, ...);
 /*
  * Inner function
  */
+/* 标准io无冲刷 */
 int __stdio_no_flush(FILE * f);
+/* 标准io读冲刷 */
 int	__stdio_read_flush(FILE * f);
+/* 标准io写冲刷 */
 int __stdio_write_flush(FILE * f);
 
+/* 标准io读 */
 ssize_t __stdio_read(FILE * f, unsigned char * buf, size_t size);
+/* 标准io写 */
 ssize_t __stdio_write(FILE * f, const unsigned char * buf, size_t size);
 
+/* 根据文件描述符申请文件操作块 */
 FILE * __file_alloc(int fd);
+/* 获取标准输入文件指针 */
 FILE * __stdio_get_stdin(void);
+/* 获取标准错误文件指针 */
 FILE * __stdio_get_stdout(void);
+/* 获取标准错误文件指针 */
 FILE * __stdio_get_stderr(void);
 
 #ifdef __cplusplus

@@ -89,75 +89,75 @@
 extern "C" {
 #endif
 
-typedef signed char				s8_t;
-typedef unsigned char			u8_t;
+typedef signed char             s8_t;
+typedef unsigned char           u8_t;
 
-typedef signed short			s16_t;
-typedef unsigned short			u16_t;
+typedef signed short            s16_t;
+typedef unsigned short          u16_t;
 
-typedef signed int				s32_t;
-typedef unsigned int			u32_t;
+typedef signed int              s32_t;
+typedef unsigned int            u32_t;
 
-typedef signed long long		s64_t;
-typedef unsigned long long		u64_t;
+typedef signed long long        s64_t;
+typedef unsigned long long      u64_t;
 
 typedef float                   fp32_t;
 typedef double                  fp64_t;
 
-typedef signed long long		intmax_t;
-typedef unsigned long long		uintmax_t;
+typedef signed long long        intmax_t;
+typedef unsigned long long      uintmax_t;
 
-typedef signed long	long		ptrdiff_t;
-typedef signed long	long		intptr_t;
-typedef unsigned long long		uintptr_t;
+typedef signed long long        ptrdiff_t;
+typedef signed long long        intptr_t;
+typedef unsigned long long      uintptr_t;
 
-typedef unsigned long long		size_t;
-typedef signed long	long		ssize_t;
+typedef unsigned long long      size_t;
+typedef signed long long        ssize_t;
 
-typedef signed long				off_t;
-typedef signed long long		loff_t;
+typedef signed long             off_t;
+typedef signed long long        loff_t;
 
-typedef signed int				bool_t;
-typedef unsigned long			irq_flags_t;
+typedef signed int              bool_t;
+typedef unsigned long           irq_flags_t;
 
-typedef unsigned long long		virtual_addr_t;
-typedef unsigned long long		virtual_size_t;
-typedef unsigned long long		physical_addr_t;
-typedef unsigned long long		physical_size_t;
+typedef unsigned long long      virtual_addr_t;
+typedef unsigned long long      virtual_size_t;
+typedef unsigned long long      physical_addr_t;
+typedef unsigned long long      physical_size_t;
 
 typedef struct {
-	volatile int counter;
+    volatile int counter;
 } atomic_t;
 
 typedef struct {
-	volatile int lock;
+    volatile int lock;
 } spinlock_t;
 
 typedef union _BIT8 {
-    s8_t    s8;
-    u8_t    u8;
+    s8_t    s8val;
+    u8_t    u8val;
     struct {
         FIELD_BITS08
     } bits;
 } BIT8, bit8_t;
 
 typedef union _BIT16 {
-    s16_t   s16;
-    u16_t   u16;
-    s8_t    s8[2];
-    u8_t    u8[2];
+    s16_t   s16val;
+    u16_t   u16val;
+    s8_t    s8val[2];
+    u8_t    u8val[2];
     struct {
         FIELD_BITS16
     } bits;
 } BIT16, bit16_t;
 
 typedef union _BIT32 {
-    s32_t   s32;
-    u32_t   u32;
-    s16_t   s16[2];
-    u16_t   u16[2];
-    s8_t    s8[4];
-    u8_t    u8[4];
+    s32_t   s32val;
+    u32_t   u32val;
+    s16_t   s16val[2];
+    u16_t   u16val[2];
+    s8_t    s8val[4];
+    u8_t    u8val[4];
     fp32_t  fp32;
     struct {
         FIELD_BITS32
@@ -165,14 +165,14 @@ typedef union _BIT32 {
 } BIT32, bit32_t;
 
 typedef union _BIT64 {
-    s64_t   s64;
-    u64_t   u64;
-    s32_t   s32[2];
-    u32_t   u32[2];
-    s16_t   s16[4];
-    u16_t   u16[4];
-    s8_t    s8[8];
-    u8_t    u8[8];
+    s64_t   s64val;
+    u64_t   u64val;
+    s32_t   s32val[2];
+    u32_t   u32val[2];
+    s16_t   s16val[4];
+    u16_t   u16val[4];
+    s8_t    s8val[8];
+    u8_t    u8val[8];
     fp64_t  fp64;
     struct {
         FIELD_BITS64

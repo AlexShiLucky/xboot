@@ -4,6 +4,11 @@
 
 DEFINES		+= -D__ARM32_ARCH__=7 -D__CORTEX_A9__ -D__ARM32_NEON__
 
+#export OUTPUT_I         := 1
+#export OUTPUT_S         := 1
+#export OUTPUT_OBJDUMP   := 1
+#export OUTPUT_NM        := 1
+
 ASFLAGS		:= -g -ggdb -Wall -O3
 CFLAGS		:= -g -ggdb -Wall -O3
 LDFLAGS		:= -T arch/$(ARCH)/$(MACH)/xboot.ld -nostdlib

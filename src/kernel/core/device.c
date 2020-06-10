@@ -39,11 +39,58 @@ static spinlock_t __device_lock = SPIN_LOCK_INIT();
 /* 设备通知链表 */
 static struct notifier_chain_t __device_nc = NOTIFIER_CHAIN_INIT();
 
+#if CONFIG_DEVICE_XDEF_EN
 static const char* __device_name[] = {
 #define Xdef(def, name)    name,
 #include <xboot/device_table.h>
 #undef Xdef
 };
+#else
+static const char* __device_name[] = {
+    "adc",
+    "audio",
+    "battery",
+    "block",
+    "buzzer",
+    "camera",
+    "clk",
+    "clockevent",
+    "clocksource",
+    "compass",
+    "console",
+    "dac",
+    "dmachip",
+    "framebuffer",
+    "gmeter",
+    "gpiochip",
+    "gyroscope",
+    "hygrometer",
+    "i2c",
+    "input",
+    "irqchip",
+    "led",
+    "ledstrip",
+    "ledtrigger",
+    "light",
+    "motor",
+    "nvmem",
+    "pressure",
+    "proximity",
+    "pwm",
+    "regulator",
+    "resetchip",
+    "rng",
+    "rtc",
+    "sdhci",
+    "servo",
+    "spi",
+    "stepper",
+    "thermometer",
+    "uart",
+    "vibrator",
+    "watchdog",
+};
+#endif
 
 /* 根据设备名称获取device哈希表 */
 static struct hlist_head * device_hash(const char * name)

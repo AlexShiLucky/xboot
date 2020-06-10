@@ -42,6 +42,10 @@ extern struct transfer_t jump_fcontext(void * fctx, void * priv);
 struct scheduler_t __sched[CONFIG_MAX_SMP_CPUS];
 EXPORT_SYMBOL(__sched);
 
+/*
+ * 任务每降低一个nice值(优先级提升),则多获得10%的CPU时间;
+ * 任务每升高一个nice值(优先级降低),则放弃10%的CPU时间.
+ */
 static const int nice_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
  /* -15 */     29154,     23254,     18705,     14949,     11916,

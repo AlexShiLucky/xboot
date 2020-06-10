@@ -145,6 +145,11 @@ DEFINES		+=	$(NS_JMP) $(NS_CTYPE) $(NS_ENVIRON) $(NS_ERRNO) \
 
 DEFINES		+=	-D__ARM32_ARCH__=6 -D__SANDBOX__
 
+#export OUTPUT_I         := 1
+#export OUTPUT_S         := 1
+#export OUTPUT_OBJDUMP   := 1
+#export OUTPUT_NM        := 1
+
 ASFLAGS		:= -g -ggdb -Wall -O3
 CFLAGS		:= -g -ggdb -Wall -O3
 MCFLAGS		:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -mword-relocations -fomit-frame-pointer -ffunction-sections

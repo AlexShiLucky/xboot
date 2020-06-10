@@ -8,55 +8,59 @@ extern "C" {
 #include <configs.h>
 
 #if !defined(CONFIG_NO_LOG)
-#define CONFIG_NO_LOG						(0)
+#define CONFIG_NO_LOG                       (0)
+#endif
+
+#if !defined(CONFIG_DEVICE_XDEF_EN)
+#define CONFIG_DEVICE_XDEF_EN               (1)
 #endif
 
 #if !defined(CONFIG_MAX_SMP_CPUS)
-#define CONFIG_MAX_SMP_CPUS					(1)
+#define CONFIG_MAX_SMP_CPUS                 (1)
 #endif
 
 #if !defined(CONFIG_TASK_STACK_SIZE)
-#define CONFIG_TASK_STACK_SIZE				(512 * 1024)
+#define CONFIG_TASK_STACK_SIZE              (512 * 1024)
 #endif
 
 #if !defined(CONFIG_DRIVER_HASH_SIZE)
-#define CONFIG_DRIVER_HASH_SIZE				(257)
+#define CONFIG_DRIVER_HASH_SIZE             (257)
 #endif
 
 #if !defined(CONFIG_DEVICE_HASH_SIZE)
-#define CONFIG_DEVICE_HASH_SIZE				(257)
+#define CONFIG_DEVICE_HASH_SIZE             (257)
 #endif
 
 #if !defined(CONFIG_PROFILER_HASH_SIZE)
-#define CONFIG_PROFILER_HASH_SIZE			(257)
+#define CONFIG_PROFILER_HASH_SIZE           (257)
 #endif
 
 #if !defined(CONFIG_KVDB_HASH_SIZE)
-#define CONFIG_KVDB_HASH_SIZE				(4099)
+#define CONFIG_KVDB_HASH_SIZE               (4099)
 #endif
 
 #if !defined(CONFIG_MAX_BRIGHTNESS)
-#define CONFIG_MAX_BRIGHTNESS				(1000)
+#define CONFIG_MAX_BRIGHTNESS               (1000)
 #endif
 
 #if !defined(CONFIG_EVENT_FIFO_SIZE)
-#define CONFIG_EVENT_FIFO_SIZE				(8)
+#define CONFIG_EVENT_FIFO_SIZE              (8)
 #endif
 
 #if !defined(CONFIG_MOUNT_PRIVATE_DEVICE)
-#define CONFIG_MOUNT_PRIVATE_DEVICE			""
+#define CONFIG_MOUNT_PRIVATE_DEVICE         ""
 #endif
 
 #if !defined(CONFIG_SHELL_TASK)
-#define CONFIG_SHELL_TASK					(1)
+#define CONFIG_SHELL_TASK                   (1)
 #endif
 
 #if !defined(CONFIG_AUTO_BOOT_DELAY)
-#define CONFIG_AUTO_BOOT_DELAY				(10)
+#define CONFIG_AUTO_BOOT_DELAY              (10)
 #endif
 
 #if !defined(CONFIG_AUTO_BOOT_COMMAND)
-#define CONFIG_AUTO_BOOT_COMMAND			"/application/launcher"
+#define CONFIG_AUTO_BOOT_COMMAND            "/application/launcher"
 #endif
 
 #ifdef __cplusplus

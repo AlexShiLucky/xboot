@@ -48,7 +48,9 @@ struct task_t {
 	size_t stksz;
     /* 任务优先级 */
 	int nice;
+    /* 任务负荷权重 */
 	int weight;
+    /* 权重值用于重除的结果 */
 	uint32_t inv_weight;
     /* 任务入口函数 */
 	task_func_t func;

@@ -25,27 +25,29 @@ endif
 
 $(NAME) : $(OBJS)
 ifneq ($(strip $(OBJS)),)
+	@echo "[LD] $@ ($^)"
 	$(LD) -r -o $@ $^
 else
+	@echo "[AR] $@"
 	@$(AR) -rcs $@
 endif
 
 # 汇编*.S文件规则
 $(SOBJS) : .obj/%.o : %.S
-	@echo [AS] $<
+	@echo "[AS] $<"
 	@$(AS) $(X_ASFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 # 编译*.c文件规则
 $(COBJS) : .obj/%.o : %.c
 ifneq ($(OUTPUT_I),)
-	@echo [CC -E] $(<:.c=.i)
+	@echo "[CC -E] $(<:.c=.i)"
 	@$(CC) $(X_CFLAGS) $(X_INCDIRS) -E -C $< -o $(@:.o=.i)
 endif
 ifneq ($(OUTPUT_S),)
-	@echo [CC -S] $(<:.c=.s)
+	@echo "[CC -S] $(<:.c=.s)"
 	@$(CC) $(X_CFLAGS) $(X_INCDIRS) -S $< -o $(@:.o=.s)
 endif
-	@echo [CC] $<
+	@echo "[CC] $<"
 	@$(CC) $(X_CFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 # 包含进依赖文件

@@ -29,55 +29,13 @@
 #include <framework/core/l-class.h>
 
 /* C字符串形式定义lua代码块:Class.lua */
-static const char class_lua[] = X(
-local function rethack(t, bbak, mbak, ...)
-	t.base = bbak
-	setmetatable(t.self, mbak)
-
-	return ...
-end
-
-local function super(t, k)
-	return function(self, ...)
-		local bbak = t.base
-		local mbak = getmetatable(t.self)
-
-		setmetatable(t.self, t.base)
-		t.base = t.base.base
-
-		return rethack(t, bbak, mbak, bbak[k](t.self, ...))
-	end
-end
-
-return function(b)
-	local o = {}
-	o.__index = o
-
-	function o.new(...)
-		local self = {}
-		setmetatable(self, o)
-		self.super = setmetatable({self = self, base = b}, {__index = super})
-
-		if self.init then
-			self:init(...)
-		end
-
-		return self
-	end
-
-	if b then
-		o.base = b
-		setmetatable(o, {__index = b})
-	end
-
-	return o
-end
-);
+extern char __start_luaClass[];
+extern char __stop_luaClass[];
 
 /* Class代码块调用入口 */
 int luaopen_class(lua_State * L)
 {
-	if(luaL_loadbuffer(L, class_lua, sizeof(class_lua) - 1, "Class.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, __start_luaClass, __stop_luaClass - __start_luaClass, "Class.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

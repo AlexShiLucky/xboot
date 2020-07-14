@@ -28,41 +28,13 @@
 
 #include <framework/core/l-display-image.h>
 
-static const char display_image_lua[] = X(
-local M = Class(DisplayObject)
-
-function M:init(image)
-	if image then
-		local w, h = image:getSize()
-		self._image = image
-		self.super:init(w, h, image)
-	else
-		self.super:init()
-	end
-end
-
-function M:setWidth(width)
-	return self
-end
-
-function M:setHeight(height)
-	return self
-end
-
-function M:setSize(width, height)
-	return self
-end
-
-function M:getImage()
-	return self._image
-end
-
-return M
-);
+/* C字符串形式定义lua代码块:DisplayImage.lua */
+extern char __start_luaDisplayImage[];
+extern char __stop_luaDisplayImage[];
 
 int luaopen_display_image(lua_State * L)
 {
-	if(luaL_loadbuffer(L, display_image_lua, sizeof(display_image_lua) - 1, "DisplayImage.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, __start_luaDisplayImage, __stop_luaDisplayImage - __start_luaDisplayImage, "DisplayImage.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

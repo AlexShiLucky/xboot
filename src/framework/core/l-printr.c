@@ -28,36 +28,13 @@
 
 #include <framework/core/l-printr.h>
 
-static const char printr_lua[] = X(
-return function(o)
-	if type(o) == "table" then
-		local cache = {[o] = "."}
-		local function dump(t, space, name)
-			local temp = {}
-			for k, v in pairs(t) do
-				local key = tostring(k)
-				if cache[v] then
-					table.insert(temp, "+" .. key .. " {" .. cache[v] .. "}")
-				elseif type(v) == "table" then
-					local nkey = name .. "." .. key
-					cache[v] = nkey
-					table.insert(temp, "+" .. key .. dump(v, space .. (next(t, k) and "|" or " " ) .. string.rep(" ", #key), nkey))
-				else
-					table.insert(temp, "+" .. key .. " [" .. tostring(v) .. "]")
-				end
-			end
-			return table.concat(temp, "\r\n" .. space)
-		end
-		print(dump(o, "", ""))
-	else
-		print(o)
-	end
-end
-);
+/* C字符串形式定义lua代码块:Printr.lua */
+extern char __start_luaPrintr[];
+extern char __stop_luaPrintr[];
 
 int luaopen_printr(lua_State * L)
 {
-	if(luaL_loadbuffer(L, printr_lua, sizeof(printr_lua) - 1, "Printr.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, __start_luaPrintr, __stop_luaPrintr - __start_luaPrintr, "Printr.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

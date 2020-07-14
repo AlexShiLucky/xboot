@@ -34,7 +34,8 @@ extern "C" {
 #define iceil(x)		((x) > 0 ? (int)((x) + 0.9999999999) : (int)(x))
 #define idiv255(x)		((((int)(x) + 1) * 257) >> 16)
 
-#define X(...)			("" #__VA_ARGS__ "")
+#define _X(...)         ""#__VA_ARGS__""
+#define X(...)          _X(__VA_ARGS__)
 
 enum {
 	FALSE				= 0,

@@ -28,49 +28,13 @@
 
 #include <framework/core/l-display-ninepatch.h>
 
-static const char display_ninepatch_lua[] = X(
-local M = Class(DisplayObject)
-
-function M:init(ninepatch)
-	if ninepatch then
-		local w, h = ninepatch:getSize()
-		self._ninepatch = ninepatch
-		self.super:init(w, h, ninepatch)
-	else
-		self.super:init()
-	end
-end
-
-function M:setWidth(width)
-	if self._ninepatch then
-		self._ninepatch:setWidth(width)
-	end
-	self.super:setWidth(width)
-	return self
-end
-
-function M:setHeight(height)
-	if self._ninepatch then
-		self._ninepatch:setHeight(height)
-	end
-	self.super:setHeight(height)
-	return self
-end
-
-function M:setSize(width, height)
-	if self._ninepatch then
-		self._ninepatch:setSize(width, height)
-	end
-	self.super:setSize(width, height)
-	return self
-end
-
-return M
-);
+/* C字符串形式定义lua代码块:DisplayNinepatch.lua */
+extern char __start_luaDisplayNinepatch[];
+extern char __stop_luaDisplayNinepatch[];
 
 int luaopen_display_ninepatch(lua_State * L)
 {
-	if(luaL_loadbuffer(L, display_ninepatch_lua, sizeof(display_ninepatch_lua) - 1, "DisplayNinepatch.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, __start_luaDisplayNinepatch, __stop_luaDisplayNinepatch - __start_luaDisplayNinepatch, "DisplayNinepatch.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

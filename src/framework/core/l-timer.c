@@ -28,36 +28,13 @@
 
 #include <framework/core/l-timer.h>
 
-static const char timer_lua[] = X(
-local M = Class()
-
-function M:init(delay, iteration, listener)
-	self._delay = delay or 1
-	self._iteration = iteration or 1
-	self._listener = listener
-	self._running = false
-	self._runtime = 0
-	self._runcount = 0
-end
-
-function M:start()
-	self._running = true
-end
-
-function M:pause()
-	self._running = false
-end
-
-function M:status()
-	return self._running
-end
-
-return M
-);
+/* C字符串形式定义lua代码块:Timer.lua */
+extern char __start_luaTimer[];
+extern char __stop_luaTimer[];
 
 int luaopen_timer(lua_State * L)
 {
-	if(luaL_loadbuffer(L, timer_lua, sizeof(timer_lua) - 1, "Timer.lua") == LUA_OK)
+	if(luaL_loadbuffer(L, __start_luaTimer, __stop_luaTimer - __start_luaTimer, "Timer.lua") == LUA_OK)
 		lua_call(L, 0, 1);
 	return 1;
 }

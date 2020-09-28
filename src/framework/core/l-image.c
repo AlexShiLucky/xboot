@@ -30,16 +30,26 @@
 #include <framework/core/l-color.h>
 #include <framework/core/l-matrix.h>
 #include <framework/core/l-text.h>
+#include <framework/core/l-icon.h>
 #include <framework/core/l-image.h>
 
 static int l_image_new(lua_State * L)
 {
 	struct surface_t * s = NULL;
-	if((lua_gettop(L) == 2) && lua_isnumber(L, 1) && lua_isnumber(L, 2))
+	if(lua_gettop(L) == 2)
 	{
-		int width = luaL_checkinteger(L, 1);
-		int height = luaL_checkinteger(L, 2);
-		s = surface_alloc(width, height, NULL);
+		if(lua_isnumber(L, 1) && lua_isnumber(L, 2))
+		{
+			int width = luaL_checkinteger(L, 1);
+			int height = luaL_checkinteger(L, 2);
+			s = surface_alloc(width, height, NULL);
+		}
+		else if(lua_isstring(L, 1) && lua_isnumber(L, 2))
+		{
+			const char * txt = luaL_checkstring(L, 1);
+			int pixsz = luaL_checkinteger(L, 2);
+			s = surface_alloc_qrcode(txt, pixsz);
+		}
 	}
 	else
 	{
@@ -196,7 +206,17 @@ static int m_image_text(lua_State * L)
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
 	struct matrix_t * m = luaL_checkudata(L, 2, MT_MATRIX);
 	struct ltext_t * text = luaL_checkudata(L, 3, MT_TEXT);
-	surface_text(img->s, NULL, m, text->txt);
+	surface_text(img->s, NULL, m, &text->txt);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_image_icon(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	struct matrix_t * m = luaL_checkudata(L, 2, MT_MATRIX);
+	struct licon_t * icon = luaL_checkudata(L, 3, MT_ICON);
+	surface_icon(img->s, NULL, m, &icon->ico);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -377,12 +397,30 @@ static int m_image_arc(lua_State * L)
 	return 1;
 }
 
-static int m_image_haldclut(lua_State * L)
+static int m_image_gradient(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
-	struct limage_t * clut = luaL_checkudata(L, 2, MT_IMAGE);
-	const char * type = luaL_optstring(L, 3, "nearest");
-	surface_filter_haldclut(img->s, clut->s, type);
+	int x = luaL_checknumber(L, 2);
+	int y = luaL_checknumber(L, 3);
+	int w = luaL_checknumber(L, 4);
+	int h = luaL_checknumber(L, 5);
+	struct color_t * lt = luaL_checkudata(L, 6, MT_COLOR);
+	struct color_t * rt = luaL_checkudata(L, 7, MT_COLOR);
+	struct color_t * rb = luaL_checkudata(L, 8, MT_COLOR);
+	struct color_t * lb = luaL_checkudata(L, 9, MT_COLOR);
+	surface_shape_gradient(img->s, NULL, x, y, w, h, lt, rt, rb, lb);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_image_checkerboard(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	int x = luaL_optinteger(L, 2, 0);
+	int y = luaL_optinteger(L, 3, 0);
+	int w = luaL_optinteger(L, 4, 0);
+	int h = luaL_optinteger(L, 5, 0);
+	surface_shape_checkerboard(img->s, NULL, x, y, w, h);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -414,19 +452,27 @@ static int m_image_invert(lua_State * L)
 static int m_image_threshold(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
-	int threshold = luaL_optinteger(L, 2, 128);
-	int value = luaL_optinteger(L, 3, 255);
-	const char * type = luaL_optstring(L, 4, "binary");
-	surface_filter_threshold(img->s, type, threshold, value);
+	int threshold = luaL_optinteger(L, 2, -1);
+	const char * type = luaL_optstring(L, 3, "binary");
+	surface_filter_threshold(img->s, threshold, type);
 	lua_settop(L, 1);
 	return 1;
 }
 
-static int m_image_colorize(lua_State * L)
+static int m_image_colormap(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
 	const char * type = luaL_optstring(L, 2, "parula");
-	surface_filter_colorize(img->s, type);
+	surface_filter_colormap(img->s, type);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_image_coloring(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
+	surface_filter_coloring(img->s, c);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -476,6 +522,16 @@ static int m_image_opacity(lua_State * L)
 	return 1;
 }
 
+static int m_image_haldclut(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	struct limage_t * clut = luaL_checkudata(L, 2, MT_IMAGE);
+	const char * type = luaL_optstring(L, 3, "nearest");
+	surface_filter_haldclut(img->s, clut->s, type);
+	lua_settop(L, 1);
+	return 1;
+}
+
 static int m_image_blur(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
@@ -485,43 +541,67 @@ static int m_image_blur(lua_State * L)
 	return 1;
 }
 
+static int m_image_erode(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	int times = luaL_optinteger(L, 2, 1);
+	surface_filter_erode(img->s, times);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_image_dilate(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	int times = luaL_optinteger(L, 2, 1);
+	surface_filter_dilate(img->s, times);
+	lua_settop(L, 1);
+	return 1;
+}
+
 static const luaL_Reg m_image[] = {
-	{"__gc",		m_image_gc},
-	{"__tostring",	m_image_tostring},
-	{"getWidth",	m_image_get_width},
-	{"getHeight",	m_image_get_height},
-	{"getSize",		m_image_get_size},
+	{"__gc",			m_image_gc},
+	{"__tostring",		m_image_tostring},
+	{"getWidth",		m_image_get_width},
+	{"getHeight",		m_image_get_height},
+	{"getSize",			m_image_get_size},
 
-	{"clone",		m_image_clone},
-	{"extend",		m_image_extend},
-	{"clear",		m_image_clear},
+	{"clone",			m_image_clone},
+	{"extend",			m_image_extend},
+	{"clear",			m_image_clear},
 
-	{"blit",		m_image_blit},
-	{"fill",		m_image_fill},
-	{"text",		m_image_text},
+	{"blit",			m_image_blit},
+	{"fill",			m_image_fill},
+	{"text",			m_image_text},
+	{"icon",			m_image_icon},
 
-	{"line",		m_image_line},
-	{"polyline",	m_image_polyline},
-	{"curve",		m_image_curve},
-	{"triangle",	m_image_triangle},
-	{"rectangle",	m_image_rectangle},
-	{"polygon",		m_image_polygon},
-	{"circle",		m_image_circle},
-	{"ellipse",		m_image_ellipse},
-	{"arc",			m_image_arc},
+	{"line",			m_image_line},
+	{"polyline",		m_image_polyline},
+	{"curve",			m_image_curve},
+	{"triangle",		m_image_triangle},
+	{"rectangle",		m_image_rectangle},
+	{"polygon",			m_image_polygon},
+	{"circle",			m_image_circle},
+	{"ellipse",			m_image_ellipse},
+	{"arc",				m_image_arc},
+	{"gradient",		m_image_gradient},
+	{"checkerboard",	m_image_checkerboard},
 
-	{"haldclut",	m_image_haldclut},
-	{"grayscale",	m_image_grayscale},
-	{"sepia",		m_image_sepia},
-	{"invert",		m_image_invert},
-	{"threshold",	m_image_threshold},
-	{"colorize",	m_image_colorize},
-	{"hue",			m_image_hue},
-	{"saturate",	m_image_saturate},
-	{"brightness",	m_image_brightness},
-	{"contrast",	m_image_contrast},
-	{"opacity",		m_image_opacity},
-	{"blur",		m_image_blur},
+	{"grayscale",		m_image_grayscale},
+	{"sepia",			m_image_sepia},
+	{"invert",			m_image_invert},
+	{"threshold",		m_image_threshold},
+	{"colormap",		m_image_colormap},
+	{"coloring",		m_image_coloring},
+	{"hue",				m_image_hue},
+	{"saturate",		m_image_saturate},
+	{"brightness",		m_image_brightness},
+	{"contrast",		m_image_contrast},
+	{"opacity",			m_image_opacity},
+	{"haldclut",		m_image_haldclut},
+	{"blur",			m_image_blur},
+	{"erode",			m_image_erode},
+	{"dilate",			m_image_dilate},
 
 	{NULL, NULL}
 };

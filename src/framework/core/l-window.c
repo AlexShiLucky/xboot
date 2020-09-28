@@ -48,7 +48,7 @@ static int l_window_list(lua_State * L)
 	{
 		lua_pushlightuserdata(L, pos);
 		luaL_setmetatable(L, MT_WINDOW);
-		lua_setfield(L, -2, ((struct vmctx_t *)pos->priv)->path);
+		lua_setfield(L, -2, pos->task->name);
 	}
 	return 1;
 }
@@ -121,6 +121,18 @@ static int m_window_snapshot(lua_State * L)
 	return 1;
 }
 
+static int m_window_add_font(lua_State * L)
+{
+	struct font_context_t * f = ((struct vmctx_t *)luahelper_vmctx(L))->f;
+	const char * family = luaL_checkstring(L, 2);
+	const char * path = luaL_checkstring(L, 3);
+	if(is_absolute_path(path))
+		font_add(f, NULL, family, path);
+	else
+		font_add(f, ((struct vmctx_t *)luahelper_vmctx(L))->xfs, family, path);
+	return 0;
+}
+
 static const luaL_Reg m_window[] = {
 	{"getSize",				m_window_get_size},
 	{"getPhysicalSize",		m_window_get_physical_size},
@@ -130,6 +142,7 @@ static const luaL_Reg m_window[] = {
 	{"toBack",				m_window_to_back},
 	{"setLauncher",			m_window_set_launcher},
 	{"snapshot",			m_window_snapshot},
+	{"addFont",				m_window_add_font},
 	{NULL, NULL}
 };
 

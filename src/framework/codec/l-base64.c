@@ -156,6 +156,6 @@ static const luaL_Reg l_base64[] = {
 /* 创建表builtin.base64 */
 int luaopen_base64(lua_State * L)
 {
-	luaL_newlib (L, l_base64);
+	luaL_newlib(L, l_base64);
 	return 1;
 }

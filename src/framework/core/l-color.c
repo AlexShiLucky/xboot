@@ -57,7 +57,7 @@ static int l_color_new(lua_State * L)
 	else
 	{
 		c = lua_newuserdata(L, sizeof(struct color_t));
-		color_init(c, 0xff, 0xff, 0xff, 0xff);
+		memset(c, 0xff, sizeof(struct color_t));
 	}
 	luaL_setmetatable(L, MT_COLOR);
 	return 1;
@@ -99,10 +99,11 @@ static int m_color_get_color(lua_State * L)
 static int m_color_set_hsv(lua_State * L)
 {
 	struct color_t * c = luaL_checkudata(L, 1, MT_COLOR);
-	int h = luaL_optinteger(L, 2, 0);
-	int s = luaL_optinteger(L, 3, 0);
-	int v = luaL_optinteger(L, 4, 100);
-	color_set_hsv(c, h, s, v);
+	float h = luaL_optnumber(L, 2, 0);
+	float s = luaL_optnumber(L, 3, 0);
+	float v = luaL_optnumber(L, 4, 1);
+	float a = luaL_optnumber(L, 5, 1);
+	color_set_hsva(c, h, s, v, a);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -110,12 +111,43 @@ static int m_color_set_hsv(lua_State * L)
 static int m_color_get_hsv(lua_State * L)
 {
 	struct color_t * c = luaL_checkudata(L, 1, MT_COLOR);
-	int h, s, v;
-	color_get_hsv(c, &h, &s, &v);
-	lua_pushinteger(L, h);
-	lua_pushinteger(L, s);
-	lua_pushinteger(L, v);
-	return 3;
+	float h, s, v, a;
+	color_get_hsva(c, &h, &s, &v, &a);
+	lua_pushnumber(L, h);
+	lua_pushnumber(L, s);
+	lua_pushnumber(L, v);
+	lua_pushnumber(L, a);
+	return 4;
+}
+
+static int m_color_mix(lua_State * L)
+{
+	struct color_t * c = luaL_checkudata(L, 1, MT_COLOR);
+	struct color_t * o = luaL_checkudata(L, 2, MT_COLOR);
+	unsigned char weight = luaL_optinteger(L, 3, 128);
+	color_mix(c, c, o, weight);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_color_level(lua_State * L)
+{
+	struct color_t * c = luaL_checkudata(L, 1, MT_COLOR);
+	int level = luaL_optinteger(L, 2, 0);
+	color_level(c, c, clamp(level, -10, 10));
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_color_random(lua_State * L)
+{
+	struct color_t * c = luaL_checkudata(L, 1, MT_COLOR);
+	float s = luaL_optnumber(L, 3, 0.5);
+	float v = luaL_optnumber(L, 4, 1.0);
+	float a = luaL_optnumber(L, 5, 1.0);
+	color_random(c, s, v, a);
+	lua_settop(L, 1);
+	return 1;
 }
 
 static const luaL_Reg m_color[] = {
@@ -124,6 +156,9 @@ static const luaL_Reg m_color[] = {
 	{"getColor",	m_color_get_color},
 	{"setHsv",		m_color_set_hsv},
 	{"getHsv",		m_color_get_hsv},
+	{"mix",			m_color_mix},
+	{"level",		m_color_level},
+	{"random",		m_color_random},
 	{NULL,	NULL}
 };
 

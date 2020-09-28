@@ -1,7 +1,7 @@
 local M = Class(DisplayObject)
 
 function M:init()
-	self._exiting = false
+	self._running = true
 	self._timerlist = {}
 	self._window = Window.new()
 	self.super:init(self._window:getSize())
@@ -9,7 +9,7 @@ function M:init()
 end
 
 function M:exit()
-	self._exiting = true
+	self._running = false
 	return self
 end
 
@@ -98,6 +98,10 @@ function M:snapshot()
 	return self._window:snapshot()
 end
 
+function M:addFont(family, path)
+	return self._window:addFont(family, path)
+end
+
 function M:loop()
 	local Event = Event
 	local window = self._window
@@ -109,9 +113,12 @@ function M:loop()
 		collectgarbage("step")
 	end))
 
-	while not self._exiting do
+	while self._running do
 		local e = Event.pump()
 		if e ~= nil then
+			if e.type == "system-exit" then
+				self:exit()
+			end
 			self:dispatch(e)
 		end
 

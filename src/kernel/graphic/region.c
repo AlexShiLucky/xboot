@@ -26,7 +26,6 @@
  *
  */
 
-#include <log2.h>
 #include <stddef.h>
 #include <limits.h>
 #include <string.h>
@@ -40,8 +39,6 @@ struct region_list_t * region_list_alloc(unsigned int size)
 
 	if(size < 16)
 		size = 16;
-	if(size & (size - 1))
-		size = roundup_pow_of_two(size);
 
 	r = malloc(size * sizeof(struct region_t));
 	if(!r)
@@ -75,8 +72,6 @@ static inline void region_list_resize(struct region_list_t * rl, unsigned int si
 	{
 		if(size < 16)
 			size = 16;
-		if(size & (size - 1))
-			size = roundup_pow_of_two(size);
 		rl->size = size;
 		rl->region = realloc(rl->region, rl->size * sizeof(struct region_t));
 	}
@@ -108,8 +103,6 @@ void region_list_merge(struct region_list_t * rl, struct region_list_t * o)
 
 	if(rl && o && ((count = o->count) > 0))
 	{
-		if(rl->size < o->size)
-			region_list_resize(rl, o->size);
 		for(i = 0; i < count; i++)
 			region_list_add(rl, &o->region[i]);
 	}
@@ -117,54 +110,19 @@ void region_list_merge(struct region_list_t * rl, struct region_list_t * o)
 
 void region_list_add(struct region_list_t * rl, struct region_t * r)
 {
-	struct region_t region, * p;
-	int area = INT_MAX;
+	struct region_t * p;
 	int index = -1;
 	int i;
 
 	if(!rl || !r)
 		return;
 
-	if(rl->count < 8)
+	for(i = 0; i < rl->count; i++)
 	{
-		for(i = 0; i < rl->count; i++)
+		if(region_overlap(&rl->region[i], r))
 		{
-			p = &rl->region[i];
-			if(region_intersect(&region, p, r))
-			{
-				if(region_area(&region) >= region_area(r))
-				{
-					return;
-				}
-				else
-				{
-					region_union(&region, p, r);
-					if(region_area(&region) < area)
-					{
-						area = region_area(&region);
-						index = i;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		for(i = 0; i < rl->count; i++)
-		{
-			p = &rl->region[i];
-			if(region_union(&region, p, r))
-			{
-				if(region_area(&region) <= region_area(p))
-				{
-					return;
-				}
-				else if(region_area(&region) < area)
-				{
-					area = region_area(&region);
-					index = i;
-				}
-			}
+			index = i;
+			break;
 		}
 	}
 
@@ -175,7 +133,7 @@ void region_list_add(struct region_list_t * rl, struct region_t * r)
 	}
 	else
 	{
-		if(rl->size < rl->count)
+		if(rl->size <= rl->count)
 			region_list_resize(rl, rl->size << 1);
 		region_clone(&rl->region[rl->count], r);
 		rl->count++;

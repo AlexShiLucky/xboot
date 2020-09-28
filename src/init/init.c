@@ -27,12 +27,10 @@
  */
 
 #include <xboot.h>
-#include <framebuffer/framebuffer.h>
-#include <graphic/surface.h>
 #include <init.h>
 
 /* 显示logo */
-void do_showlogo(void)
+void do_show_logo(void)
 {
 	struct device_t * pos, * n;
 	struct xfs_context_t * ctx;
@@ -40,10 +38,12 @@ void do_showlogo(void)
 	struct framebuffer_t * fb;
 	struct matrix_t m;
 	struct color_t c;
+	char key[256];
+	int brightness;
 
 	if(!list_empty_careful(&__device_head[DEVICE_TYPE_FRAMEBUFFER]))
 	{
-		ctx = xfs_alloc("/framework", 0);
+		ctx = xfs_alloc("/private/framework", 0);
 		if(ctx)
 		{
 			logo = surface_alloc_from_xfs(ctx, "assets/images/logo.png");
@@ -61,7 +61,11 @@ void do_showlogo(void)
 						surface_blit(s, NULL, &m, logo, RENDER_TYPE_GOOD);
 						framebuffer_present_surface(fb, s, NULL);
 						framebuffer_destroy_surface(fb, s);
-						framebuffer_set_backlight(fb, CONFIG_MAX_BRIGHTNESS * 618 / 1000);
+						sprintf(key, "backlight(%s)", fb->name);
+						brightness = strtol(setting_get(key, "-1"), NULL, 0);
+						if(brightness <= 0)
+							brightness = (CONFIG_MAX_BRIGHTNESS * 633) >> 10;
+						framebuffer_set_backlight(fb, brightness);
 					}
 				}
 				surface_free(logo);
@@ -69,6 +73,10 @@ void do_showlogo(void)
 			xfs_free(ctx);
 		}
 	}
+}
+
+void do_play_audio(void)
+{
 }
 
 static int nm_call(struct notifier_t * n, int cmd, void * arg)
@@ -133,7 +141,7 @@ static struct notifier_t nm = {
 	.call		= nm_call,
 };
 
-void do_automount(void)
+void do_auto_mount(void)
 {
 	struct filesystem_t * fpos, * fn;
 	struct device_t * dpos, * dn;
@@ -175,7 +183,7 @@ void do_automount(void)
 	register_device_notifier(&nm);
 }
 
-static void __do_autoboot(void)
+void do_auto_boot(void)
 {
     /* 自启动倒计时ms数 */
 	int delay = CONFIG_AUTO_BOOT_DELAY * 1000;
@@ -191,10 +199,17 @@ static void __do_autoboot(void)
 		delay -= 10;
 		if(delay < 0)
 			delay = 0;
-		printf("\rPress any key to stop autoboot:%3d.%03d%s", delay / 1000, delay % 1000, (delay == 0) ? "\r\n" : "");
+		printf("\rPress any key to stop auto boot:%3d.%03d%s", delay / 1000, delay % 1000, (delay == 0) ? "\r\n" : "");
 	} while(delay > 0);
 
+#ifdef __SANDBOX__
+	extern char * sandbox_get_application(void);
+	if(sandbox_get_application())
+		shell_system(sandbox_get_application());
+	else
+		shell_system(CONFIG_AUTO_BOOT_COMMAND);
+#else
     /* 执行路径"/application/examples"下程序 */
 	shell_system(CONFIG_AUTO_BOOT_COMMAND);
+#endif
 }
-extern __typeof(__do_autoboot) do_autoboot __attribute__((weak, alias("__do_autoboot")));

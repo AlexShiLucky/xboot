@@ -24,6 +24,12 @@ enum task_status_t {
 	TASK_STATUS_SUSPEND	= 2,    // 任务挂起状态
 };
 
+struct task_data_t {
+	const char * fb;
+	const char * input;
+	void * data;
+};
+
 /* 任务结构 */
 struct task_t {
 	struct rb_node node;
@@ -97,6 +103,9 @@ void task_suspend(struct task_t * task);
 void task_resume(struct task_t * task);
 /* 任务让出 */
 void task_yield(void);
+
+struct task_data_t * task_data_alloc(const char * fb, const char * input, void * data);
+void task_data_free(struct task_data_t * td);
 
 /* 调度器循环调度 */
 void scheduler_loop(void);

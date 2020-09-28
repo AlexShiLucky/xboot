@@ -331,12 +331,12 @@ function M:restore(flag)
 	if not self._springing and self._index > 0 then
 		if not self._vertial then
 			if self._page:getX() ~= 0 then
-				self._pageSpring = Spring.new(self._page:getX(), 0, 0, 1500, 50)
+				self._pageSpring = Spring.new(self._page:getX(), 0, 0, 1000, 60)
 				if self._next then
 					if self._page:getX() > 0 then
-						self._nextSpring = Spring.new(self._page:getX() - self._next:getWidth(), -self._next:getWidth(), 0, 1500, 50)
+						self._nextSpring = Spring.new(self._page:getX() - self._next:getWidth(), -self._next:getWidth(), 0, 1000, 60)
 					else
-						self._nextSpring = Spring.new(self._page:getX() + self._page:getWidth(), self._page:getWidth(), 0, 1500, 50)
+						self._nextSpring = Spring.new(self._page:getX() + self._page:getWidth(), self._page:getWidth(), 0, 1000, 60)
 					end
 				end
 				self._pwatch = Stopwatch.new()
@@ -346,12 +346,12 @@ function M:restore(flag)
 			end
 		else
 			if self._page:getY() ~= 0 then
-				self._pageSpring = Spring.new(self._page:getY(), 0, 0, 1500, 50)
+				self._pageSpring = Spring.new(self._page:getY(), 0, 0, 1000, 60)
 				if self._next then
 					if self._page:getY() > 0 then
-						self._nextSpring = Spring.new(self._page:getY() - self._next:getWidth(), -self._next:getWidth(), 0, 1500, 50)
+						self._nextSpring = Spring.new(self._page:getY() - self._next:getWidth(), -self._next:getWidth(), 0, 1000, 60)
 					else
-						self._nextSpring = Spring.new(self._page:getY() + self._page:getWidth(), self._page:getWidth(), 0, 1500, 50)
+						self._nextSpring = Spring.new(self._page:getY() + self._page:getWidth(), self._page:getWidth(), 0, 1000, 60)
 					end
 				end
 				self._pwatch = Stopwatch.new()
@@ -380,11 +380,11 @@ function M:prevPage()
 			self:addChild(self._next)
 		end
 		if not self._vertial then
-			self._pageSpring = Spring.new(self._page:getX(), self._next:getWidth(), 0, 1500, 50)
-			self._nextSpring = Spring.new(self._page:getX() - self._next:getWidth(), 0, 0, 1500, 50)
+			self._pageSpring = Spring.new(self._page:getX(), self._next:getWidth(), 0, 1000, 60)
+			self._nextSpring = Spring.new(self._page:getX() - self._next:getWidth(), 0, 0, 1000, 60)
 		else
-			self._pageSpring = Spring.new(self._page:getY(), self._next:getHeight(), 0, 1500, 50)
-			self._nextSpring = Spring.new(self._page:getY() - self._next:getHeight(), 0, 0, 1500, 50)
+			self._pageSpring = Spring.new(self._page:getY(), self._next:getHeight(), 0, 1000, 60)
+			self._nextSpring = Spring.new(self._page:getY() - self._next:getHeight(), 0, 0, 1000, 60)
 		end
 		self._pwatch = Stopwatch.new()
 		self._action = "prev-page"
@@ -410,11 +410,11 @@ function M:nextPage()
 			self:addChild(self._next)
 		end
 		if not self._vertial then
-			self._pageSpring = Spring.new(self._page:getX(), -self._page:getWidth(), 0, 1500, 50)
-			self._nextSpring = Spring.new(self._page:getX() + self._page:getWidth(), 0, 0, 1500, 50)
+			self._pageSpring = Spring.new(self._page:getX(), -self._page:getWidth(), 0, 1000, 60)
+			self._nextSpring = Spring.new(self._page:getX() + self._page:getWidth(), 0, 0, 1000, 60)
 		else
-			self._pageSpring = Spring.new(self._page:getY(), -self._page:getHeight(), 0, 1500, 50)
-			self._nextSpring = Spring.new(self._page:getY() + self._page:getHeight(), 0, 0, 1500, 50)
+			self._pageSpring = Spring.new(self._page:getY(), -self._page:getHeight(), 0, 1000, 60)
+			self._nextSpring = Spring.new(self._page:getY() + self._page:getHeight(), 0, 0, 1000, 60)
 		end
 		self._pwatch = Stopwatch.new()
 		self._action = "next-page"

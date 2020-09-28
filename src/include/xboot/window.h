@@ -11,6 +11,7 @@ extern "C" {
 #include <fifo.h>
 #include <irqflags.h>
 #include <spinlock.h>
+#include <xboot/event.h>
 #include <framebuffer/framebuffer.h>
 
 struct window_manager_t {
@@ -18,7 +19,6 @@ struct window_manager_t {
 	struct list_head list;
 	struct list_head window;
 	struct framebuffer_t * fb;
-	struct fifo_t * event;
 	int wcount;
 	int refresh;
 	struct {
@@ -31,20 +31,21 @@ struct window_manager_t {
 };
 
 struct window_t {
+	struct task_t * task;
 	struct list_head list;
 	struct window_manager_t * wm;
 	struct surface_t * s;
 	struct region_list_t * rl;
+	struct fifo_t * event;
 	struct hmap_t * map;
 	int launcher;
-	void * priv;
 };
 
 extern struct list_head __window_manager_list;
 
 static inline int window_is_active(struct window_t * w)
 {
-	return list_is_last(&w->list, &w->wm->window);
+	return list_is_first(&w->list, &w->wm->window);
 }
 
 static inline int window_get_width(struct window_t * w)
@@ -99,13 +100,14 @@ static inline int window_get_launcher(struct window_t * w)
 	return w ? w->launcher : 0;
 }
 
-struct window_t * window_alloc(const char * fb, const char * input, void * data);
+struct window_t * window_alloc(const char * fb, const char * input);
 void window_free(struct window_t * w);
 void window_to_front(struct window_t * w);
 void window_to_back(struct window_t * w);
 void window_region_list_add(struct window_t * w, struct region_t * r);
 void window_region_list_clear(struct window_t * w);
-void window_present(struct window_t * w, struct color_t * c, void * o, void (*draw)(struct window_t *, void *));
+void window_present(struct window_t * w, void * o, void (*draw)(struct window_t *, void *));
+void window_exit(struct window_t * w);
 int window_pump_event(struct window_t * w, struct event_t * e);
 void push_event(struct event_t * e);
 

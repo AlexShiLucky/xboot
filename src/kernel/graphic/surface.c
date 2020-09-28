@@ -31,6 +31,7 @@
 #include <pngstruct.h>
 #include <jpeglib.h>
 #include <jerror.h>
+#include <qrcgen.h>
 #include <graphic/surface.h>
 
 static struct list_head __render_list = {
@@ -48,6 +49,7 @@ static struct render_t render_default = {
 	.blit				= render_default_blit,
 	.fill				= render_default_fill,
 	.text				= render_default_text,
+	.icon				= render_default_icon,
 
 	.shape_line			= render_default_shape_line,
 	.shape_polyline		= render_default_shape_polyline,
@@ -58,20 +60,25 @@ static struct render_t render_default = {
 	.shape_circle		= render_default_shape_circle,
 	.shape_ellipse		= render_default_shape_ellipse,
 	.shape_arc			= render_default_shape_arc,
+	.shape_gradient		= render_default_shape_gradient,
+	.shape_checkerboard	= render_default_shape_checkerboard,
 	.shape_raster		= render_default_shape_raster,
 
-	.filter_haldclut	= render_default_filter_haldclut,
 	.filter_grayscale	= render_default_filter_grayscale,
 	.filter_sepia		= render_default_filter_sepia,
 	.filter_invert		= render_default_filter_invert,
 	.filter_threshold	= render_default_filter_threshold,
-	.filter_colorize	= render_default_filter_colorize,
+	.filter_colormap	= render_default_filter_colormap,
+	.filter_coloring	= render_default_filter_coloring,
 	.filter_hue			= render_default_filter_hue,
 	.filter_saturate	= render_default_filter_saturate,
 	.filter_brightness	= render_default_filter_brightness,
 	.filter_contrast	= render_default_filter_contrast,
 	.filter_opacity		= render_default_filter_opacity,
+	.filter_haldclut	= render_default_filter_haldclut,
 	.filter_blur		= render_default_filter_blur,
+	.filter_erode		= render_default_filter_erode,
+	.filter_dilate		= render_default_filter_dilate,
 };
 
 inline __attribute__((always_inline)) struct render_t * search_render(void)
@@ -140,7 +147,7 @@ struct surface_t * surface_alloc(int width, int height, void * priv)
 	s->pixlen = pixlen;
 	s->pixels = pixels;
 	s->r = search_render();
-	s->pctx = s->r->create(s);
+	s->rctx = s->r->create(s);
 	s->priv = priv;
 	return s;
 }
@@ -150,7 +157,7 @@ void surface_free(struct surface_t * s)
 	if(s)
 	{
 		if(s->r)
-			s->r->destroy(s->pctx);
+			s->r->destroy(s->rctx);
 		free(s->pixels);
 		free(s);
 	}
@@ -348,7 +355,7 @@ struct surface_t * surface_clone(struct surface_t * s, int x, int y, int w, int 
 	o->pixlen = pixlen;
 	o->pixels = pixels;
 	o->r = s->r;
-	o->pctx = o->r->create(o);
+	o->rctx = o->r->create(o);
 	o->priv = NULL;
 	return o;
 }
@@ -437,7 +444,7 @@ struct surface_t * surface_extend(struct surface_t * s, int width, int height, c
 	o->pixlen = pixlen;
 	o->pixels = pixels;
 	o->r = s->r;
-	o->pctx = o->r->create(o);
+	o->rctx = o->r->create(o);
 	o->priv = NULL;
 	return o;
 }
@@ -692,13 +699,13 @@ static inline struct surface_t * surface_alloc_from_xfs_png(struct xfs_context_t
 	return s;
 }
 
-struct my_error_mgr
+struct x_error_mgr
 {
 	struct jpeg_error_mgr pub;
 	jmp_buf setjmp_buffer;
 };
 
-struct my_source_mgr
+struct x_source_mgr
 {
 	struct jpeg_source_mgr pub;
 	struct xfs_file_t * file;
@@ -706,30 +713,37 @@ struct my_source_mgr
 	int start_of_file;
 };
 
-static void my_error_exit(j_common_ptr cinfo)
+static void x_error_exit(j_common_ptr dinfo)
 {
-	struct my_error_mgr * myerr = (struct my_error_mgr *)cinfo->err;
-	(*cinfo->err->output_message)(cinfo);
-	longjmp(myerr->setjmp_buffer, 1);
+	struct x_error_mgr * err = (struct x_error_mgr *)dinfo->err;
+	(*dinfo->err->output_message)(dinfo);
+	longjmp(err->setjmp_buffer, 1);
 }
 
-static void init_source(j_decompress_ptr cinfo)
+static void x_emit_message(j_common_ptr dinfo, int msg_level)
 {
-	struct my_source_mgr * src = (struct my_source_mgr *)cinfo->src;
+	struct jpeg_error_mgr * err = dinfo->err;
+	if(msg_level < 0)
+		err->num_warnings++;
+}
+
+static void init_source(j_decompress_ptr dinfo)
+{
+	struct x_source_mgr * src = (struct x_source_mgr *)dinfo->src;
 	src->start_of_file = 1;
 }
 
-static boolean fill_input_buffer(j_decompress_ptr cinfo)
+static boolean fill_input_buffer(j_decompress_ptr dinfo)
 {
-	struct my_source_mgr * src = (struct my_source_mgr *)cinfo->src;
+	struct x_source_mgr * src = (struct x_source_mgr *)dinfo->src;
 	size_t nbytes;
 
 	nbytes = xfs_read(src->file, src->buffer, 4096);
 	if(nbytes <= 0)
 	{
 		if(src->start_of_file)
-			ERREXIT(cinfo, JERR_INPUT_EMPTY);
-		WARNMS(cinfo, JWRN_JPEG_EOF);
+			ERREXIT(dinfo, JERR_INPUT_EMPTY);
+		WARNMS(dinfo, JWRN_JPEG_EOF);
 		src->buffer[0] = (JOCTET)0xFF;
 		src->buffer[1] = (JOCTET)JPEG_EOI;
 		nbytes = 2;
@@ -740,38 +754,38 @@ static boolean fill_input_buffer(j_decompress_ptr cinfo)
 	return 1;
 }
 
-static void skip_input_data(j_decompress_ptr cinfo, long num_bytes)
+static void skip_input_data(j_decompress_ptr dinfo, long num_bytes)
 {
-	struct jpeg_source_mgr * src = cinfo->src;
+	struct jpeg_source_mgr * src = dinfo->src;
 
 	if(num_bytes > 0)
 	{
 		while(num_bytes > (long)src->bytes_in_buffer)
 		{
 			num_bytes -= (long)src->bytes_in_buffer;
-			(void)(*src->fill_input_buffer)(cinfo);
+			(void)(*src->fill_input_buffer)(dinfo);
 		}
 		src->next_input_byte += (size_t)num_bytes;
 		src->bytes_in_buffer -= (size_t)num_bytes;
 	}
 }
 
-static void term_source(j_decompress_ptr cinfo)
+static void term_source(j_decompress_ptr dinfo)
 {
 }
 
-static void jpeg_xfs_src(j_decompress_ptr cinfo, struct xfs_file_t * file)
+static void jpeg_xfs_src(j_decompress_ptr dinfo, struct xfs_file_t * file)
 {
-	struct my_source_mgr * src;
+	struct x_source_mgr * src;
 
-	if(cinfo->src == NULL)
+	if(dinfo->src == NULL)
 	{
-		cinfo->src = (struct jpeg_source_mgr *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT, sizeof(struct my_source_mgr));
-		src = (struct my_source_mgr *)cinfo->src;
-		src->buffer = (JOCTET *)(*cinfo->mem->alloc_small)((j_common_ptr)cinfo, JPOOL_PERMANENT, 4096 * sizeof(JOCTET));
+		dinfo->src = (struct jpeg_source_mgr *)(*dinfo->mem->alloc_small)((j_common_ptr)dinfo, JPOOL_PERMANENT, sizeof(struct x_source_mgr));
+		src = (struct x_source_mgr *)dinfo->src;
+		src->buffer = (JOCTET *)(*dinfo->mem->alloc_small)((j_common_ptr)dinfo, JPOOL_PERMANENT, 4096 * sizeof(JOCTET));
 	}
 
-	src = (struct my_source_mgr *)cinfo->src;
+	src = (struct x_source_mgr *)dinfo->src;
 	src->pub.init_source = init_source;
 	src->pub.fill_input_buffer = fill_input_buffer;
 	src->pub.skip_input_data = skip_input_data;
@@ -784,8 +798,8 @@ static void jpeg_xfs_src(j_decompress_ptr cinfo, struct xfs_file_t * file)
 
 static inline struct surface_t * surface_alloc_from_xfs_jpeg(struct xfs_context_t * ctx, const char * filename)
 {
-	struct jpeg_decompress_struct cinfo;
-	struct my_error_mgr jerr;
+	struct jpeg_decompress_struct dinfo;
+	struct x_error_mgr jerr;
 	struct surface_t * s;
 	struct xfs_file_t * file;
 	JSAMPARRAY buf;
@@ -794,36 +808,37 @@ static inline struct surface_t * surface_alloc_from_xfs_jpeg(struct xfs_context_
 
 	if(!(file = xfs_open_read(ctx, filename)))
 		return NULL;
-	cinfo.err = jpeg_std_error(&jerr.pub);
-	jerr.pub.error_exit = my_error_exit;
+	dinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = x_error_exit;
+	jerr.pub.emit_message = x_emit_message;
 	if(setjmp(jerr.setjmp_buffer))
 	{
-		jpeg_destroy_decompress(&cinfo);
+		jpeg_destroy_decompress(&dinfo);
 		xfs_close(file);
 		return 0;
 	}
-	jpeg_create_decompress(&cinfo);
-	jpeg_xfs_src(&cinfo, file);
-	jpeg_read_header(&cinfo, 1);
-	jpeg_start_decompress(&cinfo);
-	buf = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, cinfo.output_width * cinfo.output_components, 1);
-	s = surface_alloc(cinfo.image_width, cinfo.image_height, NULL);
+	jpeg_create_decompress(&dinfo);
+	jpeg_xfs_src(&dinfo, file);
+	jpeg_read_header(&dinfo, 1);
+	jpeg_start_decompress(&dinfo);
+	buf = (*dinfo.mem->alloc_sarray)((j_common_ptr)&dinfo, JPOOL_IMAGE, dinfo.output_width * dinfo.output_components, 1);
+	s = surface_alloc(dinfo.image_width, dinfo.image_height, NULL);
 	p = surface_get_pixels(s);
-	while(cinfo.output_scanline < cinfo.output_height)
+	while(dinfo.output_scanline < dinfo.output_height)
 	{
-		scanline = cinfo.output_scanline * surface_get_stride(s);
-		jpeg_read_scanlines(&cinfo, buf, 1);
-		for(i = 0; i < cinfo.output_width; i++)
+		scanline = dinfo.output_scanline * surface_get_stride(s);
+		jpeg_read_scanlines(&dinfo, buf, 1);
+		for(i = 0; i < dinfo.output_width; i++)
 		{
 			offset = scanline + (i * 4);
 			p[offset + 3] = 0xff;
 			p[offset + 2] = buf[0][(i * 3) + 0];
 			p[offset + 1] = buf[0][(i * 3) + 1];
-			p[offset] = buf[0][(i * 3) + 2];
+			p[offset + 0] = buf[0][(i * 3) + 2];
 		}
 	}
-	jpeg_finish_decompress(&cinfo);
-	jpeg_destroy_decompress(&cinfo);
+	jpeg_finish_decompress(&dinfo);
+	jpeg_destroy_decompress(&dinfo);
 	xfs_close(file);
 
 	return s;
@@ -856,5 +871,53 @@ struct surface_t * surface_alloc_from_xfs(struct xfs_context_t * ctx, const char
 		return surface_alloc_from_xfs_png(ctx, filename);
 	else if((strcasecmp(ext, "jpg") == 0) || (strcasecmp(ext, "jpeg") == 0))
 		return surface_alloc_from_xfs_jpeg(ctx, filename);
+	return NULL;
+}
+
+struct surface_t * surface_alloc_qrcode(const char * txt, int pixsz)
+{
+	struct surface_t * s;
+	uint32_t * p, * q;
+	uint8_t qrc[QRCGEN_BUFFER_LEN_MAX];
+	uint8_t tmp[QRCGEN_BUFFER_LEN_MAX];
+	int qrs, i, j;
+	int x1, y1, x2, y2;
+	int l, x, y;
+
+	if(qrcgen_encode_text(txt, tmp, qrc, QRCGEN_ECC_MEDIUM, QRCGEN_VERSION_MIN, QRCGEN_VERSION_MAX, QRCGEN_MASK_AUTO, 1))
+	{
+		qrs = qrcgen_get_size(qrc);
+		if(qrs > 0)
+		{
+			if(pixsz < 0)
+				pixsz = 1;
+			s = surface_alloc((qrs + 4) * pixsz, (qrs + 4) * pixsz, NULL);
+			if(s)
+			{
+				memset(s->pixels, 0xff, s->pixlen);
+				l = s->stride >> 2;
+				for(j = 0; j < qrs; j++)
+				{
+					for(i = 0; i < qrs; i++)
+					{
+						if(qrcgen_get_pixel(qrc, i, j))
+						{
+							x1 = (i + 2) * pixsz;
+							y1 = (j + 2) * pixsz;
+							x2 = x1 + pixsz;
+							y2 = y1 + pixsz;
+							q = (uint32_t *)s->pixels + y1 * l + x1;
+							for(y = y1; y < y2; y++, q += l)
+							{
+								for(x = x1, p = q; x < x2; x++, p++)
+									*p = 0xff000000;
+							}
+						}
+					}
+				}
+				return s;
+			}
+		}
+	}
 	return NULL;
 }

@@ -41,29 +41,35 @@ void xboot_main(void)
 	/* Do initial vfs - 初始化虚拟文件系统 */
 	do_init_vfs();
 
-	/* Do all initial calls - 初始化表调用 */
+	/* Do initial calls - 初始化表调用 */
 	do_initcalls();
 
+	/* Do initial setting - 初始化设置 */
+	do_init_setting();
+
 	/* Do show logo - 显示logo */
-	do_showlogo();
+	do_show_logo();
+
+	/* Do play audio */
+	do_play_audio();
+
+	/* Do initial package */
+	do_init_package();
 
 	/* Do auto mount */
-	do_automount();
+	do_auto_mount();
 
 	/* Do auto boot - 调用init.c中的__do_autoboot */
-	do_autoboot();
+	do_auto_boot();
 
 #if defined(CONFIG_SHELL_TASK) && (CONFIG_SHELL_TASK > 0)
-	/* Create shell task */
-	struct task_t * task = task_create(scheduler_self(), "shell", shell_task, NULL, 0, 0);
-
-	/* Resume shell task */
-	task_resume(task);
+	/* Create and resume shell task */
+	task_resume(task_create(scheduler_self(), "shell", shell_task, NULL, 0, 0));
 #endif
 
 	/* Scheduler loop */
 	scheduler_loop();
 
-	/* Do all exit calls */
+	/* Do exit calls */
 	do_exitcalls();
 }

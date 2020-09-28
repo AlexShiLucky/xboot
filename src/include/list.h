@@ -415,18 +415,6 @@ static inline void list_splice_tail_init(struct list_head * list,
 }
 
 /**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:        the pointer to the member.(结构体成员指针)
- * @type:       the type of the container struct this is embedded in.(结构体类型)
- * @member:     the name of the member within the struct.(结构体中成员)
- *
- */
-/* 根据结构体成员地址获得结构地址 */
-#define container_of(ptr, type, member) ({ \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr); \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-
-/**
  * list_entry - get the struct for this entry
  * @ptr:	the &struct list_head pointer.(结构体中链表成员指针)
  * @type:	the type of the struct this is embedded in.(结构体类型)

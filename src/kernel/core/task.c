@@ -190,7 +190,7 @@ static inline void scheduler_switch_task(struct scheduler_t * sched, struct task
 /* 调度器均衡选择,返回最轻的调度器 */
 static inline struct scheduler_t * scheduler_load_balance_choice(void)
 {
-	struct scheduler_t * sched;
+	struct scheduler_t * sched = &__sched[0];
 	uint64_t weight = ~0ULL;
 	int i;
 
@@ -455,6 +455,31 @@ void task_yield(void)
         /* 调度器切换到下一个任务 */
 		if(likely(next != self))
 			scheduler_switch_task(sched, next);
+	}
+}
+
+struct task_data_t * task_data_alloc(const char * fb, const char * input, void * data)
+{
+	struct task_data_t * td;
+
+	td = malloc(sizeof(struct task_data_t));
+	if(!td)
+		return NULL;
+	td->fb = strdup(fb);
+	td->input = strdup(input);
+	td->data = data;
+	return td;
+}
+
+void task_data_free(struct task_data_t * td)
+{
+	if(td)
+	{
+		if(td->fb)
+			free((void *)td->fb);
+		if(td->input)
+			free((void *)td->input);
+		free(td);
 	}
 }
 

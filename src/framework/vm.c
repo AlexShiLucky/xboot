@@ -32,6 +32,7 @@
 #include <framework/core/l-assets.h>
 #include <framework/core/l-class.h>
 #include <framework/core/l-color.h>
+#include <framework/core/l-display-icon.h>
 #include <framework/core/l-display-image.h>
 #include <framework/core/l-display-ninepatch.h>
 #include <framework/core/l-display-object.h>
@@ -42,12 +43,13 @@
 #include <framework/core/l-easing.h>
 #include <framework/core/l-event.h>
 #include <framework/core/l-event-dispatcher.h>
-#include <framework/core/l-font.h>
 #include <framework/core/l-i18n.h>
+#include <framework/core/l-icon.h>
 #include <framework/core/l-image.h>
 #include <framework/core/l-matrix.h>
 #include <framework/core/l-ninepatch.h>
 #include <framework/core/l-printr.h>
+#include <framework/core/l-setting.h>
 #include <framework/core/l-spring.h>
 #include <framework/core/l-stage.h>
 #include <framework/core/l-stopwatch.h>
@@ -65,6 +67,7 @@ static void luaopen_glblibs(lua_State * L)
 	const luaL_Reg glblibs[] = {
 		{ "Class",					luaopen_class },
 		{ "Printr",					luaopen_printr },
+		{ "Setting",				luaopen_setting },
 		{ "Xfs",					luaopen_xfs },
 		{ "Window",					luaopen_window },
 		{ "I18n",					luaopen_i18n },
@@ -75,8 +78,8 @@ static void luaopen_glblibs(lua_State * L)
 		{ "Matrix",					luaopen_matrix },
 		{ "Image",					luaopen_image },
 		{ "Ninepatch",				luaopen_ninepatch },
-		{ "Font",					luaopen_font },
 		{ "Text",					luaopen_text },
+		{ "Icon",					luaopen_icon },
 		{ "Dobject",				luaopen_dobject },
 		{ "Event",					luaopen_event },
 		{ "EventDispatcher",		luaopen_event_dispatcher },
@@ -86,6 +89,7 @@ static void luaopen_glblibs(lua_State * L)
 		{ "DisplayImage",			luaopen_display_image },
 		{ "DisplayNinepatch",		luaopen_display_ninepatch },
 		{ "DisplayText",			luaopen_display_text },
+		{ "DisplayIcon",			luaopen_display_icon },
 		{ "Timer",					luaopen_timer },
 		{ "Stage",					luaopen_stage },
 		{ "Assets",					luaopen_assets },
@@ -147,7 +151,7 @@ static void luaopen_prelibs(lua_State * L)
 static const char boot_lua[] = X(
 	stage = Stage.new()
 	assets = Assets.new()
-	T = I18n.new("en-US")
+	T = I18n.new(Setting.get("language", "en-US"))
 	if require("main") then
 		stage:loop()
 	end
@@ -403,21 +407,19 @@ static lua_State * l_newstate(void * ud)
 	return L;
 }
 
-static struct vmctx_t * vmctx_alloc(const char * path, const char * fb, const char * input)
+static struct vmctx_t * vmctx_alloc(const char * path, const char * fb, const char * input, void * data)
 {
 	struct vmctx_t * ctx;
-
-	if(!is_absolute_path(path))
-		return NULL;
 
 	ctx = malloc(sizeof(struct vmctx_t));
 	if(!ctx)
 		return NULL;
 
-	ctx->path = strdup(path);
 	ctx->xfs = xfs_alloc(path, 1);
 	ctx->f = font_context_alloc();
-	ctx->w = window_alloc(fb, input, ctx);
+	ctx->w = window_alloc(fb, input);
+	ctx->priv = data;
+
 	return ctx;
 }
 
@@ -426,7 +428,6 @@ static void vmctx_free(struct vmctx_t * ctx)
 	if(!ctx)
 		return;
 
-	free(ctx->path);
 	xfs_free(ctx->xfs);
 	font_context_free(ctx->f);
 	window_free(ctx->w);
@@ -435,45 +436,37 @@ static void vmctx_free(struct vmctx_t * ctx)
 
 static void vm_task(struct task_t * task, void * data)
 {
-	struct vmctx_t * ctx = (struct vmctx_t *)data;
+	struct task_data_t * td = (struct task_data_t *)data;
+	struct vmctx_t * ctx;
 	lua_State * L;
 
-	L = l_newstate(ctx);
-	if(L)
+	if(td)
 	{
-	    /* 传入C函数pmain */
-		lua_pushcfunction(L, &pmain);
-		if(luahelper_pcall(L, 0, 0) != LUA_OK)
+		ctx = vmctx_alloc(task->name, td->fb, td->input, td);
+		if(ctx)
 		{
-			lua_writestringerror("%s: ", task->name);
-			lua_writestringerror("%s\r\n", lua_tostring(L, -1));
-			lua_pop(L, 1);
+			L = l_newstate(ctx);
+			if(L)
+			{
+				lua_pushcfunction(L, &pmain);
+				if(luahelper_pcall(L, 0, 0) != LUA_OK)
+				{
+					lua_writestringerror("%s: ", task->name);
+					lua_writestringerror("%s\r\n", lua_tostring(L, -1));
+					lua_pop(L, 1);
+				}
+				lua_close(L);
+			}
+			vmctx_free(ctx);
 		}
-        /* 关闭lua状态机 */
-		lua_close(L);
+		task_data_free(td);
 	}
-	vmctx_free(ctx);
 }
 
 int vmexec(const char * path, const char * fb, const char * input)
 {
-	struct task_t * task;
-	struct vmctx_t * ctx;
-
 	if(!is_absolute_path(path))
 		return -1;
-
-	ctx = vmctx_alloc(path, fb, input);
-	if(!ctx)
-		return -1;
-
-	task = task_create(NULL, path, vm_task, ctx, 0, 0);
-	if(!task)
-	{
-		vmctx_free(ctx);
-		return -1;
-	}
-
-	task_resume(task);
+	task_resume(task_create(NULL, path, vm_task, task_data_alloc(fb, input, NULL), 0, 0));
 	return 0;
 }

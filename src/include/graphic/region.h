@@ -6,12 +6,10 @@ extern "C" {
 #endif
 
 #include <stddef.h>
-#include <string.h>
 
 struct region_t {
 	int x, y;
 	int w, h;
-	int area;
 };
 
 static inline void region_init(struct region_t * r, int x, int y, int w, int h)
@@ -20,19 +18,14 @@ static inline void region_init(struct region_t * r, int x, int y, int w, int h)
 	r->y = y;
 	r->w = w;
 	r->h = h;
-	r->area = -1;
-}
-
-static inline int region_area(struct region_t * r)
-{
-	if(r->area < 0)
-		r->area = r->w * r->h;
-	return r->area;
 }
 
 static inline void region_clone(struct region_t * r, struct region_t * o)
 {
-	memcpy(r, o, sizeof(struct region_t));
+	r->x = o->x;
+	r->y = o->y;
+	r->w = o->w;
+	r->h = o->h;
 }
 
 static inline int region_isempty(struct region_t * r)
@@ -40,6 +33,13 @@ static inline int region_isempty(struct region_t * r)
 	if((r->w > 0) && (r->h > 0))
 		return 0;
 	return 1;
+}
+
+static inline int region_hit(struct region_t * r, int x, int y)
+{
+	if((x >= r->x) && (x < r->x + r->w) && (y >= r->y) && (y < r->y + r->h))
+		return 1;
+	return 0;
 }
 
 static inline int region_contains(struct region_t * r, struct region_t * o)
@@ -51,6 +51,21 @@ static inline int region_contains(struct region_t * r, struct region_t * o)
 	if((o->x >= r->x) && (o->x < rr) && (o->y >= r->y) && (o->y < rb) && (or > r->x) && (or <= rr) && (ob > r->y) && (ob <= rb))
 		return 1;
 	return 0;
+}
+
+static inline int region_overlap(struct region_t * r, struct region_t * o)
+{
+	if((o->x + o->w >= r->x) && (o->x <= r->x + r->w) && (o->y + o->h >= r->y) && (o->y <= r->y + r->h))
+		return 1;
+	return 0;
+}
+
+static inline void region_expand(struct region_t * r, struct region_t * o, int n)
+{
+	r->x = o->x - n;
+	r->y = o->y - n;
+	r->w = o->w + n * 2;
+	r->h = o->h + n * 2;
 }
 
 static inline int region_intersect(struct region_t * r, struct region_t * a, struct region_t * b)
@@ -67,7 +82,6 @@ static inline int region_intersect(struct region_t * r, struct region_t * a, str
 			r->y = y0;
 			r->w = x1 - x0;
 			r->h = y1 - y0;
-			r->area = -1;
 			return 1;
 		}
 	}
@@ -84,7 +98,6 @@ static inline int region_union(struct region_t * r, struct region_t * a, struct 
 	r->y = min(a->y, b->y);
 	r->w = max(ar, br) - r->x;
 	r->h = max(ab, bb) - r->y;
-	r->area = -1;
 	return 1;
 }
 

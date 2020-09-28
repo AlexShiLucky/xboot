@@ -62,6 +62,7 @@ static const char* __device_name[] = {
     "dmachip",
     "framebuffer",
     "gmeter",
+    "gnss",
     "gpiochip",
     "gyroscope",
     "hygrometer",

@@ -19,6 +19,7 @@ Xdef(DAC,             "dac")           /* dac设备 */
 Xdef(DMACHIP,         "dmachip")       /* DMA设备 */
 Xdef(FRAMEBUFFER,     "framebuffer")   /* 帧缓存设备 */
 Xdef(GMETER,          "gmeter")        /* 加速度计设备 */
+Xdef(GNSS,            "gnss")          /* 全球导航卫星系统设备 */
 Xdef(GPIOCHIP,        "gpiochip")      /* gpio设备 */
 Xdef(GYROSCOPE,       "gyroscope")     /* 陀螺仪设备 */
 Xdef(HYGROMETER,      "hygrometer")    /* 湿度计设备 */

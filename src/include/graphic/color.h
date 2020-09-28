@@ -9,9 +9,9 @@ extern "C" {
 #include <stddef.h>
 
 struct color_t {
-	unsigned char b;
-	unsigned char g;
 	unsigned char r;
+	unsigned char g;
+	unsigned char b;
 	unsigned char a;
 };
 
@@ -23,6 +23,28 @@ static inline void color_init(struct color_t * c, unsigned char r, unsigned char
 	c->a = a;
 }
 
+static inline void color_mix(struct color_t * c, struct color_t * a, struct color_t * b, unsigned char weight)
+{
+	int u = (weight << 1) - 255;
+	int v = idiv255(a->a - b->a);
+	int w = idiv255(u * v);
+	unsigned char wa = ((u * v == -255) ? u : (u + (a->a - b->a)) / (1 + w) + 255) >> 1;
+	unsigned char wb = 255 - wa;
+
+	c->r = idiv255(a->r * wa) + idiv255(b->r * wb);
+	c->g = idiv255(a->g * wa) + idiv255(b->g * wb);
+	c->b = idiv255(a->b * wa) + idiv255(b->b * wb);
+	c->a = idiv255(a->a * weight) + idiv255(b->a * (255 - weight));
+}
+
+static inline void color_level(struct color_t * c, struct color_t * o, int level)
+{
+	if(level < 0)
+		color_mix(c, &(struct color_t){ 0xff, 0xff, 0xff, 0xff }, o, -level * 25);
+	else
+		color_mix(c, &(struct color_t){ 0x00, 0x00, 0x00, 0xff }, o, level * 25);
+}
+
 /*
  * String: [#RGB], [#RGBA], [#RRGGBB], [#RRGGBBAA], [r, g, b, a], [NAME]
  * http://www.w3.org/TR/css3-color/#svg-color
@@ -30,10 +52,15 @@ static inline void color_init(struct color_t * c, unsigned char r, unsigned char
 void color_init_string(struct color_t * c, const char * s);
 
 /*
- * h from 0 - 360, s and v from 0 - 100
+ * h, s, v and a from 0 to 1
  */
-void color_set_hsv(struct color_t * c, int h, int s, int v);
-void color_get_hsv(struct color_t * c, int * h, int * s, int * v);
+void color_set_hsva(struct color_t * c, float h, float s, float v, float a);
+void color_get_hsva(struct color_t * c, float * h, float * s, float * v, float * a);
+
+/*
+ * Random color, s and v and a from 0 to 1
+ */
+void color_random(struct color_t * c, float s, float v, float a);
 
 /*
  * The value with pre-multiplied alpha

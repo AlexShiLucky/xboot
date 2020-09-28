@@ -90,88 +90,90 @@ INCDIRS     +=  include \
                 arch/$(ARCH)/$(MACH)/include
 
 # 源文件路径
-SRCDIRS     +=  arch/$(ARCH)/lib/cpu \
-                arch/$(ARCH)/lib \
-                arch/$(ARCH)/$(MACH) \
-                arch/$(ARCH)/$(MACH)/command \
-                arch/$(ARCH)/$(MACH)/driver \
-                lib/libc/charset \
-                lib/libc/crypto \
-                lib/libc/ctype \
-                lib/libc/environ \
-                lib/libc/errno \
-                lib/libc/exit \
-                lib/libc/filter \
-                lib/libc/locale \
-                lib/libc/malloc \
-                lib/libc/path \
-                lib/libc/stdio \
-                lib/libc/stdlib \
-                lib/libc/string \
-                lib/libc/time \
-                lib/libm/$(ARCH) \
-                lib/libm \
-                lib/libx \
-                init \
-                kernel/command \
-                kernel/core \
-                kernel/graphic \
-                kernel/shell \
-                kernel/time \
-                kernel/vfs \
-                kernel/vfs/cpio \
-                kernel/vfs/ext4 \
-                kernel/vfs/fat \
-                kernel/vfs/ram \
-                kernel/vfs/sys \
-                kernel/vfs/tar \
-                kernel/xfs \
-                driver/adc \
-                driver/audio \
-                driver/battery \
-                driver/block \
-                driver/block/partition \
-                driver/buzzer \
-                driver/camera \
-                driver/clk \
-                driver/clockevent \
-                driver/clocksource \
-                driver/compass \
-                driver/console \
-                driver/dac \
-                driver/dma \
-                driver/framebuffer \
-                driver/gmeter \
-                driver/gpio \
-                driver/gyroscope \
-                driver/hygrometer \
-                driver/i2c \
-                driver/input \
-                driver/input/rc \
-                driver/interrupt \
-                driver/led \
-                driver/light \
-                driver/motor \
-                driver/nvmem \
-                driver/pressure \
-                driver/proximity \
-                driver/pwm \
-                driver/regulator \
-                driver/reset \
-                driver/rng \
-                driver/rtc \
-                driver/sd \
-                driver/servo \
-                driver/spi \
-                driver/stepper \
-                driver/thermometer \
-                driver/uart \
-                driver/vibrator \
-                driver/watchdog \
-                framework \
-                framework/codec \
-                framework/core \
-                framework/hardware
+SRCDIRS		+=	arch/$(ARCH)/lib/cpu \
+				arch/$(ARCH)/lib \
+				arch/$(ARCH)/$(MACH) \
+				arch/$(ARCH)/$(MACH)/command \
+				arch/$(ARCH)/$(MACH)/driver \
+				lib/libc/charset \
+				lib/libc/crypto \
+				lib/libc/ctype \
+				lib/libc/environ \
+				lib/libc/errno \
+				lib/libc/exit \
+				lib/libc/filter \
+				lib/libc/locale \
+				lib/libc/malloc \
+				lib/libc/path \
+				lib/libc/stdio \
+				lib/libc/stdlib \
+				lib/libc/string \
+				lib/libc/time \
+				lib/libm/$(ARCH) \
+				lib/libm \
+				lib/libx \
+				init \
+				kernel/command \
+				kernel/core \
+				kernel/graphic \
+				kernel/shell \
+				kernel/time \
+				kernel/vfs \
+				kernel/vfs/cpio \
+				kernel/vfs/ext4 \
+				kernel/vfs/fat \
+				kernel/vfs/ram \
+				kernel/vfs/sys \
+				kernel/vfs/tar \
+				kernel/xfs \
+				kernel/xui \
+				driver/adc \
+				driver/audio \
+				driver/battery \
+				driver/block \
+				driver/block/partition \
+				driver/buzzer \
+				driver/camera \
+				driver/clk \
+				driver/clockevent \
+				driver/clocksource \
+				driver/compass \
+				driver/console \
+				driver/dac \
+				driver/dma \
+				driver/framebuffer \
+				driver/gmeter \
+				driver/gnss \
+				driver/gpio \
+				driver/gyroscope \
+				driver/hygrometer \
+				driver/i2c \
+				driver/input \
+				driver/input/rc \
+				driver/interrupt \
+				driver/led \
+				driver/light \
+				driver/motor \
+				driver/nvmem \
+				driver/pressure \
+				driver/proximity \
+				driver/pwm \
+				driver/regulator \
+				driver/reset \
+				driver/rng \
+				driver/rtc \
+				driver/sd \
+				driver/servo \
+				driver/spi \
+				driver/stepper \
+				driver/thermometer \
+				driver/uart \
+				driver/vibrator \
+				driver/watchdog \
+				framework \
+				framework/codec \
+				framework/core \
+				framework/hardware
 
 #
 # Add external library
@@ -188,57 +190,60 @@ SRCDIRS     +=  external/zlib-1.2.11
 INCDIRS     +=  external/libpng-1.6.37
 SRCDIRS     +=  external/libpng-1.6.37
 
-INCDIRS     +=  external/jpeg-9c
-SRCDIRS     +=  external/jpeg-9c
+INCDIRS		+= 	external/jpeg-9d
+SRCDIRS		+=	external/jpeg-9d
 
-INCDIRS     +=  external/lua-5.3.5
-SRCDIRS     +=  external/lua-5.3.5
+INCDIRS		+= 	external/lua-5.4.0
+SRCDIRS		+=	external/lua-5.4.0
 
 INCDIRS     +=  external/lua-cjson-2.1.0
 SRCDIRS     +=  external/lua-cjson-2.1.0
 
-INCDIRS     +=  external/freetype-2.10.1/include \
-                external/freetype-2.10.1/src/autofit \
-                external/freetype-2.10.1/src/base \
-                external/freetype-2.10.1/src/cache \
-                external/freetype-2.10.1/src/cff \
-                external/freetype-2.10.1/src/cid \
-                external/freetype-2.10.1/src/gxvalid \
-                external/freetype-2.10.1/src/otvalid \
-                external/freetype-2.10.1/src/pfr \
-                external/freetype-2.10.1/src/psaux \
-                external/freetype-2.10.1/src/pshinter \
-                external/freetype-2.10.1/src/psnames \
-                external/freetype-2.10.1/src/raster \
-                external/freetype-2.10.1/src/sfnt \
-                external/freetype-2.10.1/src/smooth \
-                external/freetype-2.10.1/src/truetype \
-                external/freetype-2.10.1/src/type1 \
-                external/freetype-2.10.1/src/type42 \
-                external/freetype-2.10.1/src/winfonts
-SRCDIRS     +=  external/freetype-2.10.1/src/autofit \
-                external/freetype-2.10.1/src/base \
-                external/freetype-2.10.1/src/cache \
-                external/freetype-2.10.1/src/cff \
-                external/freetype-2.10.1/src/cid \
-                external/freetype-2.10.1/src/gxvalid \
-                external/freetype-2.10.1/src/otvalid \
-                external/freetype-2.10.1/src/pfr \
-                external/freetype-2.10.1/src/psaux \
-                external/freetype-2.10.1/src/pshinter \
-                external/freetype-2.10.1/src/psnames \
-                external/freetype-2.10.1/src/raster \
-                external/freetype-2.10.1/src/sfnt \
-                external/freetype-2.10.1/src/smooth \
-                external/freetype-2.10.1/src/truetype \
-                external/freetype-2.10.1/src/type1 \
-                external/freetype-2.10.1/src/type42 \
-                external/freetype-2.10.1/src/winfonts
+INCDIRS		+=	external/quirc-1.1.0
+SRCDIRS		+=	external/quirc-1.1.0
 
-INCDIRS     +=  external/pixman-0.38.4 \
-                external/pixman-0.38.4/$(ARCH)
-SRCDIRS     +=  external/pixman-0.38.4 \
-                external/pixman-0.38.4/$(ARCH)
+INCDIRS		+= 	external/freetype-2.10.1/include \
+				external/freetype-2.10.1/src/autofit \
+				external/freetype-2.10.1/src/base \
+				external/freetype-2.10.1/src/cache \
+				external/freetype-2.10.1/src/cff \
+				external/freetype-2.10.1/src/cid \
+				external/freetype-2.10.1/src/gxvalid \
+				external/freetype-2.10.1/src/otvalid \
+				external/freetype-2.10.1/src/pfr \
+				external/freetype-2.10.1/src/psaux \
+				external/freetype-2.10.1/src/pshinter \
+				external/freetype-2.10.1/src/psnames \
+				external/freetype-2.10.1/src/raster \
+				external/freetype-2.10.1/src/sfnt \
+				external/freetype-2.10.1/src/smooth \
+				external/freetype-2.10.1/src/truetype \
+				external/freetype-2.10.1/src/type1 \
+				external/freetype-2.10.1/src/type42 \
+				external/freetype-2.10.1/src/winfonts
+SRCDIRS		+=	external/freetype-2.10.1/src/autofit \
+				external/freetype-2.10.1/src/base \
+				external/freetype-2.10.1/src/cache \
+				external/freetype-2.10.1/src/cff \
+				external/freetype-2.10.1/src/cid \
+				external/freetype-2.10.1/src/gxvalid \
+				external/freetype-2.10.1/src/otvalid \
+				external/freetype-2.10.1/src/pfr \
+				external/freetype-2.10.1/src/psaux \
+				external/freetype-2.10.1/src/pshinter \
+				external/freetype-2.10.1/src/psnames \
+				external/freetype-2.10.1/src/raster \
+				external/freetype-2.10.1/src/sfnt \
+				external/freetype-2.10.1/src/smooth \
+				external/freetype-2.10.1/src/truetype \
+				external/freetype-2.10.1/src/type1 \
+				external/freetype-2.10.1/src/type42 \
+				external/freetype-2.10.1/src/winfonts
+
+INCDIRS		+= 	external/pixman-0.40.0 \
+				external/pixman-0.40.0/$(ARCH)
+SRCDIRS		+=	external/pixman-0.40.0 \
+				external/pixman-0.40.0/$(ARCH)
 
 INCDIRS     +=  external/cairo-1.17.2
 SRCDIRS     +=  external/cairo-1.17.2
@@ -250,15 +255,16 @@ SRCDIRS     +=  external/chipmunk-7.0.3/src
 # Add whitebox test
 #
 ifneq ($(strip $(WBOXTEST)),)
-INCDIRS     +=  wboxtest
-SRCDIRS     +=  wboxtest \
-                wboxtest/benchmark \
-                wboxtest/block \
-                wboxtest/crypto \
-                wboxtest/dma \
-                wboxtest/graphic \
-                wboxtest/path \
-                wboxtest/stdio
+INCDIRS		+=	wboxtest
+SRCDIRS		+=	wboxtest \
+				wboxtest/benchmark \
+				wboxtest/block \
+				wboxtest/camera \
+				wboxtest/crypto \
+				wboxtest/dma \
+				wboxtest/graphic \
+				wboxtest/path \
+				wboxtest/stdio
 endif
 
 #

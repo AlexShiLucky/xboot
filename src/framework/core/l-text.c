@@ -34,17 +34,16 @@ static int l_text_new(lua_State * L)
 {
 	const char * utf8 = luaL_checkstring(L, 1);
 	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
-	const char * family = luaL_optstring(L, 3, NULL);
-	int size = luaL_optinteger(L, 4, 24);
-	struct text_t * txt = text_alloc(utf8, c, ((struct vmctx_t *)luahelper_vmctx(L))->f, family, size);
-	if(txt)
-	{
-		struct ltext_t * text = lua_newuserdata(L, sizeof(struct ltext_t));
-		text->txt = txt;
-		luaL_setmetatable(L, MT_TEXT);
-		return 1;
-	}
-	return 0;
+	int wrap = luaL_optinteger(L, 3, 0);
+	const char * family = luaL_optstring(L, 4, NULL);
+	int size = luaL_optinteger(L, 5, 24);
+	struct ltext_t * text = lua_newuserdata(L, sizeof(struct ltext_t));
+	text->utf8 = strdup(utf8);
+	text->family = strdup(family);
+	memcpy(&text->c, c, sizeof(struct color_t));
+	text_init(&text->txt, text->utf8, &text->c, wrap, ((struct vmctx_t *)luahelper_vmctx(L))->f, text->family, size);
+	luaL_setmetatable(L, MT_TEXT);
+	return 1;
 }
 
 static const luaL_Reg l_text[] = {
@@ -55,31 +54,21 @@ static const luaL_Reg l_text[] = {
 static int m_text_gc(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	text_free(text->txt);
+	if(text->utf8)
+		free(text->utf8);
+	if(text->family)
+		free(text->family);
 	return 0;
-}
-
-static int m_text_get_origin(lua_State * L)
-{
-	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	lua_pushinteger(L, text->txt->e.x);
-	lua_pushinteger(L, text->txt->e.y);
-	return 2;
-}
-
-static int m_text_get_size(lua_State * L)
-{
-	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	lua_pushinteger(L, text->txt->e.w);
-	lua_pushinteger(L, text->txt->e.h);
-	return 2;
 }
 
 static int m_text_set_text(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
 	const char * utf8 = luaL_checkstring(L, 2);
-	text_set_text(text->txt, utf8);
+	if(text->utf8)
+		free(text->utf8);
+	text->utf8 = strdup(utf8);
+	text_set_text(&text->txt, text->utf8);
 	lua_settop(L, 1);
 	return 1;
 }
@@ -88,37 +77,60 @@ static int m_text_set_color(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
 	struct color_t * c = luaL_checkudata(L, 2, MT_COLOR);
-	text_set_color(text->txt, c);
+	memcpy(&text->c, c, sizeof(struct color_t));
+	text_set_color(&text->txt, &text->c);
 	lua_settop(L, 1);
 	return 1;
 }
 
-static int m_text_set_font_family(lua_State * L)
+static int m_text_set_wrap(lua_State * L)
+{
+	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
+	int wrap = luaL_checknumber(L, 2);
+	text_set_wrap(&text->txt, wrap);
+	lua_settop(L, 1);
+	return 1;
+}
+
+static int m_text_set_family(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
 	const char * family = luaL_checkstring(L, 2);
-	text_set_font_family(text->txt, family);
+	if(text->family)
+		free(text->family);
+	text->family = strdup(family);
+	text_set_family(&text->txt, text->family);
 	lua_settop(L, 1);
 	return 1;
 }
 
-static int m_text_set_font_size(lua_State * L)
+static int m_text_set_size(lua_State * L)
 {
 	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
-	int size = luaL_optinteger(L, 2, 0);
-	text_set_font_size(text->txt, size);
+	int size = luaL_checknumber(L, 2);
+	text_set_size(&text->txt, size);
 	lua_settop(L, 1);
 	return 1;
+}
+
+static int m_text_get_metrics(lua_State * L)
+{
+	struct ltext_t * text = luaL_checkudata(L, 1, MT_TEXT);
+	lua_pushnumber(L, text->txt.metrics.ox);
+	lua_pushnumber(L, text->txt.metrics.oy);
+	lua_pushnumber(L, text->txt.metrics.width);
+	lua_pushnumber(L, text->txt.metrics.height);
+	return 4;
 }
 
 static const luaL_Reg m_text[] = {
-	{"__gc",			m_text_gc},
-	{"getOrigin",		m_text_get_origin},
-	{"getSize",			m_text_get_size},
-	{"setText",			m_text_set_text},
-	{"setColor",		m_text_set_color},
-	{"setFontFamily",	m_text_set_font_family},
-	{"setFontSize",		m_text_set_font_size},
+	{"__gc",		m_text_gc},
+	{"setText",		m_text_set_text},
+	{"setColor",	m_text_set_color},
+	{"setWrap",		m_text_set_wrap},
+	{"setFamily",	m_text_set_family},
+	{"setSize",		m_text_set_size},
+	{"getMetrics",	m_text_get_metrics},
 	{NULL, NULL}
 };
 

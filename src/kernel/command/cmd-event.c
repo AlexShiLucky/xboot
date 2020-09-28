@@ -35,65 +35,71 @@
 static void usage(void)
 {
 	printf("usage:\r\n");
-	printf("    event\r\n");
+	printf("    event [framebuffer] [input]\r\n");
 }
 
 static int do_event(int argc, char ** argv)
 {
-	struct window_t * w = window_alloc(NULL, NULL, NULL);
-	struct input_t * input;
+	const char * fb = (argc >= 2) ? argv[1] : NULL;
+	const char * input = (argc >= 3) ? argv[2] : NULL;
+	struct window_t * w = window_alloc(fb, input);
+	struct input_t * dev;
 	struct event_t e;
-
-	if(!w)
-		return -1;
-
-	window_to_back(w);
-	while(1)
+	int running = 1;
+	if(w)
 	{
-		if(window_pump_event(w, &e))
+		while(running)
 		{
-			input = (struct input_t *)(e.device);
-			switch(e.type)
+			if(window_pump_event(w, &e))
 			{
-			case EVENT_TYPE_KEY_DOWN:
-				printf("[%s]: [KeyDown] [%d]\r\n", input->name, e.e.key_down.key);
-				break;
-			case EVENT_TYPE_KEY_UP:
-				printf("[%s]: [KeyUp] [%d]\r\n", input->name, e.e.key_up.key);
-				break;
-			case EVENT_TYPE_ROTARY_TURN:
-				printf("[%s]: [RotaryTurn] [%d]\r\n", input->name, e.e.rotary_turn.v);
-				break;
-			case EVENT_TYPE_MOUSE_DOWN:
-				printf("[%s]: [MouseDown] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_down.x, e.e.mouse_down.y, e.e.mouse_down.button);
-				break;
-			case EVENT_TYPE_MOUSE_MOVE:
-				printf("[%s]: [MouseMove] [%d][%d]\r\n", input->name, e.e.mouse_move.x, e.e.mouse_move.y);
-				break;
-			case EVENT_TYPE_MOUSE_UP:
-				printf("[%s]: [MouseUp] [%d][%d][0x%x]\r\n", input->name, e.e.mouse_up.x, e.e.mouse_up.y, e.e.mouse_up.button);
-				break;
-			case EVENT_TYPE_MOUSE_WHEEL:
-				printf("[%s]: [MouseWheel] [%d][%d]\r\n", input->name, e.e.mouse_wheel.dx, e.e.mouse_wheel.dy);
-				break;
-			case EVENT_TYPE_TOUCH_BEGIN:
-				printf("[%s]: [TouchBegin] [%d][%d][%d]\r\n", input->name, e.e.touch_begin.x, e.e.touch_begin.y, e.e.touch_begin.id);
-				break;
-			case EVENT_TYPE_TOUCH_MOVE:
-				printf("[%s]: [TouchMove] [%d][%d][%d]\r\n", input->name, e.e.touch_move.x, e.e.touch_move.y, e.e.touch_move.id);
-				break;
-			case EVENT_TYPE_TOUCH_END:
-				printf("[%s]: [TouchEnd] [%d][%d][%d]\r\n", input->name, e.e.touch_end.x, e.e.touch_end.y, e.e.touch_end.id);
-				break;
-			default:
-				printf("[%s]: [Unkown]\r\n", input->name);
-				break;
+				dev = (struct input_t *)(e.device);
+				switch(e.type)
+				{
+				case EVENT_TYPE_KEY_DOWN:
+					printf("[%s]: [KeyDown] [%d]\r\n", dev->name, e.e.key_down.key);
+					break;
+				case EVENT_TYPE_KEY_UP:
+					printf("[%s]: [KeyUp] [%d]\r\n", dev->name, e.e.key_up.key);
+					break;
+				case EVENT_TYPE_ROTARY_TURN:
+					printf("[%s]: [RotaryTurn] [%d]\r\n", dev->name, e.e.rotary_turn.v);
+					break;
+				case EVENT_TYPE_MOUSE_DOWN:
+					printf("[%s]: [MouseDown] [%d][%d][0x%x]\r\n", dev->name, e.e.mouse_down.x, e.e.mouse_down.y, e.e.mouse_down.button);
+					break;
+				case EVENT_TYPE_MOUSE_MOVE:
+					printf("[%s]: [MouseMove] [%d][%d]\r\n", dev->name, e.e.mouse_move.x, e.e.mouse_move.y);
+					break;
+				case EVENT_TYPE_MOUSE_UP:
+					printf("[%s]: [MouseUp] [%d][%d][0x%x]\r\n", dev->name, e.e.mouse_up.x, e.e.mouse_up.y, e.e.mouse_up.button);
+					break;
+				case EVENT_TYPE_MOUSE_WHEEL:
+					printf("[%s]: [MouseWheel] [%d][%d]\r\n", dev->name, e.e.mouse_wheel.dx, e.e.mouse_wheel.dy);
+					break;
+				case EVENT_TYPE_TOUCH_BEGIN:
+					printf("[%s]: [TouchBegin] [%d][%d][%d]\r\n", dev->name, e.e.touch_begin.x, e.e.touch_begin.y, e.e.touch_begin.id);
+					break;
+				case EVENT_TYPE_TOUCH_MOVE:
+					printf("[%s]: [TouchMove] [%d][%d][%d]\r\n", dev->name, e.e.touch_move.x, e.e.touch_move.y, e.e.touch_move.id);
+					break;
+				case EVENT_TYPE_TOUCH_END:
+					printf("[%s]: [TouchEnd] [%d][%d][%d]\r\n", dev->name, e.e.touch_end.x, e.e.touch_end.y, e.e.touch_end.id);
+					break;
+				case EVENT_TYPE_SYSTEM_EXIT:
+					printf("[%s]: [Exit]\r\n", dev->name);
+					running = 0;
+					break;
+				default:
+					break;
+				}
 			}
+			if(window_is_active(w))
+				window_present(w, NULL, NULL);
+			if(ctrlc())
+				running = 0;
 		}
-		if(ctrlc())
-			break;
+		window_free(w);
 	}
-	window_free(w);
 	return 0;
 }
 

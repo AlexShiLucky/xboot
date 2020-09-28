@@ -31,6 +31,7 @@
 #include <framework/core/l-image.h>
 #include <framework/core/l-ninepatch.h>
 #include <framework/core/l-text.h>
+#include <framework/core/l-icon.h>
 #include <framework/core/l-window.h>
 #include <framework/core/l-dobject.h>
 
@@ -729,6 +730,20 @@ static void dobject_layout(struct ldobject_t * o)
 					scaley = pos->scaley;
 				}
 				break;
+			case DOBJECT_TYPE_ICON:
+				width = pos->width;
+				height = pos->height;
+				if(width != 0.0 && height != 0.0)
+				{
+					scalex = pos->layout.w / width;
+					scaley = pos->layout.h / height;
+				}
+				else
+				{
+					scalex = pos->scalex;
+					scaley = pos->scaley;
+				}
+				break;
 			default:
 				width = pos->width;
 				height = pos->height;
@@ -843,7 +858,13 @@ static void dobject_draw_ninepatch(struct ldobject_t * o, struct window_t * w)
 static void dobject_draw_text(struct ldobject_t * o, struct window_t * w)
 {
 	struct ltext_t * text = o->priv;
-	surface_text(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), text->txt);
+	surface_text(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), &text->txt);
+}
+
+static void dobject_draw_icon(struct ldobject_t * o, struct window_t * w)
+{
+	struct licon_t * icon = o->priv;
+	surface_icon(w->s, dobject_parent_global_bounds(o), dobject_global_matrix(o), &icon->ico);
 }
 
 static void dobject_draw_container(struct ldobject_t * o, struct window_t * w)
@@ -875,6 +896,12 @@ static int l_dobject_new(lua_State * L)
 	{
 		dtype = DOBJECT_TYPE_TEXT;
 		draw = dobject_draw_text;
+		userdata = lua_touserdata(L, 3);
+	}
+	else if(luaL_testudata(L, 3, MT_ICON))
+	{
+		dtype = DOBJECT_TYPE_ICON;
+		draw = dobject_draw_icon;
 		userdata = lua_touserdata(L, 3);
 	}
 	else
@@ -2073,7 +2100,6 @@ static void display_draw(struct window_t * w, struct ldobject_t * o)
 
 static int m_render(lua_State * L)
 {
-	static struct color_t c = { .r = 255, .g = 255, .b = 255, .a = 255 };
 	struct ldobject_t * o = luaL_checkudata(L, 1, MT_DOBJECT);
 	struct window_t * w = luaL_checkudata(L, 2, MT_WINDOW);
 	if(window_is_active(w))
@@ -2081,7 +2107,7 @@ static int m_render(lua_State * L)
 		dobject_layout(o);
 		window_region_list_clear(w);
 		window_region_list_fill(w, o);
-		window_present(w, &c, (void *)o, (void (*)(struct window_t *, void *))display_draw);
+		window_present(w, o, (void (*)(struct window_t *, void *))display_draw);
 	}
 	return 0;
 }

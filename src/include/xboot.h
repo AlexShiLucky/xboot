@@ -38,11 +38,13 @@ extern "C" {
 #include <bcd.h>
 #include <div.h>
 #include <list.h>
+#include <lsort.h>
 #include <slist.h>
 #include <hmap.h>
 #include <fifo.h>
 #include <queue.h>
 #include <ssize.h>
+#include <spring.h>
 #include <malloc.h>
 #include <charset.h>
 #include <version.h>
@@ -54,7 +56,6 @@ extern "C" {
 #include <xboot/profiler.h>
 #include <xboot/notifier.h>
 #include <xboot/initcall.h>
-#include <xboot/module.h>
 #include <xboot/machine.h>
 #include <xboot/dtree.h>
 #include <xboot/device.h>
@@ -63,6 +64,9 @@ extern "C" {
 #include <xboot/mutex.h>
 #include <xboot/channel.h>
 #include <xboot/window.h>
+#include <xboot/module.h>
+#include <xboot/setting.h>
+#include <xboot/package.h>
 #include <time/delay.h>
 #include <time/timer.h>
 #include <clockevent/clockevent.h>
@@ -71,6 +75,30 @@ extern "C" {
 #include <shell/shell.h>
 #include <vfs/vfs.h>
 #include <xfs/xfs.h>
+#include <xui/xui.h>
+#include <xui/window.h>
+#include <xui/popup.h>
+#include <xui/panel.h>
+#include <xui/collapse.h>
+#include <xui/tree.h>
+#include <xui/button.h>
+#include <xui/checkbox.h>
+#include <xui/radio.h>
+#include <xui/toggle.h>
+#include <xui/tabbar.h>
+#include <xui/slider.h>
+#include <xui/number.h>
+#include <xui/textedit.h>
+#include <xui/colorpicker.h>
+#include <xui/image.h>
+#include <xui/icon.h>
+#include <xui/badge.h>
+#include <xui/progress.h>
+#include <xui/radialbar.h>
+#include <xui/spinner.h>
+#include <xui/split.h>
+#include <xui/label.h>
+#include <xui/text.h>
 
 #ifdef __cplusplus
 }

@@ -57,7 +57,7 @@ static int l_event_pump(lua_State * L)
 	struct window_t * w = ((struct vmctx_t *)luahelper_vmctx(L))->w;
 	struct event_t e;
 
-	if(!window_is_active(w) || !window_pump_event(w, &e))
+	if(!window_pump_event(w, &e))
 		return 0;
 
 	switch(e.type)
@@ -280,6 +280,16 @@ static int l_event_pump(lua_State * L)
 		lua_setfield(L, -2, "time");
 		lua_pushinteger(L, e.e.joystick_button_up.button);
 		lua_setfield(L, -2, "button");
+		return 1;
+
+	case EVENT_TYPE_SYSTEM_EXIT:
+		lua_newtable(L);
+		lua_pushstring(L, ((struct input_t *)e.device)->name);
+		lua_setfield(L, -2, "device");
+		lua_pushstring(L, "system-exit");
+		lua_setfield(L, -2, "type");
+		lua_pushnumber(L, ktime_to_ns(e.timestamp));
+		lua_setfield(L, -2, "time");
 		return 1;
 
 	default:

@@ -32,6 +32,7 @@
 extern char __start_luaStage[];
 extern char __stop_luaStage[];
 
+
 int luaopen_stage(lua_State * L)
 {
 	if(luaL_loadbuffer(L, __start_luaStage, __stop_luaStage - __start_luaStage, "Stage.lua") == LUA_OK)

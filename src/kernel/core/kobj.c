@@ -124,13 +124,13 @@ struct kobj_t * kobj_search_directory_with_create(struct kobj_t * parent, const 
 	return kobj;
 }
 
-/* 申请以name为路径的kobj */
+/* 申请以name为路径的kobj,路径类型的kobj无读、写和私有数据 */
 struct kobj_t * kobj_alloc_directory(const char * name)
 {
 	return __kobj_alloc(name, KOBJ_TYPE_DIR, NULL, NULL, NULL);
 }
 
-/* 申请以name为文件的kobj */
+/* 申请以name为文件的kobj,文件类型的kobj才有读、写和私有数据 */
 struct kobj_t * kobj_alloc_regular(const char * name, kobj_read_t read, kobj_write_t write, void * priv)
 {
 	return __kobj_alloc(name, KOBJ_TYPE_REG, read, write, priv);

@@ -8,6 +8,8 @@
 CROSS_COMPILE   ?= arm-linux-gnueabihf-
 PLATFORM        ?= arm32-realview
 #PLATFORM       ?= arm32-rk3288
+#PLATFORM       ?= arm32-h3
+#PLATFORM       ?= arm32-f1c100s
 WBOXTEST        ?=
 
 #

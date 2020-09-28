@@ -95,7 +95,7 @@ struct device_t * register_adc(struct adc_t * adc, struct driver_t * drv)
 	dev->name = strdup(adc->name);
 	dev->type = DEVICE_TYPE_ADC;
 	dev->driver = drv;
-    /* 将注册的adc设备控制块挂到设备priv域下 */
+    /* 将注册的adc设备控制块挂到设备priv域下，该device实例为adc设备 */
 	dev->priv = adc;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "vreference", adc_read_vreference, NULL, adc);
@@ -112,6 +112,7 @@ struct device_t * register_adc(struct adc_t * adc, struct driver_t * drv)
 		kobj_add_regular(dev->kobj, buf, adc_read_voltage_channel, NULL, adc);
 	}
 
+    /* 将adc设备注册进设备管理器链表 */
 	if(!register_device(dev))
 	{
 		kobj_remove_self(dev->kobj);

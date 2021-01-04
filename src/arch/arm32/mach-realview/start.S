@@ -84,6 +84,7 @@
 
 	.global _start
 _start:
+    /* 启动第一条指令为跳转到复位子程序 */
 	b reset
 	ldr pc, _undefined_instruction
 	ldr pc, _software_interrupt

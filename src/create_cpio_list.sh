@@ -1,2 +1,2 @@
 find . -not -name . > cpio.list
-# tree > tree.txt
+tree > tree.txt

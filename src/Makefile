@@ -28,11 +28,12 @@ ifeq ($(words $(subst -, , $(PLATFORM))), 2)
 # ARCH为PLATFORM的-前一个单词，即arm32,所以ARCH=arm32
 # MACH为PLATFORM的-后一个单词为后缀,即realview,所以MACH=mach-realview
 ARCH            := $(word 1, $(subst -, , $(PLATFORM)))
-MACH            := mach-$(word 2, $(subst -, , $(PLATFORM)))
+CHIP            := $(word 2, $(subst -, , $(PLATFORM)))
 else
 ARCH            := x64
-MACH            := mach-sandbox
+CHIP            := sandbox
 endif
+MACH            := mach-$(CHIP)
 
 #
 # System environment variable.
@@ -310,7 +311,7 @@ X_LDFLAGS   :=  $(LDFLAGS)
 X_LIBS      :=  $(LIBS) -lgcc
 
 # XBoot 输出路径定义
-X_OUT       :=  ../output
+X_OUT       :=  ../output-$(CHIP)
 # XBoot 输出文件名定义
 X_NAME      :=  $(patsubst %, $(X_OUT)/%, xboot)
 # 头文件路径添加前缀 -I
@@ -398,3 +399,6 @@ endif
 # 清除目标
 clean : xclean
 	@$(RM) .obj $(X_OUT)
+
+distclean : clean
+	@$(RM) ../output*

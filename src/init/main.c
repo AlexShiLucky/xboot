@@ -1,7 +1,7 @@
 /*
  * init/main.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -52,9 +52,6 @@ void xboot_main(void)
 
 	/* Do play audio */
 	do_play_audio();
-
-	/* Do initial package */
-	do_init_package();
 
 	/* Do auto mount */
 	do_auto_mount();

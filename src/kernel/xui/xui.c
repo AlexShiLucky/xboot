@@ -1,7 +1,7 @@
 /*
  * kernel/xui/xui.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -1741,10 +1741,6 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 					ctx->key_down |= XUI_KEY_TAB;
 					ctx->key_pressed |= XUI_KEY_TAB;
 					break;
-				case KEY_TASK:
-					ctx->key_down |= XUI_KEY_TASK;
-					ctx->key_pressed |= XUI_KEY_TASK;
-					break;
 				case KEY_HOME:
 					ctx->key_down |= XUI_KEY_HOME;
 					ctx->key_pressed |= XUI_KEY_HOME;
@@ -1752,6 +1748,10 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 				case KEY_BACK:
 					ctx->key_down |= XUI_KEY_BACK;
 					ctx->key_pressed |= XUI_KEY_BACK;
+					break;
+				case KEY_MENU:
+					ctx->key_down |= XUI_KEY_MENU;
+					ctx->key_pressed |= XUI_KEY_MENU;
 					break;
 				case KEY_ENTER:
 					ctx->key_down |= XUI_KEY_ENTER;
@@ -1814,14 +1814,14 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 				case KEY_TAB:
 					ctx->key_down &= ~XUI_KEY_TAB;
 					break;
-				case KEY_TASK:
-					ctx->key_down &= ~XUI_KEY_TASK;
-					break;
 				case KEY_HOME:
 					ctx->key_down &= ~XUI_KEY_HOME;
 					break;
 				case KEY_BACK:
 					ctx->key_down &= ~XUI_KEY_BACK;
+					break;
+				case KEY_MENU:
+					ctx->key_down &= ~XUI_KEY_MENU;
 					break;
 				case KEY_ENTER:
 					ctx->key_down &= ~XUI_KEY_ENTER;

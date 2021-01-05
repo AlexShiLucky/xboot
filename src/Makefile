@@ -3,7 +3,7 @@
 #
 
 #
-# You can pass CROSS_COMPILE, PLATFORM and WBOXTEST variable.
+# You can pass CROSS_COMPILE and PLATFORM variable.
 #
 CROSS_COMPILE   ?= arm-linux-gnueabihf-
 PLATFORM        ?= arm32-realview
@@ -12,7 +12,13 @@ PLATFORM        ?= arm32-realview
 
 #CROSS_COMPILE   ?= arm-eabi-
 #PLATFORM        ?= arm32-f1c100s
-WBOXTEST        ?=
+
+#
+# Configurable advanced custom components
+#
+CFG_FRAMEWORK   ?= y
+CFG_CAIRO       ?= y
+CFG_WBOXTEST    ?= n
 
 #
 # Get platform information about ARCH and MACH from PLATFORM variable.
@@ -92,99 +98,96 @@ INCDIRS     +=  include \
                 arch/$(ARCH)/$(MACH)/include
 
 # 源文件路径
-SRCDIRS		+=	arch/$(ARCH)/lib/cpu \
-				arch/$(ARCH)/lib \
-				arch/$(ARCH)/$(MACH) \
-				arch/$(ARCH)/$(MACH)/command \
-				arch/$(ARCH)/$(MACH)/driver \
-				lib/libc/charset \
-				lib/libc/crypto \
-				lib/libc/ctype \
-				lib/libc/environ \
-				lib/libc/errno \
-				lib/libc/exit \
-				lib/libc/filter \
-				lib/libc/locale \
-				lib/libc/malloc \
-				lib/libc/path \
-				lib/libc/stdio \
-				lib/libc/stdlib \
-				lib/libc/string \
-				lib/libc/time \
-				lib/libm/$(ARCH) \
-				lib/libm \
-				lib/libx \
-				init \
-				kernel/command \
-				kernel/core \
-				kernel/graphic \
-				kernel/shell \
-				kernel/time \
-				kernel/vfs \
-				kernel/vfs/cpio \
-				kernel/vfs/ext4 \
-				kernel/vfs/fat \
-				kernel/vfs/ram \
-				kernel/vfs/sys \
-				kernel/vfs/tar \
-				kernel/xfs \
-				kernel/xui \
-				driver/adc \
-				driver/audio \
-				driver/battery \
-				driver/block \
-				driver/block/partition \
-				driver/buzzer \
-				driver/camera \
-				driver/clk \
-				driver/clockevent \
-				driver/clocksource \
-				driver/compass \
-				driver/console \
-				driver/dac \
-				driver/dma \
-				driver/framebuffer \
-				driver/gmeter \
-				driver/gnss \
-				driver/gpio \
-				driver/gyroscope \
-				driver/hygrometer \
-				driver/i2c \
-				driver/input \
-				driver/input/rc \
-				driver/interrupt \
-				driver/led \
-				driver/light \
-				driver/motor \
-				driver/nvmem \
-				driver/pressure \
-				driver/proximity \
-				driver/pwm \
-				driver/regulator \
-				driver/reset \
-				driver/rng \
-				driver/rtc \
-				driver/sd \
-				driver/servo \
-				driver/spi \
-				driver/stepper \
-				driver/thermometer \
-				driver/uart \
-				driver/vibrator \
-				driver/watchdog \
-				framework \
-				framework/codec \
-				framework/core \
-				framework/hardware
+SRCDIRS     +=  arch/$(ARCH)/lib/cpu \
+                arch/$(ARCH)/lib \
+                arch/$(ARCH)/$(MACH) \
+                arch/$(ARCH)/$(MACH)/command \
+                arch/$(ARCH)/$(MACH)/driver \
+                lib/libc/charset \
+                lib/libc/crypto \
+                lib/libc/ctype \
+                lib/libc/environ \
+                lib/libc/errno \
+                lib/libc/exit \
+                lib/libc/filter \
+                lib/libc/locale \
+                lib/libc/malloc \
+                lib/libc/path \
+                lib/libc/stdio \
+                lib/libc/stdlib \
+                lib/libc/string \
+                lib/libc/time \
+                lib/libm/$(ARCH) \
+                lib/libm \
+                lib/libx \
+                init \
+                kernel/command \
+                kernel/core \
+                kernel/graphic \
+                kernel/shell \
+                kernel/sound \
+                kernel/time \
+                kernel/vfs \
+                kernel/vfs/cpio \
+                kernel/vfs/ext4 \
+                kernel/vfs/fat \
+                kernel/vfs/ram \
+                kernel/vfs/sys \
+                kernel/vfs/tar \
+                kernel/xfs \
+                kernel/xui \
+                driver/adc \
+                driver/audio \
+                driver/battery \
+                driver/block \
+                driver/block/partition \
+                driver/buzzer \
+                driver/camera \
+                driver/clk \
+                driver/clockevent \
+                driver/clocksource \
+                driver/compass \
+                driver/console \
+                driver/dac \
+                driver/dma \
+                driver/framebuffer \
+                driver/gmeter \
+                driver/gnss \
+                driver/gpio \
+                driver/gyroscope \
+                driver/hygrometer \
+                driver/i2c \
+                driver/input \
+                driver/input/rc \
+                driver/interrupt \
+                driver/led \
+                driver/light \
+                driver/motor \
+                driver/nvmem \
+                driver/pressure \
+                driver/proximity \
+                driver/pwm \
+                driver/regulator \
+                driver/reset \
+                driver/rng \
+                driver/rtc \
+                driver/sd \
+                driver/servo \
+                driver/spi \
+                driver/stepper \
+                driver/thermometer \
+                driver/uart \
+                driver/vibrator \
+                driver/watchdog
 
 #
-# Add external library
+# Add necessary external library
 #
 INCDIRS     +=  external/libfdt-1.4.2
 SRCDIRS     +=  external/libfdt-1.4.2
 
-INCDIRS     +=  external/lz4-1.8.2
-SRCDIRS     +=  external/lz4-1.8.2
+INCDIRS     +=  external/lz4-1.9.3
+SRCDIRS     +=  external/lz4-1.9.3
 
 INCDIRS     +=  external/zlib-1.2.11
 SRCDIRS     +=  external/zlib-1.2.11
@@ -192,81 +195,88 @@ SRCDIRS     +=  external/zlib-1.2.11
 INCDIRS     +=  external/libpng-1.6.37
 SRCDIRS     +=  external/libpng-1.6.37
 
-INCDIRS		+= 	external/jpeg-9d
-SRCDIRS		+=	external/jpeg-9d
+INCDIRS     +=  external/jpeg-9d
+SRCDIRS     +=  external/jpeg-9d
 
-INCDIRS		+= 	external/lua-5.4.0
-SRCDIRS		+=	external/lua-5.4.0
+INCDIRS     +=  external/stb_vorbis-1.20
+SRCDIRS     +=  external/stb_vorbis-1.20
 
+INCDIRS     +=  external/quirc-1.1.0
+SRCDIRS     +=  external/quirc-1.1.0
+
+INCDIRS     +=  external/freetype-2.10.1/include \
+                external/freetype-2.10.1/src/autofit \
+                external/freetype-2.10.1/src/base \
+                external/freetype-2.10.1/src/cache \
+                external/freetype-2.10.1/src/cff \
+                external/freetype-2.10.1/src/cid \
+                external/freetype-2.10.1/src/gxvalid \
+                external/freetype-2.10.1/src/otvalid \
+                external/freetype-2.10.1/src/pfr \
+                external/freetype-2.10.1/src/psaux \
+                external/freetype-2.10.1/src/pshinter \
+                external/freetype-2.10.1/src/psnames \
+                external/freetype-2.10.1/src/raster \
+                external/freetype-2.10.1/src/sfnt \
+                external/freetype-2.10.1/src/smooth \
+                external/freetype-2.10.1/src/truetype \
+                external/freetype-2.10.1/src/type1 \
+                external/freetype-2.10.1/src/type42 \
+                external/freetype-2.10.1/src/winfonts
+SRCDIRS     +=  external/freetype-2.10.1/src/autofit \
+                external/freetype-2.10.1/src/base \
+                external/freetype-2.10.1/src/cache \
+                external/freetype-2.10.1/src/cff \
+                external/freetype-2.10.1/src/cid \
+                external/freetype-2.10.1/src/gxvalid \
+                external/freetype-2.10.1/src/otvalid \
+                external/freetype-2.10.1/src/pfr \
+                external/freetype-2.10.1/src/psaux \
+                external/freetype-2.10.1/src/pshinter \
+                external/freetype-2.10.1/src/psnames \
+                external/freetype-2.10.1/src/raster \
+                external/freetype-2.10.1/src/sfnt \
+                external/freetype-2.10.1/src/smooth \
+                external/freetype-2.10.1/src/truetype \
+                external/freetype-2.10.1/src/type1 \
+                external/freetype-2.10.1/src/type42 \
+                external/freetype-2.10.1/src/winfonts
+
+#
+# Advanced custom components
+#
+ifeq ($(strip $(CFG_FRAMEWORK)), y)
+INCDIRS     +=  external/lua-5.4.2
+SRCDIRS     +=  external/lua-5.4.2
 INCDIRS     +=  external/lua-cjson-2.1.0
 SRCDIRS     +=  external/lua-cjson-2.1.0
+INCDIRS     +=  framework
+SRCDIRS     +=  framework \
+                framework/codec \
+                framework/core \
+                framework/hardware
+endif
 
-INCDIRS		+=	external/quirc-1.1.0
-SRCDIRS		+=	external/quirc-1.1.0
-
-INCDIRS		+= 	external/freetype-2.10.1/include \
-				external/freetype-2.10.1/src/autofit \
-				external/freetype-2.10.1/src/base \
-				external/freetype-2.10.1/src/cache \
-				external/freetype-2.10.1/src/cff \
-				external/freetype-2.10.1/src/cid \
-				external/freetype-2.10.1/src/gxvalid \
-				external/freetype-2.10.1/src/otvalid \
-				external/freetype-2.10.1/src/pfr \
-				external/freetype-2.10.1/src/psaux \
-				external/freetype-2.10.1/src/pshinter \
-				external/freetype-2.10.1/src/psnames \
-				external/freetype-2.10.1/src/raster \
-				external/freetype-2.10.1/src/sfnt \
-				external/freetype-2.10.1/src/smooth \
-				external/freetype-2.10.1/src/truetype \
-				external/freetype-2.10.1/src/type1 \
-				external/freetype-2.10.1/src/type42 \
-				external/freetype-2.10.1/src/winfonts
-SRCDIRS		+=	external/freetype-2.10.1/src/autofit \
-				external/freetype-2.10.1/src/base \
-				external/freetype-2.10.1/src/cache \
-				external/freetype-2.10.1/src/cff \
-				external/freetype-2.10.1/src/cid \
-				external/freetype-2.10.1/src/gxvalid \
-				external/freetype-2.10.1/src/otvalid \
-				external/freetype-2.10.1/src/pfr \
-				external/freetype-2.10.1/src/psaux \
-				external/freetype-2.10.1/src/pshinter \
-				external/freetype-2.10.1/src/psnames \
-				external/freetype-2.10.1/src/raster \
-				external/freetype-2.10.1/src/sfnt \
-				external/freetype-2.10.1/src/smooth \
-				external/freetype-2.10.1/src/truetype \
-				external/freetype-2.10.1/src/type1 \
-				external/freetype-2.10.1/src/type42 \
-				external/freetype-2.10.1/src/winfonts
-
-INCDIRS		+= 	external/pixman-0.40.0 \
-				external/pixman-0.40.0/$(ARCH)
-SRCDIRS		+=	external/pixman-0.40.0 \
-				external/pixman-0.40.0/$(ARCH)
-
+ifeq ($(strip $(CFG_CAIRO)), y)
+INCDIRS     +=  external/pixman-0.40.0 \
+                external/pixman-0.40.0/$(ARCH)
+SRCDIRS     +=  external/pixman-0.40.0 \
+                external/pixman-0.40.0/$(ARCH)
 INCDIRS     +=  external/cairo-1.17.2
 SRCDIRS     +=  external/cairo-1.17.2
+endif
 
-INCDIRS     +=  external/chipmunk-7.0.3/include
-SRCDIRS     +=  external/chipmunk-7.0.3/src
-
-#
-# Add whitebox test
-#
-ifneq ($(strip $(WBOXTEST)),)
-INCDIRS		+=	wboxtest
-SRCDIRS		+=	wboxtest \
-				wboxtest/benchmark \
-				wboxtest/block \
-				wboxtest/camera \
-				wboxtest/crypto \
-				wboxtest/dma \
-				wboxtest/graphic \
-				wboxtest/path \
-				wboxtest/stdio
+ifeq ($(strip $(CFG_WBOXTEST)), y)
+INCDIRS     +=  wboxtest
+SRCDIRS     +=  wboxtest \
+                wboxtest/benchmark \
+                wboxtest/block \
+                wboxtest/camera \
+                wboxtest/crypto \
+                wboxtest/dma \
+                wboxtest/graphic \
+                wboxtest/path \
+                wboxtest/stdio
 endif
 
 #
@@ -373,16 +383,17 @@ romdisk :
 	@echo [ROMDISK] Packing romdisk
 	# 创建所有的.obj目录下的目录和../output目录
 	# 然后将romdisk目录和arch/.../romdisk拷贝到.obj目录下合成,并打包成romdisk.cpio
-	@$(MKDIR) $(X_OBJDIRS) $(X_OUT) \
-		&& $(RM) .obj/init/version.o \
-		&& $(RM) .obj/driver/block/romdisk.o \
-		&& $(RM) .obj/romdisk \
-		&& $(RM) .obj/romdisk.cpio \
-		&& $(CP) romdisk .obj \
-		&& $(CP) arch/$(ARCH)/$(MACH)/romdisk .obj \
-		&& $(CD) .obj/romdisk \
-		&& $(FIND) . -not -name . | $(CPIO) > ../romdisk.cpio \
-		&& $(CD) ../..
+	@$(MKDIR) $(X_OBJDIRS) $(X_OUT)
+	@$(RM) .obj/init/version.o
+	@$(RM) .obj/driver/block/romdisk.o
+	@$(RM) .obj/romdisk
+	@$(RM) .obj/romdisk.cpio
+	@$(CP) romdisk .obj
+ifeq ($(strip $(CFG_FRAMEWORK)), y)
+	@$(CP) framework/romdisk .obj
+endif
+	@$(CP) arch/$(ARCH)/$(MACH)/romdisk .obj
+	@$(CD) .obj/romdisk && $(FIND) . -not -name . | $(CPIO) > ../romdisk.cpio
 
 # 清除目标
 clean : xclean

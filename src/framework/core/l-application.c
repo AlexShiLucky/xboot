@@ -1,7 +1,7 @@
 /*
  * framework/core/l-application.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,9 +27,10 @@
  */
 
 #include <xboot.h>
+#include <package.h>
 #include <xfs/xfs.h>
-#include <framework/core/l-image.h>
-#include <framework/core/l-application.h>
+#include <core/l-image.h>
+#include <core/l-application.h>
 
 struct lapplication_t {
 	struct package_t * pkg;
@@ -56,7 +57,7 @@ static int l_application_list(lua_State * L)
 	struct hmap_entry_t * e;
 
 	lua_newtable(L);
-	hmap_for_each_entry(e, __package_list)
+	hmap_for_each_entry(e, get_package_list())
 	{
 		app = lua_newuserdata(L, sizeof(struct lapplication_t));
 		app->pkg = e->value;

@@ -1,7 +1,7 @@
 /*
  * driver/led/led.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -49,12 +49,6 @@ static ssize_t led_write_brightness(struct kobj_t * kobj, void * buf, size_t siz
 	return size;
 }
 
-/* led最大亮度读取 */
-static ssize_t led_read_max_brightness(struct kobj_t * kobj, void * buf, size_t size)
-{
-	return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
-}
-
 /* 根据名称搜索一个led设备 */
 struct led_t * search_led(const char * name)
 {
@@ -84,7 +78,6 @@ struct device_t * register_led(struct led_t * led, struct driver_t * drv)
 	dev->priv = led;
 	dev->kobj = kobj_alloc_directory(dev->name);
 	kobj_add_regular(dev->kobj, "brightness", led_read_brightness, led_write_brightness, led);
-	kobj_add_regular(dev->kobj, "max_brightness", led_read_max_brightness, NULL, led);
 
 	if(!register_device(dev))
 	{
@@ -120,8 +113,8 @@ void led_set_brightness(struct led_t * led, int brightness)
 	{
 		if(brightness < 0)
 			brightness = 0;
-		else if(brightness > CONFIG_MAX_BRIGHTNESS)
-			brightness = CONFIG_MAX_BRIGHTNESS;
+		else if(brightness > 1000)
+			brightness = 1000;
 		led->set(led, brightness);
 	}
 }
@@ -136,8 +129,8 @@ int led_get_brightness(struct led_t * led)
 
 	if(brightness < 0)
 		brightness = 0;
-	else if(brightness > CONFIG_MAX_BRIGHTNESS)
-		brightness = CONFIG_MAX_BRIGHTNESS;
+	else if(brightness > 1000)
+		brightness = 1000;
 
 	return brightness;
 }

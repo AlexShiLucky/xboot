@@ -1,7 +1,7 @@
 /*
  * driver/framebuffer/framebuffer.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -77,12 +77,6 @@ static ssize_t framebuffer_write_brightness(struct kobj_t * kobj, void * buf, si
 	return size;
 }
 
-/* 帧缓存最大亮度信息读取 */
-static ssize_t framebuffer_read_max_brightness(struct kobj_t * kobj, void * buf, size_t size)
-{
-	return sprintf(buf, "%u", CONFIG_MAX_BRIGHTNESS);
-}
-
 /* 根据名称搜索一个帧缓存设备 */
 struct framebuffer_t * search_framebuffer(const char * name)
 {
@@ -127,7 +121,6 @@ struct device_t * register_framebuffer(struct framebuffer_t * fb, struct driver_
 	kobj_add_regular(dev->kobj, "pwidth", framebuffer_read_pwidth, NULL, fb);
 	kobj_add_regular(dev->kobj, "pheight", framebuffer_read_pheight, NULL, fb);
 	kobj_add_regular(dev->kobj, "brightness", framebuffer_read_brightness, framebuffer_write_brightness, fb);
-	kobj_add_regular(dev->kobj, "max_brightness", framebuffer_read_max_brightness, NULL, fb);
 
 	if(fb->setbl)
 		fb->setbl(fb, 0);
@@ -168,8 +161,8 @@ void framebuffer_set_backlight(struct framebuffer_t * fb, int brightness)
 	{
 		if(brightness < 0)
 			brightness = 0;
-		else if(brightness > CONFIG_MAX_BRIGHTNESS)
-			brightness = CONFIG_MAX_BRIGHTNESS;
+		else if(brightness > 1000)
+			brightness = 1000;
 		fb->setbl(fb, brightness);
 	}
 }

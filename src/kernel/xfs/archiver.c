@@ -1,7 +1,7 @@
 /*
  * kernel/xfs/archiver.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -63,26 +63,6 @@ bool_t unregister_archiver(struct xfs_archiver_t * archiver)
 	return TRUE;
 }
 
-static const char * fileext(const char * filename)
-{
-	const char * ret = NULL;
-	const char * p;
-
-	if(filename != NULL)
-	{
-		ret = p = strchr(filename, '.');
-		while(p != NULL)
-		{
-			p = strchr(p + 1, '.');
-			if(p != NULL)
-				ret = p;
-		}
-		if(ret != NULL)
-			ret++;
-	}
-	return (ret && (strcasecmp(ret, "x") == 0)) ? "tar" : ret;
-}
-
 void * mount_archiver(const char * path, struct xfs_archiver_t ** archiver, int * writable)
 {
 	const char * ext = fileext(path);
@@ -91,6 +71,8 @@ void * mount_archiver(const char * path, struct xfs_archiver_t ** archiver, int 
 
 	if(ext)
 	{
+		if(strcasecmp(ext, "x") == 0)
+			ext = "tar";
 		list_for_each_entry_safe(pos, n, &__archiver_list, list)
 		{
 			if(strcasecmp(pos->name, ext) == 0)

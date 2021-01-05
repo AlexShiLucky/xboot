@@ -34,5 +34,6 @@
 #
 /.vscode/
 /src/.obj/
+/src/.obj*
 /output/
-
+/output*

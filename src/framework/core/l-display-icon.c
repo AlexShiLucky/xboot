@@ -1,7 +1,7 @@
 /*
  * framework/core/l-display-icon.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -26,7 +26,7 @@
  *
  */
 
-#include <framework/core/l-display-icon.h>
+#include <core/l-display-icon.h>
 
 static const char display_icon_lua[] = X(
 local M = Class(DisplayObject)

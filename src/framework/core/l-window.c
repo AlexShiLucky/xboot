@@ -1,7 +1,7 @@
 /*
  * framework/core/l-window.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,8 +27,8 @@
  */
 
 #include <xboot.h>
-#include <framework/core/l-image.h>
-#include <framework/core/l-window.h>
+#include <core/l-image.h>
+#include <core/l-window.h>
 
 static int l_window_new(lua_State * L)
 {
@@ -78,7 +78,7 @@ static int m_window_get_physical_size(lua_State * L)
 static int m_window_set_backlight(lua_State * L)
 {
 	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
-	int brightness = luaL_checknumber(L, 2) * (lua_Number)(CONFIG_MAX_BRIGHTNESS);
+	int brightness = luaL_checknumber(L, 2) * (lua_Number)(1000);
 	window_set_backlight(w, brightness);
 	return 0;
 }
@@ -87,7 +87,7 @@ static int m_window_get_backlight(lua_State * L)
 {
 	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
 	int brightness = window_get_backlight(w);
-	lua_pushnumber(L, brightness / (lua_Number)(CONFIG_MAX_BRIGHTNESS));
+	lua_pushnumber(L, brightness / (lua_Number)(1000));
 	return 1;
 }
 
@@ -102,13 +102,6 @@ static int m_window_to_back(lua_State * L)
 {
 	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
 	window_to_back(w);
-	return 0;
-}
-
-static int m_window_set_launcher(lua_State * L)
-{
-	struct window_t * w = luaL_checkudata(L, 1, MT_WINDOW);
-	window_set_launcher(w, lua_toboolean(L, 2));
 	return 0;
 }
 
@@ -140,7 +133,6 @@ static const luaL_Reg m_window[] = {
 	{"getBacklight",		m_window_get_backlight},
 	{"toFront",				m_window_to_front},
 	{"toBack",				m_window_to_back},
-	{"setLauncher",			m_window_set_launcher},
 	{"snapshot",			m_window_snapshot},
 	{"addFont",				m_window_add_font},
 	{NULL, NULL}

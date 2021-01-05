@@ -1,7 +1,7 @@
 /*
  * driver/fb-ssd1309.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -146,7 +146,7 @@ static void fb_setbl(struct framebuffer_t * fb, int brightness)
 	if(pdat->brightness != brightness)
 	{
 		ssd1309_write_command(pdat, 0x81);
-		ssd1309_write_command(pdat, (0xff * brightness / CONFIG_MAX_BRIGHTNESS) & 0xff);
+		ssd1309_write_command(pdat, (0xff * brightness / 1000) & 0xff);
 		if(brightness == 0)
 			ssd1309_write_command(pdat, 0xae);
 		else

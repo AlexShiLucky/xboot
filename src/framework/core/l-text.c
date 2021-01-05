@@ -1,7 +1,7 @@
 /*
  * framework/core/l-text.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,8 +27,8 @@
  */
 
 #include <xboot.h>
-#include <framework/core/l-color.h>
-#include <framework/core/l-text.h>
+#include <core/l-color.h>
+#include <core/l-text.h>
 
 static int l_text_new(lua_State * L)
 {

@@ -18,10 +18,6 @@ extern "C" {
  */
 void sandbox_init(int argc, char * argv[]);
 void sandbox_exit(void);
-void * sandbox_get_heap_buffer(void);
-size_t sandbox_get_heap_size(void);
-void * sandbox_get_dma_buffer(void);
-size_t sandbox_get_dma_size(void);
 void * sandbox_get_dtree_buffer(void);
 size_t sandbox_get_dtree_size(void);
 char * sandbox_get_application(void);
@@ -141,9 +137,14 @@ void sandbox_region_list_clear(struct sandbox_region_list_t * rl);
  */
 void * sandbox_audio_playback_start(int rate, int fmt, int ch, int(*cb)(void *, void *, int), void * data);
 void sandbox_audio_playback_stop(void * context);
+int sandbox_audio_playback_status(void * context);
 void * sandbox_audio_capture_start(int rate, int fmt, int ch, int(*cb)(void *, void *, int), void * data);
 void sandbox_audio_capture_stop(void * context);
-int sandbox_audio_ioctl(const char * cmd, void * arg);
+int sandbox_audio_capture_status(void * context);
+void sandbox_audio_set_playback_volume(int vol);
+int sandbox_audio_get_playback_volume(void);
+void sandbox_audio_set_capture_volume(int vol);
+int sandbox_audio_get_capture_volume(void);
 
 /*
  * Camera interface
@@ -284,6 +285,16 @@ int64_t sandbox_file_length(int fd);
  */
 const char * sandbox_uniqueid(void);
 int sandbox_keygen(const char * msg, void * key);
+
+/*
+ * Malloc interface
+ */
+void * sandbox_malloc(size_t size);
+void * sandbox_memalign(size_t align, size_t size);
+void * sandbox_realloc(void * ptr, size_t size);
+void * sandbox_calloc(size_t nmemb, size_t size);
+void sandbox_free(void * ptr);
+void sandbox_meminfo(size_t * mused, size_t * mfree);
 
 /*
  * PM interface

@@ -24,23 +24,15 @@ extern "C" {
 #endif
 
 #if !defined(CONFIG_DRIVER_HASH_SIZE)
-#define CONFIG_DRIVER_HASH_SIZE             (257)
+#define CONFIG_DRIVER_HASH_SIZE				(521)
 #endif
 
 #if !defined(CONFIG_DEVICE_HASH_SIZE)
-#define CONFIG_DEVICE_HASH_SIZE             (257)
-#endif
-
-#if !defined(CONFIG_PROFILER_HASH_SIZE)
-#define CONFIG_PROFILER_HASH_SIZE           (257)
+#define CONFIG_DEVICE_HASH_SIZE				(521)
 #endif
 
 #if !defined(CONFIG_KVDB_HASH_SIZE)
 #define CONFIG_KVDB_HASH_SIZE               (4099)
-#endif
-
-#if !defined(CONFIG_MAX_BRIGHTNESS)
-#define CONFIG_MAX_BRIGHTNESS               (1000)
 #endif
 
 #if !defined(CONFIG_EVENT_FIFO_SIZE)
@@ -60,7 +52,7 @@ extern "C" {
 #endif
 
 #if !defined(CONFIG_AUTO_BOOT_COMMAND)
-#define CONFIG_AUTO_BOOT_COMMAND            "/application/launcher"
+#define CONFIG_AUTO_BOOT_COMMAND			"launcher"
 #endif
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /*
  * cache-v7.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -93,3 +93,23 @@ void cache_inv_range(unsigned long start, unsigned long stop)
 	__v7_cache_inv_range(start, stop, line);
 	dsb();
 }
+
+static void __outer_cache_enable(void)
+{
+}
+extern __typeof(__outer_cache_enable) outer_cache_enable __attribute__((weak, alias("__outer_cache_enable")));
+
+static void __outer_cache_disable(void)
+{
+}
+extern __typeof(__outer_cache_disable) outer_cache_disable __attribute__((weak, alias("__outer_cache_disable")));
+
+static void __outer_cache_flush_range(unsigned long start, unsigned long stop)
+{
+}
+extern __typeof(__outer_cache_flush_range) outer_cache_flush_range __attribute__((weak, alias("__outer_cache_flush_range")));
+
+static void __outer_cache_inv_range(unsigned long start, unsigned long stop)
+{
+}
+extern __typeof(__outer_cache_inv_range) outer_cache_inv_range __attribute__((weak, alias("__outer_cache_inv_range")));

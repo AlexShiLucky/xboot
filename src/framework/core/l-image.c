@@ -1,7 +1,7 @@
 /*
  * framework/core/l-image.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,11 +27,11 @@
  */
 
 #include <xboot.h>
-#include <framework/core/l-color.h>
-#include <framework/core/l-matrix.h>
-#include <framework/core/l-text.h>
-#include <framework/core/l-icon.h>
-#include <framework/core/l-image.h>
+#include <core/l-color.h>
+#include <core/l-matrix.h>
+#include <core/l-text.h>
+#include <core/l-icon.h>
+#include <core/l-image.h>
 
 static int l_image_new(lua_State * L)
 {
@@ -449,6 +449,14 @@ static int m_image_invert(lua_State * L)
 	return 1;
 }
 
+static int m_image_dither(lua_State * L)
+{
+	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
+	surface_filter_dither(img->s);
+	lua_settop(L, 1);
+	return 1;
+}
+
 static int m_image_threshold(lua_State * L)
 {
 	struct limage_t * img = luaL_checkudata(L, 1, MT_IMAGE);
@@ -590,6 +598,7 @@ static const luaL_Reg m_image[] = {
 	{"grayscale",		m_image_grayscale},
 	{"sepia",			m_image_sepia},
 	{"invert",			m_image_invert},
+	{"dither",			m_image_dither},
 	{"threshold",		m_image_threshold},
 	{"colormap",		m_image_colormap},
 	{"coloring",		m_image_coloring},

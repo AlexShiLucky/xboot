@@ -1,7 +1,7 @@
 /*
  * kernel/vfs/fat/fat-control.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -286,7 +286,7 @@ static int __fatfs_control_get_next_cluster(struct fatfs_control_t * ctrl, u32_t
 
 static int __fatfs_control_set_next_cluster(struct fatfs_control_t * ctrl, u32_t clust, u32_t next)
 {
-	u8_t fat_entry_b[4];
+	u8_t fat_entry_b[4] = { 0 };
 	u32_t fat_entry, fat_off, fat_len, len;
 
 	if(!__fatfs_control_valid_cluster(ctrl, clust))

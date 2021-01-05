@@ -1,7 +1,7 @@
 /*
  * kernel/core/window.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -37,7 +37,7 @@ static void fb_dummy_setbl(struct framebuffer_t * fb, int brightness)
 
 static int fb_dummy_getbl(struct framebuffer_t * fb)
 {
-	return CONFIG_MAX_BRIGHTNESS;
+	return 1000;
 }
 
 static struct surface_t * fb_dummy_create(struct framebuffer_t * fb)
@@ -422,7 +422,7 @@ void push_event(struct event_t * e)
 				switch(e->type)
 				{
 				case EVENT_TYPE_KEY_DOWN:
-					if((e->e.key_down.key == KEY_TASK) || (e->e.key_down.key == KEY_HOME))
+					if(e->e.key_down.key == KEY_HOME)
 					{
 						struct window_t * wpos, * wn;
 						list_for_each_entry_safe(wpos, wn, &pos->window, list)

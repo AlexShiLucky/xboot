@@ -1,7 +1,7 @@
 /*
  * sys-copyself.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -28,8 +28,8 @@
 
 #include <xboot.h>
 
-extern unsigned char __image_start;
-extern unsigned char __image_end;
+extern unsigned char __image_start[];
+extern unsigned char __image_end[];
 
 /*
  * Global block size.
@@ -111,8 +111,8 @@ void sys_copyself(void)
 	/* Nand 2KB, 5-cycle, 8-bit ecc */
 	else if(om == 0x1)
 	{
-		mem = (u32_t *)&__image_start;
-		size = (&__image_end - &__image_start + 0x00020000) >> 17;
+		mem = (u32_t *)__image_start;
+		size = (__image_end - __image_start + 0x00020000) >> 17;
 		for(block = 0; block < size; block++)
 		{
 			for(page = 0; page < 64; page++)
@@ -141,8 +141,8 @@ void sys_copyself(void)
 	/* Sd / mmc */
 	else if(om == 0x6)
 	{
-		mem = (u32_t *)&__image_start;
-		size = (&__image_end - &__image_start + 0x00040000) >> 18;
+		mem = (u32_t *)__image_start;
+		size = (__image_end - __image_start + 0x00040000) >> 18;
 		size = size << 9;
 		if(irom_v210_sdmmc_base == 0xeb000000)
 			irom_sdmmc_to_mem(0, 1, size, mem, 0);

@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger-breathing.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -48,11 +48,11 @@ static int ledtrigger_breathing_timer_function(struct timer_t * timer, void * da
 	pdat->phase += pdat->interval;
 	if(pdat->phase < (pdat->period / 2))
 	{
-		brightness = CONFIG_MAX_BRIGHTNESS * pdat->phase / (pdat->period / 2);
+		brightness = 1000 * pdat->phase / (pdat->period / 2);
 	}
 	else if(pdat->phase < pdat->period)
 	{
-		brightness = CONFIG_MAX_BRIGHTNESS * (pdat->period - pdat->phase) / (pdat->period / 2);
+		brightness = 1000 * (pdat->period - pdat->phase) / (pdat->period / 2);
 	}
 	else
 	{

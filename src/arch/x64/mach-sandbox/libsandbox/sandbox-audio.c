@@ -20,7 +20,6 @@ static void * sandbox_audio_playback_thread(void * arg)
 	struct sandbox_audio_context_t * ctx = (struct sandbox_audio_context_t *)arg;
 	int len, ret;
 
-	ctx->running = 1;
 	while(ctx->running)
 	{
 		len = ctx->cb(ctx->data, ctx->buffer, ctx->buflen) / ctx->bytes_per_frame;
@@ -53,6 +52,8 @@ void * sandbox_audio_playback_start(int rate, int fmt, int ch, int(*cb)(void *, 
 {
 	struct sandbox_audio_context_t * ctx;
 	unsigned int val = rate;
+	unsigned int buffer_time;
+	unsigned int period_time;
 	int dir = 0;
 
 	ctx = malloc(sizeof(struct sandbox_audio_context_t));
@@ -109,6 +110,24 @@ void * sandbox_audio_playback_start(int rate, int fmt, int ch, int(*cb)(void *, 
 		free(ctx);
 		return NULL;
 	}
+	if(snd_pcm_hw_params_get_buffer_time_max(ctx->params, &buffer_time, 0) < 0)
+	{
+		free(ctx);
+		return NULL;
+	}
+	if(buffer_time > 100000)
+		buffer_time = 100000;
+	period_time = buffer_time / 4;
+	if(snd_pcm_hw_params_set_period_time_near(ctx->handle, ctx->params, &period_time, 0) < 0)
+	{
+		free(ctx);
+		return NULL;
+	}
+	if(snd_pcm_hw_params_set_buffer_time_near(ctx->handle, ctx->params, &buffer_time, 0) < 0)
+	{
+		free(ctx);
+		return NULL;
+	}
 	if(snd_pcm_hw_params(ctx->handle, ctx->params) < 0)
 	{
 		free(ctx);
@@ -135,6 +154,7 @@ void * sandbox_audio_playback_start(int rate, int fmt, int ch, int(*cb)(void *, 
 		free(ctx);
 		return NULL;
 	}
+	ctx->running = 1;
 	if(pthread_create(&ctx->thread, NULL, sandbox_audio_playback_thread, ctx) < 0)
 	{
 		free(ctx->buffer);
@@ -160,12 +180,19 @@ void sandbox_audio_playback_stop(void * context)
 	}
 }
 
+int sandbox_audio_playback_status(void * context)
+{
+	struct sandbox_audio_context_t * ctx = (struct sandbox_audio_context_t *)context;
+	if(ctx)
+		return ctx->running;
+	return 0;
+}
+
 static void * sandbox_audio_capture_thread(void * arg)
 {
 	struct sandbox_audio_context_t * ctx = (struct sandbox_audio_context_t *)arg;
 	int len, l, ret;
 
-	ctx->running = 1;
 	while(ctx->running)
 	{
 		ret = snd_pcm_readi(ctx->handle, ctx->buffer, ctx->frames);
@@ -277,6 +304,7 @@ void * sandbox_audio_capture_start(int rate, int fmt, int ch, int(*cb)(void *, v
 		free(ctx);
 		return NULL;
 	}
+	ctx->running = 1;
 	if(pthread_create(&ctx->thread, NULL, sandbox_audio_capture_thread, ctx) < 0)
 	{
 		free(ctx->buffer);
@@ -302,7 +330,122 @@ void sandbox_audio_capture_stop(void * context)
 	}
 }
 
-int sandbox_audio_ioctl(const char * cmd, void * arg)
+int sandbox_audio_capture_status(void * context)
 {
-	return -1;
+	struct sandbox_audio_context_t * ctx = (struct sandbox_audio_context_t *)context;
+	if(ctx)
+		return ctx->running;
+	return 0;
+}
+
+void sandbox_audio_set_playback_volume(int vol)
+{
+	snd_mixer_t * handle;
+	snd_mixer_selem_id_t * sid;
+	snd_mixer_elem_t * elem;
+	const char * card = "default";
+	const char * name = "Master";
+	long minvol, maxvol;
+
+	snd_mixer_open(&handle, 0);
+	snd_mixer_attach(handle, card);
+	snd_mixer_selem_register(handle, NULL, NULL);
+	snd_mixer_load(handle);
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, name);
+	elem = snd_mixer_find_selem(handle, sid);
+
+	snd_mixer_selem_get_playback_volume_range(elem, &minvol, &maxvol);
+	snd_mixer_selem_set_playback_volume_all(elem, vol * (maxvol - minvol) / 1000);
+	snd_mixer_close(handle);
+}
+
+int sandbox_audio_get_playback_volume(void)
+{
+	snd_mixer_t * handle;
+	snd_mixer_selem_id_t * sid;
+	snd_mixer_elem_t * elem;
+	const char * card = "default";
+	const char * name = "Master";
+	long minvol, maxvol;
+	long vol;
+
+	snd_mixer_open(&handle, 0);
+	snd_mixer_attach(handle, card);
+	snd_mixer_selem_register(handle, NULL, NULL);
+	snd_mixer_load(handle);
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, name);
+	elem = snd_mixer_find_selem(handle, sid);
+
+	snd_mixer_selem_get_playback_volume_range(elem, &minvol, &maxvol);
+	snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &vol);
+	snd_mixer_close(handle);
+
+	vol = vol * 1000 / (maxvol - minvol);
+	if(vol < 0)
+		vol = 0;
+	else if(vol > 1000)
+		vol = 1000;
+	return (int)vol;
+}
+
+void sandbox_audio_set_capture_volume(int vol)
+{
+	snd_mixer_t * handle;
+	snd_mixer_selem_id_t * sid;
+	snd_mixer_elem_t * elem;
+	const char * card = "default";
+	const char * name = "Capture";
+	long minvol, maxvol;
+
+	snd_mixer_open(&handle, 0);
+	snd_mixer_attach(handle, card);
+	snd_mixer_selem_register(handle, NULL, NULL);
+	snd_mixer_load(handle);
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, name);
+	elem = snd_mixer_find_selem(handle, sid);
+
+	snd_mixer_selem_get_capture_volume_range(elem, &minvol, &maxvol);
+	snd_mixer_selem_set_capture_volume_all(elem, vol * (maxvol - minvol) / 1000);
+	snd_mixer_close(handle);
+}
+
+int sandbox_audio_get_capture_volume(void)
+{
+	snd_mixer_t * handle;
+	snd_mixer_selem_id_t * sid;
+	snd_mixer_elem_t * elem;
+	const char * card = "default";
+	const char * name = "Capture";
+	long minvol, maxvol;
+	long vol;
+
+	snd_mixer_open(&handle, 0);
+	snd_mixer_attach(handle, card);
+	snd_mixer_selem_register(handle, NULL, NULL);
+	snd_mixer_load(handle);
+
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, name);
+	elem = snd_mixer_find_selem(handle, sid);
+
+	snd_mixer_selem_get_capture_volume_range(elem, &minvol, &maxvol);
+	snd_mixer_selem_get_capture_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &vol);
+	snd_mixer_close(handle);
+
+	vol = vol * 1000 / (maxvol - minvol);
+	if(vol < 0)
+		vol = 0;
+	else if(vol > 1000)
+		vol = 1000;
+	return (int)vol;
 }

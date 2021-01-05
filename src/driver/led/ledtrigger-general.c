@@ -1,7 +1,7 @@
 /*
  * driver/led/ledtrigger-general.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -46,7 +46,7 @@ static int ledtrigger_general_timer_function(struct timer_t * timer, void * data
 	if(pdat->last_activity != pdat->activity)
 	{
 		pdat->last_activity = pdat->activity;
-		led_set_brightness(pdat->led, CONFIG_MAX_BRIGHTNESS);
+		led_set_brightness(pdat->led, 1000);
 		timer_forward_now(timer, ms_to_ktime(20));
 		return 1;
 	}

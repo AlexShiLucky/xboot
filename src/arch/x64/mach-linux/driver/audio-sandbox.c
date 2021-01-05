@@ -1,7 +1,7 @@
 /*
  * driver/audio-sandbox.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -36,15 +36,21 @@ struct audio_sandbox_pdata_t
 	void * cctx;
 };
 
-static void audio_sandbox_playback_start(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data)
+static void audio_sandbox_playback_start(struct audio_t * audio, enum audio_rate_t rate, enum audio_format_t fmt, int ch, audio_callback_t cb, void * data)
 {
 	struct audio_sandbox_pdata_t * pdat = (struct audio_sandbox_pdata_t *)audio->priv;
 	if(pdat->pctx)
 	{
-		sandbox_audio_playback_stop(pdat->pctx);
-		pdat->pctx = NULL;
+		if(!sandbox_audio_playback_status(pdat->pctx))
+		{
+			sandbox_audio_playback_stop(pdat->pctx);
+			pdat->pctx = sandbox_audio_playback_start(rate, fmt, ch, cb, data);
+		}
 	}
-	pdat->pctx = sandbox_audio_playback_start(rate, fmt, ch, cb, data);
+	else
+	{
+		pdat->pctx = sandbox_audio_playback_start(rate, fmt, ch, cb, data);
+	}
 }
 
 static void audio_sandbox_playback_stop(struct audio_t * audio)
@@ -57,15 +63,21 @@ static void audio_sandbox_playback_stop(struct audio_t * audio)
 	}
 }
 
-static void audio_sandbox_capture_start(struct audio_t * audio, enum pcm_rate_t rate, enum pcm_format_t fmt, int ch, audio_callback_t cb, void * data)
+static void audio_sandbox_capture_start(struct audio_t * audio, enum audio_rate_t rate, enum audio_format_t fmt, int ch, audio_callback_t cb, void * data)
 {
 	struct audio_sandbox_pdata_t * pdat = (struct audio_sandbox_pdata_t *)audio->priv;
 	if(pdat->cctx)
 	{
-		sandbox_audio_capture_stop(pdat->cctx);
-		pdat->cctx = NULL;
+		if(!sandbox_audio_capture_status(pdat->pctx))
+		{
+			sandbox_audio_capture_stop(pdat->cctx);
+			pdat->cctx = sandbox_audio_capture_start(rate, fmt, ch, cb, data);
+		}
 	}
-	pdat->cctx = sandbox_audio_capture_start(rate, fmt, ch, cb, data);
+	else
+	{
+		pdat->cctx = sandbox_audio_capture_start(rate, fmt, ch, cb, data);
+	}
 }
 
 static void audio_sandbox_capture_stop(struct audio_t * audio)
@@ -80,7 +92,42 @@ static void audio_sandbox_capture_stop(struct audio_t * audio)
 
 static int audio_sandbox_ioctl(struct audio_t * audio, const char * cmd, void * arg)
 {
-	return sandbox_audio_ioctl(cmd, arg);
+	int * p = arg;
+
+	switch(shash(cmd))
+	{
+	case 0x892b3889: /* "audio-set-playback-volume" */
+		if(p)
+		{
+			sandbox_audio_set_playback_volume(clamp(p[0], 0, 1000));
+			return 0;
+		}
+		break;
+	case 0x3eee6d7d: /* "audio-get-playback-volume" */
+		if(p)
+		{
+			p[0] = sandbox_audio_get_playback_volume();
+			return 0;
+		}
+		break;
+	case 0x6dab0056: /* "audio-set-capture-volume" */
+		if(p)
+		{
+			sandbox_audio_set_capture_volume(clamp(p[0], 0, 1000));
+			return 0;
+		}
+		break;
+	case 0x44a166ca: /* "audio-get-capture-volume" */
+		if(p)
+		{
+			p[0] = sandbox_audio_get_capture_volume();
+			return 0;
+		}
+		break;
+	default:
+		break;
+	}
+	return -1;
 }
 
 static struct device_t * audio_sandbox_probe(struct driver_t * drv, struct dtnode_t * n)

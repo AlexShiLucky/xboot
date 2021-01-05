@@ -7,7 +7,7 @@
 ```
        _                   _                     
  _  _ | |___ _____ _____ _| |_                   
-\ \/ /|  _  |  _  |  _  |_   _|  (C) 2007-2020   
+\ \/ /|  _  |  _  |  _  |_   _|  (C) 2007-2021   
  )  ( | |_| | |_| | |_| | | |____JIANJUN.JIANG__ 
 /_/\_\|_____|_____|_____| |_____________________|
 ```
@@ -45,7 +45,7 @@ Makefile中有两个变量在编译时需要传递，一个是交叉工具链，
 
 ```shell
 make clean
-make CROSS_COMPILE=/path/to/arm-linux-gnueabihf- PLATFORM=arm32-realview
+make CROSS_COMPILE=/path/to/arm-none-linux-gnueabihf- PLATFORM=arm32-realview
 ```
 
 * ## X86_64位linux系统下的sandbox
@@ -107,7 +107,7 @@ Makefile have two variables need to pass, one is cross toolchain, the other is a
 
 ```shell
 make clean
-make CROSS_COMPILE=/path/to/arm-linux-gnueabihf- PLATFORM=arm32-realview
+make CROSS_COMPILE=/path/to/arm-none-linux-gnueabihf- PLATFORM=arm32-realview
 ```
 
 * ## Linux Sandbox On X86_64

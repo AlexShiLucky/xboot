@@ -1,7 +1,7 @@
 /*
  * driver/led/led-pwm.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -61,7 +61,7 @@ static void led_pwm_set_brightness(struct led_pwm_pdata_t * pdat, int brightness
 {
 	if(brightness > 0)
 	{
-		int duty = brightness * pdat->period / CONFIG_MAX_BRIGHTNESS;
+		int duty = brightness * pdat->period / 1000;
 		pwm_config(pdat->pwm, duty, pdat->period, pdat->polarity);
 		pwm_enable(pdat->pwm);
 	}

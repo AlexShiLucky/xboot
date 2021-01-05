@@ -1,7 +1,7 @@
 /*
  * init/init.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -64,7 +64,7 @@ void do_show_logo(void)
 						sprintf(key, "backlight(%s)", fb->name);
 						brightness = strtol(setting_get(key, "-1"), NULL, 0);
 						if(brightness <= 0)
-							brightness = (CONFIG_MAX_BRIGHTNESS * 633) >> 10;
+							brightness = (1000 * 633) >> 10;
 						framebuffer_set_backlight(fb, brightness);
 					}
 				}
@@ -77,6 +77,41 @@ void do_show_logo(void)
 
 void do_play_audio(void)
 {
+	struct device_t * pos, * n;
+	struct xfs_context_t * ctx;
+	struct sound_t * snd;
+	struct audio_t * audio;
+	char key[256];
+	int volume;
+
+	if(!list_empty_careful(&__device_head[DEVICE_TYPE_AUDIO]))
+	{
+		ctx = xfs_alloc("/private/framework", 0);
+		if(ctx)
+		{
+			list_for_each_entry_safe(pos, n, &__device_head[DEVICE_TYPE_AUDIO], head)
+			{
+				if((audio = (struct audio_t *)(pos->priv)))
+				{
+					if(audio->playback_start && audio->playback_stop)
+					{
+						sprintf(key, "playback-volume(%s)", audio->name);
+						volume = strtol(setting_get(key, "-1"), NULL, 0);
+						if(volume <= 0)
+							volume = (1000 * 633) >> 10;
+						audio_ioctl(audio, "audio-set-playback-volume", &volume);
+						snd = sound_alloc_from_xfs(ctx, "assets/sounds/boot.ogg");
+						if(snd)
+						{
+							sound_set_callback(snd, sound_free);
+							audio_playback(audio, snd);
+						}
+					}
+				}
+			}
+			xfs_free(ctx);
+		}
+	}
 }
 
 static int nm_call(struct notifier_t * n, int cmd, void * arg)
@@ -188,7 +223,8 @@ void do_auto_boot(void)
     /* 自启动倒计时ms数 */
 	int delay = CONFIG_AUTO_BOOT_DELAY * 1000;
 
-	do {
+	while(delay > 0)
+	{
         /* 检测是否有按键按下 */
 		if(getchar() != EOF) {
 			printf("\r\n");
@@ -200,7 +236,7 @@ void do_auto_boot(void)
 		if(delay < 0)
 			delay = 0;
 		printf("\rPress any key to stop auto boot:%3d.%03d%s", delay / 1000, delay % 1000, (delay == 0) ? "\r\n" : "");
-	} while(delay > 0);
+	}
 
 #ifdef __SANDBOX__
 	extern char * sandbox_get_application(void);

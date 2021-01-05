@@ -1,7 +1,7 @@
 /*
  * framework/core/l-class.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -26,7 +26,7 @@
  *
  */
 
-#include <framework/core/l-class.h>
+#include <core/l-class.h>
 
 /* C字符串形式定义lua代码块:Class.lua */
 extern char __start_luaClass[];

@@ -1,7 +1,7 @@
 /*
  * kernel/core/subsys.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -28,8 +28,8 @@
 
 #include <xboot.h>
 
-extern unsigned char __romdisk_start;
-extern unsigned char __romdisk_end;
+extern unsigned char __romdisk_start[];
+extern unsigned char __romdisk_end[];
 
 /* 子系统romdisk初始化 */
 static void subsys_init_romdisk(void)
@@ -40,8 +40,8 @@ static void subsys_init_romdisk(void)
     /* json = "{romdisk@0:{address:xxxxxxxx,size:yyyyyyyy}}" */
 	length = sprintf(json,
 		"{\"blk-romdisk@0\":{\"address\":%lld,\"size\":%lld}}",
-		(unsigned long long)((virtual_addr_t)(&__romdisk_start)),
-		(unsigned long long)((virtual_size_t)(&__romdisk_end - &__romdisk_start)));
+		(unsigned long long)((virtual_addr_t)(__romdisk_start)),
+		(unsigned long long)((virtual_size_t)(__romdisk_end - __romdisk_start)));
     /* 探测romdisk设备 */
 	probe_device(json, length, NULL);
 }

@@ -1,7 +1,7 @@
 /*
  * kernel/graphic/surface.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -67,6 +67,7 @@ static struct render_t render_default = {
 	.filter_grayscale	= render_default_filter_grayscale,
 	.filter_sepia		= render_default_filter_sepia,
 	.filter_invert		= render_default_filter_invert,
+	.filter_dither		= render_default_filter_dither,
 	.filter_threshold	= render_default_filter_threshold,
 	.filter_colormap	= render_default_filter_colormap,
 	.filter_coloring	= render_default_filter_coloring,
@@ -842,26 +843,6 @@ static inline struct surface_t * surface_alloc_from_xfs_jpeg(struct xfs_context_
 	xfs_close(file);
 
 	return s;
-}
-
-static const char * fileext(const char * filename)
-{
-	const char * ret = NULL;
-	const char * p;
-
-	if(filename != NULL)
-	{
-		ret = p = strchr(filename, '.');
-		while(p != NULL)
-		{
-			p = strchr(p + 1, '.');
-			if(p != NULL)
-				ret = p;
-		}
-		if(ret != NULL)
-			ret++;
-	}
-	return ret;
 }
 
 struct surface_t * surface_alloc_from_xfs(struct xfs_context_t * ctx, const char * filename)

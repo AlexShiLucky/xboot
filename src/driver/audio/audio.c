@@ -1,7 +1,7 @@
 /*
  * driver/audio/audio.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -27,7 +27,6 @@
  */
 
 #include <xboot.h>
-#include <audio/pool.h>
 #include <audio/audio.h>
 
 /* 根据名称搜索一个audio设备 */
@@ -64,6 +63,9 @@ struct device_t * register_audio(struct audio_t * audio, struct driver_t * drv)
 	if(!dev)
 		return NULL;
 
+	init_list_head(&audio->soundpool.list);
+	spin_lock_init(&audio->soundpool.lock);
+
 	dev->name = strdup(audio->name);
 	dev->type = DEVICE_TYPE_AUDIO;
 	dev->driver = drv;
@@ -97,123 +99,146 @@ void unregister_audio(struct audio_t * audio)
 	}
 }
 
-/* 声音读取 */
-static int sound_read(struct sound_t * snd, void * buf, int count)
+void audio_playback_start(struct audio_t * audio, enum audio_rate_t rate, enum audio_format_t fmt, int ch, audio_callback_t cb, void * data)
 {
-	int i, len = 0;
+	if(audio && audio->playback_start)
+		audio->playback_start(audio, rate, fmt, ch, cb, data);
+}
 
-	if(snd && snd->read)
-	{
-		len = snd->read(snd, buf, count);
+void audio_playback_stop(struct audio_t * audio)
+{
+	if(audio && audio->playback_stop)
+		audio->playback_stop(audio);
+}
 
-		if(snd->volume == 100)
-		{
-		}
-		else if(snd->volume == 0)
-		{
-			memset(buf, 0, len);
-		}
-		else
-		{
-			s8_t * p8; s16_t * p16; s32_t * p32;
-			s32_t v;
-			switch(snd->info.fmt)
-			{
-			case PCM_FORMAT_BIT8:
-				p8 = buf;
-				for(i = 0; i < len; i++)
-				{
-					v = ((s32_t)(p8[i])) * snd->volume / 100;
-					p8[i] = (s8_t)v;
-				}
-				break;
+void audio_capture_start(struct audio_t * audio, enum audio_rate_t rate, enum audio_format_t fmt, int ch, audio_callback_t cb, void * data)
+{
+	if(audio && audio->capture_start)
+		audio->capture_start(audio, rate, fmt, ch, cb, data);
+}
 
-			case PCM_FORMAT_BIT16:
-				p16 = buf;
-				for(i = 0; i < len / 2; i++)
-				{
-					v = ((s32_t)be16_to_cpu(p16[i])) * snd->volume / 100;
-					p16[i] = cpu_to_be16((s16_t)v);
-				}
-				break;
+void audio_capture_stop(struct audio_t * audio)
+{
+	if(audio && audio->capture_stop)
+		audio->capture_stop(audio);
+}
 
-			case PCM_FORMAT_BIT24:
-			case PCM_FORMAT_BIT32:
-				p32 = buf;
-				for(i = 0; i < len / 4; i++)
-				{
-					v = ((s32_t)be32_to_cpu(p32[i])) * snd->volume / 100;
-					p32[i] = cpu_to_be32(v);
-				}
-				break;
-
-			default:
-				break;
-			}
-		}
-	}
-
-	return len;
+int audio_ioctl(struct audio_t * audio, const char * cmd, void * arg)
+{
+	if(audio && audio->ioctl)
+		return audio->ioctl(audio, cmd, arg);
+	return -1;
 }
 
 static int audio_playback_callback(void * data, void * buf, int count)
 {
 	struct audio_t * audio = (struct audio_t *)data;
-	struct sound_list_t * sp = &__sound_pool;
-	struct list_head * pos = sp->entry.next;
-	int len = 0;
+	struct sound_t * pos, * n;
+	irq_flags_t flags;
+	char * pbuf = buf;
+	int32_t left[240];
+	int32_t right[240];
+	int32_t result[240];
+	int32_t * pl = left;
+	int32_t * pr = right;
+	int16_t * p;
+	int bytes = 0;
+	int sample;
+	int length;
+	int empty;
+	int i;
 
-	if(list_empty_careful(&sp->entry))
+	spin_lock_irqsave(&audio->soundpool.lock, flags);
+	empty = list_empty_careful(&audio->soundpool.list);
+	spin_unlock_irqrestore(&audio->soundpool.lock, flags);
+	if(!empty)
 	{
-		if(audio->playback_stop)
-			audio->playback_stop(audio);
-		return 0;
-	}
-
-	if(list_is_last(pos, &sp->entry))
-	{
-		struct sound_list_t * sl = list_entry(pos, struct sound_list_t, entry);
-		struct sound_t * snd = sl->snd;
-		if(snd && (sound_get_status(snd) == SOUND_STATUS_PLAY))
+		while(count > 0)
 		{
-			if((len = sound_read(snd, buf, count)) < count)
+			sample = min((int)(count >> 2), 240);
+			length = sample << 2;
+			memset(left, 0, length);
+			memset(right, 0, length);
+			spin_lock_irqsave(&audio->soundpool.lock, flags);
+			list_for_each_entry_safe(pos, n, &audio->soundpool.list, list)
 			{
-				if(sound_get_position(snd) >= snd->info.length)
+				if(pos->loop != 0)
 				{
-					sound_stop(snd);
+					for(i = 0; i < sample; i++)
+					{
+						if(pos->sample > pos->postion)
+						{
+							p = (int16_t *)(&pos->source[pos->postion]);
+							left[i] += (p[0] * pos->lvol) >> 12;
+							right[i] += (p[1] * pos->rvol) >> 12;
+							pos->postion++;
+						}
+						else
+						{
+							if(pos->loop > 0)
+								pos->loop--;
+							if(pos->loop != 0)
+							{
+								pos->postion = 0;
+								p = (int16_t *)(&pos->source[pos->postion]);
+								left[i] += (p[0] * pos->lvol) >> 12;
+								right[i] += (p[1] * pos->rvol) >> 12;
+							}
+						}
+					}
 				}
 			}
+			spin_unlock_irqrestore(&audio->soundpool.lock, flags);
+			p = (int16_t *)result;
+			for(i = 0; i < sample; i++)
+			{
+				*p++ = clamp(pl[i], -32768, 32767);
+				*p++ = clamp(pr[i], -32768, 32767);
+			}
+			memcpy(pbuf, result, length);
+			bytes += length;
+			pbuf += length;
+			count -= length;
 		}
+		spin_lock_irqsave(&audio->soundpool.lock, flags);
+		list_for_each_entry_safe(pos, n, &audio->soundpool.list, list)
+		{
+			if(pos->loop == 0)
+			{
+				list_del(&pos->list);
+				if(pos->cb)
+					pos->cb(pos);
+			}
+		}
+		spin_unlock_irqrestore(&audio->soundpool.lock, flags);
 	}
-
-	return len;
+	return bytes;
 }
 
-void audio_playback(struct audio_t * audio)
+void audio_playback(struct audio_t * audio, struct sound_t * snd)
 {
-	struct sound_list_t * sp = &__sound_pool;
-	struct list_head * pos = sp->entry.next;
+	struct sound_t * pos, * n;
+	irq_flags_t flags;
+	int found = 0;
 
-	if(!audio)
-		return;
-
-	if(list_empty_careful(&sp->entry))
-		return;
-
-	/* Just one sound */
-	if(list_is_last(pos, &sp->entry))
+	if(audio && snd)
 	{
-		struct sound_list_t * sl = list_entry(pos, struct sound_list_t, entry);
-		struct sound_t * snd = sl->snd;
-		if(snd)
+		spin_lock_irqsave(&audio->soundpool.lock, flags);
+		list_for_each_entry_safe(pos, n, &audio->soundpool.list, list)
 		{
-			if(audio->playback_start)
-				audio->playback_start(audio, snd->info.rate, snd->info.fmt, snd->info.channel, audio_playback_callback, audio);
+			if(pos == snd)
+			{
+				found = 1;
+				break;
+			}
 		}
-	}
-	/* More than one sound */
-	else
-	{
-
+		spin_unlock_irqrestore(&audio->soundpool.lock, flags);
+		if(!found)
+		{
+			spin_lock_irqsave(&audio->soundpool.lock, flags);
+			list_add_tail(&snd->list, &audio->soundpool.list);
+			spin_unlock_irqrestore(&audio->soundpool.lock, flags);
+			audio_playback_start(audio, AUDIO_RATE_48000, AUDIO_FORMAT_S16, 2, audio_playback_callback, audio);
+		}
 	}
 }

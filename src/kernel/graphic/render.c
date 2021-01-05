@@ -1,7 +1,7 @@
 /*
  * kernel/graphic/render.c
  *
- * Copyright(c) 2007-2020 Jianjun Jiang <8192542@qq.com>
+ * Copyright(c) 2007-2021 Jianjun Jiang <8192542@qq.com>
  * Official site: http://xboot.org
  * Mobile phone: +86-18665388956
  * QQ: 8192542
@@ -1679,6 +1679,53 @@ void render_default_filter_invert(struct surface_t * s)
 			p[0] = p[3] - p[0];
 			p[1] = p[3] - p[1];
 			p[2] = p[3] - p[2];
+		}
+	}
+}
+
+void render_default_filter_dither(struct surface_t * s)
+{
+	int width = surface_get_width(s);
+	int height = surface_get_height(s);
+	int stride = surface_get_stride(s);
+	int w = width - 1;
+	int h = height - 1;
+	unsigned char * p, * q;
+	int o, n, e, v;
+	int x, y;
+
+	for(y = 0, p = surface_get_pixels(s); y < height; y++)
+	{
+		for(x = 0; x < width; x++, p += 4)
+		{
+			o = p[0];
+			n = o > 127 ? 255 : 0;
+			e = o - n;
+			p[2] = p[1] = p[0] = n;
+			if(x < w)
+			{
+				q = p + 4;
+				v = clamp(q[0] + ((e * 7) >> 4), 0, 255);
+				q[0] = v;
+			}
+			if(y < h)
+			{
+				if(x > 0)
+				{
+					q = p + stride - 4;
+					v = clamp(q[0] + ((e * 3) >> 4), 0, 255);
+					q[0] = v;
+				}
+				q = p + stride;
+				v = clamp(q[0] + ((e * 5) >> 4), 0, 255);
+				q[0] = v;
+				if(x < w)
+				{
+					q = p + stride + 4;
+					v = clamp(q[0] + (e >> 4), 0, 255);
+					q[0] = v;
+				}
+			}
 		}
 	}
 }

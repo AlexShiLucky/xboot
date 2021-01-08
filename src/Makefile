@@ -5,13 +5,14 @@
 #
 # You can pass CROSS_COMPILE and PLATFORM variable.
 #
-#CROSS_COMPILE   ?= arm-linux-gnueabihf-
-#PLATFORM        ?= arm32-realview
+CROSS_COMPILE   ?= arm-linux-gnueabihf-
+PLATFORM        ?= arm32-realview
 #PLATFORM       ?= arm32-rk3288
 #PLATFORM       ?= arm32-h3
+#PLATFORM       ?= arm32-v3s
 
-CROSS_COMPILE   ?= arm-eabi-
-PLATFORM        ?= arm32-f1c100s
+#CROSS_COMPILE   ?= arm-eabi-
+#PLATFORM        ?= arm32-f1c100s
 
 #
 # Configurable advanced custom components

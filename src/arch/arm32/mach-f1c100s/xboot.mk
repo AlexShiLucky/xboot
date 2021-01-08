@@ -3,6 +3,7 @@
 #
 
 DEFINES		+= -D__ARM32_ARCH__=5 -D__ARM926EJS__
+DEFINES		+= -D__MINGW32__
 
 #export OUTPUT_I         := 1
 #export OUTPUT_S         := 1
@@ -10,7 +11,7 @@ DEFINES		+= -D__ARM32_ARCH__=5 -D__ARM926EJS__
 #export OUTPUT_NM        := 1
 
 ASFLAGS		:= -g -ggdb -Wall -O3
-CFLAGS		:= -g -ggdb -Wall -O3
+CFLAGS		:= -g -ggdb -Wall -O3 -fno-short-enums
 LDFLAGS		:= -T arch/$(ARCH)/$(MACH)/xboot.ld -nostdlib
 MCFLAGS		:= -march=armv5te -mtune=arm926ej-s -mfloat-abi=soft -marm -mno-thumb-interwork -mno-unaligned-access
 

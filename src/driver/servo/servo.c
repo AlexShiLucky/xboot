@@ -32,109 +32,109 @@
 /* 伺服电机设备enable */
 static ssize_t servo_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct servo_t * m = (struct servo_t *)kobj->priv;
-	servo_enable(m);
-	return size;
+    struct servo_t * m = (struct servo_t *)kobj->priv;
+    servo_enable(m);
+    return size;
 }
 
 /* 伺服电机设备disable */
 static ssize_t servo_write_disable(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct servo_t * m = (struct servo_t *)kobj->priv;
-	servo_disable(m);
-	return size;
+    struct servo_t * m = (struct servo_t *)kobj->priv;
+    servo_disable(m);
+    return size;
 }
 
 /* 伺服电机设备角度写入 */
 static ssize_t servo_write_angle(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct servo_t * m = (struct servo_t *)kobj->priv;
-	servo_set_angle(m, strtol(buf, NULL, 0));
-	return size;
+    struct servo_t * m = (struct servo_t *)kobj->priv;
+    servo_set_angle(m, strtol(buf, NULL, 0));
+    return size;
 }
 
 /* 根据名称搜索一个伺服电机设备 */
 struct servo_t * search_servo(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_SERVO);
-	if(!dev)
-		return NULL;
-	return (struct servo_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_SERVO);
+    if(!dev)
+        return NULL;
+    return (struct servo_t *)dev->priv;
 }
 
 /* 注册一个伺服电机设备 */
 struct device_t * register_servo(struct servo_t * m, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!m || !m->name)
-		return NULL;
+    if(!m || !m->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(m->name);
-	dev->type = DEVICE_TYPE_SERVO;
-	dev->driver = drv;
-	dev->priv = m;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "enable", NULL, servo_write_enable, m);
-	kobj_add_regular(dev->kobj, "disable", NULL, servo_write_disable, m);
-	kobj_add_regular(dev->kobj, "angle", NULL, servo_write_angle, m);
+    dev->name = strdup(m->name);
+    dev->type = DEVICE_TYPE_SERVO;
+    dev->driver = drv;
+    dev->priv = m;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "enable", NULL, servo_write_enable, m);
+    kobj_add_regular(dev->kobj, "disable", NULL, servo_write_disable, m);
+    kobj_add_regular(dev->kobj, "angle", NULL, servo_write_angle, m);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个伺服电机设备 */
 void unregister_servo(struct servo_t * m)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(m && m->name)
-	{
-		dev = search_device(m->name, DEVICE_TYPE_SERVO);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(m && m->name)
+    {
+        dev = search_device(m->name, DEVICE_TYPE_SERVO);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 伺服电机enable */
 void servo_enable(struct servo_t * m)
 {
-	if(m && m->enable)
-		m->enable(m);
+    if(m && m->enable)
+        m->enable(m);
 }
 
 /* 伺服电机disable */
 void servo_disable(struct servo_t * m)
 {
-	if(m && m->disable)
-		m->disable(m);
+    if(m && m->disable)
+        m->disable(m);
 }
 
 /* 伺服电机角度设置 */
 void servo_set_angle(struct servo_t * m, int angle)
 {
-	if(m && m->set)
-	{
-		if(angle < -180)
-			angle = -180;
-		else if(angle > 180)
-			angle = 180;
-		m->set(m, angle);
-	}
+    if(m && m->set)
+    {
+        if(angle < -180)
+            angle = -180;
+        else if(angle > 180)
+            angle = 180;
+        m->set(m, angle);
+    }
 }

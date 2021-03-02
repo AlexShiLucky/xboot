@@ -31,25 +31,25 @@
 
 static void * __dma_alloc_coherent(unsigned long size)
 {
-	return memalign(SZ_4K, size);
+    return memalign(SZ_4K, size);
 }
 extern __typeof(__dma_alloc_coherent) dma_alloc_coherent __attribute__((weak, alias("__dma_alloc_coherent")));
 
 static void __dma_free_coherent(void * addr)
 {
-	free(addr);
+    free(addr);
 }
 extern __typeof(__dma_free_coherent) dma_free_coherent __attribute__((weak, alias("__dma_free_coherent")));
 
 static void * __dma_alloc_noncoherent(unsigned long size)
 {
-	return memalign(SZ_4K, size);
+    return memalign(SZ_4K, size);
 }
 extern __typeof(__dma_alloc_noncoherent) dma_alloc_noncoherent __attribute__((weak, alias("__dma_alloc_noncoherent")));
 
 static void __dma_free_noncoherent(void * addr)
 {
-	free(addr);
+    free(addr);
 }
 extern __typeof(__dma_free_noncoherent) dma_free_noncoherent __attribute__((weak, alias("__dma_free_noncoherent")));
 

@@ -29,19 +29,19 @@
 #include <xboot.h>
 #include <xboot/dtree.h>
 
-/* 获取设备树节点名称 */
+/* 获取设备节点名称,即获取@左侧部分,该名称对应驱动名称 */
 const char * dt_read_name(struct dtnode_t * n)
 {
 	return n ? n->name : NULL;
 }
 
-/* 获取设备树节点id */
+/* 获取设备自动分配起始索引,即获取@右侧部分,默认从.0开始 */
 int dt_read_id(struct dtnode_t * n)
 {
 	return n ? (int)n->addr : 0;
 }
 
-/* 获取设备树节点物理地址 */
+/* 获取设备物理地址 */
 physical_addr_t dt_read_address(struct dtnode_t * n)
 {
 	return n ? n->addr : 0;

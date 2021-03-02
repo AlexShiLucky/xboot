@@ -50,136 +50,136 @@
  */
 
 struct led_gpio_pdata_t {
-	int gpio;
-	int gpiocfg;
-	int active_low;
-	int brightness;
+    int gpio;
+    int gpiocfg;
+    int active_low;
+    int brightness;
 };
 
 /* led-gpio设备亮度设置 */
 static void led_gpio_set_brightness(struct led_gpio_pdata_t * pdat, int brightness)
 {
-	if(brightness > 0)
-		gpio_set_value(pdat->gpio, pdat->active_low ? 0 : 1);
-	else
-		gpio_set_value(pdat->gpio, pdat->active_low ? 1 : 0);
+    if(brightness > 0)
+        gpio_set_value(pdat->gpio, pdat->active_low ? 0 : 1);
+    else
+        gpio_set_value(pdat->gpio, pdat->active_low ? 1 : 0);
 }
 
 /* led-gpio设备亮度设置具体实现 */
 static void led_gpio_set(struct led_t * led, int brightness)
 {
-	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
+    struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
 
-	if(pdat->brightness != brightness)
-	{
-		led_gpio_set_brightness(pdat, brightness);
-		pdat->brightness = brightness;
-	}
+    if(pdat->brightness != brightness)
+    {
+        led_gpio_set_brightness(pdat, brightness);
+        pdat->brightness = brightness;
+    }
 }
 
 /* led-gpio设备亮度获取具体实现 */
 static int led_gpio_get(struct led_t * led)
 {
-	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
-	return pdat->brightness;
+    struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
+    return pdat->brightness;
 }
 
 /* led-gpio设备探针具体实现 */
 static struct device_t * led_gpio_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct led_gpio_pdata_t * pdat;
-	struct led_t * led;
-	struct device_t * dev;
+    struct led_gpio_pdata_t * pdat;
+    struct led_t * led;
+    struct device_t * dev;
 
-	if(!gpio_is_valid(dt_read_int(n, "gpio", -1)))
-		return NULL;
+    if(!gpio_is_valid(dt_read_int(n, "gpio", -1)))
+        return NULL;
 
-	pdat = malloc(sizeof(struct led_gpio_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct led_gpio_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	led = malloc(sizeof(struct led_t));
-	if(!led)
-	{
-		free(pdat);
-		return NULL;
-	}
+    led = malloc(sizeof(struct led_t));
+    if(!led)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->gpio = dt_read_int(n, "gpio", -1);
-	pdat->gpiocfg = dt_read_int(n, "gpio-config", -1);
-	pdat->active_low = dt_read_bool(n, "active-low", 0);
-	pdat->brightness = -1;
+    pdat->gpio = dt_read_int(n, "gpio", -1);
+    pdat->gpiocfg = dt_read_int(n, "gpio-config", -1);
+    pdat->active_low = dt_read_bool(n, "active-low", 0);
+    pdat->brightness = -1;
 
-	led->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	led->set = led_gpio_set;    /* led-gpio设备亮度设置具体实现 */
-	led->get = led_gpio_get;    /* led-gpio设备亮度获取具体实现 */
-	led->priv = pdat;
+    led->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+    led->set = led_gpio_set;    /* led-gpio设备亮度设置具体实现 */
+    led->get = led_gpio_get;    /* led-gpio设备亮度获取具体实现 */
+    led->priv = pdat;
 
-	if(pdat->gpiocfg >= 0)
-		gpio_set_cfg(pdat->gpio, pdat->gpiocfg);
-	gpio_set_pull(pdat->gpio, pdat->active_low ? GPIO_PULL_UP :GPIO_PULL_DOWN);
-	gpio_set_direction(pdat->gpio, GPIO_DIRECTION_OUTPUT);
-	led_gpio_set(led, dt_read_int(n, "default-brightness", 0));
+    if(pdat->gpiocfg >= 0)
+        gpio_set_cfg(pdat->gpio, pdat->gpiocfg);
+    gpio_set_pull(pdat->gpio, pdat->active_low ? GPIO_PULL_UP :GPIO_PULL_DOWN);
+    gpio_set_direction(pdat->gpio, GPIO_DIRECTION_OUTPUT);
+    led_gpio_set(led, dt_read_int(n, "default-brightness", 0));
 
-	if(!(dev = register_led(led, drv)))
-	{
-		free_device_name(led->name);
-		free(led->priv);
-		free(led);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_led(led, drv)))
+    {
+        free_device_name(led->name);
+        free(led->priv);
+        free(led);
+        return NULL;
+    }
+    return dev;
 }
 
 /* led-gpio设备移除具体实现 */
 static void led_gpio_remove(struct device_t * dev)
 {
-	struct led_t * led = (struct led_t *)dev->priv;
+    struct led_t * led = (struct led_t *)dev->priv;
 
-	if(led)
-	{
-		unregister_led(led);
-		free_device_name(led->name);
-		free(led->priv);
-		free(led);
-	}
+    if(led)
+    {
+        unregister_led(led);
+        free_device_name(led->name);
+        free(led->priv);
+        free(led);
+    }
 }
 
 /* led-gpio设备挂起具体实现 */
 static void led_gpio_suspend(struct device_t * dev)
 {
-	struct led_t * led = (struct led_t *)dev->priv;
-	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
-	led_gpio_set_brightness(pdat, 0);
+    struct led_t * led = (struct led_t *)dev->priv;
+    struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
+    led_gpio_set_brightness(pdat, 0);
 }
 
 /* led-gpio设备释放具体实现 */
 static void led_gpio_resume(struct device_t * dev)
 {
-	struct led_t * led = (struct led_t *)dev->priv;
-	struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
-	led_gpio_set_brightness(pdat, pdat->brightness);
+    struct led_t * led = (struct led_t *)dev->priv;
+    struct led_gpio_pdata_t * pdat = (struct led_gpio_pdata_t *)led->priv;
+    led_gpio_set_brightness(pdat, pdat->brightness);
 }
 
 /* led-gpio设备驱动控制块 */
 static struct driver_t led_gpio = {
-	.name		= "led-gpio",
-	.probe		= led_gpio_probe,
-	.remove		= led_gpio_remove,
-	.suspend	= led_gpio_suspend,
-	.resume		= led_gpio_resume,
+    .name       = "led-gpio",
+    .probe      = led_gpio_probe,
+    .remove     = led_gpio_remove,
+    .suspend    = led_gpio_suspend,
+    .resume     = led_gpio_resume,
 };
 
 /* led-gpio设备驱动初始化 */
 static __init void led_gpio_driver_init(void)
 {
-	register_driver(&led_gpio);
+    register_driver(&led_gpio);
 }
 
 /* led-gpio设备驱动退出 */
 static __exit void led_gpio_driver_exit(void)
 {
-	unregister_driver(&led_gpio);
+    unregister_driver(&led_gpio);
 }
 
 driver_initcall(led_gpio_driver_init);

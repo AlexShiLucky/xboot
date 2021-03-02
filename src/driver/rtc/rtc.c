@@ -32,149 +32,149 @@
 /* 获取某年某月的天数 */
 static inline int rtc_month_days(unsigned int year, unsigned int month)
 {
-	const int rtc_days_in_month[13] = {
-		0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-	};
-	if(month > 12)
-		month = 0;
-	return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2)) ? 1 : 0;
+    const int rtc_days_in_month[13] = {
+        0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+    };
+    if(month > 12)
+        month = 0;
+    return rtc_days_in_month[month] + (((!(year % 4) && (year % 100)) || !(year % 400)) && (month == 2)) ? 1 : 0;
 }
 
 /* 判断时间是否有效 */
 static int rtc_time_is_valid(struct rtc_time_t * time)
 {
-	if((!time) || (time->year < 1970)
-		|| (time->month < 1)
-		|| (time->month > 12)
-		|| (time->day < 1)
-		|| (time->day > rtc_month_days(time->year, time->month))
-		|| (time->hour >= 24)
-		|| (time->minute >= 60)
-		|| (time->second >= 60))
-		return 0;
-	return 1;
+    if((!time) || (time->year < 1970)
+        || (time->month < 1)
+        || (time->month > 12)
+        || (time->day < 1)
+        || (time->day > rtc_month_days(time->year, time->month))
+        || (time->hour >= 24)
+        || (time->minute >= 60)
+        || (time->second >= 60))
+        return 0;
+    return 1;
 }
 
 /* 读取rtc设备时间 */
 static ssize_t rtc_time_read(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
-	struct rtc_time_t time;
+    struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
+    struct rtc_time_t time;
 
-	if(rtc && rtc->gettime)
-		rtc->gettime(rtc, &time);
+    if(rtc && rtc->gettime)
+        rtc->gettime(rtc, &time);
 
-	return sprintf(buf, "%04u-%02u-%02u %01u %02u:%02u:%02u", (u32_t)time.year, (u32_t)time.month, (u32_t)time.day, (u32_t)time.week, (u32_t)time.hour, (u32_t)time.minute, (u32_t)time.second);
+    return sprintf(buf, "%04u-%02u-%02u %01u %02u:%02u:%02u", (u32_t)time.year, (u32_t)time.month, (u32_t)time.day, (u32_t)time.week, (u32_t)time.hour, (u32_t)time.minute, (u32_t)time.second);
 }
 
 /* 写入rtc设备时间 */
 static ssize_t rtc_time_write(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
-	struct rtc_time_t time;
+    struct rtc_t * rtc = (struct rtc_t *)kobj->priv;
+    struct rtc_time_t time;
 
-	if(sscanf(buf, "%04u-%02u-%02u %01u %02u:%02u:%02u", &time.year, &time.month, &time.day, &time.week, &time.hour, &time.minute, &time.second) == 7)
-	{
-		if(rtc && rtc->settime)
-			rtc->settime(rtc, &time);
-	}
+    if(sscanf(buf, "%04u-%02u-%02u %01u %02u:%02u:%02u", &time.year, &time.month, &time.day, &time.week, &time.hour, &time.minute, &time.second) == 7)
+    {
+        if(rtc && rtc->settime)
+            rtc->settime(rtc, &time);
+    }
 
-	return size;
+    return size;
 }
 
 /* 根据名称搜索一个rtc设备 */
 struct rtc_t * search_rtc(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_RTC);
-	if(!dev)
-		return NULL;
-	return (struct rtc_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_RTC);
+    if(!dev)
+        return NULL;
+    return (struct rtc_t *)dev->priv;
 }
 
 /* 搜索第一个rtc设备 */
 struct rtc_t * search_first_rtc(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_RTC);
-	if(!dev)
-		return NULL;
-	return (struct rtc_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_RTC);
+    if(!dev)
+        return NULL;
+    return (struct rtc_t *)dev->priv;
 }
 
 /* 注册一个rtc设备 */
 struct device_t * register_rtc(struct rtc_t * rtc, struct driver_t * drv)
 {
-	struct device_t * dev;
-	struct rtc_time_t time;
+    struct device_t * dev;
+    struct rtc_time_t time;
 
-	if(!rtc || !rtc->name)
-		return NULL;
+    if(!rtc || !rtc->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(rtc->name);
-	dev->type = DEVICE_TYPE_RTC;
-	dev->driver = drv;
-	dev->priv = rtc;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "time", rtc_time_read, rtc_time_write, rtc);
+    dev->name = strdup(rtc->name);
+    dev->type = DEVICE_TYPE_RTC;
+    dev->driver = drv;
+    dev->priv = rtc;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "time", rtc_time_read, rtc_time_write, rtc);
 
-	if(rtc_gettime(rtc, &time) && !rtc_time_is_valid(&time))
-	{
-		time.second = 0;
-		time.minute = 0;
-		time.hour = 0;
-		time.week = 1;
-		time.day = 1;
-		time.month = 1;
-		time.year = 2018;
-		rtc_settime(rtc, &time);
-	}
+    if(rtc_gettime(rtc, &time) && !rtc_time_is_valid(&time))
+    {
+        time.second = 0;
+        time.minute = 0;
+        time.hour = 0;
+        time.week = 1;
+        time.day = 1;
+        time.month = 1;
+        time.year = 2018;
+        rtc_settime(rtc, &time);
+    }
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个rtc设备 */
 void unregister_rtc(struct rtc_t * rtc)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(rtc && rtc->name)
-	{
-		dev = search_device(rtc->name, DEVICE_TYPE_RTC);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(rtc && rtc->name)
+    {
+        dev = search_device(rtc->name, DEVICE_TYPE_RTC);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* rtc时间设置接口调用 */
 bool_t rtc_settime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
-	if(rtc && rtc->settime && rtc_time_is_valid(time))
-		return rtc->settime(rtc, time);
-	return FALSE;
+    if(rtc && rtc->settime && rtc_time_is_valid(time))
+        return rtc->settime(rtc, time);
+    return FALSE;
 }
 
 /* rtc时间获取接口调用 */
 bool_t rtc_gettime(struct rtc_t * rtc, struct rtc_time_t * time)
 {
-	if(rtc && rtc->gettime)
-		return rtc->gettime(rtc, time);
-	return FALSE;
+    if(rtc && rtc->gettime)
+        return rtc->gettime(rtc, time);
+    return FALSE;
 }

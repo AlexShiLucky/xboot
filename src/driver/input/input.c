@@ -32,63 +32,63 @@
 /* 根据名称搜索一个输入设备 */
 struct input_t * search_input(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_INPUT);
-	if(!dev)
-		return NULL;
-	return (struct input_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_INPUT);
+    if(!dev)
+        return NULL;
+    return (struct input_t *)dev->priv;
 }
 
 /* 注册一个输入设备 */
 struct device_t * register_input(struct input_t * input, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!input || !input->name)
-		return NULL;
+    if(!input || !input->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(input->name);
-	dev->type = DEVICE_TYPE_INPUT;
-	dev->driver = drv;
-	dev->priv = input;
-	dev->kobj = kobj_alloc_directory(dev->name);
+    dev->name = strdup(input->name);
+    dev->type = DEVICE_TYPE_INPUT;
+    dev->driver = drv;
+    dev->priv = input;
+    dev->kobj = kobj_alloc_directory(dev->name);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个输入设备 */
 void unregister_input(struct input_t * input)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(input && input->name)
-	{
-		dev = search_device(input->name, DEVICE_TYPE_INPUT);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(input && input->name)
+    {
+        dev = search_device(input->name, DEVICE_TYPE_INPUT);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 输入设备io控制接口调用 */
 int input_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
-	if(input && input->ioctl)
-		return input->ioctl(input, cmd, arg);
-	return -1;
+    if(input && input->ioctl)
+        return input->ioctl(input, cmd, arg);
+    return -1;
 }

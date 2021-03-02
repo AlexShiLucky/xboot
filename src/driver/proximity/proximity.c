@@ -32,83 +32,83 @@
 /* 读取距离数据 */
 static ssize_t proximity_read_distance(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct proximity_t * p = (struct proximity_t *)kobj->priv;
-	int d = proximity_get_distance(p);
-	return sprintf(buf, "%dmm", d);
+    struct proximity_t * p = (struct proximity_t *)kobj->priv;
+    int d = proximity_get_distance(p);
+    return sprintf(buf, "%dmm", d);
 }
 
 /* 根据名称搜索一个距离传感器设备 */
 struct proximity_t * search_proximity(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_PROXIMITY);
-	if(!dev)
-		return NULL;
-	return (struct proximity_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_PROXIMITY);
+    if(!dev)
+        return NULL;
+    return (struct proximity_t *)dev->priv;
 }
 
 /* 搜索第一个距离传感器设备 */
 struct proximity_t * search_first_proximity(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_PROXIMITY);
-	if(!dev)
-		return NULL;
-	return (struct proximity_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_PROXIMITY);
+    if(!dev)
+        return NULL;
+    return (struct proximity_t *)dev->priv;
 }
 
 /* 注册一个距离传感器设备 */
 struct device_t * register_proximity(struct proximity_t * p, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!p || !p->name)
-		return NULL;
+    if(!p || !p->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(p->name);
-	dev->type = DEVICE_TYPE_PROXIMITY;
-	dev->driver = drv;
-	dev->priv = p;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "distance", proximity_read_distance, NULL, p);
+    dev->name = strdup(p->name);
+    dev->type = DEVICE_TYPE_PROXIMITY;
+    dev->driver = drv;
+    dev->priv = p;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "distance", proximity_read_distance, NULL, p);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个距离传感器设备 */
 void unregister_proximity(struct proximity_t * p)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(p && p->name)
-	{
-		dev = search_device(p->name, DEVICE_TYPE_PROXIMITY);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(p && p->name)
+    {
+        dev = search_device(p->name, DEVICE_TYPE_PROXIMITY);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 距离传感器设备距离获取接口调用 */
 int proximity_get_distance(struct proximity_t * p)
 {
-	if(p && p->get)
-		return p->get(p);
-	return 0;
+    if(p && p->get)
+        return p->get(p);
+    return 0;
 }

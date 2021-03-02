@@ -34,7 +34,7 @@ endif
 
 # 汇编*.S文件规则
 $(SOBJS) : .obj/%.o : %.S
-	@echo "[AS] $<"
+	@echo "[AS] $< -> $@"
 	@$(AS) $(X_ASFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 # 编译*.c文件规则
@@ -47,7 +47,7 @@ ifneq ($(OUTPUT_S),)
 	@echo "[CC -S] $(<:.c=.s)"
 	@$(CC) $(X_CFLAGS) $(X_INCDIRS) -S $< -o $(@:.o=.s)
 endif
-	@echo "[CC] $<"
+	@echo "[CC] $< -> $@"
 	@$(CC) $(X_CFLAGS) -MD -MP -MF $@.d $(X_INCDIRS) -c $< -o $@
 
 # 包含进依赖文件

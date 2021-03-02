@@ -32,153 +32,153 @@
 
 /* i2c设备at24c02私有数据结构 */
 struct nvmem_at24c02_pdata_t {
-	struct i2c_device_t * dev;
-	int capacity;
+    struct i2c_device_t * dev;
+    int capacity;
 };
 
 /* at24c02设备指定地址读取一个字节 */
 static bool_t at24c02_read_byte(struct i2c_device_t * dev, uint8_t addr, uint8_t * val)
 {
-	struct i2c_msg_t msgs[2];
+    struct i2c_msg_t msgs[2];
 
-	msgs[0].addr = dev->addr;
-	msgs[0].flags = 0;
-	msgs[0].len = 1;
-	msgs[0].buf = &addr;
+    msgs[0].addr = dev->addr;
+    msgs[0].flags = 0;
+    msgs[0].len = 1;
+    msgs[0].buf = &addr;
 
-	msgs[1].addr = dev->addr;
-	msgs[1].flags = I2C_M_RD;
-	msgs[1].len = 1;
-	msgs[1].buf = val;
+    msgs[1].addr = dev->addr;
+    msgs[1].flags = I2C_M_RD;
+    msgs[1].len = 1;
+    msgs[1].buf = val;
 
-	if(i2c_transfer(dev->i2c, msgs, 2) != 2)
-		return FALSE;
-	return TRUE;
+    if(i2c_transfer(dev->i2c, msgs, 2) != 2)
+        return FALSE;
+    return TRUE;
 }
 
 /* at24c02设备指定地址写入一个字节 */
 static bool_t at24c02_write_byte(struct i2c_device_t * dev, uint8_t addr, uint8_t * val)
 {
-	struct i2c_msg_t msg;
-	uint8_t buf[2];
+    struct i2c_msg_t msg;
+    uint8_t buf[2];
 
-	buf[0] = addr;
-	buf[1] = *val;
-	msg.addr = dev->addr;
-	msg.flags = 0;
-	msg.len = 2;
-	msg.buf = &buf[0];
+    buf[0] = addr;
+    buf[1] = *val;
+    msg.addr = dev->addr;
+    msg.flags = 0;
+    msg.len = 2;
+    msg.buf = &buf[0];
 
-	if(i2c_transfer(dev->i2c, &msg, 1) != 1)
-		return FALSE;
-	return TRUE;
+    if(i2c_transfer(dev->i2c, &msg, 1) != 1)
+        return FALSE;
+    return TRUE;
 }
 
 /* at24c02设备容量获取 */
 static int nvmem_at24c02_capacity(struct nvmem_t * m)
 {
-	struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
-	return pdat->capacity;
+    struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
+    return pdat->capacity;
 }
 
 /* at24c02设备读取 */
 static int nvmem_at24c02_read(struct nvmem_t * m, void * buf, int offset, int count)
 {
-	struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
-	uint8_t * p = buf;
-	int i;
+    struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
+    uint8_t * p = buf;
+    int i;
 
-	for(i = 0; i < count; i++)
-	{
-		if(!at24c02_read_byte(pdat->dev, offset + i, &p[i]))
-			break;
-	}
-	return i;
+    for(i = 0; i < count; i++)
+    {
+        if(!at24c02_read_byte(pdat->dev, offset + i, &p[i]))
+            break;
+    }
+    return i;
 }
 
 /* at24c02设备写入 */
 static int nvmem_at24c02_write(struct nvmem_t * m, void * buf, int offset, int count)
 {
-	struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
-	uint8_t * p = buf;
-	int i;
+    struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
+    uint8_t * p = buf;
+    int i;
 
-	for(i = 0; i < count; i++)
-	{
-		if(!at24c02_write_byte(pdat->dev, offset + i, &p[i]))
-			break;
-	}
-	return i;
+    for(i = 0; i < count; i++)
+    {
+        if(!at24c02_write_byte(pdat->dev, offset + i, &p[i]))
+            break;
+    }
+    return i;
 }
 
 /* i2c-at24c02设备探针 */
 static struct device_t * nvmem_at24c02_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct nvmem_at24c02_pdata_t * pdat;
-	struct nvmem_t * m;
-	struct device_t * dev;
-	struct i2c_device_t * i2cdev;
-	uint8_t val;
+    struct nvmem_at24c02_pdata_t * pdat;
+    struct nvmem_t * m;
+    struct device_t * dev;
+    struct i2c_device_t * i2cdev;
+    uint8_t val;
 
-	i2cdev = i2c_device_alloc(dt_read_string(n, "i2c-bus", NULL), dt_read_int(n, "slave-address", 0x50), 0);
-	if(!i2cdev)
-		return NULL;
+    i2cdev = i2c_device_alloc(dt_read_string(n, "i2c-bus", NULL), dt_read_int(n, "slave-address", 0x50), 0);
+    if(!i2cdev)
+        return NULL;
 
-	if(!at24c02_read_byte(i2cdev, 0, &val))
-	{
-		i2c_device_free(i2cdev);
-		return NULL;
-	}
+    if(!at24c02_read_byte(i2cdev, 0, &val))
+    {
+        i2c_device_free(i2cdev);
+        return NULL;
+    }
 
-	pdat = malloc(sizeof(struct nvmem_at24c02_pdata_t));
-	if(!pdat)
-	{
-		i2c_device_free(i2cdev);
-		return NULL;
-	}
+    pdat = malloc(sizeof(struct nvmem_at24c02_pdata_t));
+    if(!pdat)
+    {
+        i2c_device_free(i2cdev);
+        return NULL;
+    }
 
-	m = malloc(sizeof(struct nvmem_t));
-	if(!m)
-	{
-		i2c_device_free(i2cdev);
-		free(pdat);
-		return NULL;
-	}
+    m = malloc(sizeof(struct nvmem_t));
+    if(!m)
+    {
+        i2c_device_free(i2cdev);
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->dev = i2cdev;
-	pdat->capacity = 256;
+    pdat->dev = i2cdev;
+    pdat->capacity = 256;
 
-	m->name = alloc_device_name(dt_read_name(n), -1);
-	m->capacity = nvmem_at24c02_capacity;
-	m->read = nvmem_at24c02_read;
-	m->write = nvmem_at24c02_write;
-	m->priv = pdat;
+    m->name = alloc_device_name(dt_read_name(n), -1);
+    m->capacity = nvmem_at24c02_capacity;
+    m->read = nvmem_at24c02_read;
+    m->write = nvmem_at24c02_write;
+    m->priv = pdat;
 
-	if(!(dev = register_nvmem(m, drv)))
-	{
-		i2c_device_free(pdat->dev);
-		free_device_name(m->name);
-		free(m->priv);
-		free(m);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_nvmem(m, drv)))
+    {
+        i2c_device_free(pdat->dev);
+        free_device_name(m->name);
+        free(m->priv);
+        free(m);
+        return NULL;
+    }
+    return dev;
 }
 
 /* i2c-at24c02设备移除 */
 static void nvmem_at24c02_remove(struct device_t * dev)
 {
-	struct nvmem_t * m = (struct nvmem_t *)dev->priv;
-	struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
+    struct nvmem_t * m = (struct nvmem_t *)dev->priv;
+    struct nvmem_at24c02_pdata_t * pdat = (struct nvmem_at24c02_pdata_t *)m->priv;
 
-	if(m)
-	{
-		unregister_nvmem(m);
-		i2c_device_free(pdat->dev);
-		free_device_name(m->name);
-		free(m->priv);
-		free(m);
-	}
+    if(m)
+    {
+        unregister_nvmem(m);
+        i2c_device_free(pdat->dev);
+        free_device_name(m->name);
+        free(m->priv);
+        free(m);
+    }
 }
 
 /* i2c-at24c02设备挂起 */
@@ -193,23 +193,23 @@ static void nvmem_at24c02_resume(struct device_t * dev)
 
 /* i2c-at24c02设备驱动控制块 */
 static struct driver_t nvmem_at24c02 = {
-	.name		= "nvmem-at24c02",
-	.probe		= nvmem_at24c02_probe,
-	.remove		= nvmem_at24c02_remove,
-	.suspend	= nvmem_at24c02_suspend,
-	.resume		= nvmem_at24c02_resume,
+    .name       = "nvmem-at24c02",
+    .probe      = nvmem_at24c02_probe,
+    .remove     = nvmem_at24c02_remove,
+    .suspend    = nvmem_at24c02_suspend,
+    .resume     = nvmem_at24c02_resume,
 };
 
 /* i2c-at24c02设备驱动初始化 */
 static __init void nvmem_at24c02_driver_init(void)
 {
-	register_driver(&nvmem_at24c02);
+    register_driver(&nvmem_at24c02);
 }
 
 /* i2c-at24c02设备驱动退出 */
 static __exit void nvmem_at24c02_driver_exit(void)
 {
-	unregister_driver(&nvmem_at24c02);
+    unregister_driver(&nvmem_at24c02);
 }
 
 driver_initcall(nvmem_at24c02_driver_init);

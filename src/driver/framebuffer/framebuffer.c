@@ -32,145 +32,145 @@
 /* 帧缓存宽度(像素)信息读取 */
 static ssize_t framebuffer_read_width(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", framebuffer_get_width(fb));
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    return sprintf(buf, "%u", framebuffer_get_width(fb));
 }
 
 /* 帧缓存高度(像素)信息读取 */
 static ssize_t framebuffer_read_height(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", framebuffer_get_height(fb));
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    return sprintf(buf, "%u", framebuffer_get_height(fb));
 }
 
 /* 帧缓存宽度(毫米数)信息读取 */
 static ssize_t framebuffer_read_pwidth(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", framebuffer_get_pwidth(fb));
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    return sprintf(buf, "%u", framebuffer_get_pwidth(fb));
 }
 
 /* 帧缓存高度(毫米数)信息读取 */
 static ssize_t framebuffer_read_pheight(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	return sprintf(buf, "%u", framebuffer_get_pheight(fb));
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    return sprintf(buf, "%u", framebuffer_get_pheight(fb));
 }
 
 /* 帧缓存亮度信息读取 */
 static ssize_t framebuffer_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	int brightness;
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    int brightness;
 
-	brightness = framebuffer_get_backlight(fb);
-	return sprintf(buf, "%d", brightness);
+    brightness = framebuffer_get_backlight(fb);
+    return sprintf(buf, "%d", brightness);
 }
 
 /* 帧缓存亮度信息写入 */
 static ssize_t framebuffer_write_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
-	int brightness = strtol(buf, NULL, 0);
+    struct framebuffer_t * fb = (struct framebuffer_t *)kobj->priv;
+    int brightness = strtol(buf, NULL, 0);
 
-	framebuffer_set_backlight(fb, brightness);
-	return size;
+    framebuffer_set_backlight(fb, brightness);
+    return size;
 }
 
 /* 根据名称搜索一个帧缓存设备 */
 struct framebuffer_t * search_framebuffer(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_FRAMEBUFFER);
-	if(!dev)
-		return NULL;
-	return (struct framebuffer_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_FRAMEBUFFER);
+    if(!dev)
+        return NULL;
+    return (struct framebuffer_t *)dev->priv;
 }
 
 /* 搜索第一个帧缓存设备 */
 struct framebuffer_t * search_first_framebuffer(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_FRAMEBUFFER);
-	if(!dev)
-		return NULL;
-	return (struct framebuffer_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_FRAMEBUFFER);
+    if(!dev)
+        return NULL;
+    return (struct framebuffer_t *)dev->priv;
 }
 
 /* 注册一个帧缓存设备 */
 struct device_t * register_framebuffer(struct framebuffer_t * fb, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!fb || !fb->name)
-		return NULL;
+    if(!fb || !fb->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(fb->name);
-	dev->type = DEVICE_TYPE_FRAMEBUFFER;
-	dev->driver = drv;
-	dev->priv = fb;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "width", framebuffer_read_width, NULL, fb);
-	kobj_add_regular(dev->kobj, "height", framebuffer_read_height, NULL, fb);
-	kobj_add_regular(dev->kobj, "pwidth", framebuffer_read_pwidth, NULL, fb);
-	kobj_add_regular(dev->kobj, "pheight", framebuffer_read_pheight, NULL, fb);
-	kobj_add_regular(dev->kobj, "brightness", framebuffer_read_brightness, framebuffer_write_brightness, fb);
+    dev->name = strdup(fb->name);
+    dev->type = DEVICE_TYPE_FRAMEBUFFER;
+    dev->driver = drv;
+    dev->priv = fb;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "width", framebuffer_read_width, NULL, fb);
+    kobj_add_regular(dev->kobj, "height", framebuffer_read_height, NULL, fb);
+    kobj_add_regular(dev->kobj, "pwidth", framebuffer_read_pwidth, NULL, fb);
+    kobj_add_regular(dev->kobj, "pheight", framebuffer_read_pheight, NULL, fb);
+    kobj_add_regular(dev->kobj, "brightness", framebuffer_read_brightness, framebuffer_write_brightness, fb);
 
-	if(fb->setbl)
-		fb->setbl(fb, 0);
+    if(fb->setbl)
+        fb->setbl(fb, 0);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个帧缓存设备 */
 void unregister_framebuffer(struct framebuffer_t * fb)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(fb && fb->name)
-	{
-		if(fb->setbl)
-			fb->setbl(fb, 0);
-		dev = search_device(fb->name, DEVICE_TYPE_FRAMEBUFFER);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(fb && fb->name)
+    {
+        if(fb->setbl)
+            fb->setbl(fb, 0);
+        dev = search_device(fb->name, DEVICE_TYPE_FRAMEBUFFER);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 设置背光亮度 */
 void framebuffer_set_backlight(struct framebuffer_t * fb, int brightness)
 {
-	if(fb && fb->setbl)
-	{
-		if(brightness < 0)
-			brightness = 0;
-		else if(brightness > 1000)
-			brightness = 1000;
-		fb->setbl(fb, brightness);
-	}
+    if(fb && fb->setbl)
+    {
+        if(brightness < 0)
+            brightness = 0;
+        else if(brightness > 1000)
+            brightness = 1000;
+        fb->setbl(fb, brightness);
+    }
 }
 
 /* 读取背光亮度 */
 int framebuffer_get_backlight(struct framebuffer_t * fb)
 {
-	if(fb && fb->getbl)
-		return fb->getbl(fb);
-	return 0;
+    if(fb && fb->getbl)
+        return fb->getbl(fb);
+    return 0;
 }

@@ -31,248 +31,248 @@
 /* key-value记录节点结构 */
 struct record_t
 {
-	struct hlist_node node;
-	struct list_head head;
-	char * key;
-	char * value;
+    struct hlist_node node;
+    struct list_head head;
+    char * key;
+    char * value;
 };
 
 /* 通过key获取hash表头 */
 static struct hlist_head * kvdb_hash(struct kvdb_t * db, const char * key)
 {
-	return &db->hash[shash(key) % db->hash_size];
+    return &db->hash[shash(key) % db->hash_size];
 }
 
 /* 根据key搜索记录节点指针 */
 static struct record_t * kvdb_search_record(struct kvdb_t * db, const char * key)
 {
-	struct record_t * pos;
-	struct hlist_node * n;
+    struct record_t * pos;
+    struct hlist_node * n;
 
-	if(!db || !key)
-		return NULL;
+    if(!db || !key)
+        return NULL;
 
-	hlist_for_each_entry_safe(pos, n, kvdb_hash(db, key), node)
-	{
-		if(strcmp(pos->key, key) == 0)
-			return pos;
-	}
-	return NULL;
+    hlist_for_each_entry_safe(pos, n, kvdb_hash(db, key), node)
+    {
+        if(strcmp(pos->key, key) == 0)
+            return pos;
+    }
+    return NULL;
 }
 
 /* 在key-value数据库中添加一条记录 */
 static bool_t kvdb_add_record(struct kvdb_t * db, struct record_t * r)
 {
-	irq_flags_t flags;
-	int lk, lv;
+    irq_flags_t flags;
+    int lk, lv;
 
-	if(!db)
-		return FALSE;
+    if(!db)
+        return FALSE;
 
-	if(!r || !r->key || !r->value)
-		return FALSE;
+    if(!r || !r->key || !r->value)
+        return FALSE;
 
-	if(kvdb_search_record(db, r->key))
-		return FALSE;
+    if(kvdb_search_record(db, r->key))
+        return FALSE;
 
-	lk = strlen(r->key);
-	lv = strlen(r->value);
-	if(db->store_size + (lk + lv + 2) > db->max_size)
-		return FALSE;
+    lk = strlen(r->key);
+    lv = strlen(r->value);
+    if(db->store_size + (lk + lv + 2) > db->max_size)
+        return FALSE;
 
-	spin_lock_irqsave(&db->lock, flags);
-	init_hlist_node(&r->node);
-	hlist_add_head(&r->node, kvdb_hash(db, r->key));
-	init_list_head(&r->head);
-	list_add_tail(&r->head, &db->list);
-	db->store_size += (lk + lv + 2);
-	spin_unlock_irqrestore(&db->lock, flags);
+    spin_lock_irqsave(&db->lock, flags);
+    init_hlist_node(&r->node);
+    hlist_add_head(&r->node, kvdb_hash(db, r->key));
+    init_list_head(&r->head);
+    list_add_tail(&r->head, &db->list);
+    db->store_size += (lk + lv + 2);
+    spin_unlock_irqrestore(&db->lock, flags);
 
-	return TRUE;
+    return TRUE;
 }
 
 /* 在key-value数据库中移除一条记录 */
 static bool_t kvdb_remove_record(struct kvdb_t * db, struct record_t * r)
 {
-	irq_flags_t flags;
-	int lk, lv;
+    irq_flags_t flags;
+    int lk, lv;
 
-	if(!db)
-		return FALSE;
+    if(!db)
+        return FALSE;
 
-	if(!r || !r->key || !r->value)
-		return FALSE;
+    if(!r || !r->key || !r->value)
+        return FALSE;
 
-	if(hlist_unhashed(&r->node))
-		return FALSE;
+    if(hlist_unhashed(&r->node))
+        return FALSE;
 
-	lk = strlen(r->key);
-	lv = strlen(r->value);
-	if(db->store_size - (lk + lv + 2) < 0)
-		return FALSE;
+    lk = strlen(r->key);
+    lv = strlen(r->value);
+    if(db->store_size - (lk + lv + 2) < 0)
+        return FALSE;
 
-	spin_lock_irqsave(&db->lock, flags);
-	hlist_del(&r->node);
-	list_del(&r->head);
-	db->store_size -= (lk + lv + 2);
-	spin_unlock_irqrestore(&db->lock, flags);
+    spin_lock_irqsave(&db->lock, flags);
+    hlist_del(&r->node);
+    list_del(&r->head);
+    db->store_size -= (lk + lv + 2);
+    spin_unlock_irqrestore(&db->lock, flags);
 
-	return TRUE;
+    return TRUE;
 }
 
 /* 申请一个给定尺寸的key-value数据库 */
 struct kvdb_t * kvdb_alloc(int size)
 {
-	struct kvdb_t * db;
-	int i;
+    struct kvdb_t * db;
+    int i;
 
-	if(size < 0)
-		return NULL;
+    if(size < 0)
+        return NULL;
 
-	db = malloc(sizeof(struct kvdb_t));
-	if(!db)
-		return NULL;
+    db = malloc(sizeof(struct kvdb_t));
+    if(!db)
+        return NULL;
 
-	db->max_size = size;
-	db->hash_size = (db->max_size >> 3) + 1;
-	if(db->hash_size > CONFIG_KVDB_HASH_SIZE)
-		db->hash_size = CONFIG_KVDB_HASH_SIZE;
-	db->store_size = 1;
-	db->hash = malloc(sizeof(struct hlist_head) * db->hash_size);
-	if(!db->hash)
-	{
-		free(db);
-		return NULL;
-	}
+    db->max_size = size;
+    db->hash_size = (db->max_size >> 3) + 1;
+    if(db->hash_size > CONFIG_KVDB_HASH_SIZE)
+        db->hash_size = CONFIG_KVDB_HASH_SIZE;
+    db->store_size = 1;
+    db->hash = malloc(sizeof(struct hlist_head) * db->hash_size);
+    if(!db->hash)
+    {
+        free(db);
+        return NULL;
+    }
 
-	for(i = 0; i < db->hash_size; i++)
-		init_hlist_head(&db->hash[i]);
-	init_list_head(&db->list);
-	spin_lock_init(&db->lock);
+    for(i = 0; i < db->hash_size; i++)
+        init_hlist_head(&db->hash[i]);
+    init_list_head(&db->list);
+    spin_lock_init(&db->lock);
 
-	return db;
+    return db;
 }
 
 /* 释放一个key-value数据库 */
 void kvdb_free(struct kvdb_t * db)
 {
-	if(db)
-	{
-		kvdb_clear(db);
-		free(db->hash);
-		free(db);
-	}
+    if(db)
+    {
+        kvdb_clear(db);
+        free(db->hash);
+        free(db);
+    }
 }
 
 void kvdb_clear(struct kvdb_t * db)
 {
-	struct record_t * pos, * n;
+    struct record_t * pos, * n;
 
-	if(!db)
-		return;
+    if(!db)
+        return;
 
-	list_for_each_entry_safe(pos, n, &db->list, head)
-	{
-		kvdb_remove_record(db, pos);
-		free(pos->key);
-		free(pos->value);
-		free(pos);
-	}
+    list_for_each_entry_safe(pos, n, &db->list, head)
+    {
+        kvdb_remove_record(db, pos);
+        free(pos->key);
+        free(pos->value);
+        free(pos);
+    }
 }
 
 /* 设置一个key-value */
 void kvdb_set(struct kvdb_t * db, const char * key, const char * value)
 {
-	struct record_t * r;
+    struct record_t * r;
 
-	if(!db || !key)
-		return;
+    if(!db || !key)
+        return;
 
-	if((r = kvdb_search_record(db, key)))
-	{
-		kvdb_remove_record(db, r);
-		free(r->key);
-		free(r->value);
-		free(r);
-	}
-	if(value)
-	{
-		r = malloc(sizeof(struct record_t));
-		if(r)
-		{
-			r->key = strdup(key);
-			r->value = strdup(value);
-			kvdb_add_record(db, r);
-		}
-	}
+    if((r = kvdb_search_record(db, key)))
+    {
+        kvdb_remove_record(db, r);
+        free(r->key);
+        free(r->value);
+        free(r);
+    }
+    if(value)
+    {
+        r = malloc(sizeof(struct record_t));
+        if(r)
+        {
+            r->key = strdup(key);
+            r->value = strdup(value);
+            kvdb_add_record(db, r);
+        }
+    }
 }
 
 /* 根据key获取value */
 char * kvdb_get(struct kvdb_t * db, const char * key, const char * def)
 {
-	struct record_t * r = kvdb_search_record(db, key);
-	if(r)
-		return r->value;
-	return (char *)def;
+    struct record_t * r = kvdb_search_record(db, key);
+    if(r)
+        return r->value;
+    return (char *)def;
 }
 
 /* 从字符串中获取key-value */
 void kvdb_from_string(struct kvdb_t * db, char * str)
 {
-	char * p = str;
-	char * r, * k, * v;
+    char * p = str;
+    char * r, * k, * v;
 
-	if(!db || !p)
-		return;
+    if(!db || !p)
+        return;
 
-	while((r = strsep(&p, ",;\r\n")) != NULL)
-	{
-		if(strchr(r, '='))
-		{
-			k = strim(strsep(&r, "="));
-			v = strim(r);
-			k = (k && strcmp(k, "") != 0) ? k : NULL;
-			v = (v && strcmp(v, "") != 0) ? v : NULL;
-			if(k && v)
-				kvdb_set(db, k, v);
-		}
-	}
+    while((r = strsep(&p, ",;\r\n")) != NULL)
+    {
+        if(strchr(r, '='))
+        {
+            k = strim(strsep(&r, "="));
+            v = strim(r);
+            k = (k && strcmp(k, "") != 0) ? k : NULL;
+            v = (v && strcmp(v, "") != 0) ? v : NULL;
+            if(k && v)
+                kvdb_set(db, k, v);
+        }
+    }
 }
 
 /* 将key-value数据库按"key=value;"格式输出字符串 */
 char * kvdb_to_string(struct kvdb_t * db)
 {
-	struct record_t * pos, * n;
-	char * str;
-	int len = 0;
+    struct record_t * pos, * n;
+    char * str;
+    int len = 0;
 
-	if(!db)
-		return NULL;
+    if(!db)
+        return NULL;
 
-	str = malloc(db->store_size);
-	if(!str)
-		return NULL;
-	memset(str, 0, db->store_size);
+    str = malloc(db->store_size);
+    if(!str)
+        return NULL;
+    memset(str, 0, db->store_size);
 
-	list_for_each_entry_safe(pos, n, &db->list, head)
-	{
-		len += sprintf((char *)(str + len), "%s=%s;", pos->key, pos->value);
-	}
-	return str;
+    list_for_each_entry_safe(pos, n, &db->list, head)
+    {
+        len += sprintf((char *)(str + len), "%s=%s;", pos->key, pos->value);
+    }
+    return str;
 }
 
 /* key-value数据库概要 */
 int kvdb_summary(struct kvdb_t * db, void * buf)
 {
-	struct record_t * pos, * n;
-	int len = 0;
+    struct record_t * pos, * n;
+    int len = 0;
 
-	if(!db || !buf)
-		return 0;
+    if(!db || !buf)
+        return 0;
 
-	list_for_each_entry_safe(pos, n, &db->list, head)
-	{
-		len += sprintf((char *)(buf + len), "%s=%s\r\n", pos->key, pos->value);
-	}
-	return len;
+    list_for_each_entry_safe(pos, n, &db->list, head)
+    {
+        len += sprintf((char *)(buf + len), "%s=%s\r\n", pos->key, pos->value);
+    }
+    return len;
 }

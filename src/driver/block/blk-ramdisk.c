@@ -31,26 +31,26 @@
 
 struct blk_ramdisk_pdata_t
 {
-	virtual_addr_t addr;
-	virtual_size_t size;
+    virtual_addr_t addr;
+    virtual_size_t size;
 };
 
 static u64_t blk_ramdisk_read(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
-	struct blk_ramdisk_pdata_t * pdat = (struct blk_ramdisk_pdata_t *)(blk->priv);
-	virtual_addr_t offset = pdat->addr + block_offset(blk, blkno);
-	u64_t length = block_size(blk) * blkcnt;
-	memcpy((void *)buf, (const void *)(offset), length);
-	return blkcnt;
+    struct blk_ramdisk_pdata_t * pdat = (struct blk_ramdisk_pdata_t *)(blk->priv);
+    virtual_addr_t offset = pdat->addr + block_offset(blk, blkno);
+    u64_t length = block_size(blk) * blkcnt;
+    memcpy((void *)buf, (const void *)(offset), length);
+    return blkcnt;
 }
 
 static u64_t blk_ramdisk_write(struct block_t * blk, u8_t * buf, u64_t blkno, u64_t blkcnt)
 {
-	struct blk_ramdisk_pdata_t * pdat = (struct blk_ramdisk_pdata_t *)(blk->priv);
-	virtual_addr_t offset = pdat->addr + block_offset(blk, blkno);
-	u64_t length = block_size(blk) * blkcnt;
-	memcpy((void *)(offset), (const void *)buf, length);
-	return blkcnt;
+    struct blk_ramdisk_pdata_t * pdat = (struct blk_ramdisk_pdata_t *)(blk->priv);
+    virtual_addr_t offset = pdat->addr + block_offset(blk, blkno);
+    u64_t length = block_size(blk) * blkcnt;
+    memcpy((void *)(offset), (const void *)buf, length);
+    return blkcnt;
 }
 
 static void blk_ramdisk_sync(struct block_t * blk)
@@ -59,60 +59,60 @@ static void blk_ramdisk_sync(struct block_t * blk)
 
 static struct device_t * blk_ramdisk_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct blk_ramdisk_pdata_t * pdat;
-	struct block_t * blk;
-	struct device_t * dev;
-	u64_t blkcnt, blksz = SZ_512;
-	virtual_addr_t addr = dt_read_long(n, "address", 0);
-	virtual_size_t size = dt_read_long(n, "size", 0);
+    struct blk_ramdisk_pdata_t * pdat;
+    struct block_t * blk;
+    struct device_t * dev;
+    u64_t blkcnt, blksz = SZ_512;
+    virtual_addr_t addr = dt_read_long(n, "address", 0);
+    virtual_size_t size = dt_read_long(n, "size", 0);
 
-	if(size < blksz)
-		return NULL;
-	blkcnt = size / blksz;
+    if(size < blksz)
+        return NULL;
+    blkcnt = size / blksz;
 
-	pdat = malloc(sizeof(struct blk_ramdisk_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct blk_ramdisk_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	blk = malloc(sizeof(struct block_t));
-	if(!blk)
-	{
-		free(pdat);
-		return NULL;
-	}
+    blk = malloc(sizeof(struct block_t));
+    if(!blk)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->addr = addr;
-	pdat->size = blkcnt * blksz;
+    pdat->addr = addr;
+    pdat->size = blkcnt * blksz;
 
-	blk->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	blk->blksz	= blksz;
-	blk->blkcnt	= blkcnt;
-	blk->read = blk_ramdisk_read;
-	blk->write = blk_ramdisk_write;
-	blk->sync = blk_ramdisk_sync;
-	blk->priv = pdat;
+    blk->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+    blk->blksz  = blksz;
+    blk->blkcnt = blkcnt;
+    blk->read = blk_ramdisk_read;
+    blk->write = blk_ramdisk_write;
+    blk->sync = blk_ramdisk_sync;
+    blk->priv = pdat;
 
-	if(!(dev = register_block(blk, drv)))
-	{
-		free_device_name(blk->name);
-		free(blk->priv);
-		free(blk);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_block(blk, drv)))
+    {
+        free_device_name(blk->name);
+        free(blk->priv);
+        free(blk);
+        return NULL;
+    }
+    return dev;
 }
 
 static void blk_ramdisk_remove(struct device_t * dev)
 {
-	struct block_t * blk = (struct block_t *)dev->priv;
+    struct block_t * blk = (struct block_t *)dev->priv;
 
-	if(blk)
-	{
-		unregister_block(blk);
-		free_device_name(blk->name);
-		free(blk->priv);
-		free(blk);
-	}
+    if(blk)
+    {
+        unregister_block(blk);
+        free_device_name(blk->name);
+        free(blk->priv);
+        free(blk);
+    }
 }
 
 static void blk_ramdisk_suspend(struct device_t * dev)
@@ -124,21 +124,21 @@ static void blk_ramdisk_resume(struct device_t * dev)
 }
 
 static struct driver_t blk_ramdisk = {
-	.name		= "blk-ramdisk",
-	.probe		= blk_ramdisk_probe,
-	.remove		= blk_ramdisk_remove,
-	.suspend	= blk_ramdisk_suspend,
-	.resume		= blk_ramdisk_resume,
+    .name       = "blk-ramdisk",
+    .probe      = blk_ramdisk_probe,
+    .remove     = blk_ramdisk_remove,
+    .suspend    = blk_ramdisk_suspend,
+    .resume     = blk_ramdisk_resume,
 };
 
 static __init void blk_ramdisk_driver_init(void)
 {
-	register_driver(&blk_ramdisk);
+    register_driver(&blk_ramdisk);
 }
 
 static __exit void blk_ramdisk_driver_exit(void)
 {
-	unregister_driver(&blk_ramdisk);
+    unregister_driver(&blk_ramdisk);
 }
 
 driver_initcall(blk_ramdisk_driver_init);

@@ -33,7 +33,7 @@
 static struct hlist_head __driver_hash[CONFIG_DRIVER_HASH_SIZE];
 static spinlock_t __driver_lock = SPIN_LOCK_INIT();
 
-/* 根据驱动名称获取device哈希表 */
+/* 根据驱动名称获取driver哈希表 */
 static struct hlist_head * driver_hash(const char * name)
 {
 	return &__driver_hash[shash(name) % ARRAY_SIZE(__driver_hash)];
@@ -152,7 +152,7 @@ bool_t unregister_driver(struct driver_t * drv)
 	return TRUE;
 }
 
-/* 探测设备,根据json配置顺序初始化驱动 */
+/* 探测设备树文件中描述的设备,根据设备树文件中设备顺序搜索驱动并注册设备 */
 void probe_device(const char * json, int length, const char * tips)
 {
 	struct driver_t * drv;

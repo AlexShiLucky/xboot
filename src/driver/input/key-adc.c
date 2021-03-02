@@ -33,201 +33,201 @@
 #include <input/keyboard.h>
 
 struct adc_key_t {
-	int min;
-	int max;
-	int keycode;
+    int min;
+    int max;
+    int keycode;
 };
 
 /* key-adc输入设备私有数据结构 */
 struct key_adc_pdata_t {
-	struct timer_t timer;
-	struct adc_t * adc;
-	struct adc_key_t * keys;
-	int nkeys;
-	int channel;
-	int interval;
-	int keyold;
+    struct timer_t timer;
+    struct adc_t * adc;
+    struct adc_key_t * keys;
+    int nkeys;
+    int channel;
+    int interval;
+    int keyold;
 };
 
 /* 读取键码 */
 static int key_adc_get_keycode(struct key_adc_pdata_t * pdat)
 {
-	int voltage;
-	int i;
+    int voltage;
+    int i;
 
-	voltage = adc_read_voltage(pdat->adc, pdat->channel);
-	for(i = 0; i < pdat->nkeys; i++)
-	{
-		if((voltage >= pdat->keys[i].min) && (voltage < pdat->keys[i].max))
-			return pdat->keys[i].keycode;
-	}
-	return 0;
+    voltage = adc_read_voltage(pdat->adc, pdat->channel);
+    for(i = 0; i < pdat->nkeys; i++)
+    {
+        if((voltage >= pdat->keys[i].min) && (voltage < pdat->keys[i].max))
+            return pdat->keys[i].keycode;
+    }
+    return 0;
 }
 
 /* key-adc输入设备定时器回调函数 */
 static int key_adc_timer_function(struct timer_t * timer, void * data)
 {
-	struct input_t * input = (struct input_t *)(data);
-	struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
-	int keynew = key_adc_get_keycode(pdat);
+    struct input_t * input = (struct input_t *)(data);
+    struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
+    int keynew = key_adc_get_keycode(pdat);
 
     /* 键值改变 */
-	if(keynew != pdat->keyold)
-	{
-		if(pdat->keyold == 0)   // 键按下
-		{
-			push_event_key_down(input, keynew);
-			pdat->keyold = keynew;
-		}
-		else if(keynew == 0)    // 键释放
-		{
-			push_event_key_up(input, pdat->keyold);
-			pdat->keyold = keynew;
-		}
-		else if((pdat->keyold != 0) && (keynew != 0))
-		{
-			push_event_key_up(input, pdat->keyold);
-			pdat->keyold = 0;
-		}
-		else
-		{
-			pdat->keyold = keynew;
-		}
-	}
+    if(keynew != pdat->keyold)
+    {
+        if(pdat->keyold == 0)   // 键按下
+        {
+            push_event_key_down(input, keynew);
+            pdat->keyold = keynew;
+        }
+        else if(keynew == 0)    // 键释放
+        {
+            push_event_key_up(input, pdat->keyold);
+            pdat->keyold = keynew;
+        }
+        else if((pdat->keyold != 0) && (keynew != 0))
+        {
+            push_event_key_up(input, pdat->keyold);
+            pdat->keyold = 0;
+        }
+        else
+        {
+            pdat->keyold = keynew;
+        }
+    }
 
-	timer_forward_now(timer, ms_to_ktime(pdat->interval));
-	return 1;
+    timer_forward_now(timer, ms_to_ktime(pdat->interval));
+    return 1;
 }
 
 static int key_adc_ioctl(struct input_t * input, const char * cmd, void * arg)
 {
-	return -1;
+    return -1;
 }
 
 /* key-adc输入设备探针 */
 static struct device_t * key_adc_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct key_adc_pdata_t * pdat;
-	struct adc_t * adc;
-	struct adc_key_t * keys;
-	struct input_t * input;
-	struct device_t * dev;
-	struct dtnode_t o;
-	int nkeys, i;
+    struct key_adc_pdata_t * pdat;
+    struct adc_t * adc;
+    struct adc_key_t * keys;
+    struct input_t * input;
+    struct device_t * dev;
+    struct dtnode_t o;
+    int nkeys, i;
 
-	if(!(adc = search_adc(dt_read_string(n, "adc-name", NULL))))
-		return NULL;
+    if(!(adc = search_adc(dt_read_string(n, "adc-name", NULL))))
+        return NULL;
 
-	if((nkeys = dt_read_array_length(n, "keys")) <= 0)
-		return NULL;
+    if((nkeys = dt_read_array_length(n, "keys")) <= 0)
+        return NULL;
 
-	pdat = malloc(sizeof(struct key_adc_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct key_adc_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	keys = malloc(sizeof(struct adc_key_t) * nkeys);
-	if(!keys)
-	{
-		free(pdat);
-		return NULL;
-	}
+    keys = malloc(sizeof(struct adc_key_t) * nkeys);
+    if(!keys)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	input = malloc(sizeof(struct input_t));
-	if(!input)
-	{
-		free(pdat);
-		free(keys);
-		return NULL;
-	}
+    input = malloc(sizeof(struct input_t));
+    if(!input)
+    {
+        free(pdat);
+        free(keys);
+        return NULL;
+    }
 
-	for(i = 0; i < nkeys; i++)
-	{
-		dt_read_array_object(n, "keys", i, &o);
-		keys[i].min = dt_read_int(&o, "min-voltage", 0);
-		keys[i].max = dt_read_int(&o, "max-voltage", 0);
-		keys[i].keycode = dt_read_int(&o, "key-code", 0);
-	}
+    for(i = 0; i < nkeys; i++)
+    {
+        dt_read_array_object(n, "keys", i, &o);
+        keys[i].min = dt_read_int(&o, "min-voltage", 0);
+        keys[i].max = dt_read_int(&o, "max-voltage", 0);
+        keys[i].keycode = dt_read_int(&o, "key-code", 0);
+    }
 
-	timer_init(&pdat->timer, key_adc_timer_function, input);
-	pdat->adc = adc;
-	pdat->keys = keys;
-	pdat->nkeys = nkeys;
-	pdat->channel = dt_read_int(n, "adc-channel", 0);
-	pdat->interval = dt_read_int(n, "poll-interval-ms", 100);
-	pdat->keyold = 0;
+    timer_init(&pdat->timer, key_adc_timer_function, input);
+    pdat->adc = adc;
+    pdat->keys = keys;
+    pdat->nkeys = nkeys;
+    pdat->channel = dt_read_int(n, "adc-channel", 0);
+    pdat->interval = dt_read_int(n, "poll-interval-ms", 100);
+    pdat->keyold = 0;
 
-	input->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	input->ioctl = key_adc_ioctl;
-	input->priv = pdat;
+    input->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+    input->ioctl = key_adc_ioctl;
+    input->priv = pdat;
 
-	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
+    timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 
-	if(!(dev = register_input(input, drv)))
-	{
-		timer_cancel(&pdat->timer);
-		free(pdat->keys);
-		free_device_name(input->name);
-		free(input->priv);
-		free(input);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_input(input, drv)))
+    {
+        timer_cancel(&pdat->timer);
+        free(pdat->keys);
+        free_device_name(input->name);
+        free(input->priv);
+        free(input);
+        return NULL;
+    }
+    return dev;
 }
 
 /* key-adc输入设备移除 */
 static void key_adc_remove(struct device_t * dev)
 {
-	struct input_t * input = (struct input_t *)dev->priv;
-	struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
+    struct input_t * input = (struct input_t *)dev->priv;
+    struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
 
-	if(input)
-	{
-		unregister_input(input);
-		timer_cancel(&pdat->timer);
-		free(pdat->keys);
-		free_device_name(input->name);
-		free(input->priv);
-		free(input);
-	}
+    if(input)
+    {
+        unregister_input(input);
+        timer_cancel(&pdat->timer);
+        free(pdat->keys);
+        free_device_name(input->name);
+        free(input->priv);
+        free(input);
+    }
 }
 
 /* key-adc输入设备挂起 */
 static void key_adc_suspend(struct device_t * dev)
 {
-	struct input_t * input = (struct input_t *)dev->priv;
-	struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
+    struct input_t * input = (struct input_t *)dev->priv;
+    struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
 
-	timer_cancel(&pdat->timer);
+    timer_cancel(&pdat->timer);
 }
 
 /* key-adc输入设备释放 */
 static void key_adc_resume(struct device_t * dev)
 {
-	struct input_t * input = (struct input_t *)dev->priv;
-	struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
+    struct input_t * input = (struct input_t *)dev->priv;
+    struct key_adc_pdata_t * pdat = (struct key_adc_pdata_t *)input->priv;
 
-	timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
+    timer_start_now(&pdat->timer, ms_to_ktime(pdat->interval));
 }
 
 /* key-adc输入设备驱动控制块 */
 static struct driver_t key_adc = {
-	.name		= "key-adc",
-	.probe		= key_adc_probe,
-	.remove		= key_adc_remove,
-	.suspend	= key_adc_suspend,
-	.resume		= key_adc_resume,
+    .name       = "key-adc",
+    .probe      = key_adc_probe,
+    .remove     = key_adc_remove,
+    .suspend    = key_adc_suspend,
+    .resume     = key_adc_resume,
 };
 
 /* key-adc输入设备驱动初始化 */
 static __init void key_adc_driver_init(void)
 {
-	register_driver(&key_adc);
+    register_driver(&key_adc);
 }
 
 /* key-adc输入设备驱动退出 */
 static __exit void key_adc_driver_exit(void)
 {
-	unregister_driver(&key_adc);
+    unregister_driver(&key_adc);
 }
 
 driver_initcall(key_adc_driver_init);

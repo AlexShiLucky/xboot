@@ -32,74 +32,74 @@
 
 /* console-uart设备私有数据结构 */
 struct console_uart_pdata_t {
-	struct uart_t * uart;
+    struct uart_t * uart;
 };
 
 /* console-uart设备读取 */
 static ssize_t console_uart_read(struct console_t * con, unsigned char * buf, size_t count)
 {
-	struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)con->priv;
-	return pdat->uart->read(pdat->uart, (u8_t *)buf, count);
+    struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)con->priv;
+    return pdat->uart->read(pdat->uart, (u8_t *)buf, count);
 }
 
 /* console-uart设备写入 */
 static ssize_t console_uart_write(struct console_t * con, const unsigned char * buf, size_t count)
 {
-	struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)con->priv;
-	return pdat->uart->write(pdat->uart, (const u8_t *)buf, count);
+    struct console_uart_pdata_t * pdat = (struct console_uart_pdata_t *)con->priv;
+    return pdat->uart->write(pdat->uart, (const u8_t *)buf, count);
 }
 
 /* console-uart探针 */
 static struct device_t * console_uart_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct console_uart_pdata_t * pdat;
-	struct console_t * con;
-	struct device_t * dev;
-	struct uart_t * uart = search_uart(dt_read_string(n, "uart-bus", NULL));
+    struct console_uart_pdata_t * pdat;
+    struct console_t * con;
+    struct device_t * dev;
+    struct uart_t * uart = search_uart(dt_read_string(n, "uart-bus", NULL));
 
-	if(!uart)
-		return NULL;
+    if(!uart)
+        return NULL;
 
-	pdat = malloc(sizeof(struct console_uart_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct console_uart_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	con = malloc(sizeof(struct console_t));
-	if(!con)
-	{
-		free(pdat);
-		return NULL;
-	}
+    con = malloc(sizeof(struct console_t));
+    if(!con)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->uart = uart;
+    pdat->uart = uart;
 
-	con->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	con->read = console_uart_read;
-	con->write = console_uart_write;
-	con->priv = pdat;
+    con->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+    con->read = console_uart_read;
+    con->write = console_uart_write;
+    con->priv = pdat;
 
-	if(!(dev = register_console(con, drv)))
-	{
-		free_device_name(con->name);
-		free(con->priv);
-		free(con);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_console(con, drv)))
+    {
+        free_device_name(con->name);
+        free(con->priv);
+        free(con);
+        return NULL;
+    }
+    return dev;
 }
 
 /* console-uart设备移除 */
 static void console_uart_remove(struct device_t * dev)
 {
-	struct console_t * con = (struct console_t *)dev->priv;
+    struct console_t * con = (struct console_t *)dev->priv;
 
-	if(con)
-	{
-		unregister_console(con);
-		free_device_name(con->name);
-		free(con->priv);
-		free(con);
-	}
+    if(con)
+    {
+        unregister_console(con);
+        free_device_name(con->name);
+        free(con->priv);
+        free(con);
+    }
 }
 
 /* console-uart设备挂起 */
@@ -114,23 +114,23 @@ static void console_uart_resume(struct device_t * dev)
 
 /* console-uart设备驱动控制块 */
 static struct driver_t console_uart = {
-	.name		= "console-uart",
-	.probe		= console_uart_probe,
-	.remove		= console_uart_remove,
-	.suspend	= console_uart_suspend,
-	.resume		= console_uart_resume,
+    .name       = "console-uart",
+    .probe      = console_uart_probe,
+    .remove     = console_uart_remove,
+    .suspend    = console_uart_suspend,
+    .resume     = console_uart_resume,
 };
 
 /* console-uart设备驱动初始化 */
 static __init void console_uart_driver_init(void)
 {
-	register_driver(&console_uart);
+    register_driver(&console_uart);
 }
 
 /* console-uart设备驱动退出 */
 static __exit void console_uart_driver_exit(void)
 {
-	unregister_driver(&console_uart);
+    unregister_driver(&console_uart);
 }
 
 driver_initcall(console_uart_driver_init);

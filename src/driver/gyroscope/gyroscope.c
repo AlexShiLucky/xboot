@@ -32,84 +32,84 @@
 /* 读取陀螺仪设备信息角速度 */
 static ssize_t gyroscope_read_palstance(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct gyroscope_t * g = (struct gyroscope_t *)kobj->priv;
-	int x = 0, y = 0, z = 0;
-	gyroscope_get_palstance(g, &x, &y, &z);
-	return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] rad/s", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
+    struct gyroscope_t * g = (struct gyroscope_t *)kobj->priv;
+    int x = 0, y = 0, z = 0;
+    gyroscope_get_palstance(g, &x, &y, &z);
+    return sprintf(buf, "[%d.%06d %d.%06d %d.%06d] rad/s", x / 1000000, abs(x % 1000000), y / 1000000, abs(y % 1000000), z / 1000000, abs(z % 1000000));
 }
 
 /* 根据名称搜索一个陀螺仪设备 */
 struct gyroscope_t * search_gyroscope(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_GYROSCOPE);
-	if(!dev)
-		return NULL;
-	return (struct gyroscope_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_GYROSCOPE);
+    if(!dev)
+        return NULL;
+    return (struct gyroscope_t *)dev->priv;
 }
 
 /* 搜索第一个陀螺仪设备 */
 struct gyroscope_t * search_first_gyroscope(void)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_first_device(DEVICE_TYPE_GYROSCOPE);
-	if(!dev)
-		return NULL;
-	return (struct gyroscope_t *)dev->priv;
+    dev = search_first_device(DEVICE_TYPE_GYROSCOPE);
+    if(!dev)
+        return NULL;
+    return (struct gyroscope_t *)dev->priv;
 }
 
 /* 注册一个陀螺仪设备 */
 struct device_t * register_gyroscope(struct gyroscope_t * g, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!g || !g->name)
-		return NULL;
+    if(!g || !g->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(g->name);
-	dev->type = DEVICE_TYPE_GYROSCOPE;
-	dev->driver = drv;
-	dev->priv = g;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "palstance", gyroscope_read_palstance, NULL, g);
+    dev->name = strdup(g->name);
+    dev->type = DEVICE_TYPE_GYROSCOPE;
+    dev->driver = drv;
+    dev->priv = g;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "palstance", gyroscope_read_palstance, NULL, g);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个陀螺仪设备 */
 void unregister_gyroscope(struct gyroscope_t * g)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(g && g->name)
-	{
-		dev = search_device(g->name, DEVICE_TYPE_GYROSCOPE);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(g && g->name)
+    {
+        dev = search_device(g->name, DEVICE_TYPE_GYROSCOPE);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 读取陀螺仪设备角速度 */
 bool_t gyroscope_get_palstance(struct gyroscope_t * g, int * x, int * y, int * z)
 {
-	if(g && g->get)
-		return g->get(g, x, y, z);
-	return FALSE;
+    if(g && g->get)
+        return g->get(g, x, y, z);
+    return FALSE;
 }

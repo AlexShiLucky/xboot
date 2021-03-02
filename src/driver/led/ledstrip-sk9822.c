@@ -47,176 +47,176 @@
  */
 /* led灯带设备sk9822私有数据结构 */
 struct ledstrip_sk9822_pdata_t {
-	int dat;
-	int datcfg;
-	int datinv;
-	int clk;
-	int clkcfg;
-	int clkinv;
-	int brightness;
-	int count;
-	struct color_t * color;
+    int dat;
+    int datcfg;
+    int datinv;
+    int clk;
+    int clkcfg;
+    int clkinv;
+    int brightness;
+    int count;
+    struct color_t * color;
 };
 
 static void ledstrip_sk9822_send(struct ledstrip_t * strip, unsigned char byte)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
-	unsigned char mask;
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    unsigned char mask;
 
-	for(mask = 0x80; mask; mask >>= 1)
-	{
-		if(byte & mask)
-			gpio_set_value(pdat->dat, pdat->datinv ? 0 : 1);
-		else
-			gpio_set_value(pdat->dat, pdat->datinv ? 1 : 0);
-		gpio_set_value(pdat->clk, pdat->clkinv ? 1 : 0);
-		gpio_set_value(pdat->clk, pdat->clkinv ? 0 : 1);
-	}
+    for(mask = 0x80; mask; mask >>= 1)
+    {
+        if(byte & mask)
+            gpio_set_value(pdat->dat, pdat->datinv ? 0 : 1);
+        else
+            gpio_set_value(pdat->dat, pdat->datinv ? 1 : 0);
+        gpio_set_value(pdat->clk, pdat->clkinv ? 1 : 0);
+        gpio_set_value(pdat->clk, pdat->clkinv ? 0 : 1);
+    }
 }
 
 /* led灯带设备sk9822led个数设置具体实现 */
 static void ledstrip_sk9822_set_count(struct ledstrip_t * strip, int n)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
 
-	if((n != pdat->count) && (n > 0))
-	{
-		if(pdat->color)
-			free(pdat->color);
-		pdat->count = n;
-		pdat->color = malloc(pdat->count * sizeof(struct color_t));
-		memset(pdat->color, 0, pdat->count * sizeof(struct color_t));
-	}
+    if((n != pdat->count) && (n > 0))
+    {
+        if(pdat->color)
+            free(pdat->color);
+        pdat->count = n;
+        pdat->color = malloc(pdat->count * sizeof(struct color_t));
+        memset(pdat->color, 0, pdat->count * sizeof(struct color_t));
+    }
 }
 
 /* led灯带设备sk9822led个数获取具体实现 */
 static int ledstrip_sk9822_get_count(struct ledstrip_t * strip)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
-	return pdat->count;
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    return pdat->count;
 }
 
 /* led灯带设备sk9822第i个led颜色设置具体实现 */
 static void ledstrip_sk9822_set_color(struct ledstrip_t * strip, int i, struct color_t * c)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
-	memcpy(&pdat->color[i], c, sizeof(struct color_t));
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    memcpy(&pdat->color[i], c, sizeof(struct color_t));
 }
 
 /* led灯带设备sk9822第i个led颜色获取具体实现 */
 static void ledstrip_sk9822_get_color(struct ledstrip_t * strip, int i, struct color_t * c)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
-	memcpy(c, &pdat->color[i], sizeof(struct color_t));
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    memcpy(c, &pdat->color[i], sizeof(struct color_t));
 }
 
 /* led灯带设备sk9822刷新具体实现 */
 static void ledstrip_sk9822_refresh(struct ledstrip_t * strip)
 {
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
-	int i;
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    int i;
 
-	ledstrip_sk9822_send(strip, 0x00);
-	ledstrip_sk9822_send(strip, 0x00);
-	ledstrip_sk9822_send(strip, 0x00);
-	ledstrip_sk9822_send(strip, 0x00);
-	for(i = 0; i < pdat->count; i++)
-	{
-		ledstrip_sk9822_send(strip, (0x7 << 5) | (pdat->brightness & 0x1f));
-		ledstrip_sk9822_send(strip, pdat->color[i].b);
-		ledstrip_sk9822_send(strip, pdat->color[i].g);
-		ledstrip_sk9822_send(strip, pdat->color[i].r);
-	}
-	ledstrip_sk9822_send(strip, 0xff);
-	ledstrip_sk9822_send(strip, 0xff);
-	ledstrip_sk9822_send(strip, 0xff);
-	ledstrip_sk9822_send(strip, 0xff);
+    ledstrip_sk9822_send(strip, 0x00);
+    ledstrip_sk9822_send(strip, 0x00);
+    ledstrip_sk9822_send(strip, 0x00);
+    ledstrip_sk9822_send(strip, 0x00);
+    for(i = 0; i < pdat->count; i++)
+    {
+        ledstrip_sk9822_send(strip, (0x7 << 5) | (pdat->brightness & 0x1f));
+        ledstrip_sk9822_send(strip, pdat->color[i].b);
+        ledstrip_sk9822_send(strip, pdat->color[i].g);
+        ledstrip_sk9822_send(strip, pdat->color[i].r);
+    }
+    ledstrip_sk9822_send(strip, 0xff);
+    ledstrip_sk9822_send(strip, 0xff);
+    ledstrip_sk9822_send(strip, 0xff);
+    ledstrip_sk9822_send(strip, 0xff);
 }
 
 /* led灯带设备sk9822探针 */
 static struct device_t * ledstrip_sk9822_probe(struct driver_t * drv, struct dtnode_t * n)
 {
-	struct ledstrip_sk9822_pdata_t * pdat;
-	struct ledstrip_t * strip;
-	struct device_t * dev;
-	int dat = dt_read_int(n, "dat-gpio", -1);
-	int clk = dt_read_int(n, "clk-gpio", -1);
+    struct ledstrip_sk9822_pdata_t * pdat;
+    struct ledstrip_t * strip;
+    struct device_t * dev;
+    int dat = dt_read_int(n, "dat-gpio", -1);
+    int clk = dt_read_int(n, "clk-gpio", -1);
 
-	if(!gpio_is_valid(dat) || !gpio_is_valid(clk))
-		return NULL;
+    if(!gpio_is_valid(dat) || !gpio_is_valid(clk))
+        return NULL;
 
-	pdat = malloc(sizeof(struct ledstrip_sk9822_pdata_t));
-	if(!pdat)
-		return NULL;
+    pdat = malloc(sizeof(struct ledstrip_sk9822_pdata_t));
+    if(!pdat)
+        return NULL;
 
-	strip = malloc(sizeof(struct ledstrip_t));
-	if(!strip)
-	{
-		free(pdat);
-		return NULL;
-	}
+    strip = malloc(sizeof(struct ledstrip_t));
+    if(!strip)
+    {
+        free(pdat);
+        return NULL;
+    }
 
-	pdat->dat = dat;
-	pdat->datcfg = dt_read_int(n, "dat-gpio-config", -1);
-	pdat->datinv = dt_read_int(n, "dat-gpio-inverted", 0);
-	pdat->clk = clk;
-	pdat->clkcfg = dt_read_int(n, "clk-gpio-config", -1);
-	pdat->clkinv = dt_read_int(n, "clk-gpio-inverted", 0);
-	pdat->brightness = dt_read_int(n, "brightness", 31);
-	pdat->count = 0;
-	pdat->color = NULL;
+    pdat->dat = dat;
+    pdat->datcfg = dt_read_int(n, "dat-gpio-config", -1);
+    pdat->datinv = dt_read_int(n, "dat-gpio-inverted", 0);
+    pdat->clk = clk;
+    pdat->clkcfg = dt_read_int(n, "clk-gpio-config", -1);
+    pdat->clkinv = dt_read_int(n, "clk-gpio-inverted", 0);
+    pdat->brightness = dt_read_int(n, "brightness", 31);
+    pdat->count = 0;
+    pdat->color = NULL;
 
-	strip->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
-	strip->set_count = ledstrip_sk9822_set_count;
-	strip->get_count = ledstrip_sk9822_get_count;
-	strip->set_color = ledstrip_sk9822_set_color;
-	strip->get_color = ledstrip_sk9822_get_color;
-	strip->refresh = ledstrip_sk9822_refresh;
-	strip->priv = pdat;
+    strip->name = alloc_device_name(dt_read_name(n), dt_read_id(n));
+    strip->set_count = ledstrip_sk9822_set_count;
+    strip->get_count = ledstrip_sk9822_get_count;
+    strip->set_color = ledstrip_sk9822_set_color;
+    strip->get_color = ledstrip_sk9822_get_color;
+    strip->refresh = ledstrip_sk9822_refresh;
+    strip->priv = pdat;
 
-	if(pdat->dat >= 0)
-	{
-		if(pdat->datcfg >= 0)
-			gpio_set_cfg(pdat->dat, pdat->datcfg);
-		gpio_set_pull(pdat->dat, pdat->datinv ? GPIO_PULL_UP :GPIO_PULL_DOWN);
-		gpio_set_direction(pdat->dat, GPIO_DIRECTION_OUTPUT);
-		gpio_set_value(pdat->dat, pdat->datinv ? 1 : 0);
-	}
-	if(pdat->clk >= 0)
-	{
-		if(pdat->clkcfg >= 0)
-			gpio_set_cfg(pdat->clk, pdat->clkcfg);
-		gpio_set_pull(pdat->clk, pdat->clkinv ? GPIO_PULL_UP :GPIO_PULL_DOWN);
-		gpio_set_direction(pdat->clk, GPIO_DIRECTION_OUTPUT);
-		gpio_set_value(pdat->clk, pdat->clkinv ? 1 : 0);
-	}
-	ledstrip_sk9822_set_count(strip, dt_read_int(n, "count", 1));
+    if(pdat->dat >= 0)
+    {
+        if(pdat->datcfg >= 0)
+            gpio_set_cfg(pdat->dat, pdat->datcfg);
+        gpio_set_pull(pdat->dat, pdat->datinv ? GPIO_PULL_UP :GPIO_PULL_DOWN);
+        gpio_set_direction(pdat->dat, GPIO_DIRECTION_OUTPUT);
+        gpio_set_value(pdat->dat, pdat->datinv ? 1 : 0);
+    }
+    if(pdat->clk >= 0)
+    {
+        if(pdat->clkcfg >= 0)
+            gpio_set_cfg(pdat->clk, pdat->clkcfg);
+        gpio_set_pull(pdat->clk, pdat->clkinv ? GPIO_PULL_UP :GPIO_PULL_DOWN);
+        gpio_set_direction(pdat->clk, GPIO_DIRECTION_OUTPUT);
+        gpio_set_value(pdat->clk, pdat->clkinv ? 1 : 0);
+    }
+    ledstrip_sk9822_set_count(strip, dt_read_int(n, "count", 1));
 
-	if(!(dev = register_ledstrip(strip, drv)))
-	{
-		free_device_name(strip->name);
-		free(strip->priv);
-		free(strip);
-		return NULL;
-	}
-	return dev;
+    if(!(dev = register_ledstrip(strip, drv)))
+    {
+        free_device_name(strip->name);
+        free(strip->priv);
+        free(strip);
+        return NULL;
+    }
+    return dev;
 }
 
 /* led灯带设备sk9822移除 */
 static void ledstrip_sk9822_remove(struct device_t * dev)
 {
-	struct ledstrip_t * strip = (struct ledstrip_t *)dev->priv;
-	struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
+    struct ledstrip_t * strip = (struct ledstrip_t *)dev->priv;
+    struct ledstrip_sk9822_pdata_t * pdat = (struct ledstrip_sk9822_pdata_t *)strip->priv;
 
-	if(strip)
-	{
-		unregister_ledstrip(strip);
-		if(pdat->color)
-			free(pdat->color);
-		free_device_name(strip->name);
-		free(strip->priv);
-		free(strip);
-	}
+    if(strip)
+    {
+        unregister_ledstrip(strip);
+        if(pdat->color)
+            free(pdat->color);
+        free_device_name(strip->name);
+        free(strip->priv);
+        free(strip);
+    }
 }
 
 /* led灯带设备sk9822挂起 */
@@ -231,23 +231,23 @@ static void ledstrip_sk9822_resume(struct device_t * dev)
 
 /* led灯带设备sk9822驱动控制块 */
 static struct driver_t ledstrip_sk9822 = {
-	.name		= "ledstrip-sk9822",
-	.probe		= ledstrip_sk9822_probe,
-	.remove		= ledstrip_sk9822_remove,
-	.suspend	= ledstrip_sk9822_suspend,
-	.resume		= ledstrip_sk9822_resume,
+    .name       = "ledstrip-sk9822",
+    .probe      = ledstrip_sk9822_probe,
+    .remove     = ledstrip_sk9822_remove,
+    .suspend    = ledstrip_sk9822_suspend,
+    .resume     = ledstrip_sk9822_resume,
 };
 
 /* led灯带设备sk9822驱动初始化 */
 static __init void ledstrip_sk9822_driver_init(void)
 {
-	register_driver(&ledstrip_sk9822);
+    register_driver(&ledstrip_sk9822);
 }
 
 /* led灯带设备sk9822驱动退出 */
 static __exit void ledstrip_sk9822_driver_exit(void)
 {
-	unregister_driver(&ledstrip_sk9822);
+    unregister_driver(&ledstrip_sk9822);
 }
 
 driver_initcall(ledstrip_sk9822_driver_init);

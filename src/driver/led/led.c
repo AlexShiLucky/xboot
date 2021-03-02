@@ -32,105 +32,105 @@
 /* led亮度读取 */
 static ssize_t led_read_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct led_t * led = (struct led_t *)kobj->priv;
-	int brightness;
+    struct led_t * led = (struct led_t *)kobj->priv;
+    int brightness;
 
-	brightness = led_get_brightness(led);
-	return sprintf(buf, "%d", brightness);
+    brightness = led_get_brightness(led);
+    return sprintf(buf, "%d", brightness);
 }
 
 /* led亮度写入 */
 static ssize_t led_write_brightness(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct led_t * led = (struct led_t *)kobj->priv;
-	int brightness = strtol(buf, NULL, 0);
+    struct led_t * led = (struct led_t *)kobj->priv;
+    int brightness = strtol(buf, NULL, 0);
 
-	led_set_brightness(led, brightness);
-	return size;
+    led_set_brightness(led, brightness);
+    return size;
 }
 
 /* 根据名称搜索一个led设备 */
 struct led_t * search_led(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_LED);
-	if(!dev)
-		return NULL;
-	return (struct led_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_LED);
+    if(!dev)
+        return NULL;
+    return (struct led_t *)dev->priv;
 }
 
 /* 注册一个led设备 */
 struct device_t * register_led(struct led_t * led, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!led || !led->name)
-		return NULL;
+    if(!led || !led->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(led->name);
-	dev->type = DEVICE_TYPE_LED;
-	dev->driver = drv;
-	dev->priv = led;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "brightness", led_read_brightness, led_write_brightness, led);
+    dev->name = strdup(led->name);
+    dev->type = DEVICE_TYPE_LED;
+    dev->driver = drv;
+    dev->priv = led;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "brightness", led_read_brightness, led_write_brightness, led);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个led设备 */
 void unregister_led(struct led_t * led)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(led && led->name)
-	{
-		dev = search_device(led->name, DEVICE_TYPE_LED);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(led && led->name)
+    {
+        dev = search_device(led->name, DEVICE_TYPE_LED);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* 设置led亮度 */
 void led_set_brightness(struct led_t * led, int brightness)
 {
-	if(led && led->set)
-	{
-		if(brightness < 0)
-			brightness = 0;
-		else if(brightness > 1000)
-			brightness = 1000;
-		led->set(led, brightness);
-	}
+    if(led && led->set)
+    {
+        if(brightness < 0)
+            brightness = 0;
+        else if(brightness > 1000)
+            brightness = 1000;
+        led->set(led, brightness);
+    }
 }
 
 /* 获取led亮度 */
 int led_get_brightness(struct led_t * led)
 {
-	int brightness = 0;
+    int brightness = 0;
 
-	if(led && led->get)
-		brightness = led->get(led);
+    if(led && led->get)
+        brightness = led->get(led);
 
-	if(brightness < 0)
-		brightness = 0;
-	else if(brightness > 1000)
-		brightness = 1000;
+    if(brightness < 0)
+        brightness = 0;
+    else if(brightness > 1000)
+        brightness = 1000;
 
-	return brightness;
+    return brightness;
 }

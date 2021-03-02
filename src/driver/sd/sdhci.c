@@ -33,105 +33,105 @@
 /* 根据名称搜索一个SDHCI设备 */
 struct sdhci_t * search_sdhci(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_SDHCI);
-	if(!dev)
-		return NULL;
-	return (struct sdhci_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_SDHCI);
+    if(!dev)
+        return NULL;
+    return (struct sdhci_t *)dev->priv;
 }
 
 /* 注册一个SDHCI设备 */
 struct device_t * register_sdhci(struct sdhci_t * hci, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!hci || !hci->name)
-		return NULL;
+    if(!hci || !hci->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(hci->name);
-	dev->type = DEVICE_TYPE_SDHCI;
-	dev->driver = drv;
-	dev->priv = hci;
-	dev->kobj = kobj_alloc_directory(dev->name);
+    dev->name = strdup(hci->name);
+    dev->type = DEVICE_TYPE_SDHCI;
+    dev->driver = drv;
+    dev->priv = hci;
+    dev->kobj = kobj_alloc_directory(dev->name);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	hci->sdcard = sdcard_probe(hci);
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    hci->sdcard = sdcard_probe(hci);
+    return dev;
 }
 
 /* 注销一个SDHCI设备 */
 void unregister_sdhci(struct sdhci_t * hci)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(hci && hci->name)
-	{
-		if(hci->sdcard)
-			sdcard_remove(hci->sdcard);
-		dev = search_device(hci->name, DEVICE_TYPE_SDHCI);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(hci && hci->name)
+    {
+        if(hci->sdcard)
+            sdcard_remove(hci->sdcard);
+        dev = search_device(hci->name, DEVICE_TYPE_SDHCI);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* SDHCI设备检测接口调用 */
 bool_t sdhci_detect(struct sdhci_t * hci)
 {
-	if(hci && hci->detect)
-		return hci->detect(hci);
-	return FALSE;
+    if(hci && hci->detect)
+        return hci->detect(hci);
+    return FALSE;
 }
 
 bool_t sdhci_reset(struct sdhci_t * hci)
 {
-	if(hci && hci->reset)
-		return hci->reset(hci);
-	return FALSE;
+    if(hci && hci->reset)
+        return hci->reset(hci);
+    return FALSE;
 }
 
 /* SDHCI设备设置电压接口调用 */
 bool_t sdhci_set_voltage(struct sdhci_t * hci, u32_t voltage)
 {
-	if(hci && hci->setvoltage)
-		return hci->setvoltage(hci, voltage);
-	return FALSE;
+    if(hci && hci->setvoltage)
+        return hci->setvoltage(hci, voltage);
+    return FALSE;
 }
 
 /* SDHCI设备设置宽度接口调用 */
 bool_t sdhci_set_width(struct sdhci_t * hci, u32_t width)
 {
-	if(hci && hci->setwidth)
-		return hci->setwidth(hci, width);
-	return FALSE;
+    if(hci && hci->setwidth)
+        return hci->setwidth(hci, width);
+    return FALSE;
 }
 
 /* SDHCI设备设置时钟接口调用 */
 bool_t sdhci_set_clock(struct sdhci_t * hci, u32_t clock)
 {
-	if(hci && hci->setclock)
-		return hci->setclock(hci, (clock <= hci->clock) ? clock : hci->clock);
-	return FALSE;
+    if(hci && hci->setclock)
+        return hci->setclock(hci, (clock <= hci->clock) ? clock : hci->clock);
+    return FALSE;
 }
 
 /* SDHCI设备传输接口调用 */
 bool_t sdhci_transfer(struct sdhci_t * hci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
-	if(hci && hci->transfer)
-		return hci->transfer(hci, cmd, dat);
-	return FALSE;
+    if(hci && hci->transfer)
+        return hci->transfer(hci, cmd, dat);
+    return FALSE;
 }

@@ -32,107 +32,107 @@
 /* pwm读使能状态 */
 static ssize_t pwm_write_config(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
-	int duty, period;
-	int polarity = 0;
-	if(sscanf(buf, "%d %d %d", &duty, &period, &polarity) >= 2)
-		pwm_config(pwm, duty, period, polarity);
-	return size;
+    struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
+    int duty, period;
+    int polarity = 0;
+    if(sscanf(buf, "%d %d %d", &duty, &period, &polarity) >= 2)
+        pwm_config(pwm, duty, period, polarity);
+    return size;
 }
 
 /* pwm写使能控制 */
 static ssize_t pwm_write_enable(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
-	int enable = strtol(buf, NULL, 0);
-	if(enable != 0)
-		pwm_enable(pwm);
-	else
-		pwm_disable(pwm);
-	return size;
+    struct pwm_t * pwm = (struct pwm_t *)kobj->priv;
+    int enable = strtol(buf, NULL, 0);
+    if(enable != 0)
+        pwm_enable(pwm);
+    else
+        pwm_disable(pwm);
+    return size;
 }
 
 /* 根据名称搜索一个pwm设备 */
 struct pwm_t * search_pwm(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_PWM);
-	if(!dev)
-		return NULL;
-	return (struct pwm_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_PWM);
+    if(!dev)
+        return NULL;
+    return (struct pwm_t *)dev->priv;
 }
 
 /* 注册一个pwm设备 */
 struct device_t * register_pwm(struct pwm_t * pwm, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!pwm || !pwm->name)
-		return NULL;
+    if(!pwm || !pwm->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(pwm->name);
-	dev->type = DEVICE_TYPE_PWM;
-	dev->driver = drv;
-	dev->priv = pwm;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "config", NULL, pwm_write_config, pwm);
-	kobj_add_regular(dev->kobj, "enable", NULL, pwm_write_enable, pwm);
+    dev->name = strdup(pwm->name);
+    dev->type = DEVICE_TYPE_PWM;
+    dev->driver = drv;
+    dev->priv = pwm;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "config", NULL, pwm_write_config, pwm);
+    kobj_add_regular(dev->kobj, "enable", NULL, pwm_write_enable, pwm);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个pwm设备 */
 void unregister_pwm(struct pwm_t * pwm)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(pwm && pwm->name)
-	{
-		dev = search_device(pwm->name, DEVICE_TYPE_PWM);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(pwm && pwm->name)
+    {
+        dev = search_device(pwm->name, DEVICE_TYPE_PWM);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* pwm配置参数设置 */
 void pwm_config(struct pwm_t * pwm, int duty, int period, int polarity)
 {
-	if(pwm && pwm->config)
-	{
-		polarity = (polarity != 0) ? 1 : 0;
-		period = (period < 0) ? 1000 : period;
-		duty = (duty < 0) ? 0 : duty;
-		duty = (duty > period) ? period : duty;
-		pwm->config(pwm, duty, period, polarity);
-	}
+    if(pwm && pwm->config)
+    {
+        polarity = (polarity != 0) ? 1 : 0;
+        period = (period < 0) ? 1000 : period;
+        duty = (duty < 0) ? 0 : duty;
+        duty = (duty > period) ? period : duty;
+        pwm->config(pwm, duty, period, polarity);
+    }
 }
 
 /* pwm enable接口 */
 void pwm_enable(struct pwm_t * pwm)
 {
-	if(pwm && pwm->enable)
-		pwm->enable(pwm);
+    if(pwm && pwm->enable)
+        pwm->enable(pwm);
 }
 
 /* pwm disable接口 */
 void pwm_disable(struct pwm_t * pwm)
 {
-	if(pwm && pwm->disable)
-		pwm->disable(pwm);
+    if(pwm && pwm->disable)
+        pwm->disable(pwm);
 }

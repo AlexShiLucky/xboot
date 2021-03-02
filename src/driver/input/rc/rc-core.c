@@ -31,19 +31,19 @@
 
 uint32_t rc_decoder_handle(struct rc_decoder_t * decoder, int pulse, int duration)
 {
-	uint32_t code;
-	int i;
+    uint32_t code;
+    int i;
 
-	if((code = rc_nec_decoder_handle(&decoder->nec, pulse, duration)) != 0)
-	{
-	}
+    if((code = rc_nec_decoder_handle(&decoder->nec, pulse, duration)) != 0)
+    {
+    }
 
-	if(code == 0)
-		return 0;
-	for(i = 0; i < decoder->size; i++)
-	{
-		if(decoder->map[i].scancode == code)
-			return decoder->map[i].keycode;
-	}
-	return code;
+    if(code == 0)
+        return 0;
+    for(i = 0; i < decoder->size; i++)
+    {
+        if(decoder->map[i].scancode == code)
+            return decoder->map[i].keycode;
+    }
+    return code;
 }

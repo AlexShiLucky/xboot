@@ -41,6 +41,7 @@ struct json_state_t
 
 static unsigned char hex_value(char c)
 {
+    #if 0
 	if(isdigit(c))
 		return c - '0';
 
@@ -67,6 +68,17 @@ static unsigned char hex_value(char c)
 	default:
 		return 0xff;
 	}
+    #else
+    if (!isxdigit(c)) return 0xff;
+
+    if (c >= 'a')
+		return c - 'a' + 10;
+
+	if (c >= 'A')
+		return c - 'A' + 10;
+
+    return c - '0';
+    #endif
 }
 
 static void * json_alloc(struct json_state_t * state, unsigned long size, int zero)
@@ -221,10 +233,10 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 						break;
 					case 'u':
 						if(end - state.ptr <= 4
-								|| (uc_b1 = hex_value(*++state.ptr)) == 0xff
-								|| (uc_b2 = hex_value(*++state.ptr)) == 0xff
-								|| (uc_b3 = hex_value(*++state.ptr)) == 0xff
-								|| (uc_b4 = hex_value(*++state.ptr)) == 0xff) {
+								|| (uc_b1 = hex_value(*++state.ptr)) > 0xf
+								|| (uc_b2 = hex_value(*++state.ptr)) > 0xf
+								|| (uc_b3 = hex_value(*++state.ptr)) > 0xf
+								|| (uc_b4 = hex_value(*++state.ptr)) > 0xf) {
 							sprintf(error, "Invalid character value `%c` (at %d:%d)", b, state.cur_line, state.cur_col);
 							goto e_failed;
 						}
@@ -240,10 +252,10 @@ struct json_value_t * json_parse(const char * json, size_t length, char * errbuf
 							if(end - state.ptr <= 6
 									|| (*++state.ptr) != '\\'
 									|| (*++state.ptr) != 'u'
-									|| (uc_b1 = hex_value(*++state.ptr)) == 0xff
-									|| (uc_b2 = hex_value(*++state.ptr)) == 0xff
-									|| (uc_b3 = hex_value(*++state.ptr)) == 0xff
-									|| (uc_b4 = hex_value(*++state.ptr)) == 0xff)
+									|| (uc_b1 = hex_value(*++state.ptr)) > 0xf
+									|| (uc_b2 = hex_value(*++state.ptr)) > 0xf
+									|| (uc_b3 = hex_value(*++state.ptr)) > 0xf
+									|| (uc_b4 = hex_value(*++state.ptr)) > 0xf)
 							{
 								sprintf(error, "Invalid character value `%c` (at %d:%d)", b, state.cur_line, state.cur_col);
 								goto e_failed;

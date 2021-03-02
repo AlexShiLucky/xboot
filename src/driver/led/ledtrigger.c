@@ -32,72 +32,72 @@
 /* led闪烁设备写激活 */
 static ssize_t ledtrigger_write_activity(struct kobj_t * kobj, void * buf, size_t size)
 {
-	struct ledtrigger_t * trigger = (struct ledtrigger_t *)kobj->priv;
+    struct ledtrigger_t * trigger = (struct ledtrigger_t *)kobj->priv;
 
-	ledtrigger_activity(trigger);
-	return size;
+    ledtrigger_activity(trigger);
+    return size;
 }
 
 /* 根据名称搜索一个led闪烁设备 */
 struct ledtrigger_t * search_ledtrigger(const char * name)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	dev = search_device(name, DEVICE_TYPE_LEDTRIGGER);
-	if(!dev)
-		return NULL;
-	return (struct ledtrigger_t *)dev->priv;
+    dev = search_device(name, DEVICE_TYPE_LEDTRIGGER);
+    if(!dev)
+        return NULL;
+    return (struct ledtrigger_t *)dev->priv;
 }
 
 /* 注册一个led闪烁设备 */
 struct device_t * register_ledtrigger(struct ledtrigger_t * trigger, struct driver_t * drv)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(!trigger || !trigger->name)
-		return NULL;
+    if(!trigger || !trigger->name)
+        return NULL;
 
-	dev = malloc(sizeof(struct device_t));
-	if(!dev)
-		return NULL;
+    dev = malloc(sizeof(struct device_t));
+    if(!dev)
+        return NULL;
 
-	dev->name = strdup(trigger->name);
-	dev->type = DEVICE_TYPE_LEDTRIGGER;
-	dev->driver = drv;
-	dev->priv = trigger;
-	dev->kobj = kobj_alloc_directory(dev->name);
-	kobj_add_regular(dev->kobj, "activity", NULL, ledtrigger_write_activity, trigger);
+    dev->name = strdup(trigger->name);
+    dev->type = DEVICE_TYPE_LEDTRIGGER;
+    dev->driver = drv;
+    dev->priv = trigger;
+    dev->kobj = kobj_alloc_directory(dev->name);
+    kobj_add_regular(dev->kobj, "activity", NULL, ledtrigger_write_activity, trigger);
 
-	if(!register_device(dev))
-	{
-		kobj_remove_self(dev->kobj);
-		free(dev->name);
-		free(dev);
-		return NULL;
-	}
-	return dev;
+    if(!register_device(dev))
+    {
+        kobj_remove_self(dev->kobj);
+        free(dev->name);
+        free(dev);
+        return NULL;
+    }
+    return dev;
 }
 
 /* 注销一个led闪烁设备 */
 void unregister_ledtrigger(struct ledtrigger_t * trigger)
 {
-	struct device_t * dev;
+    struct device_t * dev;
 
-	if(trigger && trigger->name)
-	{
-		dev = search_device(trigger->name, DEVICE_TYPE_LEDTRIGGER);
-		if(dev && unregister_device(dev))
-		{
-			kobj_remove_self(dev->kobj);
-			free(dev->name);
-			free(dev);
-		}
-	}
+    if(trigger && trigger->name)
+    {
+        dev = search_device(trigger->name, DEVICE_TYPE_LEDTRIGGER);
+        if(dev && unregister_device(dev))
+        {
+            kobj_remove_self(dev->kobj);
+            free(dev->name);
+            free(dev);
+        }
+    }
 }
 
 /* led闪烁设备激活接口调用 */
 void ledtrigger_activity(struct ledtrigger_t * trigger)
 {
-	if(trigger && trigger->activity)
-		trigger->activity(trigger);
+    if(trigger && trigger->activity)
+        trigger->activity(trigger);
 }

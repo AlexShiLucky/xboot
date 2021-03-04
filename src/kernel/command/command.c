@@ -59,6 +59,8 @@ bool_t register_command(struct command_t * cmd)
 	if(!cmd || !cmd->name || !cmd->exec)
 		return FALSE;
 
+    COMMAND_INITCALL_LOG("register cmd %s", cmd->name);
+
 	if(search_command(cmd->name))
 		return FALSE;
 
@@ -75,6 +77,8 @@ bool_t unregister_command(struct command_t * cmd)
 
 	if(!cmd || !cmd->name)
 		return FALSE;
+
+    COMMAND_EXITCALL_LOG("unregister cmd %s", cmd->name);
 
 	spin_lock_irqsave(&__command_lock, flags);
 	list_del(&cmd->list);

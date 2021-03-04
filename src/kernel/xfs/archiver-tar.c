@@ -26,6 +26,7 @@
  *
  */
 
+#include <xboot/machine.h>
 #include <vfs/vfs.h>
 #include <xfs/archiver.h>
 
@@ -434,11 +435,15 @@ static struct xfs_archiver_t archiver_tar = {
 
 static __init void archiver_tar_init(void)
 {
+    CORE_INITCALL_LOG("register archiver tar");
+
 	register_archiver(&archiver_tar);
 }
 
 static __exit void archiver_tar_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister archiver tar");
+
 	unregister_archiver(&archiver_tar);
 }
 

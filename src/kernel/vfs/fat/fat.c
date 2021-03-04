@@ -574,11 +574,15 @@ static struct filesystem_t fat = {
 
 static __init void filesystem_fat_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem fat");
+
 	register_filesystem(&fat);
 }
 
 static __exit void filesystem_fat_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister filesystem ext4");
+
 	unregister_filesystem(&fat);
 }
 

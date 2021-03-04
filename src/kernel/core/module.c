@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <xboot/initcall.h>
+#include <xboot/machine.h>
 #include <xboot/module.h>
 
 extern struct symbol_t __ksymtab_start[];
@@ -213,6 +214,8 @@ EXPORT_SYMBOL(unregister_module);
 /* 模块初始化 */
 static __init void module_init(void)
 {
+    CORE_INITCALL_LOG("init module add regular ksymtab");
+
 	kobj_add_regular(search_class_module_kobj(), "ksymtab", module_read_ksymtab, NULL, NULL);
 }
 core_initcall(module_init);

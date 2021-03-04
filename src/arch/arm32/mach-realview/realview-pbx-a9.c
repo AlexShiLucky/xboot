@@ -154,11 +154,15 @@ static __init void realview_pbx_a9_machine_init(void)
 {
     /* 注册机器配置 */
 	register_machine(&realview_pbx_a9);
+
+    MACHINE_INITCALL_LOG("register machine realview_a9");
 }
 
 /* 机器退出 */
 static __exit void realview_pbx_a9_machine_exit(void)
 {
+    MACHINE_EXITCALL_LOG("unregister machine realview_a9");
+
     /* 注销机器配置 */
 	unregister_machine(&realview_pbx_a9);
 }

@@ -487,11 +487,15 @@ static struct filesystem_t tar = {
 
 static __init void filesystem_tar_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem tar");
+
 	register_filesystem(&tar);
 }
 
 static __exit void filesystem_tar_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister filesystem tar");
+
 	unregister_filesystem(&tar);
 }
 

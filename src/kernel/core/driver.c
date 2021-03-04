@@ -104,6 +104,8 @@ bool_t register_driver(struct driver_t * drv)
 	if(!drv || !drv->name)
 		return FALSE;
 
+    DRIVER_INITCALL_LOG("register driver %s", drv->name);
+
 	if(!drv->probe || !drv->remove)
 		return FALSE;
 
@@ -138,6 +140,8 @@ bool_t unregister_driver(struct driver_t * drv)
 
 	if(!drv || !drv->name)
 		return FALSE;
+
+    DRIVER_EXITCALL_LOG("unregister driver %s", drv->name);
 
 	if(hlist_unhashed(&drv->node))
 		return FALSE;
@@ -209,6 +213,8 @@ void remove_device(struct device_t * dev)
 static __init void driver_pure_init(void)
 {
 	int i;
+
+    PURE_INITCALL_LOG("init driver ref table");
 
 	for(i = 0; i < ARRAY_SIZE(__driver_hash); i++)
 		init_hlist_head(&__driver_hash[i]);

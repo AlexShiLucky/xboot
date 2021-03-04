@@ -457,11 +457,15 @@ static struct filesystem_t cpio = {
 
 static __init void filesystem_cpio_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem cpio");
+
 	register_filesystem(&cpio);
 }
 
 static __exit void filesystem_cpio_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister filesystem cpio");
+
 	unregister_filesystem(&cpio);
 }
 

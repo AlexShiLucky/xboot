@@ -538,11 +538,15 @@ static struct render_t render_cairo = {
 
 static __init void render_cairo_init(void)
 {
+    CORE_INITCALL_LOG("register render cairo");
+
 	register_render(&render_cairo);
 }
 
 static __exit void render_cairo_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister render cairo");
+
 	unregister_render(&render_cairo);
 }
 

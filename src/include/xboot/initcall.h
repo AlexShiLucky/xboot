@@ -19,8 +19,8 @@ typedef void (*exitcall_t)(void);
     static const exitcall_t __exitcall_##fn##level \
     __attribute__((__used__, __section__(".exitcall_" #level ".text"))) = fn
 
-#define initcall_pure(fn)       __define_initcall(fn, 0)   // 第0级初始化调用段
-#define initcall_machine(fn)    __define_initcall(fn, 1)   // 第1级初始化调用段
+#define initcall_machine(fn)    __define_initcall(fn, 0)   // 第0级初始化调用段
+#define initcall_pure(fn)       __define_initcall(fn, 1)   // 第1级初始化调用段
 #define initcall_core(fn)       __define_initcall(fn, 2)   // 第2级初始化调用段
 #define initcall_postcore(fn)   __define_initcall(fn, 3)   // 第3级初始化调用段
 #define initcall_driver(fn)     __define_initcall(fn, 4)   // 第4级初始化调用段
@@ -30,8 +30,8 @@ typedef void (*exitcall_t)(void);
 #define initcall_reserver(fn)   __define_initcall(fn, 8)   // 第8级初始化调用段
 #define initcall_late(fn)       __define_initcall(fn, 9)   // 第9级初始化调用段
 
-#define pure_initcall(fn)       initcall_pure(fn)
 #define machine_initcall(fn)    initcall_machine(fn)
+#define pure_initcall(fn)       initcall_pure(fn)
 #define core_initcall(fn)       initcall_core(fn)
 #define postcore_initcall(fn)   initcall_postcore(fn)
 #define driver_initcall(fn)     initcall_driver(fn)
@@ -41,8 +41,8 @@ typedef void (*exitcall_t)(void);
 #define reserver_initcall(fn)   initcall_reserver(fn)
 #define late_initcall(fn)       initcall_late(fn)
 
-#define exitcall_pure(fn)       __define_exitcall(fn, 0)   // 第0级退出调用段
-#define exitcall_machine(fn)    __define_exitcall(fn, 1)   // 第1级退出调用段
+#define exitcall_machine(fn)    __define_exitcall(fn, 0)   // 第0级退出调用段
+#define exitcall_pure(fn)       __define_exitcall(fn, 1)   // 第1级退出调用段
 #define exitcall_core(fn)       __define_exitcall(fn, 2)   // 第2级退出调用段
 #define exitcall_postcore(fn)   __define_exitcall(fn, 3)   // 第3级退出调用段
 #define exitcall_driver(fn)     __define_exitcall(fn, 4)   // 第4级退出调用段
@@ -52,8 +52,8 @@ typedef void (*exitcall_t)(void);
 #define exitcall_reserver(fn)   __define_exitcall(fn, 8)   // 第8级退出调用段
 #define exitcall_late(fn)       __define_exitcall(fn, 9)   // 第9级退出调用段
 
-#define pure_exitcall(fn)       exitcall_pure(fn)
 #define machine_exitcall(fn)    exitcall_machine(fn)
+#define pure_exitcall(fn)       exitcall_pure(fn)
 #define core_exitcall(fn)       exitcall_core(fn)
 #define postcore_exitcall(fn)   exitcall_postcore(fn)
 #define driver_exitcall(fn)     exitcall_driver(fn)
@@ -63,6 +63,29 @@ typedef void (*exitcall_t)(void);
 #define reserver_exitcall(fn)   exitcall_reserver(fn)
 #define late_exitcall(fn)       exitcall_late(fn)
 
+#define INITCALL_LOG(fmt, si, ss, info)     LOG("%s-%u-%s:"fmt, "initcall", si, ss, info)
+#define MACHINE_INITCALL_LOG(info)          INITCALL_LOG("%s", 0, "machine", info)
+#define PURE_INITCALL_LOG(info)             INITCALL_LOG("%s", 1, "pure", info)
+#define CORE_INITCALL_LOG(info)             INITCALL_LOG("%s", 2, "core", info)
+#define POSTCORE_INITCALL_LOG(info)         INITCALL_LOG("%s", 3, "postcore", info)
+#define DRIVER_INITCALL_LOG(fmt, info)      INITCALL_LOG(fmt,  4, "driver", info)
+#define SUBSYS_INITCALL_LOG(info)           INITCALL_LOG("%s", 5, "subsys", info)
+#define COMMAND_INITCALL_LOG(fmt, info)     INITCALL_LOG(fmt,  6, "command", info)
+#define SERVER_INITCALL_LOG(info)           INITCALL_LOG("%s", 7, "server", info)
+#define RESERVER_INITCALL_LOG(info)         INITCALL_LOG("%s", 8, "reserver", info)
+#define LATE_INITCALL_LOG(info)             INITCALL_LOG("%s", 9, "late", info)
+
+#define EXITCALL_LOG(fmt, si, ss, info)     LOG("%s-%u-%s:"fmt, "exitcall", si, ss, info)
+#define MACHINE_EXITCALL_LOG(info)          EXITCALL_LOG("%s", 0, "machine", info)
+#define PURE_EXITCALL_LOG(info)             EXITCALL_LOG("%s", 1, "pure", info)
+#define CORE_EXITCALL_LOG(info)             EXITCALL_LOG("%s", 2, "core", info)
+#define POSTCORE_EXITCALL_LOG(info)         EXITCALL_LOG("%s", 3, "postcore", info)
+#define DRIVER_EXITCALL_LOG(fmt, info)      EXITCALL_LOG(fmt,  4, "driver", info)
+#define SUBSYS_EXITCALL_LOG(info)           EXITCALL_LOG("%s", 5, "subsys", info)
+#define COMMAND_EXITCALL_LOG(fmt, info)     EXITCALL_LOG(fmt,  6, "command", info)
+#define SERVER_EXITCALL_LOG(info)           EXITCALL_LOG("%s", 7, "server", info)
+#define RESERVER_EXITCALL_LOG(info)         EXITCALL_LOG("%s", 8, "reserver", info)
+#define LATE_EXITCALL_LOG(info)             EXITCALL_LOG("%s", 9, "late", info)
 
 void do_initcalls(void);
 void do_exitcalls(void);

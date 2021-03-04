@@ -101,11 +101,15 @@ static struct partition_map_t gpt = {
 
 static __init void partition_map_gpt_init(void)
 {
+    CORE_INITCALL_LOG("register partition map gpt");
+
 	register_partition_map(&gpt);
 }
 
 static __exit void partition_map_gpt_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister partition map gpt");
+
 	unregister_partition_map(&gpt);
 }
 

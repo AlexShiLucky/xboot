@@ -5,13 +5,19 @@
 #
 # You can pass CROSS_COMPILE and PLATFORM variable.
 #
-CROSS_COMPILE   ?= arm-linux-gnueabihf-
-PLATFORM        ?= arm32-realview
-#PLATFORM       ?= arm32-rk3288
-#PLATFORM       ?= arm32-h3
-#PLATFORM       ?= arm32-v3s
+#CROSS_COMPILE   ?= aarch64-none-elf-
+#CROSS_COMPILE   ?= aarch64-none-linux-gnu-
+#CROSS_COMPILE   ?= arm-none-eabi-
+#CROSS_COMPILE   ?= arm-none-linux-gnueabihf-
+#CROSS_COMPILE   ?= riscv-none-embed-
 
-#CROSS_COMPILE   ?= arm-eabi-
+CROSS_COMPILE   ?= arm-none-linux-gnueabihf-
+PLATFORM        ?= arm32-realview
+#PLATFORM        ?= arm32-rk3288
+#PLATFORM        ?= arm32-h3
+#PLATFORM        ?= arm32-v3s
+
+#CROSS_COMPILE   ?= arm-none-eabi-
 #PLATFORM        ?= arm32-f1c100s
 
 #

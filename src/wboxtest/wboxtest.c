@@ -252,6 +252,8 @@ static __init void wboxtest_pure_init(void)
 {
 	int i;
 
+    PURE_INITCALL_LOG("init wboxtest ref table");
+
 	for(i = 0; i < ARRAY_SIZE(__wboxtest_hash); i++)
 		init_hlist_head(&__wboxtest_hash[i]);
 }

@@ -194,8 +194,8 @@ static int ext4fs_vput(struct vfs_mount_t * m, struct vfs_node_t * n)
 	return rc;
 }
 
-/* 
- * Vnode operations 
+/*
+ * Vnode operations
  */
 
 static u64_t ext4fs_read(struct vfs_node_t * n, s64_t off, void * buf, u64_t len)
@@ -722,11 +722,15 @@ static struct filesystem_t ext4 = {
 
 static __init void filesystem_ext4_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem ext4");
+
 	register_filesystem(&ext4);
 }
 
 static __exit void filesystem_ext4_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister filesystem ext4");
+
 	unregister_filesystem(&ext4);
 }
 

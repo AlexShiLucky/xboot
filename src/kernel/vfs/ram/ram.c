@@ -406,11 +406,15 @@ static struct filesystem_t ram = {
 
 static __init void filesystem_ram_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem ram");
+
 	register_filesystem(&ram);
 }
 
 static __exit void filesystem_ram_exit(void)
 {
+    CORE_EXITCALL_LOG("register filesystem ram");
+
 	unregister_filesystem(&ram);
 }
 

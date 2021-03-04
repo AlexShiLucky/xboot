@@ -318,6 +318,8 @@ static __init void device_pure_init(void)
 {
 	int i;
 
+    PURE_INITCALL_LOG("init device ref table");
+
 	init_list_head(&__device_list);
 	for(i = 0; i < ARRAY_SIZE(__device_head); i++)
 		init_list_head(&__device_head[i]);

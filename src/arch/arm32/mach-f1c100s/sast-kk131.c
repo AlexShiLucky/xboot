@@ -96,11 +96,15 @@ static struct machine_t sast_kk131 = {
 
 static __init void sast_kk131_machine_init(void)
 {
+    MACHINE_INITCALL_LOG("register machine sast_kk131");
+
 	register_machine(&sast_kk131);
 }
 
 static __exit void sast_kk131_machine_exit(void)
 {
+    MACHINE_EXITCALL_LOG("unregister machine sast_kk131");
+
 	unregister_machine(&sast_kk131);
 }
 

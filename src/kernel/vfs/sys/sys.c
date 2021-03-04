@@ -225,11 +225,15 @@ static struct filesystem_t sys = {
 
 static __init void filesystem_sys_init(void)
 {
+    CORE_INITCALL_LOG("register filesystem sys");
+
 	register_filesystem(&sys);
 }
 
 static __exit void filesystem_sys_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister filesystem sys");
+
 	unregister_filesystem(&sys);
 }
 

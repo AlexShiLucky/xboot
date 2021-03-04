@@ -26,6 +26,7 @@
  *
  */
 
+#include <xboot/machine.h>
 #include <vfs/vfs.h>
 #include <xfs/archiver.h>
 
@@ -276,12 +277,16 @@ static struct xfs_archiver_t archiver_dir = {
 /* 文档路径初始化 */
 static __init void archiver_dir_init(void)
 {
+    CORE_INITCALL_LOG("register archiver dir");
+
 	register_archiver(&archiver_dir);
 }
 
 /* 文档路径退出 */
 static __exit void archiver_dir_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister archiver dir");
+
 	unregister_archiver(&archiver_dir);
 }
 

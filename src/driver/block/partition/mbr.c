@@ -105,11 +105,15 @@ static struct partition_map_t mbr = {
 
 static __init void partition_map_mbr_init(void)
 {
+    CORE_INITCALL_LOG("register partition map mbr");
+
 	register_partition_map(&mbr);
 }
 
 static __exit void partition_map_mbr_exit(void)
 {
+    CORE_EXITCALL_LOG("unregister partition map mbr");
+
 	unregister_partition_map(&mbr);
 }
 

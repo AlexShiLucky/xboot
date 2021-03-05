@@ -148,12 +148,19 @@ static void subsys_init_private(void)
 /* 子系统初始化 */
 static __init void subsys_init(void)
 {
+    SUBSYS_INITCALL_LOG("init romdisk");
     /* 初始化romdisk */
 	subsys_init_romdisk();
+
+    SUBSYS_INITCALL_LOG("init rootfs");
     /* 初始化根文件系统 */
 	subsys_init_rootfs();
+
+    SUBSYS_INITCALL_LOG("init device tree");
 	/* 初始化设备树 */
 	subsys_init_dtree();
+
+    SUBSYS_INITCALL_LOG("init private");
     /* 初始化私有设备 */
 	subsys_init_private();
 }

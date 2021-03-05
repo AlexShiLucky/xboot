@@ -77,6 +77,7 @@ enum {
 
 struct driver_t;
 
+/* 设备结构定义:设备为抽象类,需要绑定具体设备驱动 */
 struct device_t
 {
     struct kobj_t * kobj;
@@ -84,24 +85,41 @@ struct device_t
     struct list_head head;
     struct hlist_node node;
 
+    /* 设备名称 */
     char * name;
+    /* 设备类型 */
     enum device_type_t type;
+    /* 设备所使用的驱动:驱动为具体设备的驱动 */
     struct driver_t * driver;
+    /* 设备私有数据,可用于挂接子类设备 */
     void * priv;
 };
 
 extern struct list_head __device_list;
 extern struct list_head __device_head[DEVICE_TYPE_MAX_COUNT];
 
+/* 根据设备主名和id号申请一个设备名称 */
 char * alloc_device_name(const char * name, int id);
+/* 释放一个设备名称 */
 void free_device_name(char * name);
+
+/* 提供给子类设备调用的API */
+/* 查找一个名称和类型都匹配的设备 */
 struct device_t * search_device(const char * name, enum device_type_t type);
+/* 查找某类型的第一个设备 */
 struct device_t * search_first_device(enum device_type_t type);
+/* 注册一个设备 */
 bool_t register_device(struct device_t * dev);
+/* 注销一个设备 */
 bool_t unregister_device(struct device_t * dev);
+
+/* 注册一个设备通知 */
 bool_t register_device_notifier(struct notifier_t * n);
+/* 注销一个设备通知 */
 bool_t unregister_device_notifier(struct notifier_t * n);
+/* 通知设备已挂起 */
 void suspend_device(struct device_t * dev);
+/* 通知设备已释放 */
 void resume_device(struct device_t * dev);
 
 #ifdef __cplusplus

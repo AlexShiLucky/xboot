@@ -918,6 +918,7 @@ static ssize_t memory_read_meminfo(struct kobj_t * kobj, void * buf, size_t size
 	return len;
 }
 
+/* 初始化内存 */
 void do_init_mem(void)
 {
 #ifndef __SANDBOX__

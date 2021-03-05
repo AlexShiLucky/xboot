@@ -144,7 +144,7 @@ static void history_add(uint32_t * history, int len)
 		return;
 	}
 
-	if(history_numberof() >= 32)
+	if(history_numberof() >= CONFIG_SHELL_HISTORY)
 		history_remove();
 
 	memcpy(s, history, len * sizeof(uint32_t));

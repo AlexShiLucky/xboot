@@ -47,6 +47,10 @@ extern "C" {
 #define CONFIG_SHELL_TASK                   (1)
 #endif
 
+#if !defined(CONFIG_SHELL_HISTORY)
+#define CONFIG_SHELL_HISTORY                (32)
+#endif
+
 #if !defined(CONFIG_AUTO_BOOT_DELAY)
 #define CONFIG_AUTO_BOOT_DELAY              (10)
 #endif

@@ -203,6 +203,7 @@ void probe_device(const char * json, int length, const char * tips)
 	}
 }
 
+/* 移除设备 */
 void remove_device(struct device_t * dev)
 {
 	if(dev && dev->driver && dev->driver->remove)

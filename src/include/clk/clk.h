@@ -7,6 +7,7 @@ extern "C" {
 
 #include <xboot.h>
 
+/* clk设备结构定义 */
 struct clk_t
 {
 	char * name;
@@ -22,8 +23,11 @@ struct clk_t
 	void * priv;
 };
 
+/* 根据名称搜索一个clk设备 */
 struct clk_t * search_clk(const char * name);
+/* 注册一个clk设备 */
 struct device_t * register_clk(struct clk_t * clk, struct driver_t * drv);
+/* 注销一个clk设备 */
 void unregister_clk(struct clk_t * clk);
 
 void clk_set_parent(const char * name, const char * pname);

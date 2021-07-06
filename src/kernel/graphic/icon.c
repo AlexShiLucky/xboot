@@ -42,7 +42,7 @@ static void icon_metrics(struct icon_t * ico)
 {
 	FTC_SBit sbit;
 
-	sbit = (FTC_SBit)font_lookup_bitmap(ico->fctx, ico->family, (ico->size * 633) >> 10, ico->code);
+	sbit = (FTC_SBit)font_lookup_bitmap(ico->fctx, ico->family, (ico->pixsz * 633) >> 10, ico->code);
 	if(sbit)
 	{
 		ico->metrics.ox = sbit->left;
@@ -67,7 +67,8 @@ void icon_init(struct icon_t * ico, uint32_t code, struct color_t * c, struct fo
 		ico->c = c;
 		ico->fctx = fctx;
 		ico->family = family;
-		ico->size = (size > 0) ? size : 16;
+		ico->size = max(size, 1);
+		ico->pixsz = clamp(ico->size, 1, 96);
 		icon_metrics(ico);
 	}
 }
@@ -100,7 +101,8 @@ void icon_set_size(struct icon_t * ico, int size)
 {
 	if(ico)
 	{
-		ico->size = (size > 0) ? size : 16;
+		ico->size = max(size, 1);
+		ico->pixsz = clamp(ico->size, 1, 96);
 		icon_metrics(ico);
 	}
 }
@@ -264,17 +266,17 @@ void render_default_icon(struct surface_t * s, struct region_t * clip, struct ma
 
 	if((m->a == 1.0) && (m->b == 0.0) && (m->c == 0.0) && (m->d == 1.0))
 	{
-		sbit = (FTC_SBit)font_lookup_bitmap(ico->fctx, ico->family, (ico->size * 633) >> 10, ico->code);
+		sbit = (FTC_SBit)font_lookup_bitmap(ico->fctx, ico->family, (ico->pixsz * 633) >> 10, ico->code);
 		if(sbit)
 		{
-			pen.x = (FT_Pos)(m->tx + ((ico->size - ico->metrics.width) >> 1));
-			pen.y = (FT_Pos)(m->ty + ((ico->size - ico->metrics.height) >> 1));
+			pen.x = (FT_Pos)(m->tx + ((ico->pixsz - ico->metrics.width) >> 1));
+			pen.y = (FT_Pos)(m->ty + ((ico->pixsz - ico->metrics.height) >> 1));
 			draw_font_bitmap(s, clip, ico->c, pen.x, pen.y, sbit);
 		}
 	}
 	else
 	{
-		glyph = (FT_Glyph)font_lookup_glyph(ico->fctx, ico->family, (ico->size * 633) >> 10, ico->code);
+		glyph = (FT_Glyph)font_lookup_glyph(ico->fctx, ico->family, (ico->pixsz * 633) >> 10, ico->code);
 		if(glyph)
 		{
 			if(FT_Glyph_Copy(glyph, &gly) == 0)
@@ -283,8 +285,8 @@ void render_default_icon(struct surface_t * s, struct region_t * clip, struct ma
 				matrix.xy = -((FT_Fixed)(m->c * 65536));
 				matrix.yx = -((FT_Fixed)(m->b * 65536));
 				matrix.yy = (FT_Fixed)(m->d * 65536);
-				tx = ico->metrics.ox + ((ico->size - ico->metrics.width) >> 1);
-				ty = ico->metrics.oy + ((ico->size - ico->metrics.height) >> 1);
+				tx = ico->metrics.ox + ((ico->pixsz - ico->metrics.width) >> 1);
+				ty = ico->metrics.oy + ((ico->pixsz - ico->metrics.height) >> 1);
 				pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
 				pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
 				FT_Glyph_Transform(gly, &matrix, &pen);

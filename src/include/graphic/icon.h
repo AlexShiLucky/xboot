@@ -15,6 +15,7 @@ struct icon_t {
 	struct color_t * c;
 	struct font_context_t * fctx;
 	const char * family;
+	int pixsz;
 	int size;
 	struct {
 		int ox;

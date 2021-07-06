@@ -1654,8 +1654,7 @@ static void xui_draw(struct window_t * w, void * o)
 	union xui_cmd_t * cmd;
 	struct matrix_t m;
 	struct icon_t ico;
-	int count, size;
-	int i;
+	int count, i;
 
 	if((count = w->rl->count) > 0)
 	{
@@ -1703,9 +1702,13 @@ static void xui_draw(struct window_t * w, void * o)
 					surface_blit(s, clip, &cmd->surface.m, cmd->surface.s, RENDER_TYPE_GOOD);
 					break;
 				case XUI_CMD_TYPE_ICON:
-					size = min(cmd->icon.w, cmd->icon.h);
-					icon_init(&ico, cmd->icon.code, &cmd->icon.c, ctx->f, cmd->icon.family, size);
-					matrix_init_translate(&m, cmd->icon.x + (cmd->icon.w - size) / 2, cmd->icon.y + (cmd->icon.h - size) / 2);
+					icon_init(&ico, cmd->icon.code, &cmd->icon.c, ctx->f, cmd->icon.family, min(cmd->icon.w, cmd->icon.h));
+					matrix_init_translate(&m, cmd->icon.x + (cmd->icon.w - ico.size) / 2, cmd->icon.y + (cmd->icon.h - ico.size) / 2);
+					if(ico.pixsz != ico.size)
+					{
+						double scale = (double)ico.size / (double)ico.pixsz;
+						matrix_scale(&m, scale, scale);
+					}
 					surface_icon(s, clip, &m, &ico);
 					break;
 				case XUI_CMD_TYPE_TEXT:

@@ -108,6 +108,12 @@ int xui_textedit_ex(struct xui_context_t * ctx, char * buf, int size, int opt)
 			text_init(&txt, buf, fg, 0, ctx->f, family, size);
 			int textw = txt.metrics.width;
 			int texth = txt.metrics.height;
+			if(txt.pixsz != txt.size)
+			{
+				double scale = (double)txt.size / (double)txt.pixsz;
+				textw *= scale;
+				texth *= scale;
+			}
 			int ofx = r->w - ctx->style.layout.padding - textw - 1;
 			int textx = r->x + min(ofx, ctx->style.layout.padding);
 			int texty = r->y + (r->h - texth) / 2;

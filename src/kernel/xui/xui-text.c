@@ -33,9 +33,13 @@ void xui_text(struct xui_context_t * ctx, const char * utf8)
 {
 	struct region_t * r;
 	struct text_t txt;
+	int h;
 
 	text_init(&txt, utf8, &ctx->style.font.color, xui_get_layout(ctx)->body.w, ctx->f, ctx->style.font.font_family, ctx->style.font.size);
-	xui_layout_row(ctx, 1, (int[]){ -1 }, txt.metrics.height);
+	h = txt.metrics.height;
+	if(txt.pixsz != txt.size)
+		h *= (double)txt.size / (double)txt.pixsz;;
+	xui_layout_row(ctx, 1, (int[]){ -1 }, h);
 	r = xui_layout_next(ctx);
 	xui_draw_text(ctx, r->x, r->y, &txt);
 }

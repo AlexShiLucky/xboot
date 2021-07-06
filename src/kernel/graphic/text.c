@@ -65,7 +65,7 @@ static void text_metrics(struct text_t * txt)
 
 		case '\n':
 			tw = 0;
-			th += txt->size;
+			th += txt->pixsz;
 			lh = 0;
 			if(tw > w)
 				w = tw;
@@ -76,7 +76,7 @@ static void text_metrics(struct text_t * txt)
 			break;
 
 		case '\t':
-			tw += txt->size * 2;
+			tw += txt->pixsz * 2;
 			th += 0;
 			if(tw > w)
 				w = tw;
@@ -86,13 +86,13 @@ static void text_metrics(struct text_t * txt)
 			break;
 
 		default:
-			sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->size, code);
+			sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->pixsz, code);
 			if(sbit)
 			{
 				if((txt->wrap > 0) && (tw + sbit->xadvance > txt->wrap))
 				{
 					tw = 0;
-					th += txt->size;
+					th += txt->pixsz;
 					lh = 0;
 					if(tw > w)
 						w = tw;
@@ -139,7 +139,8 @@ void text_init(struct text_t * txt, const char * utf8, struct color_t * c, int w
 		txt->wrap = wrap;
 		txt->fctx = fctx;
 		txt->family = family;
-		txt->size = (size > 0) ? size : 16;
+		txt->size = max(size, 1);
+		txt->pixsz = clamp(txt->size, 1, 96);
 		text_metrics(txt);
 	}
 }
@@ -181,7 +182,8 @@ void text_set_size(struct text_t * txt, int size)
 {
 	if(txt)
 	{
-		txt->size = (size > 0) ? size : 16;
+		txt->size = max(size, 1);
+		txt->pixsz = clamp(txt->size, 1, 96);
 		text_metrics(txt);
 	}
 }
@@ -369,28 +371,28 @@ void render_default_text(struct surface_t * s, struct region_t * clip, struct ma
 
 			case '\n':
 				tx = txt->metrics.ox;
-				ty += txt->size;
+				ty += txt->pixsz;
 				tw = 0;
 				pen.x = (FT_Pos)(m->tx + tx);
 				pen.y = (FT_Pos)(m->ty + ty);
 				break;
 
 			case '\t':
-				tx += txt->size * 2;
+				tx += txt->pixsz * 2;
 				ty += 0;
-				tw += txt->size * 2;
+				tw += txt->pixsz * 2;
 				pen.x = (FT_Pos)(m->tx + tx);
 				pen.y = (FT_Pos)(m->ty + ty);
 				break;
 
 			default:
-				sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->size, code);
+				sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->pixsz, code);
 				if(sbit)
 				{
 					if((txt->wrap > 0) && (tw + sbit->xadvance > txt->wrap))
 					{
 						tx = txt->metrics.ox;
-						ty += txt->size;
+						ty += txt->pixsz;
 						tw = 0;
 						pen.x = (FT_Pos)(m->tx + tx);
 						pen.y = (FT_Pos)(m->ty + ty);
@@ -434,28 +436,28 @@ void render_default_text(struct surface_t * s, struct region_t * clip, struct ma
 
 			case '\n':
 				tx = txt->metrics.ox;
-				ty += txt->size;
+				ty += txt->pixsz;
 				tw = 0;
 				pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
 				pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
 				break;
 
 			case '\t':
-				tx += txt->size * 2;
+				tx += txt->pixsz * 2;
 				ty += 0;
-				tw += txt->size * 2;
+				tw += txt->pixsz * 2;
 				pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
 				pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
 				break;
 
 			default:
-				glyph = (FT_Glyph)font_lookup_glyph(txt->fctx, txt->family, txt->size, code);
+				glyph = (FT_Glyph)font_lookup_glyph(txt->fctx, txt->family, txt->pixsz, code);
 				if(glyph)
 				{
 					if((txt->wrap > 0) && (tw + (glyph->advance.x >> 16) > txt->wrap))
 					{
 						tx = txt->metrics.ox;
-						ty += txt->size;
+						ty += txt->pixsz;
 						tw = 0;
 						pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
 						pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);

@@ -16,6 +16,7 @@ struct text_t {
 	int wrap;
 	struct font_context_t * fctx;
 	const char * family;
+	int pixsz;
 	int size;
 	struct {
 		int ox;

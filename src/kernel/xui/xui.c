@@ -735,10 +735,20 @@ void xui_draw_text(struct xui_context_t * ctx, int x, int y, struct text_t * txt
 {
 	union xui_cmd_t * cmd;
 	struct region_t region;
+	double scale;
+	int w, h;
 	int clip;
 	int len;
 
-	region_init(&region, x, y, txt->metrics.width, txt->metrics.height);
+	w = txt->metrics.width;
+	h = txt->metrics.height;
+	if(txt->pixsz != txt->size)
+	{
+		scale = (double)txt->size / (double)txt->pixsz;
+		w *= scale;
+		h *= scale;
+	}
+	region_init(&region, x, y, w, h);
 	if((clip = xui_check_clip(ctx, &region)))
 	{
 		if(clip < 0)
@@ -761,6 +771,7 @@ void xui_draw_text_align(struct xui_context_t * ctx, const char * family, int si
 	union xui_cmd_t * cmd;
 	struct region_t region;
 	struct text_t txt;
+	double scale;
 	int x, y, w, h;
 	int clip;
 	int len;
@@ -774,6 +785,12 @@ void xui_draw_text_align(struct xui_context_t * ctx, const char * family, int si
 	text_init(&txt, utf8, c, wrap, ctx->f, family, size);
 	w = txt.metrics.width;
 	h = txt.metrics.height;
+	if(txt.pixsz != txt.size)
+	{
+		scale = (double)txt.size / (double)txt.pixsz;
+		w *= scale;
+		h *= scale;
+	}
 	switch(opt & (0x7 << 4))
 	{
 	case XUI_OPT_TEXT_LEFT:
@@ -819,7 +836,8 @@ void xui_draw_text_align(struct xui_context_t * ctx, const char * family, int si
 		cmd->text.txt.wrap = wrap;
 		cmd->text.txt.fctx = ctx->f;
 		cmd->text.txt.family = family;
-		cmd->text.txt.size = size;
+		cmd->text.txt.pixsz = txt.pixsz;
+		cmd->text.txt.size = txt.size;
 		cmd->text.txt.metrics.ox = txt.metrics.ox;
 		cmd->text.txt.metrics.oy = txt.metrics.oy;
 		cmd->text.txt.metrics.width = txt.metrics.width;
@@ -1654,6 +1672,7 @@ static void xui_draw(struct window_t * w, void * o)
 	union xui_cmd_t * cmd;
 	struct matrix_t m;
 	struct icon_t ico;
+	double scale;
 	int count, i;
 
 	if((count = w->rl->count) > 0)
@@ -1706,13 +1725,18 @@ static void xui_draw(struct window_t * w, void * o)
 					matrix_init_translate(&m, cmd->icon.x + (cmd->icon.w - ico.size) / 2, cmd->icon.y + (cmd->icon.h - ico.size) / 2);
 					if(ico.pixsz != ico.size)
 					{
-						double scale = (double)ico.size / (double)ico.pixsz;
+						scale = (double)ico.size / (double)ico.pixsz;
 						matrix_scale(&m, scale, scale);
 					}
 					surface_icon(s, clip, &m, &ico);
 					break;
 				case XUI_CMD_TYPE_TEXT:
 					matrix_init_translate(&m, cmd->text.x, cmd->text.y);
+					if(cmd->text.txt.pixsz != cmd->text.txt.size)
+					{
+						scale = (double)cmd->text.txt.size / (double)cmd->text.txt.pixsz;
+						matrix_scale(&m, scale, scale);
+					}
 					surface_text(s, clip, &m, &cmd->text.txt);
 					break;
 				case XUI_CMD_TYPE_GLASS:

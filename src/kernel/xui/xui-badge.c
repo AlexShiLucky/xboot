@@ -35,6 +35,7 @@ void xui_badge_ex(struct xui_context_t * ctx, const char * label, int opt)
 	struct xui_widget_color_t * wc;
 	struct color_t * bg, * fg, * bc;
 	struct text_t txt;
+	double scale;
 	const char * family = ctx->style.font.font_family;
 	int size = ctx->style.font.size;
 	int radius, width;
@@ -74,8 +75,16 @@ void xui_badge_ex(struct xui_context_t * ctx, const char * label, int opt)
 	fg = &wc->normal.foreground;
 	bc = &wc->normal.border;
 	text_init(&txt, label, fg, 0, ctx->f, family, size);
-	w = txt.metrics.width + ctx->style.layout.padding * 2;
-	h = txt.metrics.height + ctx->style.layout.padding * 2;
+	w = txt.metrics.width;
+	h = txt.metrics.height;
+	if(txt.pixsz != txt.size)
+	{
+		scale = (double)txt.size / (double)txt.pixsz;
+		w *= scale;
+		h *= scale;
+	}
+	w += ctx->style.layout.padding * 2;
+	h += ctx->style.layout.padding * 2;
 	if(w < h)
 		w = h;
 	x = r->x + (r->w - w) / 2;

@@ -100,7 +100,7 @@ static int m_icon_set_size(lua_State * L)
 static int m_icon_get_size(lua_State * L)
 {
 	struct licon_t * icon = luaL_checkudata(L, 1, MT_ICON);
-	lua_pushnumber(L, icon->ico.size);
+	lua_pushnumber(L, icon->ico.pixsz);
 	return 1;
 }
 

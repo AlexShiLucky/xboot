@@ -160,12 +160,9 @@ static const char style_default[] = X({
 	"panel-background-color": "#ffffffff",
 	"panel-border-color": "#00000000",
 
-	"scroll-scroll-size": 12,
-	"scroll-scroll-radius": 6,
-	"scroll-thumb-size": 8,
-	"scroll-thumb-radius": 6,
-	"scroll-scroll-color": "#d1d6dbff",
-	"scroll-thumb-color": "#b1b6baff",
+	"scroll-width": 4,
+	"scroll-radius": 2,
+	"scroll-color": "#b1b6ba7f",
 
 	"collapse-border-radius": 2,
 	"collapse-border-width": 0,
@@ -228,7 +225,7 @@ static struct region_t unlimited_region = {
 
 void xui_begin(struct xui_context_t * ctx)
 {
-	uint64_t stamp = ktime_to_ns(ktime_get());
+	ktime_t now = ktime_get();
 
 	ctx->cmd_list.idx = 0;
 	ctx->root_list.idx = 0;
@@ -243,11 +240,11 @@ void xui_begin(struct xui_context_t * ctx)
 	ctx->mouse.dy = ctx->mouse.y - ctx->mouse.oy;
 	ctx->mouse.ox = ctx->mouse.x;
 	ctx->mouse.oy = ctx->mouse.y;
-	ctx->delta = (stamp - ctx->stamp) / 1000000000.0;
-	ctx->stamp = stamp;
+	ctx->delta = ktime_sub(now, ctx->stamp);
+	ctx->stamp = now;
 	ctx->frame++;
-	if(ctx->delta > 0)
-		ctx->fps = ctx->fps * 0.618 + 0.382 / ctx->delta;
+	if(ktime_to_ns(ctx->delta) > 0)
+		ctx->fps = ((ctx->fps * 633) >> 10) + 382000000LL / ktime_to_ns(ctx->delta);
 }
 
 static int compare_zindex(const void * a, const void * b)
@@ -285,10 +282,41 @@ void xui_end(struct xui_context_t * ctx)
 	assert(ctx->clip_stack.idx == 0);
 	assert(ctx->id_stack.idx == 0);
 	assert(ctx->layout_stack.idx == 0);
-	if(ctx->scroll_target)
+	if(ctx->scroll_target && !ctx->scroll_target->noscroll)
 	{
-		ctx->scroll_target->scroll_x += ctx->mouse.zx;
-		ctx->scroll_target->scroll_y += ctx->mouse.zy;
+		if(ctx->key_down & XUI_KEY_CTRL)
+		{
+			ctx->scroll_target->scroll_x -= ctx->mouse.zy * 30;
+			ctx->scroll_target->scroll_y -= ctx->mouse.zx * 30;
+		}
+		else
+		{
+			ctx->scroll_target->scroll_x -= ctx->mouse.zx * 30;
+			ctx->scroll_target->scroll_y -= ctx->mouse.zy * 30;
+		}
+		if(ctx->mouse.state & XUI_MOUSE_LEFT)
+		{
+			ctx->scroll_target->scroll_x -= ctx->mouse.dx;
+			ctx->scroll_target->scroll_y -= ctx->mouse.dy;
+			ctx->scroll_target->scroll_vx = 0;
+			ctx->scroll_target->scroll_vy = 0;
+		}
+		if(abs(ctx->mouse.vx) > 50)
+			ctx->scroll_target->scroll_vx = ctx->mouse.vx;
+		if(abs(ctx->mouse.vy) > 50)
+			ctx->scroll_target->scroll_vy = ctx->mouse.vy;
+		if(abs(ctx->scroll_target->scroll_vx) > 2)
+		{
+			float friction = ktime_to_ns(ctx->delta) * (3.0 / 1000000000.0);
+			ctx->scroll_target->scroll_vx -= ctx->scroll_target->scroll_vx * friction;
+			ctx->scroll_target->scroll_x -= ctx->scroll_target->scroll_vx * friction;
+		}
+		if(abs(ctx->scroll_target->scroll_vy) > 2)
+		{
+			float friction = ktime_to_ns(ctx->delta) * (3.0 / 1000000000.0);
+			ctx->scroll_target->scroll_vy -= ctx->scroll_target->scroll_vy * friction;
+			ctx->scroll_target->scroll_y -= ctx->scroll_target->scroll_vy * friction;
+		}
 	}
 	if(ctx->mouse.down && ctx->next_hover_root && (ctx->next_hover_root->zindex < ctx->last_zindex) && (ctx->next_hover_root->zindex >= 0))
 		xui_set_front(ctx, ctx->next_hover_root);
@@ -296,6 +324,8 @@ void xui_end(struct xui_context_t * ctx)
 	ctx->mouse.up = 0;
 	ctx->mouse.zx = 0;
 	ctx->mouse.zy = 0;
+	ctx->mouse.vx = 0;
+	ctx->mouse.vy = 0;
 	ctx->key_pressed = 0;
 	ctx->input_text[0] = '\0';
 	n = ctx->root_list.idx;
@@ -392,29 +422,6 @@ int xui_pool_get(struct xui_context_t * ctx, struct xui_pool_item_t * items, int
 void xui_pool_update(struct xui_context_t * ctx, struct xui_pool_item_t * items, int idx)
 {
 	items[idx].last_update = ctx->frame;
-}
-
-static union xui_cmd_t * xui_cmd_push(struct xui_context_t * ctx, enum xui_cmd_type_t type, int len, struct region_t * r)
-{
-	union xui_cmd_t * cmd = (union xui_cmd_t *)(ctx->cmd_list.items + ctx->cmd_list.idx);
-	assert(ctx->cmd_list.idx + len < XUI_COMMAND_LIST_SIZE);
-	cmd->base.type = type;
-	cmd->base.len = len;
-	region_clone(&cmd->base.r, r);
-	ctx->cmd_list.idx += len;
-	return cmd;
-}
-
-static inline union xui_cmd_t * xui_cmd_push_jump(struct xui_context_t * ctx, union xui_cmd_t * addr)
-{
-	union xui_cmd_t * cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_JUMP, sizeof(struct xui_cmd_jump_t), &unlimited_region);
-	cmd->jump.addr = addr;
-	return cmd;
-}
-
-static inline union xui_cmd_t * xui_cmd_push_clip(struct xui_context_t * ctx, struct region_t * r)
-{
-	return xui_cmd_push(ctx, XUI_CMD_TYPE_CLIP, sizeof(struct xui_cmd_clip_t), r);
 }
 
 static void xui_get_bound(struct region_t * r, int x, int y)
@@ -675,6 +682,195 @@ void xui_draw_arc(struct xui_context_t * ctx, int x, int y, int radius, int a1, 
 	}
 }
 
+void xui_draw_surface(struct xui_context_t * ctx, struct surface_t * s, struct matrix_t * m, int refresh)
+{
+	union xui_cmd_t * cmd;
+	struct region_t r;
+	double x1 = 0;
+	double y1 = 0;
+	double x2 = surface_get_width(s);
+	double y2 = surface_get_height(s);
+	int clip;
+
+	matrix_transform_bounds(m, &x1, &y1, &x2, &y2);
+	region_init(&r, x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+	if((clip = xui_check_clip(ctx, &r)))
+	{
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
+		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_SURFACE, sizeof(struct xui_cmd_surface_t), &r);
+		cmd->surface.s = s;
+		memcpy(&cmd->surface.m, m, sizeof(struct matrix_t));
+		cmd->surface.refresh ^= refresh ? 1 : 0;
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, &unlimited_region);
+	}
+}
+
+void xui_draw_icon(struct xui_context_t * ctx, const char * family, uint32_t code, int x, int y, int w, int h, struct color_t * c)
+{
+	union xui_cmd_t * cmd;
+	struct region_t r;
+	int clip;
+
+	region_init(&r, x, y, w, h);
+	if((clip = xui_check_clip(ctx, &r)))
+	{
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
+		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_ICON, sizeof(struct xui_cmd_icon_t), &r);
+		cmd->icon.family = family;
+		cmd->icon.code = code;
+		cmd->icon.x = x;
+		cmd->icon.y = y;
+		cmd->icon.w = w;
+		cmd->icon.h = h;
+		memcpy(&cmd->icon.c, c, sizeof(struct color_t));
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, &unlimited_region);
+	}
+}
+
+void xui_draw_text(struct xui_context_t * ctx, int x, int y, struct text_t * txt)
+{
+	union xui_cmd_t * cmd;
+	struct region_t region;
+	double scale;
+	int w, h;
+	int clip;
+	int len;
+
+	w = txt->metrics.width;
+	h = txt->metrics.height;
+	if(txt->pixsz != txt->size)
+	{
+		scale = (double)txt->size / (double)txt->pixsz;
+		w *= scale;
+		h *= scale;
+	}
+	region_init(&region, x, y, w, h);
+	if((clip = xui_check_clip(ctx, &region)))
+	{
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
+		len = strlen(txt->utf8) + 1;
+		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_TEXT, sizeof(struct xui_cmd_text_t) + ((len + 0x3) & ~0x3), &region);
+		cmd->text.x = x;
+		cmd->text.y = y;
+		memcpy(&cmd->text.c, txt->c, sizeof(struct color_t));
+		memcpy(cmd->text.utf8, txt->utf8, len);
+		cmd->text.utf8[len] = 0;
+		memcpy(&cmd->text.txt, txt, sizeof(struct text_t));
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, &unlimited_region);
+	}
+}
+
+void xui_draw_text_align(struct xui_context_t * ctx, const char * family, int size, const char * utf8, struct region_t * r, int wrap, struct color_t * c, int opt)
+{
+	union xui_cmd_t * cmd;
+	struct region_t region;
+	struct text_t txt;
+	double scale;
+	int x, y, w, h;
+	int clip;
+	int len;
+
+	if(!family)
+		family = ctx->style.font.font_family;
+	if(size <= 0)
+		size = ctx->style.font.size;
+	if(!c)
+		c = &ctx->style.font.color;
+	text_init(&txt, utf8, c, wrap, ctx->f, family, size);
+	w = txt.metrics.width;
+	h = txt.metrics.height;
+	if(txt.pixsz != txt.size)
+	{
+		scale = (double)txt.size / (double)txt.pixsz;
+		w *= scale;
+		h *= scale;
+	}
+	switch(opt & (0x7 << 4))
+	{
+	case XUI_OPT_TEXT_LEFT:
+		x = r->x + ctx->style.layout.padding;
+		y = r->y + (r->h - h) / 2;
+		break;
+	case XUI_OPT_TEXT_RIGHT:
+		x = r->x + r->w - w - ctx->style.layout.padding;
+		y = r->y + (r->h - h) / 2;
+		break;
+	case XUI_OPT_TEXT_TOP:
+		x = r->x + (r->w - w) / 2;
+		y = r->y + ctx->style.layout.padding;
+		break;
+	case XUI_OPT_TEXT_BOTTOM:
+		x = r->x + (r->w - w) / 2;
+		y = r->y + r->h - h - ctx->style.layout.padding;
+		break;
+	case XUI_OPT_TEXT_CENTER:
+		x = r->x + (r->w - w) / 2;
+		y = r->y + (r->h - h) / 2;
+		break;
+	default:
+		x = r->x + ctx->style.layout.padding;
+		y = r->y + (r->h - h) / 2;
+		break;
+	}
+	region_init(&region, x, y, w, h);
+	xui_push_clip(ctx, r);
+	if((clip = xui_check_clip(ctx, &region)))
+	{
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
+		len = strlen(utf8) + 1;
+		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_TEXT, sizeof(struct xui_cmd_text_t) + ((len + 0x3) & ~0x3), &region);
+		cmd->text.x = x;
+		cmd->text.y = y;
+		memcpy(&cmd->text.c, c, sizeof(struct color_t));
+		memcpy(cmd->text.utf8, utf8, len);
+		cmd->text.utf8[len] = 0;
+		cmd->text.txt.utf8 = cmd->text.utf8;
+		cmd->text.txt.c = &cmd->text.c;
+		cmd->text.txt.wrap = wrap;
+		cmd->text.txt.fctx = ctx->f;
+		cmd->text.txt.family = family;
+		cmd->text.txt.pixsz = txt.pixsz;
+		cmd->text.txt.size = txt.size;
+		cmd->text.txt.metrics.ox = txt.metrics.ox;
+		cmd->text.txt.metrics.oy = txt.metrics.oy;
+		cmd->text.txt.metrics.width = txt.metrics.width;
+		cmd->text.txt.metrics.height = txt.metrics.height;
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, &unlimited_region);
+	}
+	xui_pop_clip(ctx);
+}
+
+void xui_draw_glass(struct xui_context_t * ctx, int x, int y, int w, int h, int radius, int refresh)
+{
+	union xui_cmd_t * cmd;
+	struct region_t r;
+	int clip;
+
+	region_init(&r, x, y, w, h);
+	if((clip = xui_check_clip(ctx, &r)))
+	{
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
+		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_GLASS, sizeof(struct xui_cmd_glass_t), &r);
+		cmd->glass.x = x;
+		cmd->glass.y = y;
+		cmd->glass.w = w;
+		cmd->glass.h = h;
+		cmd->glass.radius = radius;
+		cmd->glass.refresh ^= refresh ? 1 : 0;
+		if(clip < 0)
+			xui_cmd_push_clip(ctx, &unlimited_region);
+	}
+}
+
 void xui_draw_gradient(struct xui_context_t * ctx, int x, int y, int w, int h, struct color_t * lt, struct color_t * rt, struct color_t * rb, struct color_t * lb)
 {
 	union xui_cmd_t * cmd;
@@ -712,88 +908,10 @@ void xui_draw_checkerboard(struct xui_context_t * ctx, int x, int y, int w, int 
 		if(clip < 0)
 			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
 		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_CHECKERBOARD, sizeof(struct xui_cmd_checkerboard_t), &r);
-		cmd->board.x = x;
-		cmd->board.y = y;
-		cmd->board.w = w;
-		cmd->board.h = h;
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, &unlimited_region);
-	}
-}
-
-void xui_draw_surface(struct xui_context_t * ctx, struct surface_t * s, struct matrix_t * m, int refresh)
-{
-	union xui_cmd_t * cmd;
-	struct region_t r;
-	double x1 = 0;
-	double y1 = 0;
-	double x2 = surface_get_width(s);
-	double y2 = surface_get_height(s);
-	int clip;
-
-	matrix_transform_bounds(m, &x1, &y1, &x2, &y2);
-	region_init(&r, x1, y1, x2 - x1 + 1, y2 - y1 + 1);
-	if((clip = xui_check_clip(ctx, &r)))
-	{
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
-		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_SURFACE, sizeof(struct xui_cmd_surface_t), &r);
-		cmd->surface.s = s;
-		memcpy(&cmd->surface.m, m, sizeof(struct matrix_t));
-		cmd->surface.refresh ^= refresh ? 1 : 0;
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, &unlimited_region);
-	}
-}
-
-void xui_draw_text(struct xui_context_t * ctx, const char * family, int size, const char * utf8, int x, int y, int wrap, struct color_t * c)
-{
-	union xui_cmd_t * cmd;
-	struct text_t txt;
-	struct region_t r;
-	int len;
-	int clip;
-
-	text_init(&txt, utf8, c, wrap, ctx->f, family, size);
-	region_init(&r, x, y, txt.metrics.width, txt.metrics.height);
-	if((clip = xui_check_clip(ctx, &r)))
-	{
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
-		len = strlen(utf8) + 1;
-		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_TEXT, sizeof(struct xui_cmd_text_t) + ((len + 0x3) & ~0x3), &r);
-		cmd->text.family = family;
-		cmd->text.size = size;
-		cmd->text.x = x;
-		cmd->text.y = y;
-		cmd->text.wrap = wrap;
-		memcpy(&cmd->text.c, c, sizeof(struct color_t));
-		memcpy(cmd->text.utf8, utf8, len);
-		cmd->text.utf8[len] = 0;
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, &unlimited_region);
-	}
-}
-
-void xui_draw_icon(struct xui_context_t * ctx, const char * family, uint32_t code, int x, int y, int w, int h, struct color_t * c)
-{
-	union xui_cmd_t * cmd;
-	struct region_t r;
-	int clip;
-
-	region_init(&r, x, y, w, h);
-	if((clip = xui_check_clip(ctx, &r)))
-	{
-		if(clip < 0)
-			xui_cmd_push_clip(ctx, xui_get_clip(ctx));
-		cmd = xui_cmd_push(ctx, XUI_CMD_TYPE_ICON, sizeof(struct xui_cmd_icon_t), &r);
-		cmd->icon.family = family;
-		cmd->icon.code = code;
-		cmd->icon.x = x;
-		cmd->icon.y = y;
-		cmd->icon.w = w;
-		cmd->icon.h = h;
-		memcpy(&cmd->icon.c, c, sizeof(struct color_t));
+		cmd->checkerboard.x = x;
+		cmd->checkerboard.y = y;
+		cmd->checkerboard.w = w;
+		cmd->checkerboard.h = h;
 		if(clip < 0)
 			xui_cmd_push_clip(ctx, &unlimited_region);
 	}
@@ -830,6 +948,25 @@ struct xui_container_t * get_container(struct xui_context_t * ctx, unsigned int 
 	return c;
 }
 
+void push_container_body(struct xui_context_t * ctx, struct xui_container_t * c, struct region_t * body)
+{
+	struct region_t r;
+	region_expand(&r, body, -ctx->style.layout.padding);
+	push_layout(ctx, &r, c->scroll_x, c->scroll_y);
+	region_clone(&c->body, body);
+}
+
+void pop_container(struct xui_context_t * ctx)
+{
+	struct xui_container_t * c = xui_get_container(ctx);
+	struct xui_layout_t * layout = xui_get_layout(ctx);
+	c->content_width = layout->max_width - layout->body.x;
+	c->content_height = layout->max_height - layout->body.y;
+	xui_pop(ctx->container_stack);
+	xui_pop(ctx->layout_stack);
+	xui_pop_id(ctx);
+}
+
 static int in_hover_root(struct xui_context_t * ctx)
 {
 	int i = ctx->container_stack.idx;
@@ -848,111 +985,86 @@ static int xui_mouse_over(struct xui_context_t * ctx, struct region_t * r)
 	return region_hit(r, ctx->mouse.x, ctx->mouse.y) && region_hit(xui_get_clip(ctx), ctx->mouse.x, ctx->mouse.y) && in_hover_root(ctx);
 }
 
-static void scrollbars(struct xui_context_t * ctx, struct xui_container_t * c, struct region_t * body)
+void scroll_begin(struct xui_context_t * ctx, struct xui_container_t * c, int opt)
 {
-	struct region_t base, thumb;
-	int sz = ctx->style.scroll.scroll_size;
-	int width = c->content_width;
-	int height = c->content_height;
-	int maxscroll;
-	unsigned int id;
+	int maxw, maxh;
 
-	width += ctx->style.layout.padding * 2;
-	height += ctx->style.layout.padding * 2;
-	xui_push_clip(ctx, body);
-	if(height > c->body.h)
-		body->w -= sz;
-	if(width > c->body.w)
-		body->h -= sz;
-
-	maxscroll = height - body->h;
-	if(maxscroll > 0 && body->h > 0)
-	{
-		id = xui_get_id(ctx, "!scrollbary", 11);
-		region_clone(&base, body);
-		base.x = body->x + body->w;
-		base.w = ctx->style.scroll.scroll_size;
-		xui_control_update(ctx, id, &base, 0);
-		if((ctx->active == id) && (ctx->mouse.state & XUI_MOUSE_LEFT))
-			c->scroll_y += ctx->mouse.dy * height / base.h;
-		c->scroll_y = clamp(c->scroll_y, 0, maxscroll);
-		xui_draw_rectangle(ctx, base.x, base.y, base.w, base.h, ctx->style.scroll.scroll_radius, 0, &ctx->style.scroll.scroll_color);
-		region_clone(&thumb, &base);
-		thumb.h = max(ctx->style.scroll.thumb_size, base.h * body->h / height);
-		thumb.y += c->scroll_y * (base.h - thumb.h) / maxscroll;
-		xui_draw_rectangle(ctx, thumb.x, thumb.y, thumb.w, thumb.h, ctx->style.scroll.thumb_radius, 0, &ctx->style.scroll.thumb_color);
-		if(xui_mouse_over(ctx, body))
-			ctx->scroll_target = c;
-	}
+	if(opt & XUI_OPT_NOSCROLL)
+		c->noscroll = 1;
 	else
 	{
-		c->scroll_y = 0;
+		maxw = c->content_width + ctx->style.layout.padding * 2 - c->body.w;
+		if((maxw > 0) && (c->body.w > 0))
+		{
+			c->scroll_x = clamp(c->scroll_x, 0, maxw);
+			if(xui_mouse_over(ctx, &c->body))
+				ctx->scroll_target = c;
+			else
+			{
+				c->scroll_vx = 0;
+				c->scroll_vy = 0;
+			}
+		}
+		else
+		{
+			c->scroll_x = 0;
+			c->scroll_vx = 0;
+		}
+		maxh = c->content_height + ctx->style.layout.padding * 2 - c->body.h;
+		if((maxh > 0) && (c->body.h > 0))
+		{
+			c->scroll_y = clamp(c->scroll_y, 0, maxh);
+			if(xui_mouse_over(ctx, &c->body))
+				ctx->scroll_target = c;
+			else
+			{
+				c->scroll_vx = 0;
+				c->scroll_vy = 0;
+			}
+		}
+		else
+		{
+			c->scroll_y = 0;
+			c->scroll_vy = 0;
+		}
+		c->noscroll = 0;
 	}
-
-	maxscroll = width - body->w;
-	if(maxscroll > 0 && body->w > 0)
-	{
-		id = xui_get_id(ctx, "!scrollbarx", 11);
-		region_clone(&base, body);
-		base.y = body->y + body->h;
-		base.h = ctx->style.scroll.scroll_size;
-		xui_control_update(ctx, id, &base, 0);
-		if((ctx->active == id) && (ctx->mouse.state & XUI_MOUSE_LEFT))
-			c->scroll_x += ctx->mouse.dx * width / base.w;
-		c->scroll_x = clamp(c->scroll_x, 0, maxscroll);
-		xui_draw_rectangle(ctx, base.x, base.y, base.w, base.h, ctx->style.scroll.scroll_radius, 0, &ctx->style.scroll.scroll_color);
-		region_clone(&thumb, &base);
-		thumb.w = max(ctx->style.scroll.thumb_size, base.w * body->w / width);
-		thumb.x += c->scroll_x * (base.w - thumb.w) / maxscroll;
-		xui_draw_rectangle(ctx, thumb.x, thumb.y, thumb.w, thumb.h, ctx->style.scroll.thumb_radius, 0, &ctx->style.scroll.thumb_color);
-		if(xui_mouse_over(ctx, body))
-			ctx->scroll_target = c;
-	}
-	else
-	{
-		c->scroll_x = 0;
-	}
-	xui_pop_clip(ctx);
 }
 
-void push_container_body(struct xui_context_t * ctx, struct xui_container_t * c, struct region_t * body, int opt)
+void scroll_end(struct xui_context_t * ctx, struct xui_container_t * c)
 {
 	struct region_t r;
-	if(~opt & XUI_OPT_NOSCROLL)
-		scrollbars(ctx, c, body);
-	region_expand(&r, body, -ctx->style.layout.padding);
-	push_layout(ctx, &r, c->scroll_x, c->scroll_y);
-	region_clone(&c->body, body);
-}
+	struct color_t * color;
+	int width, height;
+	int maxw, maxh;
 
-void pop_container(struct xui_context_t * ctx)
-{
-	struct xui_container_t * c = xui_get_container(ctx);
-	struct xui_layout_t * layout = xui_get_layout(ctx);
-	c->content_width = layout->max_width - layout->body.x;
-	c->content_height = layout->max_height - layout->body.y;
-	xui_pop(ctx->container_stack);
-	xui_pop(ctx->layout_stack);
-	xui_pop_id(ctx);
-}
-
-void root_container_begin(struct xui_context_t * ctx, struct xui_container_t * c)
-{
-	xui_push(ctx->container_stack, c);
-	xui_push(ctx->root_list, c);
-	c->head = xui_cmd_push_jump(ctx, NULL);
-	if(region_hit(&c->region, ctx->mouse.x, ctx->mouse.y) && (!ctx->next_hover_root || (c->zindex > ctx->next_hover_root->zindex)))
-		ctx->next_hover_root = c;
-	xui_push(ctx->clip_stack, unlimited_region);
-}
-
-void root_container_end(struct xui_context_t * ctx)
-{
-	struct xui_container_t * c = xui_get_container(ctx);
-	c->tail = xui_cmd_push_jump(ctx, NULL);
-	c->head->jump.addr = ctx->cmd_list.items + ctx->cmd_list.idx;
-	xui_pop_clip(ctx);
-	pop_container(ctx);
+	if(!c->noscroll)
+	{
+		width = c->content_width + ctx->style.layout.padding * 2;
+		maxw = width - c->body.w;
+		if((maxw > 0) && (c->body.w > 0))
+		{
+			r.w = max(24, c->body.w * c->body.w / width);
+			r.h = ctx->style.scroll.width;
+			r.x = c->body.x + c->scroll_x * (c->body.w - r.w) / maxw;
+			r.y = c->body.y + c->body.h - ctx->style.scroll.width;
+			color = &ctx->style.scroll.color;
+			if(color->a)
+				xui_draw_rectangle(ctx, r.x, r.y, r.w, r.h, ctx->style.scroll.radius, 0, color);
+		}
+		height = c->content_height + ctx->style.layout.padding * 2;
+		maxh = height - c->body.h;
+		if((maxh > 0) && (c->body.h > 0))
+		{
+			r.w = ctx->style.scroll.width;
+			r.h = max(24, c->body.h * c->body.h / height);
+			r.x = c->body.x + c->body.w - ctx->style.scroll.width;
+			r.y = c->body.y + c->scroll_y * (c->body.h - r.h) / maxh;
+			color = &ctx->style.scroll.color;
+			if(color->a)
+				xui_draw_rectangle(ctx, r.x, r.y, r.w, r.h, ctx->style.scroll.radius, 0, color);
+		}
+	}
 }
 
 void xui_control_update(struct xui_context_t * ctx, unsigned int id, struct region_t * r, int opt)
@@ -984,50 +1096,6 @@ void xui_control_update(struct xui_context_t * ctx, unsigned int id, struct regi
 	}
 }
 
-void xui_control_draw_text(struct xui_context_t * ctx, const char * utf8, struct region_t * r, struct color_t * c, int opt)
-{
-	struct text_t txt;
-	const char * family = ctx->style.font.font_family;
-	int size = ctx->style.font.size;
-	int tw, th;
-	int x, y;
-
-	text_init(&txt, utf8, c, 0, ctx->f, family, size);
-	tw = txt.metrics.width;
-	th = txt.metrics.height;
-
-	xui_push_clip(ctx, r);
-	switch(opt & (0x7 << 5))
-	{
-	case XUI_OPT_TEXT_LEFT:
-		x = r->x + ctx->style.layout.padding;
-		y = r->y + (r->h - th) / 2;
-		break;
-	case XUI_OPT_TEXT_RIGHT:
-		x = r->x + r->w - tw - ctx->style.layout.padding;
-		y = r->y + (r->h - th) / 2;
-		break;
-	case XUI_OPT_TEXT_TOP:
-		x = r->x + (r->w - tw) / 2;
-		y = r->y + ctx->style.layout.padding;
-		break;
-	case XUI_OPT_TEXT_BOTTOM:
-		x = r->x + (r->w - tw) / 2;
-		y = r->y + r->h - th - ctx->style.layout.padding;
-		break;
-	case XUI_OPT_TEXT_CENTER:
-		x = r->x + (r->w - tw) / 2;
-		y = r->y + (r->h - th) / 2;
-		break;
-	default:
-		x = r->x + ctx->style.layout.padding;
-		y = r->y + (r->h - th) / 2;
-		break;
-	}
-	xui_draw_text(ctx, family, size, utf8, x, y, 0, c);
-	xui_pop_clip(ctx);
-}
-
 void xui_layout_width(struct xui_context_t * ctx, int width)
 {
 	xui_get_layout(ctx)->size_width = width;
@@ -1044,13 +1112,13 @@ void xui_layout_row(struct xui_context_t * ctx, int items, const int * widths, i
 	if(widths)
 	{
 		assert(items <= XUI_MAX_WIDTHS);
-		memcpy(layout->widths, widths, items * sizeof(widths[0]));
+		memcpy(layout->widths, widths, items * sizeof(int));
 	}
 	layout->items = items;
+	layout->item_index = 0;
 	layout->position_x = layout->indent;
 	layout->position_y = layout->next_row;
 	layout->size_height = height;
-	layout->item_index = 0;
 }
 
 void xui_layout_begin_column(struct xui_context_t * ctx)
@@ -1136,13 +1204,13 @@ struct xui_context_t * xui_context_alloc(const char * fb, const char * input, vo
 	memset(ctx, 0, sizeof(struct xui_context_t));
 	ctx->w = window_alloc(fb, input);
 	ctx->f = font_context_alloc();
-	ctx->m = NULL;
+	ctx->lang = NULL;
 	region_init(&ctx->screen, 0, 0, window_get_width(ctx->w), window_get_height(ctx->w));
 	ctx->cpshift = 7;
 	ctx->cpsize = 1 << ctx->cpshift;
 	ctx->cwidth = (ctx->screen.w >> ctx->cpshift) + 1;
 	ctx->cheight = (ctx->screen.h >> ctx->cpshift) + 1;
-	len = ctx->cwidth * ctx->cheight * sizeof(int);
+	len = ctx->cwidth * ctx->cheight * sizeof(unsigned int);
 	ctx->cells[0] = malloc(len);
 	ctx->cells[1] = malloc(len);
 	if(!ctx->cells[0] || !ctx->cells[1])
@@ -1159,7 +1227,7 @@ struct xui_context_t * xui_context_alloc(const char * fb, const char * input, vo
 	ctx->running = 1;
 	region_clone(&ctx->clip, &ctx->screen);
 	xui_load_style(ctx, style_default, sizeof(style_default));
-	ctx->stamp = ktime_to_ns(ktime_get());
+	ctx->stamp = ktime_get();
 	ctx->priv = data;
 
 	return ctx;
@@ -1177,8 +1245,8 @@ void xui_context_free(struct xui_context_t * ctx)
 	{
 		window_free(ctx->w);
 		font_context_free(ctx->f);
-		if(ctx->m)
-			hmap_free(ctx->m, hmap_entry_callback);
+		if(ctx->lang)
+			hmap_free(ctx->lang, hmap_entry_callback);
 		if(ctx->cells[0])
 			free(ctx->cells[0]);
 		if(ctx->cells[1])
@@ -1373,29 +1441,17 @@ void xui_load_style(struct xui_context_t * ctx, const char * json, int len)
 						color_init_string(&ctx->style.panel.border_color, o->u.string.ptr);
 					break;
 
-				case 0xb0155f18: /* "scroll-scroll-size" */
+				case 0xce6db481: /* "scroll-width" */
 					if(o && (o->type == JSON_INTEGER))
-						ctx->style.scroll.scroll_size = o->u.integer;
+						ctx->style.scroll.width = o->u.integer;
 					break;
-				case 0x07f7a8a5: /* "scroll-scroll-radius" */
+				case 0x8fe988c9: /* "scroll-radius" */
 					if(o && (o->type == JSON_INTEGER))
-						ctx->style.scroll.scroll_radius = o->u.integer;
+						ctx->style.scroll.radius = o->u.integer;
 					break;
-				case 0xf2633ba9: /* "scroll-thumb-size" */
-					if(o && (o->type == JSON_INTEGER))
-						ctx->style.scroll.thumb_size = o->u.integer;
-					break;
-				case 0x152eed76: /* "scroll-thumb-radius" */
-					if(o && (o->type == JSON_INTEGER))
-						ctx->style.scroll.thumb_radius = o->u.integer;
-					break;
-				case 0xb1a2ca7c: /* "scroll-scroll-color" */
+				case 0xcd073620: /* "scroll-color" */
 					if(o && (o->type == JSON_STRING))
-						color_init_string(&ctx->style.scroll.scroll_color, o->u.string.ptr);
-					break;
-				case 0x3dac392d: /* "scroll-thumb-color" */
-					if(o && (o->type == JSON_STRING))
-						color_init_string(&ctx->style.scroll.thumb_color, o->u.string.ptr);
+						color_init_string(&ctx->style.scroll.color, o->u.string.ptr);
 					break;
 
 				case 0xa6c2fb38: /* "collapse-border-radius" */
@@ -1574,11 +1630,11 @@ void xui_load_lang(struct xui_context_t * ctx, const char * json, int len)
 
 	if(json && (len > 0))
 	{
-		if(!ctx->m)
-			ctx->m = hmap_alloc(0);
-		if(ctx->m)
+		if(!ctx->lang)
+			ctx->lang = hmap_alloc(0);
+		if(ctx->lang)
 		{
-			hmap_clear(ctx->m, hmap_entry_callback);
+			hmap_clear(ctx->lang, hmap_entry_callback);
 			v = json_parse(json, len, NULL);
 			if(v && (v->type == JSON_OBJECT))
 			{
@@ -1587,13 +1643,13 @@ void xui_load_lang(struct xui_context_t * ctx, const char * json, int len)
 					if(v->u.object.values[i].value->type == JSON_STRING)
 					{
 						key = v->u.object.values[i].name;
-						value = hmap_search(ctx->m, key);
+						value = hmap_search(ctx->lang, key);
 						if(value)
 						{
-							hmap_remove(ctx->m, key);
+							hmap_remove(ctx->lang, key);
 							free(value);
 						}
-						hmap_add(ctx->m, key, strdup(v->u.object.values[i].value->u.string.ptr));
+						hmap_add(ctx->lang, key, strdup(v->u.object.values[i].value->u.string.ptr));
 					}
 				}
 			}
@@ -1615,10 +1671,9 @@ static void xui_draw(struct window_t * w, void * o)
 	struct region_t * r, * clip = &ctx->clip;
 	union xui_cmd_t * cmd;
 	struct matrix_t m;
-	struct text_t txt;
 	struct icon_t ico;
-	int count, size;
-	int i;
+	double scale;
+	int count, i;
 
 	if((count = w->rl->count) > 0)
 	{
@@ -1662,25 +1717,36 @@ static void xui_draw(struct window_t * w, void * o)
 				case XUI_CMD_TYPE_ARC:
 					surface_shape_arc(s, clip, cmd->arc.x, cmd->arc.y, cmd->arc.radius, cmd->arc.a1, cmd->arc.a2, cmd->arc.thickness, &cmd->arc.c);
 					break;
-				case XUI_CMD_TYPE_CHECKERBOARD:
-					surface_shape_checkerboard(s, clip, cmd->board.x, cmd->board.y, cmd->board.w, cmd->board.h);
-					break;
-				case XUI_CMD_TYPE_GRADIENT:
-					surface_shape_gradient(s, clip, cmd->gradient.x, cmd->gradient.y, cmd->gradient.w, cmd->gradient.h, &cmd->gradient.lt, &cmd->gradient.rt, &cmd->gradient.rb, &cmd->gradient.lb);
-					break;
 				case XUI_CMD_TYPE_SURFACE:
 					surface_blit(s, clip, &cmd->surface.m, cmd->surface.s, RENDER_TYPE_GOOD);
 					break;
-				case XUI_CMD_TYPE_TEXT:
-					text_init(&txt, cmd->text.utf8, &cmd->text.c, cmd->text.wrap, ctx->f, cmd->text.family, cmd->text.size);
-					matrix_init_translate(&m, cmd->text.x, cmd->text.y);
-					surface_text(s, clip, &m, &txt);
-					break;
 				case XUI_CMD_TYPE_ICON:
-					size = min(cmd->icon.w, cmd->icon.h);
-					icon_init(&ico, cmd->icon.code, &cmd->icon.c, ctx->f, cmd->icon.family, size);
-					matrix_init_translate(&m, cmd->icon.x + (cmd->icon.w - size) / 2, cmd->icon.y + (cmd->icon.h - size) / 2);
+					icon_init(&ico, cmd->icon.code, &cmd->icon.c, ctx->f, cmd->icon.family, min(cmd->icon.w, cmd->icon.h));
+					matrix_init_translate(&m, cmd->icon.x + (cmd->icon.w - ico.size) / 2, cmd->icon.y + (cmd->icon.h - ico.size) / 2);
+					if(ico.pixsz != ico.size)
+					{
+						scale = (double)ico.size / (double)ico.pixsz;
+						matrix_scale(&m, scale, scale);
+					}
 					surface_icon(s, clip, &m, &ico);
+					break;
+				case XUI_CMD_TYPE_TEXT:
+					matrix_init_translate(&m, cmd->text.x, cmd->text.y);
+					if(cmd->text.txt.pixsz != cmd->text.txt.size)
+					{
+						scale = (double)cmd->text.txt.size / (double)cmd->text.txt.pixsz;
+						matrix_scale(&m, scale, scale);
+					}
+					surface_text(s, clip, &m, &cmd->text.txt);
+					break;
+				case XUI_CMD_TYPE_GLASS:
+					surface_effect_glass(s, clip, cmd->glass.x, cmd->glass.y, cmd->glass.w, cmd->glass.h, cmd->glass.radius);
+					break;
+				case XUI_CMD_TYPE_GRADIENT:
+					surface_effect_gradient(s, clip, cmd->gradient.x, cmd->gradient.y, cmd->gradient.w, cmd->gradient.h, &cmd->gradient.lt, &cmd->gradient.rt, &cmd->gradient.rb, &cmd->gradient.lb);
+					break;
+				case XUI_CMD_TYPE_CHECKERBOARD:
+					surface_effect_checkerboard(s, clip, cmd->checkerboard.x, cmd->checkerboard.y, cmd->checkerboard.w, cmd->checkerboard.h);
 					break;
 				default:
 					break;
@@ -1693,6 +1759,7 @@ static void xui_draw(struct window_t * w, void * o)
 void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 {
 	struct event_t e;
+	int64_t delta;
 	char utf8[16];
 	int l, sz;
 
@@ -1847,20 +1914,33 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 				ctx->mouse.y = e.e.mouse_down.y;
 				ctx->mouse.state |= e.e.mouse_down.button;
 				ctx->mouse.down |= e.e.mouse_down.button;
+				ctx->mouse.tx = e.e.mouse_down.x;
+				ctx->mouse.ty = e.e.mouse_down.y;
+				ctx->mouse.tdown = e.timestamp;
 				break;
 			case EVENT_TYPE_MOUSE_MOVE:
 				ctx->mouse.x = e.e.mouse_move.x;
 				ctx->mouse.y = e.e.mouse_move.y;
+				ctx->mouse.tmove = e.timestamp;
 				break;
 			case EVENT_TYPE_MOUSE_UP:
 				ctx->mouse.x = e.e.mouse_up.x;
 				ctx->mouse.y = e.e.mouse_up.y;
 				ctx->mouse.state &= ~e.e.mouse_up.button;
 				ctx->mouse.up |= e.e.mouse_up.button;
+				if(ktime_to_ns(ktime_sub(e.timestamp, ctx->mouse.tmove)) < 50000000LL)
+				{
+					delta = ktime_to_ns(ktime_sub(e.timestamp, ctx->mouse.tdown));
+					if(delta > 0)
+					{
+						ctx->mouse.vx = (e.e.mouse_up.x - ctx->mouse.tx) * 1000000000LL / delta;
+						ctx->mouse.vy = (e.e.mouse_up.y - ctx->mouse.ty) * 1000000000LL / delta;
+					}
+				}
 				break;
 			case EVENT_TYPE_MOUSE_WHEEL:
-				ctx->mouse.zx -= e.e.mouse_wheel.dx * 30;
-				ctx->mouse.zy -= e.e.mouse_wheel.dy * 30;
+				ctx->mouse.zx += e.e.mouse_wheel.dx;
+				ctx->mouse.zy += e.e.mouse_wheel.dy;
 				break;
 			case EVENT_TYPE_TOUCH_BEGIN:
 				if(e.e.touch_begin.id == 0)
@@ -1869,6 +1949,9 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 					ctx->mouse.oy = ctx->mouse.y = e.e.touch_begin.y;
 					ctx->mouse.state |= MOUSE_BUTTON_LEFT;
 					ctx->mouse.down |= MOUSE_BUTTON_LEFT;
+					ctx->mouse.tx = e.e.touch_begin.x;
+					ctx->mouse.ty = e.e.touch_begin.y;
+					ctx->mouse.tdown = e.timestamp;
 				}
 				break;
 			case EVENT_TYPE_TOUCH_MOVE:
@@ -1876,6 +1959,7 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 				{
 					ctx->mouse.x = e.e.touch_move.x;
 					ctx->mouse.y = e.e.touch_move.y;
+					ctx->mouse.tmove = e.timestamp;
 				}
 				break;
 			case EVENT_TYPE_TOUCH_END:
@@ -1885,6 +1969,15 @@ void xui_loop(struct xui_context_t * ctx, void (*func)(struct xui_context_t *))
 					ctx->mouse.y = e.e.touch_end.y;
 					ctx->mouse.state &= ~MOUSE_BUTTON_LEFT;
 					ctx->mouse.up |= MOUSE_BUTTON_LEFT;
+					if(ktime_to_ns(ktime_sub(e.timestamp, ctx->mouse.tmove)) < 50000000LL)
+					{
+						delta = ktime_to_ns(ktime_sub(e.timestamp, ctx->mouse.tdown));
+						if(delta > 0)
+						{
+							ctx->mouse.vx = (e.e.touch_end.x - ctx->mouse.tx) * 1000000000LL / delta;
+							ctx->mouse.vy = (e.e.touch_end.y - ctx->mouse.ty) * 1000000000LL / delta;
+						}
+					}
 				}
 				break;
 			case EVENT_TYPE_SYSTEM_EXIT:

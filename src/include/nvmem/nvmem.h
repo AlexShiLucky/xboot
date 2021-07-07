@@ -6,17 +6,21 @@ extern "C" {
 #endif
 
 #include <xboot.h>
-#include <nvmem/kvdb.h>
 
 /* 非易失memory数据结构 */
 struct nvmem_t
 {
-	char * name;
-	struct kvdb_t * db;
-	int (*capacity)(struct nvmem_t * m);
-	int (*read)(struct nvmem_t * m, void * buf, int offset, int count);
-	int (*write)(struct nvmem_t * m, void * buf, int offset, int count);
-	void * priv;
+    char * name;
+    struct {
+        struct timer_t timer;
+        struct hmap_t * map;
+        spinlock_t lock;
+        int dirty;
+    } kvdb;
+    int (*capacity)(struct nvmem_t * m);
+    int (*read)(struct nvmem_t * m, void * buf, int offset, int count);
+    int (*write)(struct nvmem_t * m, void * buf, int offset, int count);
+    void * priv;
 };
 
 struct nvmem_t * search_nvmem(const char * name);
@@ -28,9 +32,8 @@ int nvmem_capacity(struct nvmem_t * m);
 int nvmem_read(struct nvmem_t * m, void * buf, int offset, int count);
 int nvmem_write(struct nvmem_t * m, void * buf, int offset, int count);
 void nvmem_set(struct nvmem_t * m, const char * key, const char * value);
-char * nvmem_get(struct nvmem_t * m, const char * key, const char * def);
+const char * nvmem_get(struct nvmem_t * m, const char * key, const char * def);
 void nvmem_clear(struct nvmem_t * m);
-void nvmem_sync(struct nvmem_t * m);
 
 #ifdef __cplusplus
 }

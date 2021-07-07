@@ -29,6 +29,25 @@
 #include <xboot.h>
 #include <xui/window.h>
 
+static inline void root_container_begin(struct xui_context_t * ctx, struct xui_container_t * c)
+{
+	xui_push(ctx->container_stack, c);
+	xui_push(ctx->root_list, c);
+	c->head = xui_cmd_push_jump(ctx, NULL);
+	if(region_hit(&c->region, ctx->mouse.x, ctx->mouse.y) && (!ctx->next_hover_root || (c->zindex > ctx->next_hover_root->zindex)))
+		ctx->next_hover_root = c;
+	xui_push(ctx->clip_stack, *(&(struct region_t){0, 0, INT_MAX, INT_MAX}));
+}
+
+static inline void root_container_end(struct xui_context_t * ctx)
+{
+	struct xui_container_t * c = xui_get_container(ctx);
+	c->tail = xui_cmd_push_jump(ctx, NULL);
+	c->head->jump.addr = ctx->cmd_list.items + ctx->cmd_list.idx;
+	xui_pop_clip(ctx);
+	pop_container(ctx);
+}
+
 int xui_begin_window_ex(struct xui_context_t * ctx, const char * title, struct region_t * r, int opt)
 {
 	unsigned int id = title ? xui_get_id(ctx, title, strlen(title)) : xui_get_id(ctx, &title, sizeof(title));
@@ -42,19 +61,22 @@ int xui_begin_window_ex(struct xui_context_t * ctx, const char * title, struct r
 			region_clone(&c->region, &ctx->screen);
 		else if(c->region.w == 0)
 			region_clone(&c->region, r ? r : &ctx->screen);
-		root_container_begin(ctx, c);
 		region_clone(&region, &c->region);
 		region_clone(&body, &c->region);
+		root_container_begin(ctx, c);
+		scroll_begin(ctx, c, opt);
 		if(opt & XUI_WINDOW_FULLSCREEN)
 		{
-			xui_draw_rectangle(ctx, region.x, region.y, region.w, region.h, 0, 0, &ctx->style.window.background_color);
-			push_container_body(ctx, c, &body, opt);
+			if(~opt & XUI_WINDOW_TRANSPARENT)
+				xui_draw_rectangle(ctx, region.x, region.y, region.w, region.h, 0, 0, &ctx->style.window.background_color);
+			push_container_body(ctx, c, &body);
 		}
 		else
 		{
 			if(ctx->style.window.border_color.a && (ctx->style.window.border_width > 0))
 				xui_draw_rectangle(ctx, region.x, region.y, region.w, region.h, ctx->style.window.border_radius, ctx->style.window.border_width, &ctx->style.window.border_color);
-			xui_draw_rectangle(ctx, region.x, region.y, region.w, region.h, ctx->style.window.border_radius, 0, &ctx->style.window.background_color);
+			if(~opt & XUI_WINDOW_TRANSPARENT)
+				xui_draw_rectangle(ctx, region.x, region.y, region.w, region.h, ctx->style.window.border_radius, 0, &ctx->style.window.background_color);
 			if(~opt & XUI_WINDOW_NOTITLE)
 			{
 				struct region_t hr, hdr, hcr;
@@ -66,7 +88,7 @@ int xui_begin_window_ex(struct xui_context_t * ctx, const char * title, struct r
 				region_init(&hdr, hr.x, hr.y, hr.w - hcr.w, hr.h);
 				id = xui_get_id(ctx, "!title", 6);
 				xui_draw_rectangle(ctx, hr.x, hr.y, hr.w, hr.h, (0xc << 16) | ctx->style.window.border_radius, 0, &ctx->style.window.title_color);
-				xui_control_draw_text(ctx, title, &hdr, &ctx->style.window.text_color, opt);
+				xui_draw_text_align(ctx, ctx->style.font.font_family, ctx->style.font.size, title, &hdr, 0, &ctx->style.window.text_color, opt);
 				xui_control_update(ctx, id, &hdr, opt);
 				if((ctx->active == id) && (ctx->mouse.state & XUI_MOUSE_LEFT))
 				{
@@ -107,7 +129,7 @@ int xui_begin_window_ex(struct xui_context_t * ctx, const char * title, struct r
 					ctx->resize_id = 0;
 				}
 			}
-			push_container_body(ctx, c, &body, opt);
+			push_container_body(ctx, c, &body);
 			if(opt & XUI_WINDOW_POPUP)
 			{
 				struct region_t * pr = &xui_get_layout(ctx)->body;
@@ -125,6 +147,8 @@ int xui_begin_window_ex(struct xui_context_t * ctx, const char * title, struct r
 
 void xui_end_window(struct xui_context_t * ctx)
 {
+	struct xui_container_t * c = xui_get_container(ctx);
+	scroll_end(ctx, c);
 	xui_pop_clip(ctx);
 	root_container_end(ctx);
 }

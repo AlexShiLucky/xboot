@@ -11,7 +11,7 @@ int xui_colorpicker_ex(struct xui_context_t * ctx, struct color_t * c, int opt);
 
 static inline int xui_colorpicker(struct xui_context_t * ctx, struct color_t * c)
 {
-	return xui_colorpicker_ex(ctx, c, 0);
+    return xui_colorpicker_ex(ctx, c, 0);
 }
 
 #ifdef __cplusplus

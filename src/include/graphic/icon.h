@@ -11,17 +11,18 @@ extern "C" {
 #include <graphic/font.h>
 
 struct icon_t {
-	uint32_t code;
-	struct color_t * c;
-	struct font_context_t * fctx;
-	const char * family;
-	int size;
-	struct {
-		int ox;
-		int oy;
-		int width;
-		int height;
-	} metrics;
+    uint32_t code;
+    struct color_t * c;
+    struct font_context_t * fctx;
+    const char * family;
+    int pixsz;
+    int size;
+    struct {
+        int ox;
+        int oy;
+        int width;
+        int height;
+    } metrics;
 };
 
 void icon_init(struct icon_t * ico, uint32_t code, struct color_t * c, struct font_context_t * fctx, const char * family, int size);

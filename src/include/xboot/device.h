@@ -19,6 +19,7 @@ enum device_type_t {
     DEVICE_TYPE_MAX_COUNT
 };
 
+
 #else
 enum device_type_t {
     DEVICE_TYPE_ADC,
@@ -36,7 +37,7 @@ enum device_type_t {
     DEVICE_TYPE_DMACHIP,
     DEVICE_TYPE_FRAMEBUFFER,
     DEVICE_TYPE_GMETER,
-	DEVICE_TYPE_GNSS,
+    DEVICE_TYPE_GNSS,
     DEVICE_TYPE_GPIOCHIP,
     DEVICE_TYPE_GYROSCOPE,
     DEVICE_TYPE_HYGROMETER,
@@ -64,6 +65,7 @@ enum device_type_t {
     DEVICE_TYPE_UART,
     DEVICE_TYPE_VIBRATOR,
     DEVICE_TYPE_WATCHDOG,
+    DEVICE_TYPE_WIFI,
     DEVICE_TYPE_MAX_COUNT
 };
 #endif

@@ -11,18 +11,19 @@ extern "C" {
 #include <graphic/font.h>
 
 struct text_t {
-	const char * utf8;
-	struct color_t * c;
-	int wrap;
-	struct font_context_t * fctx;
-	const char * family;
-	int size;
-	struct {
-		int ox;
-		int oy;
-		int width;
-		int height;
-	} metrics;
+    const char * utf8;
+    struct color_t * c;
+    int wrap;
+    struct font_context_t * fctx;
+    const char * family;
+    int pixsz;
+    int size;
+    struct {
+        int ox;
+        int oy;
+        int width;
+        int height;
+    } metrics;
 };
 
 void text_init(struct text_t * txt, const char * utf8, struct color_t * c, int wrap, struct font_context_t * fctx, const char * family, int size);

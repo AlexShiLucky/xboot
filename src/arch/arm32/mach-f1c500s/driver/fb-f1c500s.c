@@ -400,6 +400,7 @@ static inline void fb_f1c500s_init(struct fb_f1c500s_pdata_t * pdat)
 	f1c500s_debe_set_mode(pdat);
 	f1c500s_tcon_set_mode(pdat);
 	f1c500s_tcon_enable(pdat);
+	f1c500s_debe_set_address(pdat, pdat->vram[pdat->index]);
 }
 
 static void fb_setbl(struct framebuffer_t * fb, int brightness)
@@ -417,7 +418,7 @@ static int fb_getbl(struct framebuffer_t * fb)
 static struct surface_t * fb_create(struct framebuffer_t * fb)
 {
 	struct fb_f1c500s_pdata_t * pdat = (struct fb_f1c500s_pdata_t *)fb->priv;
-return surface_alloc(pdat->width, pdat->height, NULL);
+	return surface_alloc(pdat->width, pdat->height, NULL);
 }
 
 static void fb_destroy(struct framebuffer_t * fb, struct surface_t * s)

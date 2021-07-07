@@ -47,3 +47,4 @@ Xdef(THERMOMETER,     "thermometer")   /* 温度计设备 */
 Xdef(UART,            "uart")          /* Uart设备 */
 Xdef(VIBRATOR,        "vibrator")      /* 振动器设备 */
 Xdef(WATCHDOG,        "watchdog")      /* 看门狗设备 */
+Xdef(WIFI,            "wifi")          /* WIFI设备 */

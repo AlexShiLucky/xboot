@@ -108,11 +108,17 @@ int xui_textedit_ex(struct xui_context_t * ctx, char * buf, int size, int opt)
 			text_init(&txt, buf, fg, 0, ctx->f, family, size);
 			int textw = txt.metrics.width;
 			int texth = txt.metrics.height;
+			if(txt.pixsz != txt.size)
+			{
+				double scale = (double)txt.size / (double)txt.pixsz;
+				textw *= scale;
+				texth *= scale;
+			}
 			int ofx = r->w - ctx->style.layout.padding - textw - 1;
 			int textx = r->x + min(ofx, ctx->style.layout.padding);
 			int texty = r->y + (r->h - texth) / 2;
 			xui_push_clip(ctx, r);
-			xui_draw_text(ctx, family, size, buf, textx, texty, 0, fg);
+			xui_draw_text(ctx, textx, texty, &txt);
 			xui_draw_rectangle(ctx, textx + textw, r->y, 2, r->h, 0, 0, fg);
 			xui_pop_clip(ctx);
 		}
@@ -127,7 +133,7 @@ int xui_textedit_ex(struct xui_context_t * ctx, char * buf, int size, int opt)
 		if(bg->a)
 			xui_draw_rectangle(ctx, r->x, r->y, r->w, r->h, radius, 0, bg);
 		if(fg->a)
-			xui_control_draw_text(ctx, buf, r, fg, opt);
+			xui_draw_text_align(ctx, ctx->style.font.font_family, ctx->style.font.size, buf, r, 0, fg, opt);
 	}
 	else
 	{
@@ -139,7 +145,7 @@ int xui_textedit_ex(struct xui_context_t * ctx, char * buf, int size, int opt)
 			if(bg->a)
 			{
 				xui_draw_rectangle(ctx, r->x, r->y, r->w, r->h, radius, ctx->style.textedit.outline_width, bg);
-				xui_control_draw_text(ctx, buf, r, bg, opt);
+				xui_draw_text_align(ctx, ctx->style.font.font_family, ctx->style.font.size, buf, r, 0, bg, opt);
 			}
 		}
 		else
@@ -149,7 +155,7 @@ int xui_textedit_ex(struct xui_context_t * ctx, char * buf, int size, int opt)
 			if(bg->a)
 				xui_draw_rectangle(ctx, r->x, r->y, r->w, r->h, radius, 0, bg);
 			if(fg->a)
-				xui_control_draw_text(ctx, buf, r, fg, opt);
+				xui_draw_text_align(ctx, ctx->style.font.font_family, ctx->style.font.size, buf, r, 0, fg, opt);
 		}
 	}
 	return change;

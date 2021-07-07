@@ -31,15 +31,15 @@
 
 void xui_text(struct xui_context_t * ctx, const char * utf8)
 {
-	const char * family = ctx->style.font.font_family;
-	struct color_t * c = &ctx->style.font.color;
 	struct region_t * r;
 	struct text_t txt;
-	int size = ctx->style.font.size;
-	int wrap = xui_get_layout(ctx)->body.w;
+	int h;
 
-	text_init(&txt, utf8, c, wrap, ctx->f, family, size);
-	xui_layout_row(ctx, 1, (int[]){ -1 }, txt.metrics.height);
+	text_init(&txt, utf8, &ctx->style.font.color, xui_get_layout(ctx)->body.w, ctx->f, ctx->style.font.font_family, ctx->style.font.size);
+	h = txt.metrics.height;
+	if(txt.pixsz != txt.size)
+		h *= (double)txt.size / (double)txt.pixsz;;
+	xui_layout_row(ctx, 1, (int[]){ -1 }, h);
 	r = xui_layout_next(ctx);
-	xui_draw_text(ctx, family, size, utf8, r->x, r->y, wrap, c);
+	xui_draw_text(ctx, r->x, r->y, &txt);
 }

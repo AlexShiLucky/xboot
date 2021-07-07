@@ -133,25 +133,25 @@ bool_t register_machine(struct machine_t * mach)
     list_add_tail(&mach->list, &__machine_list);
     spin_unlock_irqrestore(&__machine_lock, flags);
 
-	if(!__machine && (mach->detect(mach) > 0))
-	{
-		__machine = mach;
-		if(mach->logger)
-		{
-			for(i = 0; i < 5; i++)
-			{
-				mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
-				mach->logger(mach, "\r\n", 2);
-			}
-			mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
-			mach->logger(mach, " - [", 4);
-			mach->logger(mach, mach->name, strlen(mach->name));
-			mach->logger(mach, "][", 2);
-			mach->logger(mach, mach->desc, strlen(mach->desc));
-			mach->logger(mach, "]\r\n", 3);
-		}
-	}
-	return TRUE;
+    if(!__machine && (mach->detect(mach) > 0))
+    {
+        __machine = mach;
+        if(mach->logger)
+        {
+            for(i = 0; i < 5; i++)
+            {
+                mach->logger(mach, xboot_character_logo_string(i), strlen(xboot_character_logo_string(i)));
+                mach->logger(mach, "\r\n", 2);
+            }
+            mach->logger(mach, xboot_banner_string(), strlen(xboot_banner_string()));
+            mach->logger(mach, " - [", 4);
+            mach->logger(mach, mach->name, strlen(mach->name));
+            mach->logger(mach, "][", 2);
+            mach->logger(mach, mach->desc, strlen(mach->desc));
+            mach->logger(mach, "]\r\n", 3);
+        }
+    }
+    return TRUE;
 }
 
 /* 注销机器 */
@@ -216,18 +216,18 @@ inline __attribute__((always_inline)) struct machine_t * get_machine(void)
 
 void machine_smpinit(void)
 {
-	struct machine_t * mach = get_machine();
+    struct machine_t * mach = get_machine();
 
-	if(mach && mach->smpinit && (CONFIG_MAX_SMP_CPUS > 1))
-		mach->smpinit(mach);
+    if(mach && mach->smpinit && (CONFIG_MAX_SMP_CPUS > 1))
+        mach->smpinit(mach);
 }
 
 void machine_smpboot(void (*func)(void))
 {
-	struct machine_t * mach = get_machine();
+    struct machine_t * mach = get_machine();
 
-	if(mach && mach->smpboot && (CONFIG_MAX_SMP_CPUS > 1))
-		mach->smpboot(mach, func);
+    if(mach && mach->smpboot && (CONFIG_MAX_SMP_CPUS > 1))
+        mach->smpboot(mach, func);
 }
 
 /* 机器关机 */
@@ -235,9 +235,9 @@ void machine_shutdown(void)
 {
     struct machine_t * mach = get_machine();
 
-	vfs_sync();
-	if(mach && mach->shutdown)
-		mach->shutdown(mach);
+    vfs_sync();
+    if(mach && mach->shutdown)
+        mach->shutdown(mach);
 }
 
 /* 机器重启 */
@@ -245,10 +245,10 @@ void machine_reboot(void)
 {
     struct machine_t * mach = get_machine();
 
-	vfs_sync();
-	if(mach && mach->reboot)
-		mach->reboot(mach);
-	watchdog_set_timeout(search_first_watchdog(), 1);
+    vfs_sync();
+    if(mach && mach->reboot)
+        mach->reboot(mach);
+    watchdog_set_timeout(search_first_watchdog(), 1);
 }
 
 /* 机器睡眠 */
@@ -257,19 +257,19 @@ void machine_sleep(void)
     struct machine_t * mach = get_machine();
     struct device_t * pos, * n;
 
-	vfs_sync();
-	list_for_each_entry_safe_reverse(pos, n, &__device_list, list)
-	{
-		suspend_device(pos);
-	}
-	if(mach && mach->sleep)
-	{
-		mach->sleep(mach);
-	}
-	list_for_each_entry_safe(pos, n, &__device_list, list)
-	{
-		resume_device(pos);
-	}
+    vfs_sync();
+    list_for_each_entry_safe_reverse(pos, n, &__device_list, list)
+    {
+        suspend_device(pos);
+    }
+    if(mach && mach->sleep)
+    {
+        mach->sleep(mach);
+    }
+    list_for_each_entry_safe(pos, n, &__device_list, list)
+    {
+        resume_device(pos);
+    }
 }
 
 /* 机器清理 */
@@ -277,30 +277,30 @@ void machine_cleanup(void)
 {
     struct machine_t * mach = get_machine();
 
-	vfs_sync();
-	if(mach && mach->cleanup)
-		mach->cleanup(mach);
+    vfs_sync();
+    if(mach && mach->cleanup)
+        mach->cleanup(mach);
 }
 
 /* 机器log输出 */
 int machine_logger(const char * fmt, ...)
 {
-	struct machine_t * mach = get_machine();
-	uint64_t us;
-	char buf[SZ_4K];
-	int len = 0;
-	va_list ap;
+    struct machine_t * mach = get_machine();
+    uint64_t us;
+    char buf[SZ_4K];
+    int len = 0;
+    va_list ap;
 
-	if(mach && mach->logger)
-	{
-		va_start(ap, fmt);
-		us = ktime_to_us(ktime_get());
-		len += sprintf((char *)(buf + len), "[%5u.%06u]", (unsigned long)(us / 1000000), (unsigned long)((us % 1000000)));
-		len += vsnprintf((char *)(buf + len), (SZ_4K - len), fmt, ap);
-		va_end(ap);
-		mach->logger(mach, (const char *)buf, len);
-	}
-	return len;
+    if(mach && mach->logger)
+    {
+        va_start(ap, fmt);
+        us = ktime_to_us(ktime_get());
+        len += sprintf((char *)(buf + len), "[%5u.%06u]", (unsigned long)(us / 1000000), (unsigned long)((us % 1000000)));
+        len += vsnprintf((char *)(buf + len), (SZ_4K - len), fmt, ap);
+        va_end(ap);
+        mach->logger(mach, (const char *)buf, len);
+    }
+    return len;
 }
 
 /* 获取机器唯一标识符 */
@@ -314,12 +314,15 @@ const char * machine_uniqueid(void)
 int machine_keygen(const char * msg, void * key)
 {
     struct machine_t * mach = get_machine();
-    int len;
 
-    if(mach && mach->keygen && ((len = mach->keygen(mach, msg, key)) > 0))
-        return len;
-    sha256_hash(msg, strlen(msg), key);
-    return 32;
+    if(msg && key)
+    {
+        if(mach && mach->keygen && (mach->keygen(mach, msg, key) > 0))
+            return 1;
+        sha256_hash(msg, strlen(msg), key);
+        return 1;
+    }
+    return 0;
 }
 
 /* 机器物理地址转虚拟地址 */

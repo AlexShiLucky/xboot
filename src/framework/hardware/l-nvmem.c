@@ -98,21 +98,12 @@ static int m_nvmem_clear(lua_State * L)
     return 1;
 }
 
-static int m_nvmem_sync(lua_State * L)
-{
-    struct nvmem_t * m = luaL_checkudata(L, 1, MT_HARDWARE_NVMEM);
-    nvmem_sync(m);
-    lua_settop(L, 1);
-    return 1;
-}
-
 static const luaL_Reg m_nvmem[] = {
-    {"__tostring",  m_nvmem_tostring},
-    {"set",         m_nvmem_set},
-    {"get",         m_nvmem_get},
-    {"clear",       m_nvmem_clear},
-    {"sync",        m_nvmem_sync},
-    {NULL,  NULL}
+	{"__tostring",	m_nvmem_tostring},
+	{"set",			m_nvmem_set},
+	{"get",			m_nvmem_get},
+	{"clear",		m_nvmem_clear},
+	{NULL,	NULL}
 };
 
 int luaopen_hardware_nvmem(lua_State * L)

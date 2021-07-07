@@ -5,13 +5,22 @@
 #
 # You can pass CROSS_COMPILE and PLATFORM variable.
 #
+# GNU ARM Toolchain - ARM
 #CROSS_COMPILE   ?= aarch64-none-elf-
 #CROSS_COMPILE   ?= aarch64-none-linux-gnu-
 #CROSS_COMPILE   ?= arm-none-eabi-
 #CROSS_COMPILE   ?= arm-none-linux-gnueabihf-
+
+# GNU ARM Toolchain - Linaro
+#CROSS_COMPILE   ?= aarch64-elf-
+#CROSS_COMPILE   ?= aarch64-linux-gnu-
+#CROSS_COMPILE   ?= arm-eabi-
+#CROSS_COMPILE   ?= arm-linux-gnueabihf-
+
+# GNU RISCV Toolchain
 #CROSS_COMPILE   ?= riscv-none-embed-
 
-CROSS_COMPILE   ?= arm-none-linux-gnueabihf-
+CROSS_COMPILE   ?= arm-linux-gnueabihf-
 PLATFORM        ?= arm32-realview
 #PLATFORM        ?= arm32-rk3288
 #PLATFORM        ?= arm32-h3
@@ -347,7 +356,7 @@ X_COBJS     :=  $(patsubst %, .obj/%, $(X_CFILES:.c=.o))
 X_OBJS      :=  $(X_SOBJS) $(X_COBJS) $(foreach dir, $(X_OTHERS), .obj/$(dir)/built-in.o)
 
 .PHONY: all clean romdisk xbegin xend xclean $(X_NAME) $(X_ARCHS) $(X_OTHERS)
-export AS CC LD X_ASFLAGS X_CFLAGS X_INCDIRS
+export AS CC LD AR X_ASFLAGS X_CFLAGS X_INCDIRS
 
 #
 # Xboot rules

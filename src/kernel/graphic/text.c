@@ -41,87 +41,175 @@
 static void text_metrics(struct text_t * txt)
 {
     FTC_SBit sbit;
+    FT_BitmapGlyph bitmap;
+    FT_Glyph glyph, gly;
     const char * p;
     uint32_t code;
     int col = 0, row = 0;
     int tw = 0, th = 0, lh = 0;
     int x = 0, y = 0, w = 0, h = 0;
 
-    p = txt->utf8;
-    while(*p)
+    if(txt->size <= 96)
     {
-        p = utf8_to_code(p, &code);
-        switch(code)
+        p = txt->utf8;
+        while(*p)
         {
-        case '\r':
-            tw = 0;
-            th += 0;
-            if(tw > w)
-                w = tw;
-            if(th > h)
-                h = th;
-            col = 0;
-            break;
-
-        case '\n':
-            tw = 0;
-            th += txt->pixsz;
-            lh = 0;
-            if(tw > w)
-                w = tw;
-            if(th > h)
-                h = th;
-            col = 0;
-            row++;
-            break;
-
-        case '\t':
-            tw += txt->pixsz * 2;
-            th += 0;
-            if(tw > w)
-                w = tw;
-            if(th > h)
-                h = th;
-            col++;
-            break;
-
-        default:
-            sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->pixsz, code);
-            if(sbit)
+            p = utf8_to_code(p, &code);
+            switch(code)
             {
-                if((txt->wrap > 0) && (tw + sbit->xadvance > txt->wrap))
-                {
-                    tw = 0;
-                    th += txt->pixsz;
-                    lh = 0;
-                    if(tw > w)
-                        w = tw;
-                    if(th > h)
-                        h = th;
-                    col = 0;
-                    row++;
-                }
-                tw += sbit->xadvance;
+            case '\r':
+                tw = 0;
                 th += 0;
-                if(sbit->yadvance + sbit->height > lh)
-                    lh = sbit->yadvance + sbit->height;
                 if(tw > w)
                     w = tw;
                 if(th > h)
                     h = th;
-                if(col == 0)
+                col = 0;
+                break;
+
+            case '\n':
+                tw = 0;
+                th += txt->size;
+                lh = 0;
+                if(tw > w)
+                    w = tw;
+                if(th > h)
+                    h = th;
+                col = 0;
+                row++;
+                break;
+
+            case '\t':
+                tw += txt->size << 1;
+                th += 0;
+                if(tw > w)
+                    w = tw;
+                if(th > h)
+                    h = th;
+                col++;
+                break;
+
+            default:
+                sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->size, code);
+                if(sbit)
                 {
-                    if(sbit->left > x)
-                        x = sbit->left;
+                    if((txt->wrap > 0) && (tw + sbit->xadvance > txt->wrap))
+                    {
+                        tw = 0;
+                        th += txt->size;
+                        lh = 0;
+                        if(tw > w)
+                            w = tw;
+                        if(th > h)
+                            h = th;
+                        col = 0;
+                        row++;
+                    }
+                    tw += sbit->xadvance;
+                    th += 0;
+                    if(sbit->yadvance + sbit->height > lh)
+                        lh = sbit->yadvance + sbit->height;
+                    if(tw > w)
+                        w = tw;
+                    if(th > h)
+                        h = th;
+                    if(col == 0)
+                    {
+                        if(sbit->left > x)
+                            x = sbit->left;
+                    }
+                    if(row == 0)
+                    {
+                        if(sbit->top > y)
+                            y = sbit->top;
+                    }
                 }
-                if(row == 0)
-                {
-                    if(sbit->top > y)
-                        y = sbit->top;
-                }
+                col++;
+                break;
             }
-            col++;
-            break;
+        }
+    }
+    else
+    {
+        p = txt->utf8;
+        while(*p)
+        {
+            p = utf8_to_code(p, &code);
+            switch(code)
+            {
+            case '\r':
+                tw = 0;
+                th += 0;
+                if(tw > w)
+                    w = tw;
+                if(th > h)
+                    h = th;
+                col = 0;
+                break;
+
+            case '\n':
+                tw = 0;
+                th += txt->size;
+                lh = 0;
+                if(tw > w)
+                    w = tw;
+                if(th > h)
+                    h = th;
+                col = 0;
+                row++;
+                break;
+
+            case '\t':
+                tw += txt->size << 1;
+                th += 0;
+                if(tw > w)
+                    w = tw;
+                if(th > h)
+                    h = th;
+                col++;
+                break;
+
+            default:
+                glyph = (FT_Glyph)font_lookup_glyph(txt->fctx, txt->family, txt->size, code);
+                if(glyph && (FT_Glyph_Copy(glyph, &gly) == 0))
+                {
+                    FT_Glyph_To_Bitmap(&gly, FT_RENDER_MODE_NORMAL, NULL, 1);
+                    bitmap = (FT_BitmapGlyph)gly;
+                    if((txt->wrap > 0) && (tw + (glyph->advance.x >> 16) > txt->wrap))
+                    {
+                        tw = 0;
+                        th += txt->size;
+                        lh = 0;
+                        if(tw > w)
+                            w = tw;
+                        if(th > h)
+                            h = th;
+                        col = 0;
+                        row++;
+                    }
+                    tw += (glyph->advance.x >> 16);
+                    th += 0;
+                    if((glyph->advance.y >> 16) + bitmap->bitmap.rows > lh)
+                        lh = (glyph->advance.y >> 16) + bitmap->bitmap.rows;
+                    if(tw > w)
+                        w = tw;
+                    if(th > h)
+                        h = th;
+                    if(col == 0)
+                    {
+                        if(bitmap->left > x)
+                            x = bitmap->left;
+                    }
+                    if(row == 0)
+                    {
+                        if(bitmap->top > y)
+                            y = bitmap->top;
+                    }
+                    FT_Done_Glyph(gly);
+                }
+                col++;
+                break;
+            }
         }
     }
     txt->metrics.ox = x;
@@ -139,8 +227,7 @@ void text_init(struct text_t * txt, const char * utf8, struct color_t * c, int w
         txt->wrap = wrap;
         txt->fctx = fctx;
         txt->family = family;
-        txt->size = max(size, 1);
-        txt->pixsz = clamp(txt->size, 1, 96);
+        txt->size = (size > 0) ? size : 16;
         text_metrics(txt);
     }
 }
@@ -182,8 +269,7 @@ void text_set_size(struct text_t * txt, int size)
 {
     if(txt)
     {
-        txt->size = max(size, 1);
-        txt->pixsz = clamp(txt->size, 1, 96);
+        txt->size = (size > 0) ? size : 16;
         text_metrics(txt);
     }
 }
@@ -347,7 +433,7 @@ void render_default_text(struct surface_t * s, struct region_t * clip, struct ma
     uint32_t code;
     int tx, ty, tw;
 
-    if((m->a == 1.0) && (m->b == 0.0) && (m->c == 0.0) && (m->d == 1.0))
+    if((txt->size <= 96) && (m->a == 1.0) && (m->b == 0.0) && (m->c == 0.0) && (m->d == 1.0))
     {
         tx = txt->metrics.ox;
         ty = txt->metrics.oy;
@@ -371,28 +457,28 @@ void render_default_text(struct surface_t * s, struct region_t * clip, struct ma
 
             case '\n':
                 tx = txt->metrics.ox;
-                ty += txt->pixsz;
+                ty += txt->size;
                 tw = 0;
                 pen.x = (FT_Pos)(m->tx + tx);
                 pen.y = (FT_Pos)(m->ty + ty);
                 break;
 
             case '\t':
-                tx += txt->pixsz * 2;
+                tx += txt->size << 1;
                 ty += 0;
-                tw += txt->pixsz * 2;
+                tw += txt->size << 1;
                 pen.x = (FT_Pos)(m->tx + tx);
                 pen.y = (FT_Pos)(m->ty + ty);
                 break;
 
             default:
-                sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->pixsz, code);
+                sbit = (FTC_SBit)font_lookup_bitmap(txt->fctx, txt->family, txt->size, code);
                 if(sbit)
                 {
                     if((txt->wrap > 0) && (tw + sbit->xadvance > txt->wrap))
                     {
                         tx = txt->metrics.ox;
-                        ty += txt->pixsz;
+                        ty += txt->size;
                         tw = 0;
                         pen.x = (FT_Pos)(m->tx + tx);
                         pen.y = (FT_Pos)(m->ty + ty);
@@ -436,43 +522,40 @@ void render_default_text(struct surface_t * s, struct region_t * clip, struct ma
 
             case '\n':
                 tx = txt->metrics.ox;
-                ty += txt->pixsz;
+                ty += txt->size;
                 tw = 0;
                 pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
                 pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
                 break;
 
             case '\t':
-                tx += txt->pixsz * 2;
+                tx += txt->size << 1;
                 ty += 0;
-                tw += txt->pixsz * 2;
+                tw += txt->size << 1;
                 pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
                 pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
                 break;
 
             default:
-                glyph = (FT_Glyph)font_lookup_glyph(txt->fctx, txt->family, txt->pixsz, code);
-                if(glyph)
+                glyph = (FT_Glyph)font_lookup_glyph(txt->fctx, txt->family, txt->size, code);
+                if(glyph && (FT_Glyph_Copy(glyph, &gly) == 0))
                 {
+                    FT_Glyph_Transform(gly, &matrix, &pen);
+                    FT_Glyph_To_Bitmap(&gly, FT_RENDER_MODE_NORMAL, NULL, 1);
+                    bitmap = (FT_BitmapGlyph)gly;
                     if((txt->wrap > 0) && (tw + (glyph->advance.x >> 16) > txt->wrap))
                     {
                         tx = txt->metrics.ox;
-                        ty += txt->pixsz;
+                        ty += txt->size;
                         tw = 0;
                         pen.x = (FT_Pos)((m->tx + m->a * tx + m->c * ty) * 64);
                         pen.y = (FT_Pos)((s->height - (m->ty + m->b * tx + m->d * ty)) * 64);
                     }
                     tw += (glyph->advance.x >> 16);
-                    if(FT_Glyph_Copy(glyph, &gly) == 0)
-                    {
-                        FT_Glyph_Transform(gly, &matrix, &pen);
-                        FT_Glyph_To_Bitmap(&gly, FT_RENDER_MODE_NORMAL, NULL, 1);
-                        bitmap = (FT_BitmapGlyph)gly;
-                        draw_font_glyph(s, clip, txt->c, bitmap->left, s->height - bitmap->top, &bitmap->bitmap);
-                        pen.x += bitmap->root.advance.x >> 10;
-                        pen.y += bitmap->root.advance.y >> 10;
-                        FT_Done_Glyph(gly);
-                    }
+                    draw_font_glyph(s, clip, txt->c, bitmap->left, s->height - bitmap->top, &bitmap->bitmap);
+                    pen.x += bitmap->root.advance.x >> 10;
+                    pen.y += bitmap->root.advance.y >> 10;
+                    FT_Done_Glyph(gly);
                 }
                 break;
             }

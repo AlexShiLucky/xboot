@@ -28,6 +28,8 @@ PLATFORM        ?= arm32-realview
 
 #CROSS_COMPILE   ?= arm-none-eabi-
 #PLATFORM        ?= arm32-f1c100s
+#PLATFORM       ?= arm32-f1c200s
+#PLATFORM       ?= arm32-f1c500s
 
 #
 # Configurable advanced custom components
@@ -216,8 +218,8 @@ SRCDIRS     +=  external/libpng-1.6.37
 INCDIRS     +=  external/jpeg-9d
 SRCDIRS     +=  external/jpeg-9d
 
-INCDIRS     +=  external/stb_vorbis-1.20
-SRCDIRS     +=  external/stb_vorbis-1.20
+INCDIRS     +=  external/stb_vorbis-1.21
+SRCDIRS     +=  external/stb_vorbis-1.21
 
 INCDIRS     +=  external/quirc-1.1.0
 SRCDIRS     +=  external/quirc-1.1.0
